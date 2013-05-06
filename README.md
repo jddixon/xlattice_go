@@ -1,4 +1,4 @@
 xlattice-go
 ===========
 
-a golang implementation of XLattice
+A golang implementation of XLattice.
