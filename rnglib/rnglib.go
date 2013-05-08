@@ -56,9 +56,9 @@ func (s *SimpleRNG) NextBoolean() (bool) {
 func (s *SimpleRNG) NextByte() (byte) {
     return byte(s.rng.Int63n(256))
 }
-func (s *SimpleRNG) NextBytes(buffer []byte) {
-    for n := range(buffer) {
-        buffer[n] = s.NextByte()
+func (s *SimpleRNG) NextBytes(buffer *[]byte) {
+    for n := range(*buffer) {
+        (*buffer)[n] = s.NextByte()
     }
 }
 func (s *SimpleRNG) NextInt32(n uint32) (uint32) {
@@ -127,6 +127,11 @@ func (s *SimpleRNG) NextDataFile(dirName string, maxLen int, minLen int) (int, s
     if minLen < 0           { minLen = 0 }
     if maxLen < minLen + 1  { maxLen = minLen + 1 }
 
+    // create the data directory if it does not exist
+    dirExists, err := PathExists(dirName)
+    if err != nil { panic(err) }
+    if ! dirExists { os.MkdirAll( dirName, 0755) }
+        
     // loop until the file does not exist
     pathToFile := dirName + "/" + s.NextFileName(16)
     pathExists, err := PathExists(pathToFile) 
@@ -138,7 +143,7 @@ func (s *SimpleRNG) NextDataFile(dirName string, maxLen int, minLen int) (int, s
     }
     count := minLen + int(s.NextFloat32() * float32((maxLen - minLen)))
     data  := make([]byte, count)
-    s.NextBytes(data)            // fill with random bytes
+    s.NextBytes(&data)            // fill with random bytes
     // XXX may cause panic
     fo, err := os.Create(pathToFile)
     if err != nil { panic(err) }
@@ -150,7 +155,7 @@ func (s *SimpleRNG) NextDataFile(dirName string, maxLen int, minLen int) (int, s
     if _, err := fo.Write( data); err != nil {
         panic(err)
     }
-    // could check file size with f.tell()
+    // XXX respec to also return err
     return count, pathToFile
 }
 
