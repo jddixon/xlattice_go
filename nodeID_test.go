@@ -1,4 +1,4 @@
-package nodeID
+package xlattice_go
 
 //import "fmt"
 import "github.com/bmizerany/assert"

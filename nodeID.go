@@ -1,4 +1,4 @@
-package nodeID
+package xlattice_go
 
 const SHA1_LEN = 20
 const SHA3_LEN = 32
