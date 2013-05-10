@@ -1,15 +1,19 @@
 package nodeID
 
+const SHA1_LEN = 20
+const SHA3_LEN = 32
+
 type NodeID struct {
     nodeID []byte
 }
 
-func NewNodeID (id []byte) *NodeID {
+func NewNodeID (id *[]byte) *NodeID {
     if id == nil {
         panic( "IllegalArgument: nil nodeID")
     }
     q := new(NodeID)
-    q.nodeID = id
+    // XXX THIS MUST BE A DEEP COPY
+    q.nodeID = *id
     if !q.IsValid() {
         panic ("IllegalArgument: invalid id length")
     }
@@ -31,10 +35,17 @@ func (n *NodeID) Value() []byte {
 }
 func (n *NodeID) Clone() *NodeID {
     v := n.Value()
-    return NewNodeID(v)
+    return NewNodeID(&v)
 }
+// XXX DEPRECATED
 func (n *NodeID) IsValid() bool {
     x := n.Length()
+    return x == 20  || x == 32      // SHA1 or SHA3
+}
+func IsValidID(value []byte) bool {
+    if value == nil { return false }
+    // XXX check type?
+    x := len(value)
     return x == 20  || x == 32      // SHA1 or SHA3
 }
 // func (n *NodeID) Equal (any interface{}) bool {
