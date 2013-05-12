@@ -6,5 +6,5 @@ type SigVerifier interface {
     GetAlgorithm() string
     Init(PublicKey)
     Update([]byte)
-    Verify() []byte bool
+    Verify([]byte) bool
 }

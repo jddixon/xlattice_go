@@ -6,8 +6,6 @@ package xlattice_go
  * Address includes the IP address and the port number.
  */
 
-import . "github.com/jddixon/xlattice_go/transport"
-
 type EndPoint struct {
     transport *Transport
     address   *Address
