@@ -4,11 +4,6 @@ import "errors"
 
 /**
  * A Peer is another Node, a neighbor.  
- * 
- * XXX As this has evolved, it begins to look like Node should 
- * XXX simply extend Peer.
- * 
- * @author Jim Dixon
  */
 
 type Peer struct {
