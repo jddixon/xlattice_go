@@ -2,7 +2,7 @@ package xlattice_go
 
 //import "fmt"
 import "github.com/bmizerany/assert"
-import . "github.com/jddixon/xlattice-go/rnglib"
+import . "github.com/jddixon/xlattice_go/rnglib"
 import "testing"
 import "time"
 
@@ -51,6 +51,9 @@ func TestThisAndThat(t *testing.T) {
         assert.Equal(t, v1[i], v1a[i] )
         assert.Equal(t, v2[i], v2a[i] )
     }
+    assert.Equal(t, false, id1.Equal(nil))
+    assert.Equal(t, true,  id1.Equal(id1))
+    assert.Equal(t, false, id1.Equal(id2))
 }
 
 // func TestComparator(t *testing.T) {

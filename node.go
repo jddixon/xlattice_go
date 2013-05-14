@@ -11,11 +11,11 @@ import "errors"
  * @author Jim Dixon
  */
 type Node struct {
-    nodeID      *NodeID
-    key         *Key
-    pubkey      *PublicKey
-    digSigner   *DigSigner
-    overlays    []*Overlay
+    nodeID      *NodeID         // public
+    key         *Key            // private
+    pubkey      *PublicKey      // public
+    digSigner   *DigSigner      // private, used via sign()
+    overlays    []*Overlay      
     peers       []*Peer
     connections []*Connection
 }
