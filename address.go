@@ -4,6 +4,6 @@ package xlattice_go
 // The information needed depends upon the communications protocol
 // used.
 type Address interface {
-    Equal(any interface{}) bool
-    ToString() string
+	Equal(any interface{}) bool
+	ToString() string
 }

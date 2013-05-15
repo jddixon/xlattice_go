@@ -12,19 +12,19 @@ package xlattice_go
  */
 type Connector interface {
 
-    /**
-     * Establish a Connection with another entity using the transport
-     * and address in the EndPoint.
-     * 
-     * @param nearEnd  local end point to use for connection
-     * @param blocking whether the new Connection is to be blocking
-     */
-    Connect (near EndPoint, blocking bool) (
-                        c Connection, e error) // throws IOException
+	/**
+	 * Establish a Connection with another entity using the transport
+	 * and address in the EndPoint.
+	 *
+	 * @param nearEnd  local end point to use for connection
+	 * @param blocking whether the new Connection is to be blocking
+	 */
+	Connect(near EndPoint, blocking bool) (
+		c Connection, e error) // throws IOException
 
-    /**
-     * @return the Acceptor EndPoint that this Connector is used to
-     *          establish connections to
-     */
-    GetFarEnd () EndPoint
+	/**
+	 * @return the Acceptor EndPoint that this Connector is used to
+	 *          establish connections to
+	 */
+	GetFarEnd() EndPoint
 }
