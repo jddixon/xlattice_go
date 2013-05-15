@@ -32,8 +32,8 @@ func TestNewNewCtor(t *testing.T) {
     actualID := n.GetNodeID()
     assert.Equal(t, true, id.Equal(actualID) )
     doKeyTests(t, n, rng) 
-    assert.Equal(t, 0, n.SizePeers())
-    assert.Equal(t, 0, n.SizeOverlays())
+    assert.Equal(t, 0, (*n).SizePeers())
+    assert.Equal(t, 0, (*n).SizeOverlays())
     assert.Equal(t, 0, n.SizeConnections())
 }
 

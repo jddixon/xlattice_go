@@ -1,5 +1,7 @@
 package xlattice_go
 
+import "crypto/rand"
+import "crypto/rsa"
 import "errors"
 
 /**
@@ -12,8 +14,8 @@ import "errors"
  */
 type Node struct {
     nodeID      *NodeID         // public
-    key         *Key            // private
-    pubkey      *PublicKey      // public
+    key         *rsa.PrivateKey // private
+    pubkey      *rsa.PublicKey  // public
     digSigner   *DigSigner      // private, used via sign()
     overlays    []*Overlay      
     peers       []*Peer
@@ -25,7 +27,7 @@ func NewNewNode(id *NodeID) (*Node, error){
     return NewNode(id, nil, nil, nil, nil)
 }
 
-func NewNode(id *NodeID, key *Key, o *[]*Overlay,  p *[]*Peer,
+func NewNode(id *NodeID, key *rsa.PrivateKey, o *[]*Overlay,  p *[]*Peer,
                                        c *[]*Connection) (*Node, error) {
 
     if id == nil {
@@ -39,6 +41,14 @@ func NewNode(id *NodeID, key *Key, o *[]*Overlay,  p *[]*Peer,
     // * extract the public key 
     // * build the DigSigner
     ///////////////////////////////
+    if key == nil {
+        k,err := rsa.GenerateKey(rand.Reader, 2048)
+        if err != nil {
+            return nil, err
+        }
+        key = k
+    }
+
     
     var overlays []*Overlay       // an empty slice
     if o != nil {
@@ -64,6 +74,7 @@ func NewNode(id *NodeID, key *Key, o *[]*Overlay,  p *[]*Peer,
     q := new(Node)
     (*q).nodeID = nodeID           // the clone
     (*q).key = key
+    (*q).pubkey = &(*key).PublicKey
     (*q).overlays = overlays
     (*q).peers = peers
     (*q).connections = cnxs
@@ -73,9 +84,11 @@ func NewNode(id *NodeID, key *Key, o *[]*Overlay,  p *[]*Peer,
 func (n *Node) GetNodeID() *NodeID {
     return n.nodeID
 }
-func (n *Node) GetPublicKey() *PublicKey {
+func (n *Node) GetPublicKey() *rsa.PublicKey {
     return n.pubkey
 }
+// XXX This is just wrong: implement a function Sign([]byte) returning
+//  (sig []byte, err error) instead
 func (n *Node) GetSigner() *DigSigner {
     return n.digSigner
 }
@@ -91,7 +104,7 @@ func (n *Node) addOverlay (o *Overlay) error {
  * @return a count of the number of overlays the peer can be
  *         accessed through
  */
-func(n *Node)sizeOverlays () int {
+func(n *Node)SizeOverlays () int {
     return len(n.overlays)
 }
 /** @return how to access the peer (transport, protocol, address) */
@@ -110,7 +123,7 @@ func (n *Node) addPeer (o *Peer) error {
 /** 
  * @return a count,  the number of peers 
  */
-func(n *Node)sizePeers () int {
+func(n *Node)SizePeers () int {
     return len(n.peers)
 }
 func(n *Node) GetPeer(x int ) *Peer {
