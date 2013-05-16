@@ -12,7 +12,7 @@ func makeNodeID(rng *SimpleRNG) *NodeID {
 		buffer = make([]byte, SHA3_LEN)
 	}
 	rng.NextBytes(&buffer)
-	return NewNodeID(&buffer)
+	return NewNodeID(buffer)
 }
 
 func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {

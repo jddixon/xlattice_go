@@ -28,8 +28,8 @@ func TestThisAndThat(t *testing.T) {
 	rng.NextBytes(&v1)
 	v2 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v2)
-	id1 := NewNodeID(&v1)
-	id2 := NewNodeID(&v2)
+	id1 := NewNodeID(v1)
+	id2 := NewNodeID(v2)
 	// XXX this should be assert.False(id1.Equal(id2))
 	assert.NotEqual(t, id1, id2)
 

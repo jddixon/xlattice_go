@@ -7,16 +7,21 @@ const SHA3_LEN = 32
 // END SHOULD
 
 type NodeID struct {
-	nodeID []byte
+	_nodeID []byte
 }
 
-func NewNodeID(id *[]byte) *NodeID {
+func NewNodeID(id []byte) *NodeID {
 	if id == nil {
 		panic("IllegalArgument: nil nodeID")
 	}
 	q := new(NodeID)
-	// XXX THIS MUST BE A DEEP COPY
-	q.nodeID = *id
+	// deep copy the slice
+	size := len(id)
+	myID := make([]byte, size)
+	for i := 0; i < size; i++ {
+		myID[i] = id[i]
+	}
+	q._nodeID = myID
 	if !q.IsValid() {
 		panic("IllegalArgument: invalid id length")
 	}
@@ -28,17 +33,21 @@ func NewNodeID(id *[]byte) *NodeID {
 // }
 
 func (n *NodeID) Length() int {
-	return len(n.nodeID)
+	return len(n._nodeID)
 }
 
 func (n *NodeID) Value() []byte {
-	v := n.nodeID
-	// XXX need assurance that this is a copy
+	// deep copy the slice
+	size := len(n._nodeID)
+	v := make([]byte, size)
+	for i := 0; i < size; i++ {
+		v[i] = n._nodeID[i]
+	}
 	return v
 }
 func (n *NodeID) Clone() *NodeID {
 	v := n.Value()
-	return NewNodeID(&v)
+	return NewNodeID(v)
 }
 
 // XXX DEPRECATED
@@ -72,7 +81,7 @@ func (n *NodeID) Equal(any interface{}) bool {
 		return false
 	}
 	for i := 0; i < n.Length(); i++ {
-		if (*n).nodeID[i] != (*other).nodeID[i] {
+		if (*n)._nodeID[i] != (*other)._nodeID[i] {
 			return false
 		}
 	}
