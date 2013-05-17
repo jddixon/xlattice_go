@@ -1,11 +1,17 @@
 package xlattice_go
 
+import (
+	"bytes"
+	"errors"
+)
+
 // these SHOULD be in a crypto package
 const SHA1_LEN = 20
 const SHA3_LEN = 32
 
 // END SHOULD
 
+// CONSTRUCTORS /////////////////////////////////////////////////////
 type NodeID struct {
 	_nodeID []byte
 }
@@ -22,7 +28,7 @@ func NewNodeID(id []byte) *NodeID {
 		myID[i] = id[i]
 	}
 	q._nodeID = myID
-	if !q.IsValid() {
+	if !IsValidID(id) {
 		panic("IllegalArgument: invalid id length")
 	}
 	return q
@@ -32,37 +38,37 @@ func NewNodeID(id []byte) *NodeID {
 //     ...
 // }
 
-func (n *NodeID) Length() int {
-	return len(n._nodeID)
-}
-
-func (n *NodeID) Value() []byte {
-	// deep copy the slice
-	size := len(n._nodeID)
-	v := make([]byte, size)
-	for i := 0; i < size; i++ {
-		v[i] = n._nodeID[i]
-	}
-	return v
-}
 func (n *NodeID) Clone() *NodeID {
 	v := n.Value()
 	return NewNodeID(v)
 }
 
-// XXX DEPRECATED
-func (n *NodeID) IsValid() bool {
-	x := n.Length()
-	return x == 20 || x == 32 // SHA1 or SHA3
-}
-func IsValidID(value []byte) bool {
-	if value == nil {
-		return false
+// OTHER METHODS ////////////////////////////////////////////////////
+func (n *NodeID) Compare(any interface{}) (int, error) {
+	result	:= 0
+	err		:= error(nil)
+	if any == nil {
+		err = errors.New("IllegalArgument: nil comparand")
+	} else if any == n {
+		return result, err			// defaults to 0, nil
+	} else {
+		switch v := any.(type) {
+		case *NodeID:
+			_ = v
+		default:
+			err = errors.New("IllegalArgument: not pointer to NodeID")
+		}
 	}
-	// XXX check type?
-	x := len(value)
-	return x == 20 || x == 32 // SHA1 or SHA3
+	if err != nil {
+		return result, err
+	}
+	other := any.(*NodeID)
+	if n.Length() != other.Length() {
+		return 0, errors.New("IllegalArgument: NodeIDs of different length")
+	}	
+	return bytes.Compare( n.Value(), other.Value() ), nil
 }
+
 func (n *NodeID) Equal(any interface{}) bool {
 	if any == n {
 		return true
@@ -88,5 +94,30 @@ func (n *NodeID) Equal(any interface{}) bool {
 	return true
 }
 
+func IsValidID(value []byte) bool {
+	if value == nil {
+		return false
+	}
+	// XXX check type?
+	x := len(value)
+	return x == 20 || x == 32 // SHA1 or SHA3
+}
+
+func (n *NodeID) Length() int {
+	return len(n._nodeID)
+}
+
+// Returns a deep copy the slice.
+func (n *NodeID) Value() []byte {
+	size := len(n._nodeID)
+	v := make([]byte, size)
+	for i := 0; i < size; i++ {
+		v[i] = n._nodeID[i]
+	}
+	return v
+}
+
+// SERIALIZATION ////////////////////////////////////////////////////
 // func (n *NodeID) ToString() string {
-//
+// 
+// }

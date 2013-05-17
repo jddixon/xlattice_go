@@ -3,7 +3,7 @@ package protocol
 import (
 	// "fmt"
 	"github.com/bmizerany/assert"
-	"github.com/jddixon/xlattice-go/rnglib"
+	"github.com/jddixon/xlattice_go/rnglib"
 	"testing"
 	"time"
 )
