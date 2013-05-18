@@ -85,6 +85,7 @@ func (n *Node) GetNodeID() *NodeID {
 	return n.nodeID
 }
 func (n *Node) GetPublicKey() *rsa.PublicKey {
+	// XXX This should be a copy or a serialization
 	return n.pubkey
 }
 

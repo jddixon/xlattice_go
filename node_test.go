@@ -1,8 +1,15 @@
 package xlattice_go
 
-import "github.com/bmizerany/assert"
-import . "github.com/jddixon/xlattice_go/rnglib"
-import "testing"
+import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha1"
+	"fmt"
+	"github.com/bmizerany/assert"
+	. "github.com/jddixon/xlattice_go/rnglib"
+	"testing"
+)
 
 func makeNodeID(rng *SimpleRNG) *NodeID {
 	var buffer []byte
@@ -16,10 +23,35 @@ func makeNodeID(rng *SimpleRNG) *NodeID {
 }
 
 func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
-	// XXX STUB
+	pubkey := node.GetPublicKey()
+	assert.NotEqual(t, nil, pubkey)
+	
+	privkey := node.key		// naughty
+	assert.Equal( t, nil, privkey.Validate() )
 
+	expLen := (*privkey.D).BitLen()
+	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
+	assert.Equal(t, true, (2040 <= expLen) && (expLen <= 2048))
+
+	assert.Equal(t, privkey.PublicKey, *pubkey)
+
+	// sign /////////////////////////////////////////////////////////
+	msgLen := 128
+	msg	   := make([]byte, msgLen)
+	rng.NextBytes(&msg)
+
+	d := sha1.New()
+	d.Write(msg)
+	hash := d.Sum(nil)
+	
+	sig, err := rsa.SignPKCS1v15(rand.Reader, node.key, crypto.SHA1, hash)
+	assert.Equal(t, nil, err)
+
+	// verify ///////////////////////////////////////////////////////
+	err = rsa.VerifyPKCS1v15(pubkey, crypto.SHA1, hash, sig)
+	assert.Equal(t, nil, err)
 }
-func TestNewNewCtor(t *testing.T) {
+func TestNewNew(t *testing.T) {
 	rng := makeRNG()
 	_, err := NewNewNode(nil)
 	assert.NotEqual(t, nil, err)
