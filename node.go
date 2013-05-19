@@ -1,8 +1,13 @@
 package xlattice_go
 
-import "crypto/rand"
-import "crypto/rsa"
-import "errors"
+import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha1"
+	"errors"
+	"hash"
+)
 
 /**
  * A Node is uniquely identified by a NodeID and can satisfy an
@@ -16,7 +21,6 @@ type Node struct {
 	nodeID      *NodeID         // public
 	key         *rsa.PrivateKey // private
 	pubkey      *rsa.PublicKey  // public
-	digSigner   *DigSigner      // private, used via sign()
 	overlays    []*Overlay
 	peers       []*Peer
 	connections []*Connection
@@ -89,10 +93,13 @@ func (n *Node) GetPublicKey() *rsa.PublicKey {
 	return n.pubkey
 }
 
-// XXX This is just wrong: implement a function Sign([]byte) returning
-//  (sig []byte, err error) instead
-func (n *Node) GetSigner() *DigSigner {
-	return n.digSigner
+// Returns an instance of a DigSigner which can be run in a separate
+// goroutine.  This allows the Node to calculate more than one 
+// digital signature at the same time.
+//
+// XXX would prefer that *DigSigner be returned
+func (n *Node) getSigner() *signer {
+	return newSigner(n.key)
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
@@ -195,3 +202,34 @@ func (n *Node) Equal(any interface{}) bool {
 	}
 	return false
 }
+
+// DIG SIGNER ///////////////////////////////////////////////////////
+
+type signer struct {
+	key    *rsa.PrivateKey
+	digest hash.Hash
+}
+
+func newSigner (key *rsa.PrivateKey) *signer{
+	// XXX some validation, please
+	h	:= sha1.New()
+	ds  := signer { key: key, digest: h }
+	return &ds
+}
+func (s *signer)  Algorithm() string {
+	return "SHA1+RSA"				// XXX NOT THE PROPER NAME
+}
+func (s *signer) Length() int {
+	return 42						// XXX NOT THE PROPER VALUE
+}
+func (s *signer) Update(chunk []byte) {
+	s.digest.Write(chunk)
+}
+
+// XXX NOTE CHANGE IN INTERFACE
+func (s *signer) Sign() ([]byte, error) {
+	h := s.digest.Sum(nil)
+	sig, err := rsa.SignPKCS1v15(rand.Reader, s.key, crypto.SHA1, h)
+	return sig, err
+}
+

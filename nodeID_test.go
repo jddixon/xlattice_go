@@ -1,16 +1,8 @@
 package xlattice_go
 
-//import "fmt"
 import "github.com/bmizerany/assert"
-import . "github.com/jddixon/xlattice_go/rnglib"
 import "testing"
-import "time"
 
-func makeRNG() *SimpleRNG {
-	t := time.Now().Unix()
-	rng := NewSimpleRNG(t)
-	return rng
-}
 func TestBadNodeIDs(t *testing.T) {
 	assert.Equal(t, false, IsValidID(nil))
 	candidate := make([]byte, SHA1_LEN-1)
@@ -23,7 +15,7 @@ func TestBadNodeIDs(t *testing.T) {
 	assert.Equal(t, true, IsValidID(candidate))
 }
 func TestThisAndThat(t *testing.T) {
-	rng := makeRNG()
+	rng := MakeRNG()
 	v1 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v1)
 	v2 := make([]byte, SHA1_LEN)
@@ -57,7 +49,7 @@ func TestThisAndThat(t *testing.T) {
 }
 
 func TestComparator(t *testing.T) {
-	rng := makeRNG()
+	rng := MakeRNG()
 	v1 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v1)
 	v3 := make([]byte, SHA3_LEN)

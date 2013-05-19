@@ -47,12 +47,25 @@ func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 	sig, err := rsa.SignPKCS1v15(rand.Reader, node.key, crypto.SHA1, hash)
 	assert.Equal(t, nil, err)
 
+	signer := node.getSigner()
+	signer.Update(msg)
+	sig2, err := signer.Sign()		// XXX change interface to allow arg
+
+	lenSig  := len(sig)
+	lenSig2 := len(sig2)
+	assert.Equal(t, lenSig, lenSig2)
+
+	// XXX why does this succeed?
+	for i := 0; i < lenSig; i++ {
+		assert.Equal(t, sig[i], sig2[i])
+	}
+
 	// verify ///////////////////////////////////////////////////////
 	err = rsa.VerifyPKCS1v15(pubkey, crypto.SHA1, hash, sig)
 	assert.Equal(t, nil, err)
 }
 func TestNewNew(t *testing.T) {
-	rng := makeRNG()
+	rng := MakeRNG()
 	_, err := NewNewNode(nil)
 	assert.NotEqual(t, nil, err)
 
@@ -70,7 +83,7 @@ func TestNewNew(t *testing.T) {
 }
 
 func TestNewCtor(t *testing.T) {
-	// rng := makeRNG()
+	// rng := MakeRNG()
 
 	// if  constructor assigns a nil NodeID, we should get an
 	// IllegalArgument panic
