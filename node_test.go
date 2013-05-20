@@ -27,9 +27,9 @@ func makeNodeID(rng *SimpleRNG) *NodeID {
 func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 	pubkey := node.GetPublicKey()
 	assert.NotEqual(t, nil, pubkey)
-	
-	privkey := node.key		// naughty
-	assert.Equal( t, nil, privkey.Validate() )
+
+	privkey := node.key // naughty
+	assert.Equal(t, nil, privkey.Validate())
 
 	expLen := (*privkey.D).BitLen()
 	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
@@ -39,21 +39,21 @@ func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 
 	// sign /////////////////////////////////////////////////////////
 	msgLen := 128
-	msg	   := make([]byte, msgLen)
+	msg := make([]byte, msgLen)
 	rng.NextBytes(&msg)
 
 	d := sha1.New()
 	d.Write(msg)
 	hash := d.Sum(nil)
-	
+
 	sig, err := rsa.SignPKCS1v15(rand.Reader, node.key, cr.SHA1, hash)
 	assert.Equal(t, nil, err)
 
 	signer := node.getSigner()
 	signer.Update(msg)
-	sig2, err := signer.Sign()		// XXX change interface to allow arg
+	sig2, err := signer.Sign() // XXX change interface to allow arg
 
-	lenSig  := len(sig)
+	lenSig := len(sig)
 	lenSig2 := len(sig2)
 	assert.Equal(t, lenSig, lenSig2)
 
@@ -70,6 +70,7 @@ func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 
 	nilArgCheck(t)
 }
+
 // XXX TODO: move these tests into crypto/sig_test.go
 func nilArgCheck(t *testing.T) {
 	defer func() {
@@ -82,6 +83,7 @@ func nilArgCheck(t *testing.T) {
 	_ = xc.SigVerify(nil, nil, nil)
 	assert.Equal(t, true, false, "you should never see this message")
 }
+
 // END OF TODO
 
 func TestNewNew(t *testing.T) {

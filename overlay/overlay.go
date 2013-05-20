@@ -1,4 +1,8 @@
-package xlattice_go
+package overlay
+
+import (
+	x "github.com/jddixon/xlattice_go"
+)
 
 /**
  * A Overlay is characterized by an address space, a transport protocol,
@@ -20,10 +24,24 @@ package xlattice_go
  *
  */
 
-type Overlay interface {
-	Name() string         // for example, "eu-west-1.compute.amazonaws.com"
-	AddrRange() AddrRange // eg 10/8 in ipv4
-	Transport() string    // eg "tcpip"
-	Cost() float32
-	Equal(any interface{}) bool
+type Overlay struct {
+	name      string       // eg "eu-west-1.compute.amazonaws.com"
+	addrRange *x.AddrRange // eg 10/8 in ipv4
+	transport string       // eg "tcpip"
+	cost      float32
+}
+
+func NewOverlay(name string, addrRange *x.AddrRange, transport string, cost float32) (*Overlay, error) {
+	// XXX validate the parameters, please
+
+	return &Overlay{name, addrRange, transport, cost}, nil
+}
+
+func (o *Overlay) Name() string {
+	return o.name
+}
+
+func (o *Overlay) Equal(any interface{}) bool {
+	// XXX STUB XXX
+	return false
 }

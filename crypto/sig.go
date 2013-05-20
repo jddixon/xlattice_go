@@ -8,7 +8,7 @@ import (
 	"crypto/sha1"
 )
 
-// XXX POSSIBLE CHANGE IN SPEC: Rather than panicking, we could just 
+// XXX POSSIBLE CHANGE IN SPEC: Rather than panicking, we could just
 // return err, and then interpret a nil value as meaning "OK".
 func SigVerify(pubkey *rsa.PublicKey, msg []byte, sig []byte) bool {
 	// presumably a rare error, so let's just complain
