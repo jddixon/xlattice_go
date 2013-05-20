@@ -54,11 +54,11 @@ func TestComparator(t *testing.T) {
 	rng.NextBytes(&v1)
 	v3 := make([]byte, SHA3_LEN)
 	rng.NextBytes(&v3)
-	id1 := NewNodeID(v1)				// SHA1
-	id3 := NewNodeID(v3)				// SHA3
+	id1 := NewNodeID(v1) // SHA1
+	id3 := NewNodeID(v3) // SHA3
 
 	// make clones which will sort before and after v1
-	v1a := make([]byte, SHA1_LEN)			// sorts AFTER v1
+	v1a := make([]byte, SHA1_LEN) // sorts AFTER v1
 	for i := 0; i < SHA1_LEN; i++ {
 		if v1[i] == 255 {
 			v1a[i] = 255
@@ -67,7 +67,7 @@ func TestComparator(t *testing.T) {
 			break
 		}
 	}
-	v1b := make([]byte, SHA1_LEN)			// sorts BEFORE v1
+	v1b := make([]byte, SHA1_LEN) // sorts BEFORE v1
 	for i := 0; i < SHA1_LEN; i++ {
 		if v1[i] == 0 {
 			v1b[i] = 0
@@ -79,29 +79,29 @@ func TestComparator(t *testing.T) {
 	id1a := NewNodeID(v1a)
 	id1b := NewNodeID(v1b)
 
-	result, err := id1.Compare(id1)				// self
+	result, err := id1.Compare(id1) // self
 	assert.Equal(t, 0, result)
 	assert.Equal(t, err, nil)
 
-	result, err = id1.Compare(id1.Clone())		// identical copy
+	result, err = id1.Compare(id1.Clone()) // identical copy
 	assert.Equal(t, 0, result)
 	assert.Equal(t, err, nil)
 
-	result, err = id1.Compare(nil)		// nil comparand
+	result, err = id1.Compare(nil) // nil comparand
 	assert.NotEqual(t, err, nil)
 
 	result, err = id1.Compare(id3)
-	assert.NotEqual(t, err, nil)		// different lengths
+	assert.NotEqual(t, err, nil) // different lengths
 
 	result, err = id1.Compare(id1a)
-	assert.Equal(t, -1, result)			// id1 < id1a
+	assert.Equal(t, -1, result) // id1 < id1a
 	assert.Equal(t, err, nil)
 
-	result, err = id1.Compare(id1b)		// id1 > id1b
+	result, err = id1.Compare(id1b) // id1 > id1b
 	assert.Equal(t, 1, result)
 	assert.Equal(t, err, nil)
 
-	result, err = id1a.Compare(id1b)	// id1a > id1b
+	result, err = id1a.Compare(id1b) // id1a > id1b
 	assert.Equal(t, 1, result)
 	assert.Equal(t, err, nil)
 

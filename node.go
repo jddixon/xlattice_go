@@ -94,7 +94,7 @@ func (n *Node) GetPublicKey() *rsa.PublicKey {
 }
 
 // Returns an instance of a DigSigner which can be run in a separate
-// goroutine.  This allows the Node to calculate more than one 
+// goroutine.  This allows the Node to calculate more than one
 // digital signature at the same time.
 //
 // XXX would prefer that *DigSigner be returned
@@ -210,17 +210,17 @@ type signer struct {
 	digest hash.Hash
 }
 
-func newSigner (key *rsa.PrivateKey) *signer{
+func newSigner(key *rsa.PrivateKey) *signer {
 	// XXX some validation, please
-	h	:= sha1.New()
-	ds  := signer { key: key, digest: h }
+	h := sha1.New()
+	ds := signer{key: key, digest: h}
 	return &ds
 }
-func (s *signer)  Algorithm() string {
-	return "SHA1+RSA"				// XXX NOT THE PROPER NAME
+func (s *signer) Algorithm() string {
+	return "SHA1+RSA" // XXX NOT THE PROPER NAME
 }
 func (s *signer) Length() int {
-	return 42						// XXX NOT THE PROPER VALUE
+	return 42 // XXX NOT THE PROPER VALUE
 }
 func (s *signer) Update(chunk []byte) {
 	s.digest.Write(chunk)
@@ -232,4 +232,3 @@ func (s *signer) Sign() ([]byte, error) {
 	sig, err := rsa.SignPKCS1v15(rand.Reader, s.key, crypto.SHA1, h)
 	return sig, err
 }
-

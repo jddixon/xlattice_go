@@ -1,13 +1,15 @@
 package xlattice_go
 
 import (
-	"crypto"
+	cr "crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
 	"fmt"
 	"github.com/bmizerany/assert"
+	xc "github.com/jddixon/xlattice_go/crypto"
 	. "github.com/jddixon/xlattice_go/rnglib"
+	"strings"
 	"testing"
 )
 
@@ -44,7 +46,7 @@ func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 	d.Write(msg)
 	hash := d.Sum(nil)
 	
-	sig, err := rsa.SignPKCS1v15(rand.Reader, node.key, crypto.SHA1, hash)
+	sig, err := rsa.SignPKCS1v15(rand.Reader, node.key, cr.SHA1, hash)
 	assert.Equal(t, nil, err)
 
 	signer := node.getSigner()
@@ -61,9 +63,27 @@ func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 	}
 
 	// verify ///////////////////////////////////////////////////////
-	err = rsa.VerifyPKCS1v15(pubkey, crypto.SHA1, hash, sig)
+	err = rsa.VerifyPKCS1v15(pubkey, cr.SHA1, hash, sig)
 	assert.Equal(t, nil, err)
+
+	assert.Equal(t, true, xc.SigVerify(pubkey, msg, sig))
+
+	nilArgCheck(t)
 }
+// XXX TODO: move these tests into crypto/sig_test.go
+func nilArgCheck(t *testing.T) {
+	defer func() {
+		r := recover()
+		assert.NotEqual(t, r, nil)
+		str := r.(string)
+		assert.Equal(t, true, strings.HasPrefix(str, "IllegalArgument"))
+	}()
+	// the next statement should cause a panic
+	_ = xc.SigVerify(nil, nil, nil)
+	assert.Equal(t, true, false, "you should never see this message")
+}
+// END OF TODO
+
 func TestNewNew(t *testing.T) {
 	rng := MakeRNG()
 	_, err := NewNewNode(nil)

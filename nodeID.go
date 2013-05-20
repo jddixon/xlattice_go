@@ -45,12 +45,12 @@ func (n *NodeID) Clone() *NodeID {
 
 // OTHER METHODS ////////////////////////////////////////////////////
 func (n *NodeID) Compare(any interface{}) (int, error) {
-	result	:= 0
-	err		:= error(nil)
+	result := 0
+	err := error(nil)
 	if any == nil {
 		err = errors.New("IllegalArgument: nil comparand")
 	} else if any == n {
-		return result, err			// defaults to 0, nil
+		return result, err // defaults to 0, nil
 	} else {
 		switch v := any.(type) {
 		case *NodeID:
@@ -65,8 +65,8 @@ func (n *NodeID) Compare(any interface{}) (int, error) {
 	other := any.(*NodeID)
 	if n.Length() != other.Length() {
 		return 0, errors.New("IllegalArgument: NodeIDs of different length")
-	}	
-	return bytes.Compare( n.Value(), other.Value() ), nil
+	}
+	return bytes.Compare(n.Value(), other.Value()), nil
 }
 
 func (n *NodeID) Equal(any interface{}) bool {
@@ -119,5 +119,5 @@ func (n *NodeID) Value() []byte {
 
 // SERIALIZATION ////////////////////////////////////////////////////
 // func (n *NodeID) ToString() string {
-// 
+//
 // }
