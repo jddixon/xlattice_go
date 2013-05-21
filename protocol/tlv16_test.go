@@ -3,18 +3,23 @@ package protocol
 import (
 	// "fmt"
 	"github.com/bmizerany/assert"
-	"github.com/jddixon/xlattice_go/rnglib"
+	// "github.com/jddixon/xlattice_go"
+	x ".." // accepted and properly interpreted
+	// "github.com/jddixon/xlattice_go/rnglib"
 	"testing"
-	"time"
+	// "time"
 )
 
-func makeRNG() *rnglib.SimpleRNG {
-	t := time.Now().Unix()
-	rng := rnglib.NewSimpleRNG(t)
-	return rng
-}
+// We now use this function from ../make_rng.go
+
+//func MakeRNG() *rnglib.SimpleRNG {
+//	t := time.Now().Unix()
+//	rng := rnglib.NewSimpleRNG(t)
+//	return rng
+//}
+
 func TestConstructors(t *testing.T) {
-	rng := makeRNG()
+	rng := x.MakeRNG()
 	tType := uint16(rng.NextInt32(256 * 256))
 
 	const BUF_SIZE = 16
@@ -32,7 +37,7 @@ func TestConstructors(t *testing.T) {
 }
 
 func TestFields(t *testing.T) {
-	rng := makeRNG()
+	rng := x.MakeRNG()
 	tType := uint16(rng.NextInt32(256 * 256))
 
 	const BUF_SIZE = 16
@@ -60,7 +65,7 @@ func TestFields(t *testing.T) {
 func TestReadWrite(t *testing.T) {
 	const COUNT = 16
 	const MAX_TYPE = 128
-	rng := makeRNG()
+	rng := x.MakeRNG()
 	for i := 0; i < COUNT; i++ {
 		tType := uint16(rng.NextInt32(MAX_TYPE))
 		bufLen := 4 * (1 + int(rng.NextInt32(16)))

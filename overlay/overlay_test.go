@@ -13,6 +13,6 @@ func TestCtor(t *testing.T) {
 	name := rng.NextFileName(8)
 
 	o, err := NewOverlay(name, nil, "tcpip", 0.42)
-	assert.NotEqual(t, nil, err)
+	assert.Equal(t, nil, err)
 	assert.NotEqual(t, nil, o)
 }
