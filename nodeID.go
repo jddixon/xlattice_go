@@ -107,7 +107,7 @@ func (n *NodeID) Length() int {
 	return len(n._nodeID)
 }
 
-// Returns a deep copy the slice.
+// Returns a deep copy of the slice.
 func (n *NodeID) Value() []byte {
 	size := len(n._nodeID)
 	v := make([]byte, size)

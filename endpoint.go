@@ -7,23 +7,21 @@ package xlattice_go
  */
 
 type EndPoint struct {
-	transport *Transport
+	transport string // should be pointer to Transport
 	address   *Address
 }
 
-func NewEndPoint(t *Transport, a *Address) *EndPoint {
+func NewEndPoint(t string, a *Address) *EndPoint {
 	// XXX need some checks
-	e := new(EndPoint)
-	e.transport = (*Transport)(t)
-	e.address = (*Address)(a)
-	return e
+	return &EndPoint{t, a}
 }
 
 func (e *EndPoint) getAddress() *Address {
 	return e.address
 }
 
-func (e *EndPoint) getTransport() *Transport {
+//func (e *EndPoint) getTransport() *Transport {
+func (e *EndPoint) getTransport() string {
 	return e.transport
 }
 
@@ -36,6 +34,6 @@ func (e *EndPoint) ToString() string {
 	//   the Transport interface and similarly for e.address
 
 	// probably not efficient
-	s := (*e.transport).Name() + " " + (*e.address).ToString()
+	s := e.transport + " " + (*e.address).ToString()
 	return s
 }

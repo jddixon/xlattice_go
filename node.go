@@ -21,6 +21,7 @@ type Node struct {
 	nodeID      *NodeID         // public
 	key         *rsa.PrivateKey // private
 	pubkey      *rsa.PublicKey  // public
+	endPoints   []*EndPoint
 	overlays    []*Overlay
 	peers       []*Peer
 	connections []*Connection
@@ -31,7 +32,7 @@ func NewNewNode(id *NodeID) (*Node, error) {
 	return NewNode(id, nil, nil, nil, nil)
 }
 
-func NewNode(id *NodeID, key *rsa.PrivateKey, o *[]*Overlay, p *[]*Peer,
+func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
 	c *[]*Connection) (*Node, error) {
 
 	if id == nil {
@@ -53,11 +54,14 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, o *[]*Overlay, p *[]*Peer,
 		key = k
 	}
 
-	var overlays []*Overlay // an empty slice
-	if o != nil {
-		count := len(*o)
+	var endPoints []*EndPoint // an empty slice
+	var overlays []*Overlay
+	if e != nil {
+		count := len(*e)
 		for i := 0; i < count; i++ {
-			overlays = append(overlays, (*o)[i])
+			endPoints = append(endPoints, (*e)[i])
+			// XXX get the overlay from the endPoint
+			// overlays = append(overlays, (*o)[i])
 		}
 	} // FOO
 	var peers []*Peer // an empty slice
@@ -78,6 +82,7 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, o *[]*Overlay, p *[]*Peer,
 	(*q).nodeID = nodeID // the clone
 	(*q).key = key
 	(*q).pubkey = &(*key).PublicKey
+	(*q).endPoints = endPoints
 	(*q).overlays = overlays
 	(*q).peers = peers
 	(*q).connections = cnxs
