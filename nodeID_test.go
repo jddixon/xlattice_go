@@ -1,20 +1,29 @@
 package xlattice_go
 
-import "github.com/bmizerany/assert"
-import "testing"
+import (
+	. "launchpad.net/gocheck"
+	// "github.com/bmizerany/assert"
+	"testing"
+)
 
-func TestBadNodeIDs(t *testing.T) {
-	assert.Equal(t, false, IsValidID(nil))
+// gocheck tie-in /////////////////////
+func Test(t *testing.T) { TestingT(t) }
+type XLSuite struct {}
+var _ = Suite(&XLSuite{}) 
+// end gocheck setup //////////////////
+
+func (s *XLSuite) TestBadNodeIDs(c *C) {
+	c.Assert(false, Equals, IsValidID(nil))
 	candidate := make([]byte, SHA1_LEN-1)
-	assert.Equal(t, false, IsValidID(candidate))
+	c.Assert(false, Equals, IsValidID(candidate))
 	candidate = make([]byte, SHA1_LEN)
-	assert.Equal(t, true, IsValidID(candidate))
+	c.Assert(true, Equals, IsValidID(candidate))
 	candidate = make([]byte, SHA1_LEN+1)
-	assert.Equal(t, false, IsValidID(candidate))
+	c.Assert(false, Equals, IsValidID(candidate))
 	candidate = make([]byte, SHA3_LEN)
-	assert.Equal(t, true, IsValidID(candidate))
+	c.Assert(true, Equals, IsValidID(candidate))		// FOO
 }
-func TestThisAndThat(t *testing.T) {
+func (s *XLSuite) TestThisAndThat(c *C) {
 	rng := MakeRNG()
 	v1 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v1)
@@ -22,33 +31,31 @@ func TestThisAndThat(t *testing.T) {
 	rng.NextBytes(&v2)
 	id1 := NewNodeID(v1)
 	id2 := NewNodeID(v2)
-	// XXX this should be assert.False(id1.Equal(id2))
-	assert.NotEqual(t, id1, id2)
+	c.Assert(id1, Not(Equals), id2)	
 
 	v1a := id1.Value()
 	v2a := id2.Value()
 
-	// not identical XXX test doesn't work because assert package
-	//                   can't handle byte arrays
-	// assert.NotEqual(t, v1, v1a)
-	// assert.NotEqual(t, v2, v2a)
+	// XXX gocheck cannot handle these comparisons
+	// c.Assert(v1, Not(DeepEquals), v1a)				// 'Deep' is for desperation
+	// c.Assert(v2, Not(Equals), v2a)	
 
-	// XXX assert can't handle these tests either
-	// assert.NotEqual(t, &v1, &v1a)
-	// assert.NotEqual(t, &v2, &v2a)
+	// XXX not sure that gocheck results are meaningful
+	c.Assert(&v1, Not(Equals), &v1a)	
+	c.Assert(&v2, Not(Equals), &v2a)	
 
-	assert.Equal(t, SHA1_LEN, len(v1a))
-	assert.Equal(t, SHA1_LEN, len(v2a))
+	c.Assert(SHA1_LEN, Equals, len(v1a))
+	c.Assert(SHA1_LEN, Equals, len(v2a))
 	for i := 0; i < SHA1_LEN; i++ {
-		assert.Equal(t, v1[i], v1a[i])
-		assert.Equal(t, v2[i], v2a[i])
+		c.Assert(v1[i], Equals, v1a[i])
+		c.Assert(v2[i], Equals, v2a[i])
 	}
-	assert.Equal(t, false, id1.Equal(nil))
-	assert.Equal(t, true, id1.Equal(id1))
-	assert.Equal(t, false, id1.Equal(id2))
+	c.Assert(false,	Equals,	id1.Equal(nil))
+	c.Assert(true,	Equals, id1.Equal(id1))
+	c.Assert(false, Equals, id1.Equal(id2))				// FOO
 }
 
-func TestComparator(t *testing.T) {
+func (s *XLSuite) TestComparator(c *C) {
 	rng := MakeRNG()
 	v1 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v1)
@@ -80,29 +87,29 @@ func TestComparator(t *testing.T) {
 	id1b := NewNodeID(v1b)
 
 	result, err := id1.Compare(id1) // self
-	assert.Equal(t, 0, result)
-	assert.Equal(t, err, nil)
+	c.Assert(0, Equals, result)
+	c.Assert(err, IsNil)
 
 	result, err = id1.Compare(id1.Clone()) // identical copy
-	assert.Equal(t, 0, result)
-	assert.Equal(t, err, nil)
+	c.Assert(0, Equals, result)
+	c.Assert(err, IsNil)
 
 	result, err = id1.Compare(nil) // nil comparand
-	assert.NotEqual(t, err, nil)
+	c.Assert(err, Not(IsNil))	// NOT
 
 	result, err = id1.Compare(id3)
-	assert.NotEqual(t, err, nil) // different lengths
+	c.Assert(err, Not(IsNil)) // different lengths	// NOT
 
 	result, err = id1.Compare(id1a)
-	assert.Equal(t, -1, result) // id1 < id1a
-	assert.Equal(t, err, nil)
+	c.Assert(-1, Equals, result) // id1 < id1a
+	c.Assert(err, IsNil)
 
 	result, err = id1.Compare(id1b) // id1 > id1b
-	assert.Equal(t, 1, result)
-	assert.Equal(t, err, nil)
+	c.Assert(1, Equals, result)
+	c.Assert(err, IsNil)
 
 	result, err = id1a.Compare(id1b) // id1a > id1b
-	assert.Equal(t, 1, result)
-	assert.Equal(t, err, nil)
+	c.Assert(1, Equals, result)
+	c.Assert(err, IsNil)
 
 }

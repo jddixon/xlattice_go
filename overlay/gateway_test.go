@@ -3,5 +3,9 @@ package overlay
 // xlattice_go/overlay/gateway_test.go
 
 import (
-	_ "testing"
+	. "launchpad.net/gocheck"
 )
+
+func (s *XLSuite) TestNothing(c *C) {
+	// XXX STUB
+}

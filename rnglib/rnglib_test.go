@@ -1,31 +1,48 @@
 package rnglib
 
-import "fmt"
-import "github.com/bmizerany/assert"
-import "os"
-import "strings"
-import "testing"
-import "time"
+import (
+	"fmt"
+	. "launchpad.net/gocheck"
+	"os"
+	"strings"
+	"testing"
+	"time"
+)
+
+// gocheck tie-in /////////////////////
+func Test(t *testing.T) { TestingT(t) }
+type XLSuite struct {}
+var _ = Suite(&XLSuite{}) 
+// end gocheck setup //////////////////
+
+
+// copied here from ../make_rng.go ////
+func MakeRNG() *SimpleRNG {
+	t := time.Now().Unix()
+	rng := NewSimpleRNG(t)
+	return rng
+}
+// end copied /////////////////////////
 
 const TMP_DIR = "tmp"
 
-func buildData(count uint32) *[]byte {
+func (s *XLSuite) buildData(count uint32) *[]byte {
 	p := make([]byte, count)
 	return &p
 }
-func makeRNG() *SimpleRNG {
+func (s *XLSuite) MakeRNG() *SimpleRNG {
 	t := time.Now().Unix() // int64 sec
 	rng := NewSimpleRNG(t)
 	return rng
 }
-func TestConstuctor(t *testing.T) {
-	rng := makeRNG()
-	assert.NotEqual(t, rng, nil)
+func (s *XLSuite) TestConstuctor(c *C) {
+	rng := MakeRNG()
+	c.Assert(rng, Not(IsNil))		// NOT 
 }
-func TestNextBoolean(t *testing.T) {
-	rng := makeRNG()
+func (s *XLSuite) TestNextBoolean(c *C) {
+	rng := MakeRNG()
 	val := rng.NextBoolean()
-	assert.NotEqual(t, val, nil)
+	c.Assert(val, Not(IsNil))		// NOT 
 
 	valAsIface := interface{}(val)
 	switch v := valAsIface.(type) {
@@ -36,22 +53,22 @@ func TestNextBoolean(t *testing.T) {
 		/* empty statement */
 	}
 }
-func TestNextByte(t *testing.T) {
-	// rng := makeRNG()
+func (s *XLSuite) TestNextByte(c *C) {
+	// rng := MakeRNG()
 }
-func TestNextBytes(t *testing.T) {
-	rng := makeRNG()
+func (s *XLSuite) TestNextBytes(c *C) {
+	rng := MakeRNG()
 	count := uint32(1)          // minimum length of buffer
 	count += rng.NextInt32(256) // maximum
-	data := buildData(count)    // so 1 .. 256 bytes
+	data := s.buildData(count)    // so 1 .. 256 bytes
 	rng.NextBytes(data)
 	actualLen := uint32(len(*data))
-	assert.NotEqual(t, 0, actualLen)
-	assert.Equal(t, actualLen, count)
+	c.Assert(0, Not(Equals), actualLen)		// NOT 
+	c.Assert(actualLen, Equals, count)
 
 }
-func TestNextFileName(t *testing.T) {
-	rng := makeRNG()
+func (s *XLSuite) TestNextFileName(c *C) {
+	rng := MakeRNG()
 	maxLen := uint32(1)         // minimum length of name
 	maxLen += rng.NextInt32(16) // maximum
 	name := rng.NextFileName(int(maxLen))
@@ -59,11 +76,11 @@ func TestNextFileName(t *testing.T) {
 	fmt.Printf("next file name is %s\n", name)
 	// END
 	actualLen := len(name)
-	assert.NotEqual(t, 0, actualLen)
+	c.Assert(0, Not(Equals), actualLen)		// NOT 
 	// assert.True( t, actualLen < maxLen)
 }
-func TestNextDataFile(t *testing.T) {
-	rng := makeRNG()
+func (s *XLSuite) TestNextDataFile(c *C) {
+	rng := MakeRNG()
 	minLen := int(rng.NextInt32(4))            // minimum length of file
 	maxLen := minLen + int(rng.NextInt32(256)) // maximum
 
@@ -74,13 +91,13 @@ func TestNextDataFile(t *testing.T) {
 	// END
 
 	stats, err := os.Stat(pathToFile)
-	assert.Equal(t, nil, err)
+	c.Assert(err, IsNil)
 	fileName := stats.Name()
-	assert.Equal(t, TMP_DIR+"/"+fileName, pathToFile)
-	assert.Equal(t, stats.Size(), int64(fileLen))
+	c.Assert(TMP_DIR+"/"+fileName, Equals, pathToFile)
+	c.Assert(stats.Size(), Equals, int64(fileLen))
 
 }
-func doNextDataDirTest(t *testing.T, rng *SimpleRNG, width int, depth int) {
+func (s *XLSuite) doNextDataDirTest(c *C, rng *SimpleRNG, width int, depth int) {
 	dirName := rng.NextFileName(8)
 	dirPath := TMP_DIR + "/" + dirName
 	pathExists, err := PathExists(dirPath)
@@ -98,10 +115,10 @@ func doNextDataDirTest(t *testing.T, rng *SimpleRNG, width int, depth int) {
 	}
 	rng.NextDataDir(dirPath, width, depth, 32, 0)
 }
-func TestNextDataDir(t *testing.T) {
-	rng := makeRNG()
-	doNextDataDirTest(t, rng, 1, 1)
-	doNextDataDirTest(t, rng, 1, 4)
-	doNextDataDirTest(t, rng, 4, 1)
-	doNextDataDirTest(t, rng, 4, 4)
+func (s *XLSuite) TestNextDataDir(c *C) {
+	rng := MakeRNG()
+	s.doNextDataDirTest(c, rng, 1, 1)
+	s.doNextDataDirTest(c, rng, 1, 4)
+	s.doNextDataDirTest(c, rng, 4, 1)
+	s.doNextDataDirTest(c, rng, 4, 4)
 }

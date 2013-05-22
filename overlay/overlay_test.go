@@ -3,16 +3,22 @@ package overlay
 // xlattice_go/overlay/overlay_test.go
 
 import (
-	"github.com/bmizerany/assert"
 	x "github.com/jddixon/xlattice_go"
+	. "launchpad.net/gocheck"
 	"testing"
 )
 
-func TestCtor(t *testing.T) {
+// gocheck tie-in /////////////////////
+func Test(t *testing.T) { TestingT(t) }
+type XLSuite struct {}
+var _ = Suite(&XLSuite{}) 
+// end gocheck setup //////////////////
+
+func (s *XLSuite) TestCtor(c *C) {
 	rng := x.MakeRNG()
 	name := rng.NextFileName(8)
 
 	o, err := NewOverlay(name, nil, "tcpip", 0.42)
-	assert.Equal(t, nil, err)
-	assert.NotEqual(t, nil, o)
+	c.Assert(err, IsNil)
+	c.Assert(o, Not(IsNil))
 }

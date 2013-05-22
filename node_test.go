@@ -6,11 +6,12 @@ import (
 	"crypto/rsa"
 	"crypto/sha1"
 	"fmt"
-	"github.com/bmizerany/assert"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	. "github.com/jddixon/xlattice_go/rnglib"
 	"strings"
-	"testing"
+	. "launchpad.net/gocheck"
+	// "github.com/bmizerany/assert"
+	// "testing"
 )
 
 func makeNodeID(rng *SimpleRNG) *NodeID {
@@ -24,18 +25,19 @@ func makeNodeID(rng *SimpleRNG) *NodeID {
 	return NewNodeID(buffer)
 }
 
-func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
+// func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
+func (s *XLSuite) doKeyTests(c *C, node *Node, rng *SimpleRNG) {
 	pubkey := node.GetPublicKey()
-	assert.NotEqual(t, nil, pubkey)
+	c.Assert(pubkey, Not(IsNil))	// NOT
 
 	privkey := node.key // naughty
-	assert.Equal(t, nil, privkey.Validate())
+	c.Assert(privkey.Validate(), IsNil)
 
 	expLen := (*privkey.D).BitLen()
 	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
-	assert.Equal(t, true, (2040 <= expLen) && (expLen <= 2048))
+	c.Assert(true, Equals, (2040 <= expLen) && (expLen <= 2048))
 
-	assert.Equal(t, privkey.PublicKey, *pubkey)
+	c.Assert(privkey.PublicKey, Equals, *pubkey)
 
 	// sign /////////////////////////////////////////////////////////
 	msgLen := 128
@@ -47,7 +49,7 @@ func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 	hash := d.Sum(nil)
 
 	sig, err := rsa.SignPKCS1v15(rand.Reader, node.key, cr.SHA1, hash)
-	assert.Equal(t, nil, err)
+	c.Assert(err, IsNil)
 
 	signer := node.getSigner()
 	signer.Update(msg)
@@ -55,56 +57,59 @@ func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 
 	lenSig := len(sig)
 	lenSig2 := len(sig2)
-	assert.Equal(t, lenSig, lenSig2)
+	c.Assert(lenSig, Equals, lenSig2)
 
 	// XXX why does this succeed?
 	for i := 0; i < lenSig; i++ {
-		assert.Equal(t, sig[i], sig2[i])
+		c.Assert(sig[i], Equals, sig2[i])
 	}
 
 	// verify ///////////////////////////////////////////////////////
 	err = rsa.VerifyPKCS1v15(pubkey, cr.SHA1, hash, sig)
-	assert.Equal(t, nil, err)
+	c.Assert(err, IsNil)
 
-	assert.Equal(t, true, xc.SigVerify(pubkey, msg, sig))
+	c.Assert(true, Equals, xc.SigVerify(pubkey, msg, sig))
 
-	nilArgCheck(t)
+	s.nilArgCheck(c)
 }
 
 // XXX TODO: move these tests into crypto/sig_test.go
-func nilArgCheck(t *testing.T) {
+// func nilArgCheck(t *testing.T) {
+func (s *XLSuite) nilArgCheck(c *C) {
 	defer func() {
 		r := recover()
-		assert.NotEqual(t, r, nil)
+		c.Assert(r, Not(IsNil))	// NOT
 		str := r.(string)
-		assert.Equal(t, true, strings.HasPrefix(str, "IllegalArgument"))
+		c.Assert(true, Equals, strings.HasPrefix(str, "IllegalArgument"))
 	}()
 	// the next statement should cause a panic
 	_ = xc.SigVerify(nil, nil, nil)
-	assert.Equal(t, true, false, "you should never see this message")
+	c.Assert(true, Equals, false, "you should never see this message")
 }
 
 // END OF TODO
 
-func TestNewNew(t *testing.T) {
+// func TestNewNew(t *testing.T) {
+func (s *XLSuite)TestNewNew(c *C) {
 	rng := MakeRNG()
 	_, err := NewNewNode(nil)
-	assert.NotEqual(t, nil, err)
+	c.Assert(err, Not(IsNil))	// NOT
 
 	id := makeNodeID(rng)
-	assert.NotEqual(t, nil, id)
+	c.Assert(id, Not(IsNil))	// NOT
 	n, err2 := NewNewNode(id)
-	assert.NotEqual(t, nil, n)
-	assert.Equal(t, nil, err2)
+	c.Assert(n, Not(IsNil))	// NOT
+	c.Assert(err2, IsNil)
 	actualID := n.GetNodeID()
-	assert.Equal(t, true, id.Equal(actualID))
-	doKeyTests(t, n, rng)
-	assert.Equal(t, 0, (*n).SizePeers())
-	assert.Equal(t, 0, (*n).SizeOverlays())
-	assert.Equal(t, 0, n.SizeConnections())
+	c.Assert(true, Equals, id.Equal(actualID))
+	s.doKeyTests(c, n, rng)
+	c.Assert(0, Equals, (*n).SizePeers())
+	c.Assert(0, Equals, (*n).SizeOverlays())
+	c.Assert(0, Equals, n.SizeConnections())
 }
 
-func TestNewCtor(t *testing.T) {
+//func TestNewCtor(t *testing.T) {
+func (s *XLSuite)TestNewCtor(c *C) {
 	// rng := MakeRNG()
 
 	// if  constructor assigns a nil NodeID, we should get an
