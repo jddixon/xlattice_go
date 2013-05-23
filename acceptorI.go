@@ -23,9 +23,9 @@ package xlattice_go
  *
  * @author Jim Dixon
  */
-type Acceptor interface {
-	Accept() (c Connection, e error) // throws IOException;
-	Close() (e error)                // throws IOException
+type AcceptorI interface {
+	Accept() (c ConnectionI, e error) // throws IOException;
+	Close() (e error)                 // throws IOException
 	IsClosed() bool
-	GetEndPoint() EndPoint
+	GetEndPoint() *EndPointI
 }

@@ -1,8 +1,6 @@
 package overlay
 
-import (
-	x "github.com/jddixon/xlattice_go"
-)
+import ()
 
 /**
  * A Overlay is characterized by an address space, a transport protocol,
@@ -25,13 +23,13 @@ import (
  */
 
 type Overlay struct {
-	name      string       // eg "eu-west-1.compute.amazonaws.com"
-	addrRange *x.AddrRange // eg 10/8 in ipv4
-	transport string       // eg "tcpip"
+	name      string     // eg "eu-west-1.compute.amazonaws.com"
+	addrRange *AddrRange // eg 10/8 in ipv4		XXX THIS IS AN ERROR
+	transport string     // eg "tcpip"
 	cost      float32
 }
 
-func NewOverlay(name string, addrRange *x.AddrRange, transport string, cost float32) (*Overlay, error) {
+func NewOverlay(name string, addrRange *AddrRange, transport string, cost float32) (*Overlay, error) {
 	// XXX validate the parameters, please
 
 	return &Overlay{name, addrRange, transport, cost}, nil

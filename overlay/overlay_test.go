@@ -10,8 +10,11 @@ import (
 
 // gocheck tie-in /////////////////////
 func Test(t *testing.T) { TestingT(t) }
-type XLSuite struct {}
-var _ = Suite(&XLSuite{}) 
+
+type XLSuite struct{}
+
+var _ = Suite(&XLSuite{})
+
 // end gocheck setup //////////////////
 
 func (s *XLSuite) TestCtor(c *C) {

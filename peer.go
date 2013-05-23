@@ -8,17 +8,17 @@ import "errors"
 
 type Peer struct {
 	nodeID     *NodeID
-	pubkey     *PublicKey
-	overlays   []*Overlay
-	connectors []*Connector
+	pubkey     *PublicKeyI
+	overlays   []*OverlayI
+	connectors []*ConnectorI
 }
 
 func NewNewPeer(id *NodeID) (*Peer, error) {
 	return NewPeer(id, nil, nil, nil)
 }
 
-func NewPeer(id *NodeID, k *PublicKey, o *[]*Overlay,
-	c *[]*Connector) (*Peer, error) {
+func NewPeer(id *NodeID, k *PublicKeyI, o *[]*OverlayI,
+	c *[]*ConnectorI) (*Peer, error) {
 
 	// IDENTITY /////////////////////////////////////////////////////
 	if id == nil {
@@ -27,14 +27,14 @@ func NewPeer(id *NodeID, k *PublicKey, o *[]*Overlay,
 	}
 	nodeID := (*id).Clone()
 	pubkey := k
-	var overlays []*Overlay // an empty slice
+	var overlays []*OverlayI // an empty slice
 	if o != nil {
 		count := len(*o)
 		for i := 0; i < count; i++ {
 			overlays = append(overlays, (*o)[i])
 		}
 	} // FOO
-	var ctors []*Connector // another empty slice
+	var ctors []*ConnectorI // another empty slice
 	if c != nil {
 		count := len(*c)
 		for i := 0; i < count; i++ {
@@ -51,13 +51,15 @@ func NewPeer(id *NodeID, k *PublicKey, o *[]*Overlay,
 func (p *Peer) GetNodeID() *NodeID {
 	return p.nodeID
 }
-func (p *Peer) GetPublicKey() *PublicKey {
+func (p *Peer) GetPublicKeyI() *PublicKeyI {
 	return p.pubkey
 }
-func (p *Peer) SetPublicKey(k *PublicKey) error {
+
+// XXX Is this a good idea ??
+func (p *Peer) SetPublicKeyI(k *PublicKeyI) error {
 	err := error(nil)
 	if k == nil {
-		err = errors.New("IllegalArgument: nil PublicKey")
+		err = errors.New("IllegalArgument: nil PublicKeyI")
 	} else {
 		p.pubkey = k
 	}
@@ -65,9 +67,9 @@ func (p *Peer) SetPublicKey(k *PublicKey) error {
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (p *Peer) addOverlay(o *Overlay) error {
+func (p *Peer) addOverlayI(o *OverlayI) error {
 	if o == nil {
-		return errors.New("IllegalArgument: nil Overlay")
+		return errors.New("IllegalArgument: nil OverlayI")
 	}
 	p.overlays = append(p.overlays, o)
 	return nil
@@ -82,12 +84,12 @@ func (p *Peer) sizeOverlays() int {
 }
 
 /** @return how to access the peer (transport, protocol, address) */
-func (p *Peer) GetOverlay(n int) *Overlay {
+func (p *Peer) GetOverlay(n int) *OverlayI {
 	return p.overlays[n]
 }
 
 // CONNECTORS ///////////////////////////////////////////////////////
-func (p *Peer) addConnector(c *Connector) error {
+func (p *Peer) addConnector(c *ConnectorI) error {
 	if c == nil {
 		return errors.New("IllegalArgument: nil Connector")
 	}
@@ -110,7 +112,7 @@ func (p *Peer) SizeConnectors() int {
  *
  * @return the Nth Connector
  */
-func (p *Peer) GetConnector(n int) *Connector {
+func (p *Peer) GetConnector(n int) *ConnectorI {
 	return p.connectors[n]
 }
 

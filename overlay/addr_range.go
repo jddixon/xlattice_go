@@ -1,6 +1,6 @@
-package xlattice_go
+package overlay
 
-// xlattice_go/addr_range.go
+// xlattice_go/overlay/addr_range.go
 
 import (
 	"errors"

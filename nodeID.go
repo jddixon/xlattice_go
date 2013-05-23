@@ -118,6 +118,6 @@ func (n *NodeID) Value() []byte {
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////
-// func (n *NodeID) ToString() string {
-//
-// }
+func (n *NodeID) String() string {
+	return "NOT IMPLEMENTED"
+}

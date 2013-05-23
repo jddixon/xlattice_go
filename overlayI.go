@@ -1,5 +1,7 @@
 package xlattice_go
 
+// xlattice_go/overlayI.go
+
 /**
  * A Overlay is characterized by an address space, a transport protocol,
  * and possibly a set of rules for navigating the address space using
@@ -20,10 +22,11 @@ package xlattice_go
  *
  */
 
-type Overlay interface {
-	Name() string         // for example, "eu-west-1.compute.amazonaws.com"
-	AddrRange() AddrRange // eg 10/8 in ipv4
-	Transport() string    // eg "tcpip"
+type OverlayI interface {
+	Name() string //  "eu-west-1.compute.amazonaws.com"
+	IsElement(*EndPointI) bool
+	Transport() string // eg "tcpip"
 	Cost() float32
 	Equal(any interface{}) bool
+	String() string
 }

@@ -8,8 +8,8 @@ import (
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	. "github.com/jddixon/xlattice_go/rnglib"
-	"strings"
 	. "launchpad.net/gocheck"
+	"strings"
 	// "github.com/bmizerany/assert"
 	// "testing"
 )
@@ -28,7 +28,7 @@ func makeNodeID(rng *SimpleRNG) *NodeID {
 // func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 func (s *XLSuite) doKeyTests(c *C, node *Node, rng *SimpleRNG) {
 	pubkey := node.GetPublicKey()
-	c.Assert(pubkey, Not(IsNil))	// NOT
+	c.Assert(pubkey, Not(IsNil)) // NOT
 
 	privkey := node.key // naughty
 	c.Assert(privkey.Validate(), IsNil)
@@ -78,7 +78,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *SimpleRNG) {
 func (s *XLSuite) nilArgCheck(c *C) {
 	defer func() {
 		r := recover()
-		c.Assert(r, Not(IsNil))	// NOT
+		c.Assert(r, Not(IsNil)) // NOT
 		str := r.(string)
 		c.Assert(true, Equals, strings.HasPrefix(str, "IllegalArgument"))
 	}()
@@ -90,15 +90,15 @@ func (s *XLSuite) nilArgCheck(c *C) {
 // END OF TODO
 
 // func TestNewNew(t *testing.T) {
-func (s *XLSuite)TestNewNew(c *C) {
+func (s *XLSuite) TestNewNew(c *C) {
 	rng := MakeRNG()
 	_, err := NewNewNode(nil)
-	c.Assert(err, Not(IsNil))	// NOT
+	c.Assert(err, Not(IsNil)) // NOT
 
 	id := makeNodeID(rng)
-	c.Assert(id, Not(IsNil))	// NOT
+	c.Assert(id, Not(IsNil)) // NOT
 	n, err2 := NewNewNode(id)
-	c.Assert(n, Not(IsNil))	// NOT
+	c.Assert(n, Not(IsNil)) // NOT
 	c.Assert(err2, IsNil)
 	actualID := n.GetNodeID()
 	c.Assert(true, Equals, id.Equal(actualID))
@@ -109,7 +109,7 @@ func (s *XLSuite)TestNewNew(c *C) {
 }
 
 //func TestNewCtor(t *testing.T) {
-func (s *XLSuite)TestNewCtor(c *C) {
+func (s *XLSuite) TestNewCtor(c *C) {
 	// rng := MakeRNG()
 
 	// if  constructor assigns a nil NodeID, we should get an

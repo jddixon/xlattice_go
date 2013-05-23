@@ -11,10 +11,12 @@ import (
 
 // gocheck tie-in /////////////////////
 func Test(t *testing.T) { TestingT(t) }
-type XLSuite struct {}
-var _ = Suite(&XLSuite{}) 
-// end gocheck setup //////////////////
 
+type XLSuite struct{}
+
+var _ = Suite(&XLSuite{})
+
+// end gocheck setup //////////////////
 
 // copied here from ../make_rng.go ////
 func MakeRNG() *SimpleRNG {
@@ -22,6 +24,7 @@ func MakeRNG() *SimpleRNG {
 	rng := NewSimpleRNG(t)
 	return rng
 }
+
 // end copied /////////////////////////
 
 const TMP_DIR = "tmp"
@@ -37,12 +40,12 @@ func (s *XLSuite) MakeRNG() *SimpleRNG {
 }
 func (s *XLSuite) TestConstuctor(c *C) {
 	rng := MakeRNG()
-	c.Assert(rng, Not(IsNil))		// NOT 
+	c.Assert(rng, Not(IsNil)) // NOT
 }
 func (s *XLSuite) TestNextBoolean(c *C) {
 	rng := MakeRNG()
 	val := rng.NextBoolean()
-	c.Assert(val, Not(IsNil))		// NOT 
+	c.Assert(val, Not(IsNil)) // NOT
 
 	valAsIface := interface{}(val)
 	switch v := valAsIface.(type) {
@@ -60,10 +63,10 @@ func (s *XLSuite) TestNextBytes(c *C) {
 	rng := MakeRNG()
 	count := uint32(1)          // minimum length of buffer
 	count += rng.NextInt32(256) // maximum
-	data := s.buildData(count)    // so 1 .. 256 bytes
+	data := s.buildData(count)  // so 1 .. 256 bytes
 	rng.NextBytes(data)
 	actualLen := uint32(len(*data))
-	c.Assert(0, Not(Equals), actualLen)		// NOT 
+	c.Assert(0, Not(Equals), actualLen) // NOT
 	c.Assert(actualLen, Equals, count)
 
 }
@@ -76,7 +79,7 @@ func (s *XLSuite) TestNextFileName(c *C) {
 	fmt.Printf("next file name is %s\n", name)
 	// END
 	actualLen := len(name)
-	c.Assert(0, Not(Equals), actualLen)		// NOT 
+	c.Assert(0, Not(Equals), actualLen) // NOT
 	// assert.True( t, actualLen < maxLen)
 }
 func (s *XLSuite) TestNextDataFile(c *C) {

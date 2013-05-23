@@ -70,7 +70,7 @@ const CONNECTED = 400
 /** connection has been closed */
 const DISCONNECTED = 500
 
-type Connection interface {
+type ConnectionI interface {
 
 	/**
 	 * Return the current state index.  In the current implementation,
@@ -87,7 +87,7 @@ type Connection interface {
 	 * cause an exception.  If successful, the connection's
 	 * state becomes BOUND.
 	 */
-	BindNearEnd(e *EndPoint) (err error) // throws IOException
+	BindNearEnd(e *EndPointI) (err error) // throws IOException
 
 	/**
 	 * Set the far end point of a connection.  If the near end
@@ -100,7 +100,7 @@ type Connection interface {
 	 * XXX The state should become CONNECTED if the far end is on
 	 * XXX the same host and PENDING if it is on a remoted host.
 	 */
-	BindFarEnd(e *EndPoint) (err error) // throws IOException
+	BindFarEnd(e *EndPointI) (err error) // throws IOException
 
 	/**
 	 * Bring the connection to the DISCONNECTED state.
@@ -116,9 +116,9 @@ type Connection interface {
 	IsClosed() bool
 
 	// END POINTS ///////////////////////////////////////////////////
-	GetNearEnd() *EndPoint
+	GetNearEnd() *EndPointI
 
-	GetFarEnd() *EndPoint
+	GetFarEnd() *EndPointI
 
 	// I/O //////////////////////////////////////////////////////////
 	IsBlocking() bool
@@ -143,7 +143,7 @@ type Connection interface {
 	 * @param myKey  this Node's asymmetric key
 	 * @param hisKey Peer's public key
 	 */
-	Negotiate(myKey Key, hisKey PublicKey) (s Secret, e error)
+	Negotiate(myKey KeyI, hisKey PublicKeyI) (s SecretI, e error)
 	// throws CryptoException
 
 	Equal(any interface{}) bool

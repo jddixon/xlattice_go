@@ -1,6 +1,6 @@
 package xlattice_go
 
-type PublicKey interface {
+type PublicKeyI interface {
 	Equal(any interface{}) bool
-	ToString() string
+	String() string
 }

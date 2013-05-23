@@ -8,8 +8,11 @@ import (
 
 // gocheck tie-in /////////////////////
 func Test(t *testing.T) { TestingT(t) }
-type XLSuite struct {}
-var _ = Suite(&XLSuite{}) 
+
+type XLSuite struct{}
+
+var _ = Suite(&XLSuite{})
+
 // end gocheck setup //////////////////
 
 func (s *XLSuite) TestBadNodeIDs(c *C) {
@@ -21,7 +24,7 @@ func (s *XLSuite) TestBadNodeIDs(c *C) {
 	candidate = make([]byte, SHA1_LEN+1)
 	c.Assert(false, Equals, IsValidID(candidate))
 	candidate = make([]byte, SHA3_LEN)
-	c.Assert(true, Equals, IsValidID(candidate))		// FOO
+	c.Assert(true, Equals, IsValidID(candidate)) // FOO
 }
 func (s *XLSuite) TestThisAndThat(c *C) {
 	rng := MakeRNG()
@@ -31,18 +34,18 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 	rng.NextBytes(&v2)
 	id1 := NewNodeID(v1)
 	id2 := NewNodeID(v2)
-	c.Assert(id1, Not(Equals), id2)	
+	c.Assert(id1, Not(Equals), id2)
 
 	v1a := id1.Value()
 	v2a := id2.Value()
 
 	// XXX gocheck cannot handle these comparisons
 	// c.Assert(v1, Not(DeepEquals), v1a)				// 'Deep' is for desperation
-	// c.Assert(v2, Not(Equals), v2a)	
+	// c.Assert(v2, Not(Equals), v2a)
 
 	// XXX not sure that gocheck results are meaningful
-	c.Assert(&v1, Not(Equals), &v1a)	
-	c.Assert(&v2, Not(Equals), &v2a)	
+	c.Assert(&v1, Not(Equals), &v1a)
+	c.Assert(&v2, Not(Equals), &v2a)
 
 	c.Assert(SHA1_LEN, Equals, len(v1a))
 	c.Assert(SHA1_LEN, Equals, len(v2a))
@@ -50,9 +53,9 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 		c.Assert(v1[i], Equals, v1a[i])
 		c.Assert(v2[i], Equals, v2a[i])
 	}
-	c.Assert(false,	Equals,	id1.Equal(nil))
-	c.Assert(true,	Equals, id1.Equal(id1))
-	c.Assert(false, Equals, id1.Equal(id2))				// FOO
+	c.Assert(false, Equals, id1.Equal(nil))
+	c.Assert(true, Equals, id1.Equal(id1))
+	c.Assert(false, Equals, id1.Equal(id2)) // FOO
 }
 
 func (s *XLSuite) TestComparator(c *C) {
@@ -95,7 +98,7 @@ func (s *XLSuite) TestComparator(c *C) {
 	c.Assert(err, IsNil)
 
 	result, err = id1.Compare(nil) // nil comparand
-	c.Assert(err, Not(IsNil))	// NOT
+	c.Assert(err, Not(IsNil))      // NOT
 
 	result, err = id1.Compare(id3)
 	c.Assert(err, Not(IsNil)) // different lengths	// NOT

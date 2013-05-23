@@ -21,10 +21,10 @@ type Node struct {
 	nodeID      *NodeID         // public
 	key         *rsa.PrivateKey // private
 	pubkey      *rsa.PublicKey  // public
-	endPoints   []*EndPoint
-	overlays    []*Overlay
+	endPoints   []*EndPointI
+	overlays    []*OverlayI
 	peers       []*Peer
-	connections []*Connection
+	connections []*ConnectionI
 }
 
 func NewNewNode(id *NodeID) (*Node, error) {
@@ -32,8 +32,8 @@ func NewNewNode(id *NodeID) (*Node, error) {
 	return NewNode(id, nil, nil, nil, nil)
 }
 
-func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
-	c *[]*Connection) (*Node, error) {
+func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPointI, p *[]*Peer,
+	c *[]*ConnectionI) (*Node, error) {
 
 	if id == nil {
 		err := errors.New("IllegalArgument: nil NodeID")
@@ -54,8 +54,8 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
 		key = k
 	}
 
-	var endPoints []*EndPoint // an empty slice
-	var overlays []*Overlay
+	var endPoints []*EndPointI // an empty slice
+	var overlays []*OverlayI
 	if e != nil {
 		count := len(*e)
 		for i := 0; i < count; i++ {
@@ -71,7 +71,7 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
 			peers = append(peers, (*p)[i])
 		}
 	} // FOO
-	var cnxs []*Connection // another empty slice
+	var cnxs []*ConnectionI // another empty slice
 	if c != nil {
 		count := len(*c)
 		for i := 0; i < count; i++ {
@@ -108,7 +108,7 @@ func (n *Node) getSigner() *signer {
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (n *Node) addOverlay(o *Overlay) error {
+func (n *Node) addOverlay(o *OverlayI) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil Overlay")
 	}
@@ -125,7 +125,7 @@ func (n *Node) SizeOverlays() int {
 }
 
 /** @return how to access the peer (transport, protocol, address) */
-func (n *Node) GetOverlay(x int) *Overlay {
+func (n *Node) GetOverlay(x int) *OverlayI {
 	return n.overlays[x]
 }
 
@@ -149,9 +149,9 @@ func (n *Node) GetPeer(x int) *Peer {
 }
 
 // CONNECTORS ///////////////////////////////////////////////////////
-func (n *Node) addConnection(c *Connection) error {
+func (n *Node) addConnectionI(c *ConnectionI) error {
 	if c == nil {
-		return errors.New("IllegalArgument: nil Connection")
+		return errors.New("IllegalArgument: nil ConnectionI")
 	}
 	n.connections = append(n.connections, c)
 	return nil
@@ -163,16 +163,16 @@ func (n *Node) SizeConnections() int {
 }
 
 /**
- * Return a Connection, an Address-Protocol pair identifying
+ * Return a ConnectionI, an Address-Protocol pair identifying
  * an Acceptor for the Peer.  Connections are arranged in order
- * of preference, with the zero-th Connection being the most
+ * of preference, with the zero-th ConnectionI being the most
  * preferred.
  *
  * XXX Could as easily return an EndPoint.
  *
  * @return the Nth Connection
  */
-func (n *Node) GetConnection(x int) *Connection {
+func (n *Node) GetConnection(x int) *ConnectionI {
 	return n.connections[x]
 }
 
@@ -185,12 +185,12 @@ func (n *Node) Equal(any interface{}) bool {
 		return false
 	}
 	switch v := any.(type) {
-	case Node:
+	case *Node:
 		_ = v
 	default:
 		return false
 	}
-	other := any.(Node) // type assertion
+	other := any.(*Node) // type assertion
 	// THINK ABOUT publicKey.equals(any.publicKey)
 	if n.nodeID == other.nodeID {
 		return true
