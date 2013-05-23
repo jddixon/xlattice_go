@@ -1,0 +1,26 @@
+2013-05-23
+
+CONVENTIONS FOR INTERFACE AND FILE NAMES
+
+1   Top-level interface definitions have names ending in 'I' and
+    are in similarly named files.  So the acceptor abstraction is
+    defined as an interface named AcceportL and stored in a file
+    acceptorL.go.
+
+2   Implementations for interfaces are in subdirectories.  These
+    may have the base name as the interface.  So for example 
+    there is an overlay/ subdirectory.
+
+3   Lower level abstractions follow the same pattern.  So IP overlays
+    have an interface named IPOverlayL.  File names are generally
+    camel-cased but shortened where possible, so this is defined in 
+    overlay/ip_overlayL.go.  IP v4 overlay implementations will be defined 
+    below that, so the file structure includes
+        xlattice_go
+            overlayI.go                 // interface
+            overlay/
+                overlay.go              // Overlay struct
+                ip_overlaysI.go         // interface
+                ip/
+                    v4/
+
