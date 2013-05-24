@@ -21,7 +21,7 @@ type Node struct {
 	nodeID      *NodeID         // public
 	key         *rsa.PrivateKey // private
 	pubkey      *rsa.PublicKey  // public
-	endPoints   []*EndPointI
+	endPoints   []*EndPoint
 	overlays    []*OverlayI
 	peers       []*Peer
 	connections []*ConnectionI
@@ -32,7 +32,7 @@ func NewNewNode(id *NodeID) (*Node, error) {
 	return NewNode(id, nil, nil, nil, nil)
 }
 
-func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPointI, p *[]*Peer,
+func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
 	c *[]*ConnectionI) (*Node, error) {
 
 	if id == nil {
@@ -54,7 +54,7 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPointI, p *[]*Peer,
 		key = k
 	}
 
-	var endPoints []*EndPointI // an empty slice
+	var endPoints []*EndPoint // an empty slice
 	var overlays []*OverlayI
 	if e != nil {
 		count := len(*e)
@@ -207,6 +207,9 @@ func (n *Node) Equal(any interface{}) bool {
 	}
 	return false
 }
+func (n *Node) String() string {
+	return "NOT IMPLEMENTED"
+}
 
 // DIG SIGNER ///////////////////////////////////////////////////////
 
@@ -236,4 +239,8 @@ func (s *signer) Sign() ([]byte, error) {
 	h := s.digest.Sum(nil)
 	sig, err := rsa.SignPKCS1v15(rand.Reader, s.key, crypto.SHA1, h)
 	return sig, err
+}
+
+func (s *signer) String() string {
+	return "NOT IMPLEMENTED"
 }

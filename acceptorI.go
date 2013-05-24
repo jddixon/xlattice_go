@@ -1,8 +1,5 @@
 package xlattice_go
 
-//import java.io.IOException
-// import java.nio.channels.SelectableChannel
-
 /**
  * An Acceptor is used by a Node or Peer to accept connection requests.
  * It is an advertisement for a service within a Overlay, that is,
@@ -24,8 +21,9 @@ package xlattice_go
  * @author Jim Dixon
  */
 type AcceptorI interface {
-	Accept() (c ConnectionI, e error) // throws IOException;
-	Close() (e error)                 // throws IOException
+	Accept() (ConnectionI, error)
+	Close() error
 	IsClosed() bool
-	GetEndPoint() *EndPointI
+	GetEndPoint() *EndPoint
+	String() string
 }

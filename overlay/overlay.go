@@ -43,3 +43,6 @@ func (o *Overlay) Equal(any interface{}) bool {
 	// XXX STUB XXX
 	return false
 }
+func (o *Overlay) String() string {
+	return "NOT IMPLEMENTED"
+}

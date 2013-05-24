@@ -2,6 +2,7 @@ package xlattice_go
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 )
 
@@ -119,5 +120,5 @@ func (n *NodeID) Value() []byte {
 
 // SERIALIZATION ////////////////////////////////////////////////////
 func (n *NodeID) String() string {
-	return "NOT IMPLEMENTED"
+	return hex.EncodeToString(n._nodeID)
 }

@@ -1,9 +1,5 @@
 package xlattice_go
 
-//import java.io.InputStream;
-//import java.io.IOException;
-//import java.io.OutputStream;
-
 /**
  * A Connection is a relationship between two EndPoints.  In XLattice,
  * one *EndPoint will have an Address on this Node.  The other EndPoint
@@ -87,7 +83,7 @@ type ConnectionI interface {
 	 * cause an exception.  If successful, the connection's
 	 * state becomes BOUND.
 	 */
-	BindNearEnd(e *EndPointI) (err error) // throws IOException
+	BindNearEnd(e *EndPoint) (err error) // throws IOException
 
 	/**
 	 * Set the far end point of a connection.  If the near end
@@ -100,7 +96,7 @@ type ConnectionI interface {
 	 * XXX The state should become CONNECTED if the far end is on
 	 * XXX the same host and PENDING if it is on a remoted host.
 	 */
-	BindFarEnd(e *EndPointI) (err error) // throws IOException
+	BindFarEnd(e *EndPoint) (err error) // throws IOException
 
 	/**
 	 * Bring the connection to the DISCONNECTED state.
@@ -116,9 +112,9 @@ type ConnectionI interface {
 	IsClosed() bool
 
 	// END POINTS ///////////////////////////////////////////////////
-	GetNearEnd() *EndPointI
+	GetNearEnd() *EndPoint
 
-	GetFarEnd() *EndPointI
+	GetFarEnd() *EndPoint
 
 	// I/O //////////////////////////////////////////////////////////
 	IsBlocking() bool
@@ -147,4 +143,5 @@ type ConnectionI interface {
 	// throws CryptoException
 
 	Equal(any interface{}) bool
+	String() string
 }

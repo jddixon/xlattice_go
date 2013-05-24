@@ -7,4 +7,5 @@ type SigVerifierI interface {
 	Init(PublicKeyI)
 	Update([]byte)
 	Verify([]byte) bool
+	String() string
 }

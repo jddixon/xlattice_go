@@ -147,3 +147,6 @@ func (p *Peer) Equal(any interface{}) bool {
 	}
 	return false
 }
+func (p *Peer) String() string {
+	return "NOT IMPLEMENTED"
+}

@@ -8,4 +8,5 @@ type DigSignerI interface {
 	Update([]byte)
 	// Generates a digital signature and implicitly resets.
 	Sign() []byte
+	String() string
 }

@@ -24,7 +24,7 @@ package xlattice_go
 
 type OverlayI interface {
 	Name() string //  "eu-west-1.compute.amazonaws.com"
-	IsElement(*EndPointI) bool
+	IsElement(*EndPoint) bool
 	Transport() string // eg "tcpip"
 	Cost() float32
 	Equal(any interface{}) bool

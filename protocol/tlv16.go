@@ -10,7 +10,11 @@ package protocol
  * @author Jim Dixon
  */
 
-import "errors"
+import (
+	"encoding/hex"
+	"errors"
+	"fmt"
+)
 
 type TLV16 struct {
 	_type  uint16  // final
@@ -96,4 +100,11 @@ func (p *TLV16) Encode(buffer *[]byte, offset uint16) uint16 {
 		(*buffer)[offset+i] = (*p.value)[i]
 	}
 	return offset + p.length
+}
+
+// Returns the TLV16 in human-readable form
+func (p *TLV16) String() string {
+	// XXX a waste of time?
+	h := hex.EncodeToString(*p.value)
+	return fmt.Sprintf("%d: [%d]%s", p._type, p.length, h)
 }

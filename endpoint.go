@@ -10,29 +10,29 @@ import (
  * Address includes the IP address and the port number.
  */
 
-type EndPointI struct {
+type EndPoint struct {
 	transport *TransportI
 	address   *AddressI
 }
 
-func NewEndPointI(t *TransportI, a *AddressI) *EndPointI {
+func NewEndPoint(t *TransportI, a *AddressI) *EndPoint {
 	// XXX need some checks
-	return &EndPointI{t, a}
+	return &EndPoint{t, a}
 }
 
-func (e *EndPointI) getAddress() *AddressI {
+func (e *EndPoint) getAddress() *AddressI {
 	return e.address
 }
 
-func (e *EndPointI) getTransport() *TransportI {
+func (e *EndPoint) getTransport() *TransportI {
 	return e.transport
 }
 
-// func (e *EndPointI) clone() *EndPointI {
+// func (e *EndPoint) clone() *EndPoint {
 //     NOT IMPLEMENTED
 // }
 
-func (e *EndPointI) String() string {
+func (e *EndPoint) String() string {
 	// e.transport is a pointer to something that satisfies
 	//   the Transport interface and similarly for e.address
 	var parts = []string{(*e.transport).String(), " ", (*e.address).String()}

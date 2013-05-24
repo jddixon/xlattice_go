@@ -3,7 +3,9 @@ package overlay
 // xlattice_go/overlay/addr_range.go
 
 import (
+	"encoding/hex"
 	"errors"
+	"fmt"
 )
 
 // An address range as the term is used in XLattice and on the global
@@ -30,4 +32,8 @@ func NewAddrRange(prefix []byte, prefixLen uint, addrLen uint) (*AddrRange, erro
 
 	return &AddrRange{prefix, prefixLen, addrLen}, nil
 
+}
+func (r *AddrRange) String() string {
+	// XXX SOMETHING OF A HACK, because the AddrLen is absent
+	return fmt.Sprintf("%s/%u", hex.EncodeToString(r.Prefix), r.PrefixLen)
 }

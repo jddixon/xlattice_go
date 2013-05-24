@@ -1,7 +1,5 @@
 package xlattice_go
 
-// import java.io.IOException
-
 /**
  * Used to establish a Connection with another entity (Node).
  *
@@ -19,12 +17,13 @@ type ConnectorI interface {
 	 * @param nearEnd  local end point to use for connection
 	 * @param blocking whether the new Connection is to be blocking
 	 */
-	Connect(near *EndPointI, blocking bool) (
+	Connect(near *EndPoint, blocking bool) (
 		c ConnectionI, e error) // throws IOException
 
 	/**
 	 * @return the Acceptor EndPoint that this Connector is used to
 	 *          establish connections to
 	 */
-	GetFarEnd() *EndPointI
+	GetFarEnd() *EndPoint
+	String() string
 }
