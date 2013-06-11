@@ -27,7 +27,7 @@ func FILE_NAME_CHARS() []string {
 type RNG interface {
 	Seed(seed int64)
 	NextBool()
-	NextByte() // is this signed?
+	NextByte()
 	NextBytes([]byte)
 	NextInt32(uint32)
 	NextInt64(uint64)
