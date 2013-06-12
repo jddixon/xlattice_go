@@ -26,14 +26,17 @@ func FILE_NAME_CHARS() []string {
 
 type RNG interface {
 	Seed(seed int64)
-	NextBool()
-	NextByte()
+	NextBool() bool
+	NextByte() byte
 	NextBytes([]byte)
-	NextInt32(uint32)
-	NextInt64(uint64)
-	NextFloat32()
-	NextFloat64()
-	NextFileName(int)
+	// XXX naming of next two ?
+	NextInt32(uint32) uint32
+	NextInt64(uint64) uint64
+	NextFloat32() float32
+	NextFloat64() float64
+	NextFileName(int) string
+	NextDataFile(string, int, int) (int, string)
+	NextDataDir(string, int, int, int, int)
 }
 
 type SimpleRNG struct {
