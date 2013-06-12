@@ -1,14 +1,12 @@
 package rnglib
 
-// The 64-bit MT test code, copyright notice removed.
+// This is the original Hiroshima test hacked into Go -- and so
+// doesn't actually do any useful unit tests.
 
 import (
 	"fmt"
 	. "launchpad.net/gocheck"
 )
-
-// This is the original Hiroshima test hacked into Go -- and so
-// doesn't actually do any useful unit tests.
 
 func (s *XLSuite) TestMT64(c *C) {
 	var (

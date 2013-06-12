@@ -24,19 +24,25 @@ func FILE_NAME_CHARS() []string {
 	return _FILE_NAME_CHARS
 }
 
-type RNG interface {
-	Seed(seed int64)
-	NextBool() bool
-	NextByte() byte
-	NextBytes([]byte)
-	// XXX naming of next two ?
-	NextInt32(uint32) uint32
-	NextInt64(uint64) uint64
-	NextFloat32() float32
-	NextFloat64() float64
-	NextFileName(int) string
-	NextDataFile(string, int, int) (int, string)
-	NextDataDir(string, int, int, int, int)
+//type RNG interface {
+//	Seed(seed int64)
+//	NextBool() bool
+//	NextByte() byte
+//	NextBytes([]byte)
+//	// XXX naming of next two ?
+//	NextInt32(uint32) uint32
+//	NextInt64(uint64) uint64
+//	NextFloat32() float32
+//	NextFloat64() float64
+//	NextFileName(int) string
+//	NextDataFile(string, int, int) (int, string)
+//	NextDataDir(string, int, int, int, int)
+//} // GEEP
+
+func NewSource(seed int64) rand.Source {
+	var mt64 MT64
+	mt64.Seed(seed)
+	return &mt64
 }
 
 type SimpleRNG struct {
@@ -45,7 +51,7 @@ type SimpleRNG struct {
 
 func NewSimpleRNG(seed int64) *SimpleRNG {
 	s := new(SimpleRNG) // allocates
-	src := rand.NewSource(seed)
+	src := NewSource(seed)
 	s.rng = rand.New(src)
 	s.Seed(seed)
 	return s
@@ -54,6 +60,20 @@ func NewSimpleRNG(seed int64) *SimpleRNG {
 func (s *SimpleRNG) Seed(seed int64) {
 	s.rng.Seed(seed)
 }
+
+// expose the rand.Random interface /////////////////////////////////
+func (s *SimpleRNG) Int63() int64         { return s.rng.Int63() }
+func (s *SimpleRNG) Uint32() uint32       { return s.rng.Uint32() }
+func (s *SimpleRNG) Int31() int32         { return s.rng.Int31() }
+func (s *SimpleRNG) Int() int             { return s.rng.Int() }
+func (s *SimpleRNG) Int63n(n int64) int64 { return s.rng.Int63n(n) }
+func (s *SimpleRNG) Int31n(n int32) int32 { return s.rng.Int31n(n) }
+func (s *SimpleRNG) Intn(n int) int       { return s.rng.Intn(n) }
+func (s *SimpleRNG) Float64() float64     { return s.rng.Float64() }
+func (s *SimpleRNG) Float32() float32     { return s.rng.Float32() }
+func (s *SimpleRNG) Perm(n int) []int     { return s.rng.Perm(n) }
+
+// SimpleRNG functions //////////////////////////////////////////////
 func (s *SimpleRNG) NextBoolean() bool {
 	return s.rng.Int63()%2 == 0
 }

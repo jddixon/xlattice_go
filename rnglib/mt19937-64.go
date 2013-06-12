@@ -63,8 +63,6 @@ func (m *MT64) init_by_array64(init_key []uint64, key_length uint64) {
 	m.mt[0] = uint64(1) << 63 // MSB is 1; assuring non-zero initial array
 }
 
-// WORKING HERE: s/mt/m.mt/g
-
 /* generates a random number on [0, 2^64-1]-interval */
 func (m *MT64) genrand64_int64() uint64 {
 	var (
@@ -124,4 +122,13 @@ func (m *MT64) genrand64_real2() float64 {
 /* generates a random number on (0,1)-real-interval */
 func (m *MT64) genrand64_real3() float64 {
 	return (float64(m.genrand64_int64()>>12) + 0.5) * (1.0 / 4503599627370496.0)
+}
+
+// rand.Source interface ////////////////////////////////////////////
+
+func (m *MT64) Seed(seed int64) {
+	m.init_genrand64(uint64(seed))
+}
+func (m *MT64) Int63() int64 {
+	return int64(m.genrand64_int63())
 }
