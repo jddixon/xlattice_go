@@ -5,23 +5,23 @@ import "os"
 import "math/rand"
 import "strings"
 
-func NewMTSource(seed int64) rand.Source {
-	var mt64 MT64
-	mt64.Seed(seed)
-	return &mt64
-}
-
 type PRNG struct {
 	rng *rand.Rand
 }
 
-func NewSimpleRNG(seed int64) *PRNG {
-	s := new(PRNG) // allocates
-	src := NewMTSource(seed)
-	s.rng = rand.New(src)
-	s.Seed(seed)
-	return s
-}
+//func NewMTSource(seed int64) rand.Source {
+//	var mt64 MT64
+//	mt64.Seed(seed)
+//	return &mt64
+//}
+//
+//func NewSimpleRNG(seed int64) *PRNG {
+//	s := new(PRNG) // allocates
+//	src := NewMTSource(seed)
+//	s.rng = rand.New(src)
+//	s.Seed(seed)
+//	return s
+//} // GEEP
 
 func (s *PRNG) Seed(seed int64) {
 	s.rng.Seed(seed)

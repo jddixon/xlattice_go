@@ -67,9 +67,6 @@ func (s *XLSuite) doTestNextFileName(c *C, rng *PRNG) {
 	maxLen := uint32(1)         // minimum length of name
 	maxLen += rng.NextInt32(16) // maximum
 	name := rng.NextFileName(int(maxLen))
-	// DEBUG
-	fmt.Printf("next file name is %s\n", name)
-	// END
 	actualLen := len(name)
 	c.Assert(0, Not(Equals), actualLen) // NOT
 	// assert.True( t, actualLen < maxLen)
@@ -80,9 +77,6 @@ func (s *XLSuite) doTestNextDataFile(c *C, rng *PRNG) {
 
 	// XXX should return err, which should be nil
 	fileLen, pathToFile := rng.NextDataFile(TMP_DIR, maxLen, minLen)
-	// DEBUG
-	fmt.Printf("data file is %s; size is %d\n", pathToFile, fileLen)
-	// END
 
 	stats, err := os.Stat(pathToFile)
 	c.Assert(err, IsNil)
