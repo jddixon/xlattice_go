@@ -47,22 +47,22 @@ func PathExists(path string) (bool, error) {
 //	NextFileName(int) string
 //	NextDataFile(string, int, int) (int, string)
 //	NextDataDir(string, int, int, int, int)
-//} 
+//}
 
 // import "os"
 // import "math/rand"
 // import "strings"
-// 
+//
 // func NewMTSource(seed int64) rand.Source {
 // 	var mt64 MT64
 // 	mt64.Seed(seed)
 // 	return &mt64
 // }
-// 
+//
 // type SimpleRNG struct {
 // 	rng *rand.Rand
 // }
-// 
+//
 // func NewSimpleRNG(seed int64) *SimpleRNG {
 // 	s := new(SimpleRNG) // allocates
 // 	src := NewMTSource(seed)
@@ -70,11 +70,11 @@ func PathExists(path string) (bool, error) {
 // 	s.Seed(seed)
 // 	return s
 // }
-// 
+//
 // func (s *SimpleRNG) Seed(seed int64) {
 // 	s.rng.Seed(seed)
 // }
-// 
+//
 // // expose the rand.Random interface /////////////////////////////////
 // func (s *SimpleRNG) Int63() int64         { return s.rng.Int63() }
 // func (s *SimpleRNG) Uint32() uint32       { return s.rng.Uint32() }
@@ -86,7 +86,7 @@ func PathExists(path string) (bool, error) {
 // func (s *SimpleRNG) Float64() float64     { return s.rng.Float64() }
 // func (s *SimpleRNG) Float32() float32     { return s.rng.Float32() }
 // func (s *SimpleRNG) Perm(n int) []int     { return s.rng.Perm(n) }
-// 
+//
 // // SimpleRNG functions //////////////////////////////////////////////
 // func (s *SimpleRNG) NextBoolean() bool {
 // 	return s.rng.Int63()%2 == 0
@@ -111,12 +111,12 @@ func PathExists(path string) (bool, error) {
 // func (s *SimpleRNG) NextFloat64() float64 {
 // 	return s.rng.Float64()
 // }
-// 
+//
 // // These produce strings which are acceptable POSIX file names.
 // // and also advance a cursor by a multiple of 64 bits.  All strings
 // // are at least one byte and less than maxLen bytes n length.  We
 // // arbitrarily limit file names to less than 256 characters.
-// 
+//
 // func (s *SimpleRNG) _nextFileName(nameLen int) string {
 // 	/* always returns at least one character */
 // 	maxStarterNdx := uint32(len(_FILE_NAME_STARTERS))
@@ -130,7 +130,7 @@ func PathExists(path string) (bool, error) {
 // 	}
 // 	return strings.Join(chars, "")
 // }
-// 
+//
 // func (s *SimpleRNG) NextFileName(maxLen int) string {
 // 	_maxLen := uint32(maxLen)
 // 	if _maxLen < 2 {
@@ -152,13 +152,13 @@ func PathExists(path string) (bool, error) {
 // 	}
 // 	return name
 // }
-// 
+//
 // // These are operations on the file system.  Directory depth is at least 1
 // // and no more than 'depth'.  Likewise for width, the number of
 // // files in a directory, where a file is either a data file or a subdirectory.
 // // The number of bytes in a file is at least minLen and less than maxLen.
 // // Subdirectory names may be random
-// 
+//
 // func (s *SimpleRNG) NextDataFile(dirName string, maxLen int, minLen int) (int, string) {
 // 	// silently convert paramaters to reasonable values
 // 	if minLen < 0 {
@@ -167,7 +167,7 @@ func PathExists(path string) (bool, error) {
 // 	if maxLen < minLen+1 {
 // 		maxLen = minLen + 1
 // 	}
-// 
+//
 // 	// create the data directory if it does not exist
 // 	dirExists, err := PathExists(dirName)
 // 	if err != nil {
@@ -176,7 +176,7 @@ func PathExists(path string) (bool, error) {
 // 	if !dirExists {
 // 		os.MkdirAll(dirName, 0755)
 // 	}
-// 
+//
 // 	// loop until the file does not exist
 // 	pathToFile := dirName + "/" + s.NextFileName(16)
 // 	pathExists, err := PathExists(pathToFile)
@@ -211,7 +211,7 @@ func PathExists(path string) (bool, error) {
 // 	// XXX respec to also return err
 // 	return count, pathToFile
 // }
-// 
+//
 // // NextDataDir creates a directory tree populated with data files.
 // //
 // // BUGS
@@ -220,7 +220,7 @@ func PathExists(path string) (bool, error) {
 // // DEFICIENCIES:
 // // * no control over percentage of directories
 // // * no guarantee that depth will be reached
-// 
+//
 // func (s *SimpleRNG) NextDataDir(pathToDir string, depth int, width int,
 // 	maxLen int, minLen int) {
 // 	// number of directory levels; 1 means no subdirectories

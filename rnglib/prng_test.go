@@ -9,22 +9,19 @@ import (
 	"time"
 )
 
-// SETUP FOR THIS PACKAGE (rnglib) ////
+// SETUP FOR THIS PACKAGE (rnglib) //////////////////////////////////
 const TMP_DIR = "tmp"
 
 // gocheck tie-in /////////////////////
 func Test(t *testing.T) { TestingT(t) }
-type XLSuite struct {}
+
+type XLSuite struct{}
+
 var _ = Suite(&XLSuite{})
+
 // end gocheck setup //////////////////
 
 // utility functions ////////////////////////////////////////////////
-func makeSimpleRNG() *PRNG {
-	t := time.Now().Unix()
-	rng := NewSimpleRNG(t)
-	return rng
-}
-
 func (s *XLSuite) buildData(count uint32) *[]byte {
 	p := make([]byte, count)
 	return &p
@@ -36,7 +33,7 @@ func (s *XLSuite) makeSimpleRNG() *PRNG {
 }
 
 // parameterized unit tests /////////////////////////////////////////
-func (s *XLSuite) doTestConstructor (c *C, rng *PRNG) {
+func (s *XLSuite) doTestConstructor(c *C, rng *PRNG) {
 	c.Assert(rng, Not(IsNil)) // NOT
 }
 func (s *XLSuite) doTestNextBoolean(c *C, rng *PRNG) {
@@ -53,7 +50,8 @@ func (s *XLSuite) doTestNextBoolean(c *C, rng *PRNG) {
 	}
 }
 func (s *XLSuite) doTestNextByte(c *C, rng *PRNG) {
-	_ = c; _ = rng
+	_ = c
+	_ = rng
 }
 func (s *XLSuite) doTestNextBytes(c *C, rng *PRNG) {
 	count := uint32(1)          // minimum length of buffer

@@ -40,15 +40,19 @@ func (s *PRNG) Float32() float32     { return s.rng.Float32() }
 func (s *PRNG) Perm(n int) []int     { return s.rng.Perm(n) }
 
 // PRNG functions //////////////////////////////////////////////
-func (s *PRNG) NextBoolean() bool			{ return s.rng.Int63() & 1 == 0 }
-func (s *PRNG) NextByte() byte				{ return byte(s.rng.Int63n(256)) }
+func (s *PRNG) NextBoolean() bool { return s.rng.Int63()&1 == 0 }
+func (s *PRNG) NextByte() byte    { return byte(s.rng.Int63n(256)) }
+
 // miraculously inefficient
-func (s *PRNG) NextBytes(buffer *[]byte)	{
-	for n := range *buffer { (*buffer)[n] = s.NextByte() } }
-func (s *PRNG) NextInt32(n uint32) uint32	{ return uint32(float32(n) * s.rng.Float32()) }
-func (s *PRNG) NextInt64(n uint64) uint64	{ return uint64(float64(n) * s.rng.Float64()) }
-func (s *PRNG) NextFloat32() float32		{ return s.rng.Float32() }
-func (s *PRNG) NextFloat64() float64		{ return s.rng.Float64() }
+func (s *PRNG) NextBytes(buffer *[]byte) {
+	for n := range *buffer {
+		(*buffer)[n] = s.NextByte()
+	}
+}
+func (s *PRNG) NextInt32(n uint32) uint32 { return uint32(float32(n) * s.rng.Float32()) }
+func (s *PRNG) NextInt64(n uint64) uint64 { return uint64(float64(n) * s.rng.Float64()) }
+func (s *PRNG) NextFloat32() float32      { return s.rng.Float32() }
+func (s *PRNG) NextFloat64() float64      { return s.rng.Float64() }
 
 // These produce strings which are acceptable POSIX file names.
 // and also advance a cursor by a multiple of 64 bits.  All strings

@@ -2,11 +2,19 @@ package rnglib
 
 import (
 	. "launchpad.net/gocheck"
+	"time"
 )
+
+// utility functions ////////////////////////////////////////////////
+func makeSimpleRNG() *PRNG {
+	t := time.Now().Unix()
+	rng := NewSimpleRNG(t)
+	return rng
+}
 
 // unit tests ///////////////////////////////////////////////////////
 func (s *XLSuite) TestConstuctor(c *C) {
-	s.doTestConstructor	(c, makeSimpleRNG())
+	s.doTestConstructor(c, makeSimpleRNG())
 }
 func (s *XLSuite) TestNextBoolean(c *C) {
 	s.doTestNextBoolean(c, makeSimpleRNG())
@@ -26,4 +34,3 @@ func (s *XLSuite) TestNextDataFile(c *C) {
 func (s *XLSuite) TestNextDataDir(c *C) {
 	s.doTestNextDataDir(c, makeSimpleRNG())
 }
-
