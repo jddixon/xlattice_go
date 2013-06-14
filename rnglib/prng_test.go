@@ -9,41 +9,37 @@ import (
 	"time"
 )
 
+// SETUP FOR THIS PACKAGE (rnglib) ////
+const TMP_DIR = "tmp"
+
 // gocheck tie-in /////////////////////
 func Test(t *testing.T) { TestingT(t) }
-
-type XLSuite struct{}
-
+type XLSuite struct {}
 var _ = Suite(&XLSuite{})
-
 // end gocheck setup //////////////////
 
-// copied here from ../make_rng.go ////
-func MakeRNG() *SimpleRNG {
+// utility functions ////////////////////////////////////////////////
+func makeSimpleRNG() *PRNG {
 	t := time.Now().Unix()
 	rng := NewSimpleRNG(t)
 	return rng
 }
 
-// end copied /////////////////////////
-
-const TMP_DIR = "tmp"
-
 func (s *XLSuite) buildData(count uint32) *[]byte {
 	p := make([]byte, count)
 	return &p
 }
-func (s *XLSuite) MakeRNG() *SimpleRNG {
+func (s *XLSuite) makeSimpleRNG() *PRNG {
 	t := time.Now().Unix() // int64 sec
 	rng := NewSimpleRNG(t)
 	return rng
 }
-func (s *XLSuite) TestConstuctor(c *C) {
-	rng := MakeRNG()
+
+// parameterized unit tests /////////////////////////////////////////
+func (s *XLSuite) doTestConstructor (c *C, rng *PRNG) {
 	c.Assert(rng, Not(IsNil)) // NOT
 }
-func (s *XLSuite) TestNextBoolean(c *C) {
-	rng := MakeRNG()
+func (s *XLSuite) doTestNextBoolean(c *C, rng *PRNG) {
 	val := rng.NextBoolean()
 	c.Assert(val, Not(IsNil)) // NOT
 
@@ -56,11 +52,10 @@ func (s *XLSuite) TestNextBoolean(c *C) {
 		/* empty statement */
 	}
 }
-func (s *XLSuite) TestNextByte(c *C) {
-	// rng := MakeRNG()
+func (s *XLSuite) doTestNextByte(c *C, rng *PRNG) {
+	_ = c; _ = rng
 }
-func (s *XLSuite) TestNextBytes(c *C) {
-	rng := MakeRNG()
+func (s *XLSuite) doTestNextBytes(c *C, rng *PRNG) {
 	count := uint32(1)          // minimum length of buffer
 	count += rng.NextInt32(256) // maximum
 	data := s.buildData(count)  // so 1 .. 256 bytes
@@ -70,8 +65,7 @@ func (s *XLSuite) TestNextBytes(c *C) {
 	c.Assert(actualLen, Equals, count)
 
 }
-func (s *XLSuite) TestNextFileName(c *C) {
-	rng := MakeRNG()
+func (s *XLSuite) doTestNextFileName(c *C, rng *PRNG) {
 	maxLen := uint32(1)         // minimum length of name
 	maxLen += rng.NextInt32(16) // maximum
 	name := rng.NextFileName(int(maxLen))
@@ -82,8 +76,7 @@ func (s *XLSuite) TestNextFileName(c *C) {
 	c.Assert(0, Not(Equals), actualLen) // NOT
 	// assert.True( t, actualLen < maxLen)
 }
-func (s *XLSuite) TestNextDataFile(c *C) {
-	rng := MakeRNG()
+func (s *XLSuite) doTestNextDataFile(c *C, rng *PRNG) {
 	minLen := int(rng.NextInt32(4))            // minimum length of file
 	maxLen := minLen + int(rng.NextInt32(256)) // maximum
 
@@ -100,7 +93,7 @@ func (s *XLSuite) TestNextDataFile(c *C) {
 	c.Assert(stats.Size(), Equals, int64(fileLen))
 
 }
-func (s *XLSuite) doNextDataDirTest(c *C, rng *SimpleRNG, width int, depth int) {
+func (s *XLSuite) doNextDataDirTest(c *C, rng *PRNG, width int, depth int) {
 	dirName := rng.NextFileName(8)
 	dirPath := TMP_DIR + "/" + dirName
 	pathExists, err := PathExists(dirPath)
@@ -118,8 +111,7 @@ func (s *XLSuite) doNextDataDirTest(c *C, rng *SimpleRNG, width int, depth int) 
 	}
 	rng.NextDataDir(dirPath, width, depth, 32, 0)
 }
-func (s *XLSuite) TestNextDataDir(c *C) {
-	rng := MakeRNG()
+func (s *XLSuite) doTestNextDataDir(c *C, rng *PRNG) {
 	s.doNextDataDirTest(c, rng, 1, 1)
 	s.doNextDataDirTest(c, rng, 1, 4)
 	s.doNextDataDirTest(c, rng, 4, 1)

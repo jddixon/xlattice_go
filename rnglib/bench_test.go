@@ -22,3 +22,12 @@ func BenchmarkSimpleRNG(b *testing.B) {
 		_ = rng.Int63() // Mersenne Twister
 	}
 }
+func BenchmarkSystemRNG(b *testing.B) {
+	t := time.Now().Unix()
+	rng := NewSystemRNG(t)
+	b.ResetTimer()
+	// typically XX.X ns/op
+	for i := 0; i < b.N; i++ {
+		_ = rng.Int63() // /dev/urandom
+	}
+}
