@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func MakeRNG() *SimpleRNG {
+func MakeSimpleRNG() *PRNG {
 	t := time.Now().Unix()
 	rng := NewSimpleRNG(t)
 	return rng

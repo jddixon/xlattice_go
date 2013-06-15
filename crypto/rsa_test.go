@@ -4,6 +4,7 @@ package crypto
 
 import (
 	. "launchpad.net/gocheck"
+	"math/big"
 	"testing"
 )
 
@@ -16,6 +17,7 @@ var _ = Suite(&XLSuite{})
 
 // end gocheck setup //////////////////
 
+// Fiddling around to see whether gocheck could compare bigInts (answer: no).
 func (s *XLSuite) TestUnity(c *C) {
-	c.Assert(1, Equals, BIG_ONE) // EXPECTED to fail
+	c.Assert(big.NewInt(1).Int64(), Equals, (*BIG_ONE).Int64())
 }

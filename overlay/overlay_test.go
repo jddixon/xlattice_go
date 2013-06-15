@@ -18,7 +18,7 @@ var _ = Suite(&XLSuite{})
 // end gocheck setup //////////////////
 
 func (s *XLSuite) TestCtor(c *C) {
-	rng := x.MakeRNG()
+	rng := x.MakeSimpleRNG()
 	name := rng.NextFileName(8)
 
 	o, err := NewOverlay(name, nil, "tcpip", 0.42)

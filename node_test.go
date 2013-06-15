@@ -9,12 +9,12 @@ import (
 	xc "github.com/jddixon/xlattice_go/crypto"
 	. "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
-	"strings"
+	// "strings"
 	// "github.com/bmizerany/assert"
 	// "testing"
 )
 
-func makeNodeID(rng *SimpleRNG) *NodeID {
+func makeNodeID(rng *PRNG) *NodeID {
 	var buffer []byte
 	if rng.NextBoolean() {
 		buffer = make([]byte, SHA1_LEN)
@@ -26,7 +26,7 @@ func makeNodeID(rng *SimpleRNG) *NodeID {
 }
 
 // func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
-func (s *XLSuite) doKeyTests(c *C, node *Node, rng *SimpleRNG) {
+func (s *XLSuite) doKeyTests(c *C, node *Node, rng *PRNG) {
 	pubkey := node.GetPublicKey()
 	c.Assert(pubkey, Not(IsNil)) // NOT
 
@@ -68,7 +68,8 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *SimpleRNG) {
 	err = rsa.VerifyPKCS1v15(pubkey, cr.SHA1, hash, sig)
 	c.Assert(err, IsNil)
 
-	c.Assert(true, Equals, xc.SigVerify(pubkey, msg, sig))
+	// 2013-06-15, SigVerify now returns error, so nil means OK
+	c.Assert(nil, Equals, xc.SigVerify(pubkey, msg, sig))
 
 	s.nilArgCheck(c)
 }
@@ -76,22 +77,16 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *SimpleRNG) {
 // XXX TODO: move these tests into crypto/sig_test.go
 // func nilArgCheck(t *testing.T) {
 func (s *XLSuite) nilArgCheck(c *C) {
-	defer func() {
-		r := recover()
-		c.Assert(r, Not(IsNil)) // NOT
-		str := r.(string)
-		c.Assert(true, Equals, strings.HasPrefix(str, "IllegalArgument"))
-	}()
-	// the next statement should cause a panic
-	_ = xc.SigVerify(nil, nil, nil)
-	c.Assert(true, Equals, false, "you should never see this message")
+	// the next statement should always return an error
+	err := xc.SigVerify(nil, nil, nil)
+	c.Assert(nil, Not(Equals), err)
 }
 
 // END OF TODO
 
 // func TestNewNew(t *testing.T) {
 func (s *XLSuite) TestNewNew(c *C) {
-	rng := MakeRNG()
+	rng := MakeSimpleRNG()
 	_, err := NewNewNode(nil)
 	c.Assert(err, Not(IsNil)) // NOT
 
