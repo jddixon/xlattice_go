@@ -100,8 +100,10 @@ func (s *PRNG) NextFileName(maxLen int) string {
 // files in a directory, where a file is either a data file or a subdirectory.
 // The number of bytes in a file is at least minLen and less than maxLen.
 // Subdirectory names may be random
+//
+// XXX CHANGED TO RETURN AN INT64 LENGTH
 
-func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int, string) {
+func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int64, string) {
 	// silently convert parameters to reasonable values
 	if minLen < 0 {
 		minLen = 0
@@ -151,7 +153,7 @@ func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int, string
 		panic(err)
 	}
 	// XXX respec to also return err
-	return count, pathToFile
+	return int64(count), pathToFile
 }
 
 // NextDataDir creates a directory tree populated with data files.
