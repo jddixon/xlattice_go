@@ -1,6 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
-
+0.2.0
+    2013-06-19
+        * working and tested u256x256                               SLOC 2061
 v0.1.0
     2013-06-12
         * modified rnglib.SimpleRNG to use the 64-bit Mersenne      SLOC 1387

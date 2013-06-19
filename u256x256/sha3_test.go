@@ -17,31 +17,31 @@ func (s *XLSuite) setUp3() {
 	uTmpDir		= "myU3/tmp"
 	s.setUpHashTest()
 }
-func (s *XLSuite) TestCopyAndPut(c *C) {
+func (s *XLSuite) TestCopyAndPut3(c *C) {
 	s.setUp3()
-	s.doTestCopyAndPut(c, New(uPath), sha3.NewKeccak256())
+	s.doTestCopyAndPut(c, New(uPath), sha3.NewKeccak256(), false)
 }
-func (s *XLSuite) TestExists(c *C) {
+func (s *XLSuite) TestExists3(c *C) {
 	s.setUp3()
 	s.doTestExists(c, New(uPath), sha3.NewKeccak256())
 }
-func (s *XLSuite) TestFileLen(c *C) {
+func (s *XLSuite) TestFileLen3(c *C) {
 	s.setUp3()
 	s.doTestFileLen(c, New(uPath), sha3.NewKeccak256())
 }
-func (s *XLSuite) TestFileHash(c *C) {
+func (s *XLSuite) TestFileHash3(c *C) {
 	s.setUp3()
 	s.doTestFileHash(c, New(uPath), sha3.NewKeccak256())
 }
-func (s *XLSuite) TestGetPathForKey(c *C) {
+func (s *XLSuite) TestGetPathForKey3(c *C) {
 	s.setUp3()
-	s.doTestGetPathForKey(c, New(uPath), sha3.NewKeccak256())
+	s.doTestGetPathForKey(c, New(uPath), sha3.NewKeccak256(), false)
 }
-func (s *XLSuite) TestPut(c *C) {
+func (s *XLSuite) TestPut3(c *C) {
 	s.setUp3()
-	s.doTestPut(c, New(uPath), sha3.NewKeccak256())
+	s.doTestPut(c, New(uPath), sha3.NewKeccak256(), false)
 }
-func (s *XLSuite) TestPutData(c *C) {
+func (s *XLSuite) TestPutData3(c *C) {
 	s.setUp3()
-	s.doTestPutData(c, New(uPath), sha3.NewKeccak256())
+	s.doTestPutData(c, New(uPath), sha3.NewKeccak256(), false)
 }

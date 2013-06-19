@@ -15,6 +15,8 @@ import (
 	"path/filepath"
 	"time"
 )
+const SHA1_LEN = 40			// length of hex version
+const SHA3_LEN = 64
 
 // ....x....1....x....2....x....3....x....4
 const SHA1_NONE = "0000000000000000000000000000000000000000"
@@ -395,7 +397,7 @@ func (u *U256x256) PutData1(data []byte, key string) (
 		// XXX ERROR NOT HANDLED; MODE QUESTIONABLE
 		_ = os.MkdirAll(targetDir, 0775)
 	}
-	fullishPath := filepath.Join(targetDir, key)
+	fullishPath := filepath.Join(targetDir, key[4:])
 	if !PathExists(fullishPath) {
 		var dest *os.File
 		if dest, err = os.Create(fullishPath); err != nil {
