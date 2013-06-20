@@ -10,11 +10,11 @@ import (
 	// "testing"
 )
 
-func  (s *XLSuite) setUp1() {
-	dataPath	= "myData"
-	uPath		= "myU1"
-	uInDir		= "myU1/in"
-	uTmpDir		= "myU1/tmp"
+func (s *XLSuite) setUp1() {
+	dataPath = "myData"
+	uPath = "myU1"
+	uInDir = "myU1/in"
+	uTmpDir = "myU1/tmp"
 	s.setUpHashTest()
 }
 

@@ -11,10 +11,10 @@ import (
 )
 
 func (s *XLSuite) setUp3() {
-	dataPath	= "myData"
-	uPath		= "myU3"
-	uInDir		= "myU3/in"
-	uTmpDir		= "myU3/tmp"
+	dataPath = "myData"
+	uPath = "myU3"
+	uInDir = "myU3/in"
+	uTmpDir = "myU3/tmp"
 	s.setUpHashTest()
 }
 func (s *XLSuite) TestCopyAndPut3(c *C) {

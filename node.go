@@ -63,14 +63,14 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
 			// XXX get the overlay from the endPoint
 			// overlays = append(overlays, (*o)[i])
 		}
-	} // FOO
+	}
 	var peers []*Peer // an empty slice
 	if p != nil {
 		count := len(*p)
 		for i := 0; i < count; i++ {
 			peers = append(peers, (*p)[i])
 		}
-	} // FOO
+	}
 	var cnxs []*ConnectionI // another empty slice
 	if c != nil {
 		count := len(*c)

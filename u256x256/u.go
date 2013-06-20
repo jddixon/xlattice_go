@@ -3,19 +3,20 @@ package u256x256
 // xlattice_go/u256x256/u.go
 
 import (
-	"crypto/sha1"
 	"code.google.com/p/go.crypto/sha3"
+	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"fmt"			// DEBUG
-	"io/ioutil"
+	"fmt" // DEBUG
 	"github.com/jddixon/xlattice_go/rnglib"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
 )
-const SHA1_LEN = 40			// length of hex version
+
+const SHA1_LEN = 40 // length of hex version
 const SHA3_LEN = 64
 
 // ....x....1....x....2....x....3....x....4
@@ -34,7 +35,6 @@ func makeSimpleRNG() *rnglib.PRNG {
 	return rng
 }
 
-
 // PACKAGE-LEVEL FUNCTIONS //////////////////////////////////////////
 func CopyFile(destName, srcName string) (written int64, err error) {
 	var (
@@ -48,7 +48,7 @@ func CopyFile(destName, srcName string) (written int64, err error) {
 		return
 	}
 	defer dest.Close()
-	return io.Copy(dest, src)		// returns written, err
+	return io.Copy(dest, src) // returns written, err
 }
 
 // - FileSHA1 --------------------------------------------------------
@@ -59,15 +59,15 @@ func FileSHA1(path string) (hash string, err error) {
 		err = errors.New("IllegalArgument: empty path or non-existent file")
 		return
 	}
-	data2, err	:= ioutil.ReadFile(path)
+	data2, err := ioutil.ReadFile(path)
 	if err == nil {
-		d2		:= sha1.New()
+		d2 := sha1.New()
 		d2.Write(data2)
 		digest2 := d2.Sum(nil)
-		hash	= hex.EncodeToString(digest2)
+		hash = hex.EncodeToString(digest2)
 	}
 	return
-}	// GEEP
+} // GEEP
 
 // - FileSHA3 --------------------------------------------------------
 // returns the SHA3 hash of the contents of a file
@@ -79,41 +79,41 @@ func FileSHA3(path string) (hash string, err error) {
 	}
 
 	// THIS METHOD DID NOT RETURN CORRECT RESULTS
-//	d := sha3.NewKeccak256()
-//	var f *os.File
-//	if f, err = os.Open(path); err != nil {
-//		return
-//	}
-//	defer f.Close()
-//	buffer := make([]byte, DEFAULT_BUFFER_SIZE)
-//	var count int
-//	for true {
-//		count, err = f.Read(buffer)
-//		// DEBUG
-//		fmt.Printf("FileSHA3 read loop; count = %v, err = %v\n", count, err)
-//		// END
-//		if count == 0 || err == io.EOF{
-//			break
-//		}
-//		if err != nil { return }
-//		d.Write(buffer)
-//	}
-//	if err == io.EOF {
-//		err = nil
-//	}
-//	digest := d.Sum(nil)
-//	hash = hex.EncodeToString(digest)
+	//	d := sha3.NewKeccak256()
+	//	var f *os.File
+	//	if f, err = os.Open(path); err != nil {
+	//		return
+	//	}
+	//	defer f.Close()
+	//	buffer := make([]byte, DEFAULT_BUFFER_SIZE)
+	//	var count int
+	//	for true {
+	//		count, err = f.Read(buffer)
+	//		// DEBUG
+	//		fmt.Printf("FileSHA3 read loop; count = %v, err = %v\n", count, err)
+	//		// END
+	//		if count == 0 || err == io.EOF{
+	//			break
+	//		}
+	//		if err != nil { return }
+	//		d.Write(buffer)
+	//	}
+	//	if err == io.EOF {
+	//		err = nil
+	//	}
+	//	digest := d.Sum(nil)
+	//	hash = hex.EncodeToString(digest)
 
 	// METHOD 2
-	data2, err	:= ioutil.ReadFile(path)
+	data2, err := ioutil.ReadFile(path)
 	if err == nil {
-		d2		:= sha3.NewKeccak256()
+		d2 := sha3.NewKeccak256()
 		d2.Write(data2)
 		digest2 := d2.Sum(nil)
-		hash	= hex.EncodeToString(digest2)
+		hash = hex.EncodeToString(digest2)
 	}
 	return
-}	// GEEP
+} // GEEP
 
 func PathExists(fName string) bool {
 	if _, err := os.Stat(fName); os.IsNotExist(err) {
@@ -124,18 +124,18 @@ func PathExists(fName string) bool {
 
 // CLASS, so to speak ///////////////////////////////////////////////
 type U256x256 struct {
-	path	string					// all parameters are 
-	rng		*rnglib.PRNG			//	... private
-	inDir	string
-	tmpDir	string
+	path   string       // all parameters are
+	rng    *rnglib.PRNG //	... private
+	inDir  string
+	tmpDir string
 }
 
 func New(path string) *U256x256 {
 	var u U256x256
-	u.path		= path					// XXX validate
-	u.inDir		= filepath.Join(path, "in")
-	u.tmpDir	= filepath.Join(path, "tmp")
-	u.rng		= makeSimpleRNG()
+	u.path = path // XXX validate
+	u.inDir = filepath.Join(path, "in")
+	u.tmpDir = filepath.Join(path, "tmp")
+	u.rng = makeSimpleRNG()
 	return &u
 }
 
@@ -144,17 +144,19 @@ func (u *U256x256) Exists(key string) bool {
 	path := u.GetPathForKey(key)
 	return PathExists(path)
 }
+
 // - FileLen --------------------------------------------------------
 func (u *U256x256) FileLen(key string) (length int64, err error) {
 	// XXX ERROR IF EMPTY KEY
-	path	:= u.GetPathForKey(key)
+	path := u.GetPathForKey(key)
 	if path == "" {
 		err = errors.New("IllegalArgument: no key specified")
 	}
-	info, _ := os.Stat(path)				// ERRORS IGNORED
-	length	= info.Size()
+	info, _ := os.Stat(path) // ERRORS IGNORED
+	length = info.Size()
 	return
 }
+
 // - GetPathForKey --------------------------------------------------
 // Returns a path to a file with the content key passed.
 // XXX NEED TO RESPEC TO RETURN ERROR IF INVALID KEY (blank, wrong length, etc.
@@ -162,20 +164,21 @@ func (u *U256x256) GetPathForKey(key string) string {
 	if key == "" {
 		return key
 	}
-	topSubDir	:= key[0:2]
-	lowerDir	:= key[2:4]
+	topSubDir := key[0:2]
+	lowerDir := key[2:4]
 	return filepath.Join(u.path, topSubDir, lowerDir, key[4:])
 }
+
 //- copyAndPut3 -------------------------------------------------------
 func (u *U256x256) CopyAndPut3(path, key string) (
-								written int64, hash string, err error) {
+	written int64, hash string, err error) {
 	// the temporary file MUST be created on the same device
 	// xxx POSSIBLE RACE CONDITION
 	tmpFileName := filepath.Join(u.tmpDir, u.rng.NextFileName(16))
-	for ; PathExists(tmpFileName) ; {
+	for PathExists(tmpFileName) {
 		tmpFileName = filepath.Join(u.tmpDir, u.rng.NextFileName(16))
 	}
-	written, err = CopyFile(tmpFileName, path)		// dest <== src
+	written, err = CopyFile(tmpFileName, path) // dest <== src
 	if err == nil {
 		written, hash, err = u.Put3(tmpFileName, key)
 	}
@@ -217,9 +220,9 @@ func (u *U256x256) GetData3(key string) (data []byte, err error) {
 // we don't do much checking
 func (u *U256x256) Put3(inFile, key string) (length int64, hash string, err error) {
 	hash, err = FileSHA3(inFile)
-	if err != nil {	
+	if err != nil {
 		fmt.Printf("DEBUG: FileSHA3 returned error %v\n", err)
-		return 
+		return
 	}
 	if hash != key {
 		fmt.Printf("expected %s to have key %s, but the content key is %s\n",
@@ -255,7 +258,7 @@ func (u *U256x256) Put3(inFile, key string) (length int64, hash string, err erro
 
 // - putData3 --------------------------------------------------------
 func (u *U256x256) PutData3(data []byte, key string) (
-							length int64, hash string, err error) {
+	length int64, hash string, err error) {
 	s := sha3.NewKeccak256()
 	s.Write(data)
 	hash = hex.EncodeToString(s.Sum(nil))
@@ -265,10 +268,10 @@ func (u *U256x256) PutData3(data []byte, key string) (
 		err = errors.New("content/key mismatch")
 		return
 	}
-	length		= int64(len(data))
-	topSubDir	:= hash[0:2]
-	lowerDir	:= hash[2:4]
-	targetDir	:= filepath.Join(u.path, topSubDir, lowerDir)
+	length = int64(len(data))
+	topSubDir := hash[0:2]
+	lowerDir := hash[2:4]
+	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
 	if !PathExists(targetDir) {
 		// XXX ERROR NOT HANDLED; MODE QUESTIONABLE
 		_ = os.MkdirAll(targetDir, 0775)
@@ -292,14 +295,14 @@ func (u *U256x256) PutData3(data []byte, key string) (
 
 // CopyAndPut1 ------------------------------------------------------
 func (u *U256x256) CopyAndPut1(path, key string) (
-								written int64, hash string, err error) {
+	written int64, hash string, err error) {
 	// the temporary file MUST be created on the same device
 	// xxx POSSIBLE RACE CONDITION
 	tmpFileName := filepath.Join(u.tmpDir, u.rng.NextFileName(16))
-	for ; PathExists(tmpFileName) ; {
+	for PathExists(tmpFileName) {
 		tmpFileName = filepath.Join(u.tmpDir, u.rng.NextFileName(16))
 	}
-	written, err = CopyFile(tmpFileName, path)		// dest <== src
+	written, err = CopyFile(tmpFileName, path) // dest <== src
 	if err == nil {
 		written, hash, err = u.Put1(tmpFileName, key)
 	}
@@ -341,9 +344,9 @@ func (u *U256x256) GetData1(key string) (data []byte, err error) {
 // we don't do much checking
 func (u *U256x256) Put1(inFile, key string) (length int64, hash string, err error) {
 	hash, err = FileSHA1(inFile)
-	if err != nil {	
+	if err != nil {
 		fmt.Printf("DEBUG: FileSHA1 returned error %v\n", err)
-		return 
+		return
 	}
 	if hash != key {
 		fmt.Printf("expected %s to have key %s, but the content key is %s\n",
@@ -379,7 +382,7 @@ func (u *U256x256) Put1(inFile, key string) (length int64, hash string, err erro
 
 // PutData1 ---------------------------------------------------------
 func (u *U256x256) PutData1(data []byte, key string) (
-							length int64, hash string, err error) {
+	length int64, hash string, err error) {
 	s := sha1.New()
 	s.Write(data)
 	hash = hex.EncodeToString(s.Sum(nil))
@@ -389,10 +392,10 @@ func (u *U256x256) PutData1(data []byte, key string) (
 		err = errors.New("content/key mismatch")
 		return
 	}
-	length		= int64(len(data))
-	topSubDir	:= hash[0:2]
-	lowerDir	:= hash[2:4]
-	targetDir	:= filepath.Join(u.path, topSubDir, lowerDir)
+	length = int64(len(data))
+	topSubDir := hash[0:2]
+	lowerDir := hash[2:4]
+	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
 	if !PathExists(targetDir) {
 		// XXX ERROR NOT HANDLED; MODE QUESTIONABLE
 		_ = os.MkdirAll(targetDir, 0775)
