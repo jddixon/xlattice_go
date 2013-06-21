@@ -29,7 +29,7 @@ type Overlay struct {
 	cost      float32
 }
 
-func NewOverlay(name string, addrRange *AddrRange, transport string, cost float32) (*Overlay, error) {
+func New(name string, addrRange *AddrRange, transport string, cost float32) (*Overlay, error) {
 	// XXX validate the parameters, please
 
 	return &Overlay{name, addrRange, transport, cost}, nil
