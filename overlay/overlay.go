@@ -39,6 +39,14 @@ func (o *Overlay) Name() string {
 	return o.name
 }
 
+func (o *Overlay) Transport() string {
+	return o.transport
+}
+
+func (o *Overlay) Cost() float32 {
+	return o.cost
+}
+
 func (o *Overlay) Equal(any interface{}) bool {
 	// XXX STUB XXX
 	return false
