@@ -4,7 +4,7 @@ package consensus
 
 import (
 	"container/heap"
-	"fmt" // DEBUG
+	// "fmt" // DEBUG
 	"sync"
 )
 
@@ -68,93 +68,81 @@ func (q *pairQ) Pop() interface{} {
 	return lastPair
 }
 
-//
 type CmdBuffer struct {
 	InCh     chan CmdPair
 	outCh    chan CmdPair
 	stopCh   chan bool
 	q        pairQ
-	L        sync.Mutex
-	padding  [64]byte
+	sy       sync.Mutex
 	lastSeqn int64
 	running  bool
 }
 
 func (c *CmdBuffer) Init(out chan CmdPair, stopCh chan bool, lastSeqn int64) {
-	c.q = pairQ{}
-	c.InCh = make(chan CmdPair, 4) // buffered
-
-	c.outCh = out // should also be buffered
-	c.stopCh = stopCh
-	c.lastSeqn = lastSeqn
-
-	c.running = false
-
-	fmt.Printf("exiting Init: running = %v, lastSeqn = %v\n",
-		c.running, c.lastSeqn)
+	c.q			= pairQ{}
+	c.InCh		= make(chan CmdPair, 4) // buffered
+	c.outCh		= out // should also be buffered
+	c.stopCh	= stopCh
+	c.lastSeqn	= lastSeqn
 }
+
 func (c *CmdBuffer) Running() bool {
-	fmt.Printf("enter c.Running(): running %v, lastSeqn %v\n",
-		c.running, c.lastSeqn)
-	// c.running is volatile
-	c.L.Lock()
+	// c.running is volatile, so we lock, copy, unlock, return the copy
+	c.sy.Lock()
 	whether := c.running
-	c.L.Unlock()
-	fmt.Printf("Running() returning %v\n", whether)
+	c.sy.Unlock()
 	return whether
 }
+
 func (c *CmdBuffer) Run() {
 	c.running = true
-	fmt.Printf("buffer.running <== %v\n", c.running)
 	for {
-		c.L.Lock()
+		c.sy.Lock()
 		whether := c.running
-		c.L.Unlock()
+		c.sy.Unlock()
 		if !whether {
 			break
 		}
-		fmt.Printf("waiting for select; running is %v\n", c.running)
 		select {
-		case junk := <-c.stopCh:
-			fmt.Printf("RECEIVED STOP %v\n", junk)
-			c.L.Lock()
-			c.running = false
-			c.L.Unlock()
-			fmt.Println("c.running has been set to false")
 		case inPair := <-c.InCh: // get the next command
 			seqN := inPair.Seqn
-			fmt.Printf("RECEIVED PAIR %v\n", seqN)
+			// fmt.Printf("RECEIVED PAIR %v\n", seqN)
 			if seqN <= c.lastSeqn { // already sent, so discard
-				fmt.Printf("    ALREADY SEEN, DISCARDING\n")
+				// fmt.Printf("    ALREADY SEEN, DISCARDING\n")
 				continue
 			} else if seqN == c.lastSeqn+1 {
 				c.outCh <- inPair
 				c.lastSeqn += 1
-				fmt.Printf("    SEQN %v MATCHED LAST + 1, SENDING\n", seqN)
+				// fmt.Printf("    SEQN %v MATCHED LAST + 1, SENDING\n", seqN)
 				for c.q.Len() > 0 {
 					first := c.q[0]
 					if first.pair.Seqn <= c.lastSeqn {
-						fmt.Printf("        Q: DISCARDING %v, DUPE\n",
-							first.pair.Seqn)
+//						fmt.Printf("        Q: DISCARDING %v, DUPE\n",
+//							first.pair.Seqn)
 						// a duplicate, so discard
 						_ = heap.Pop(&c.q).(*pairPlus)
 					} else if first.pair.Seqn == c.lastSeqn+1 {
 						pp := heap.Pop(&c.q).(*pairPlus)
 						c.outCh <- *pp.pair
 						c.lastSeqn += 1
-						fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
+//						fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
 					} else {
-						fmt.Printf("        Q: LEAVING %v IN Q\n",
-							first.pair.Seqn)
+//						fmt.Printf("        Q: LEAVING %v IN Q\n",
+//							first.pair.Seqn)
 						break
 					}
 				}
 			} else {
 				// seqN > c.lastSeqn + 1, so buffer
-				fmt.Printf("    HIGH SEQN %v, SO BUFFERING\n", seqN)
+//				fmt.Printf("    HIGH SEQN %v, SO BUFFERING\n", seqN)
 				pp := &pairPlus{pair: &inPair}
 				heap.Push(&c.q, pp)
 			}
+		case  <-c.stopCh:
+			c.sy.Lock()
+			c.running = false
+			c.sy.Unlock()
+//			fmt.Println("c.running has been set to false")
 		}
 	}
 }
