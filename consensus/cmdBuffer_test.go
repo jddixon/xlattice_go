@@ -76,7 +76,7 @@ func (s *XLSuite) TestCmdBuffer(c *C) {
 	p := &buf
 	var out = make(chan NumberedCmd, len(order)+1) // must exceed len(order)
 	var stopCh = make(chan bool, 1)
-	p.Init(out, stopCh, 0)
+	p.Init(out, stopCh, 0, 4) // 4 is bufSize
 	c.Assert(p.Running(), Equals, false)
 
 	go p.Run()

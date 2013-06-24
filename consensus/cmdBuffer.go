@@ -70,19 +70,19 @@ func (q *pairQ) Pop() interface{} {
 
 type CmdBuffer struct {
 	InCh     chan NumberedCmd
-	outCh    chan NumberedCmd
-	stopCh   chan bool
+	OutCh    chan NumberedCmd
+	StopCh   chan bool
 	q        pairQ
 	sy       sync.Mutex
 	lastSeqn int64
 	running  bool
 }
 
-func (c *CmdBuffer) Init(out chan NumberedCmd, stopCh chan bool, lastSeqn int64) {
+func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64, bufSize int) {
 	c.q = pairQ{}
-	c.InCh = make(chan NumberedCmd, 4) // buffered
-	c.outCh = out                      // should also be buffered
-	c.stopCh = stopCh
+	c.InCh = make(chan NumberedCmd, bufSize) // buffered
+	c.OutCh = out                            // should also be buffered
+	c.StopCh = StopCh
 	c.lastSeqn = lastSeqn
 }
 
@@ -118,7 +118,7 @@ func (c *CmdBuffer) Run() {
 				// fmt.Printf("    ALREADY SEEN, DISCARDING\n")
 				continue
 			} else if seqN == c.lastSeqn+1 {
-				c.outCh <- inPair
+				c.OutCh <- inPair
 				c.lastSeqn += 1
 				// fmt.Printf("    SEQN %v MATCHED LAST + 1, SENDING\n", seqN)
 				for c.q.Len() > 0 {
@@ -130,7 +130,7 @@ func (c *CmdBuffer) Run() {
 						_ = heap.Pop(&c.q).(*cmdPlus)
 					} else if first.pair.Seqn == c.lastSeqn+1 {
 						pp := heap.Pop(&c.q).(*cmdPlus)
-						c.outCh <- *pp.pair
+						c.OutCh <- *pp.pair
 						c.lastSeqn += 1
 						//	fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
 					} else {
@@ -145,7 +145,7 @@ func (c *CmdBuffer) Run() {
 				pp := &cmdPlus{pair: &inPair}
 				heap.Push(&c.q, pp)
 			}
-		case <-c.stopCh:
+		case <-c.StopCh:
 			c.sy.Lock()
 			c.running = false
 			c.sy.Unlock()
