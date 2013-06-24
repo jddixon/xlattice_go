@@ -17,17 +17,17 @@ import (
 // pairs until gaps are filled, and releasing pairs from the
 // internal sorted buffer in ascending order as soon as possible.
 
-type CmdPair struct {
+type NumberedCmd struct {
 	Seqn int64
 	Cmd  string
 }
 
-type pairPlus struct {
-	pair  *CmdPair
+type cmdPlus struct {
+	pair  *NumberedCmd
 	index int // used by heap logic
 }
 
-type pairQ []*pairPlus
+type pairQ []*cmdPlus
 
 func (q pairQ) Len() int { // not in heap interface
 	return len(q)
@@ -48,7 +48,7 @@ func (q pairQ) Swap(i, j int) {
 
 func (q *pairQ) Push(x interface{}) {
 	n := len(*q)
-	thePair := x.(*pairPlus) // a cast
+	thePair := x.(*cmdPlus) // a cast
 	thePair.index = n
 	*q = append(*q, thePair)
 }
@@ -69,8 +69,8 @@ func (q *pairQ) Pop() interface{} {
 }
 
 type CmdBuffer struct {
-	InCh     chan CmdPair
-	outCh    chan CmdPair
+	InCh     chan NumberedCmd
+	outCh    chan NumberedCmd
 	stopCh   chan bool
 	q        pairQ
 	sy       sync.Mutex
@@ -78,12 +78,12 @@ type CmdBuffer struct {
 	running  bool
 }
 
-func (c *CmdBuffer) Init(out chan CmdPair, stopCh chan bool, lastSeqn int64) {
-	c.q			= pairQ{}
-	c.InCh		= make(chan CmdPair, 4) // buffered
-	c.outCh		= out // should also be buffered
-	c.stopCh	= stopCh
-	c.lastSeqn	= lastSeqn
+func (c *CmdBuffer) Init(out chan NumberedCmd, stopCh chan bool, lastSeqn int64) {
+	c.q = pairQ{}
+	c.InCh = make(chan NumberedCmd, 4) // buffered
+	c.outCh = out                      // should also be buffered
+	c.stopCh = stopCh
+	c.lastSeqn = lastSeqn
 }
 
 func (c *CmdBuffer) Running() bool {
@@ -104,7 +104,14 @@ func (c *CmdBuffer) Run() {
 			break
 		}
 		select {
-		case inPair := <-c.InCh: // get the next command
+		case inPair, ok := <-c.InCh: // get the next command
+			if !ok {
+				// channel is closed and empty
+				c.sy.Lock()
+				c.running = false
+				c.sy.Unlock()
+				break
+			}
 			seqN := inPair.Seqn
 			// fmt.Printf("RECEIVED PAIR %v\n", seqN)
 			if seqN <= c.lastSeqn { // already sent, so discard
@@ -117,32 +124,32 @@ func (c *CmdBuffer) Run() {
 				for c.q.Len() > 0 {
 					first := c.q[0]
 					if first.pair.Seqn <= c.lastSeqn {
-//						fmt.Printf("        Q: DISCARDING %v, DUPE\n",
-//							first.pair.Seqn)
+						//	fmt.Printf("        Q: DISCARDING %v, DUPE\n",
+						//							first.pair.Seqn)
 						// a duplicate, so discard
-						_ = heap.Pop(&c.q).(*pairPlus)
+						_ = heap.Pop(&c.q).(*cmdPlus)
 					} else if first.pair.Seqn == c.lastSeqn+1 {
-						pp := heap.Pop(&c.q).(*pairPlus)
+						pp := heap.Pop(&c.q).(*cmdPlus)
 						c.outCh <- *pp.pair
 						c.lastSeqn += 1
-//						fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
+						//	fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
 					} else {
-//						fmt.Printf("        Q: LEAVING %v IN Q\n",
-//							first.pair.Seqn)
+						//	fmt.Printf("        Q: LEAVING %v IN Q\n",
+						//							first.pair.Seqn)
 						break
 					}
 				}
 			} else {
 				// seqN > c.lastSeqn + 1, so buffer
-//				fmt.Printf("    HIGH SEQN %v, SO BUFFERING\n", seqN)
-				pp := &pairPlus{pair: &inPair}
+				//	fmt.Printf("    HIGH SEQN %v, SO BUFFERING\n", seqN)
+				pp := &cmdPlus{pair: &inPair}
 				heap.Push(&c.q, pp)
 			}
-		case  <-c.stopCh:
+		case <-c.stopCh:
 			c.sy.Lock()
 			c.running = false
 			c.sy.Unlock()
-//			fmt.Println("c.running has been set to false")
+			//	fmt.Println("c.running has been set to false")
 		}
 	}
 }

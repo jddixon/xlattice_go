@@ -19,9 +19,9 @@ type AddrRange struct {
 }
 
 // XXX UNSAFE: should copy
-func (r *AddrRange) Prefix()	[]byte	{	return r.prefix		}
-func (r *AddrRange) PrefixLen() uint	{	return r.prefixLen	}
-func (r *AddrRange) AddrLen()	uint	{	return r.addrLen	}
+func (r *AddrRange) Prefix() []byte  { return r.prefix }
+func (r *AddrRange) PrefixLen() uint { return r.prefixLen }
+func (r *AddrRange) AddrLen() uint   { return r.addrLen }
 
 func NewAddrRange(prefix []byte, prefixLen uint, addrLen uint) (*AddrRange, error) {
 	if prefix == nil {
@@ -46,9 +46,13 @@ func NewV6AddrRange(prefix []byte, prefixLen uint) (*AddrRange, error) {
 	return NewAddrRange(prefix, prefixLen, uint(64))
 }
 
-func (r *AddrRange) Equal (any interface{}) bool {
-	if any == r		{ return true  }
-	if any == nil	{ return false }
+func (r *AddrRange) Equal(any interface{}) bool {
+	if any == r {
+		return true
+	}
+	if any == nil {
+		return false
+	}
 	switch v := any.(type) {
 	case *AddrRange:
 		_ = v
@@ -56,12 +60,20 @@ func (r *AddrRange) Equal (any interface{}) bool {
 		return false
 	}
 	other := any.(*AddrRange)
-	if len(r.prefix) != len(other.prefix)		{ return false }
-	for i := 0; i < len(r.prefix); i++ {
-		if r.prefix[i] != other.prefix[i]		{ return false }
+	if len(r.prefix) != len(other.prefix) {
+		return false
 	}
-	if r.prefixLen != other.prefixLen			{ return false }
-	if r.addrLen   != other.addrLen				{ return false }
+	for i := 0; i < len(r.prefix); i++ {
+		if r.prefix[i] != other.prefix[i] {
+			return false
+		}
+	}
+	if r.prefixLen != other.prefixLen {
+		return false
+	}
+	if r.addrLen != other.addrLen {
+		return false
+	}
 	return true
 }
 func (r *AddrRange) String() string {

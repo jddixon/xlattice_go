@@ -29,28 +29,28 @@ func (s *XLSuite) TestCmdQ(c *C) {
 	heap.Init(&q)
 	c.Assert(q.Len(), Equals, 0)
 
-	pair0 := CmdPair{Seqn: 42, Cmd: "foo"}
-	pair1 := CmdPair{Seqn: 1, Cmd: "bar"}
-	pair2 := CmdPair{Seqn: 99, Cmd: "baz"}
+	pair0 := NumberedCmd{Seqn: 42, Cmd: "foo"}
+	pair1 := NumberedCmd{Seqn: 1, Cmd: "bar"}
+	pair2 := NumberedCmd{Seqn: 99, Cmd: "baz"}
 
-	pp0 := pairPlus{pair: &pair0}
-	pp1 := pairPlus{pair: &pair1}
-	pp2 := pairPlus{pair: &pair2}
+	pp0 := cmdPlus{pair: &pair0}
+	pp1 := cmdPlus{pair: &pair1}
+	pp2 := cmdPlus{pair: &pair2}
 
 	heap.Push(&q, &pp0)
 	heap.Push(&q, &pp1)
 	heap.Push(&q, &pp2)
 	c.Assert(q.Len(), Equals, 3)
 
-	out := heap.Pop(&q).(*pairPlus)
+	out := heap.Pop(&q).(*cmdPlus)
 	c.Assert(out.pair.Seqn, Equals, int64(1))
 	c.Assert(out.pair.Cmd, Equals, "bar")
 
-	out = heap.Pop(&q).(*pairPlus)
+	out = heap.Pop(&q).(*cmdPlus)
 	c.Assert(out.pair.Seqn, Equals, int64(42))
 	c.Assert(out.pair.Cmd, Equals, "foo")
 
-	out = heap.Pop(&q).(*pairPlus)
+	out = heap.Pop(&q).(*cmdPlus)
 	c.Assert(out.pair.Seqn, Equals, int64(99))
 	c.Assert(out.pair.Cmd, Equals, "baz")
 
@@ -74,7 +74,7 @@ func (s *XLSuite) TestCmdBuffer(c *C) {
 	order := [...]int{1, 2, 3, 6, 3, 2, 6, 5, 4, 1, 7}
 	var buf CmdBuffer
 	p := &buf
-	var out = make(chan CmdPair, len(order)+1) // must exceed len(order)
+	var out = make(chan NumberedCmd, len(order)+1) // must exceed len(order)
 	var stopCh = make(chan bool, 1)
 	p.Init(out, stopCh, 0)
 	c.Assert(p.Running(), Equals, false)
@@ -87,15 +87,18 @@ func (s *XLSuite) TestCmdBuffer(c *C) {
 
 	for n := 0; n < len(order); n++ {
 		cmd := pairMap[int64(n)]
-		pair := CmdPair{Seqn: int64(order[n]), Cmd: cmd}
+		pair := NumberedCmd{Seqn: int64(order[n]), Cmd: cmd}
 		p.InCh <- pair
 	}
 
-	var results [7]CmdPair
+	var results [7]NumberedCmd
 	for n := 0; n < 7; n++ {
 		results[n] = <-out
 		c.Assert(results[n].Seqn, Equals, int64(n+1))
 	}
 
+	c.Assert(p.Running(), Equals, true)
 	stopCh <- true
+	time.Sleep(time.Microsecond)
+	c.Assert(p.Running(), Equals, false)
 }

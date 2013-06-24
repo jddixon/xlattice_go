@@ -22,9 +22,9 @@ func (s *XLSuite) TestCtor(c *C) {
 	name := rng.NextFileName(8)
 
 	o, err := New(name, nil, "tcpip", 0.42)
-	c.Assert(err,			IsNil)
-	c.Assert(o,				Not(IsNil))
-	c.Assert(name,			Equals, o.Name())
-	c.Assert("tcpip",		Equals, o.Transport())
-	c.Assert(float32(0.42),	Equals, o.Cost())
+	c.Assert(err, IsNil)
+	c.Assert(o, Not(IsNil))
+	c.Assert(name, Equals, o.Name())
+	c.Assert("tcpip", Equals, o.Transport())
+	c.Assert(float32(0.42), Equals, o.Cost())
 }
