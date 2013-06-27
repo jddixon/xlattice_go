@@ -60,7 +60,7 @@ func (s *XLSuite) TestCmdQ(c *C) {
 	//zzz		:= heap.Pop(&q)
 	// c.Assert(zzz, Equals, nil)
 }
-func (s *XLSuite) TestCmdBuffer(c *C) {
+func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI) {
 	var pairMap = map[int64]string{
 		1: "foo",
 		2: "bar",
@@ -72,8 +72,6 @@ func (s *XLSuite) TestCmdBuffer(c *C) {
 	}
 	// we send the messages somewhat out of order, with some duplicates
 	order := [...]int{1, 2, 3, 6, 3, 2, 6, 5, 4, 1, 7}
-	var buf CmdBuffer
-	p := &buf
 	var out = make(chan NumberedCmd, len(order)+1) // must exceed len(order)
 	var stopCh = make(chan bool, 1)
 	p.Init(out, stopCh, 0, 4) // 4 is bufSize
@@ -88,7 +86,7 @@ func (s *XLSuite) TestCmdBuffer(c *C) {
 	for n := 0; n < len(order); n++ {
 		cmd := pairMap[int64(n)]
 		pair := NumberedCmd{Seqn: int64(order[n]), Cmd: cmd}
-		p.InCh <- pair
+		p.InCh() <- pair
 	}
 
 	var results [7]NumberedCmd
@@ -101,4 +99,8 @@ func (s *XLSuite) TestCmdBuffer(c *C) {
 	stopCh <- true
 	time.Sleep(time.Microsecond)
 	c.Assert(p.Running(), Equals, false)
+}
+func (s *XLSuite) TestCmdBuffer(c *C) {
+	var buf CmdBuffer
+	s.doTestCmdBufferI(c, &buf)
 }

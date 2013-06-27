@@ -89,9 +89,17 @@ func (q *pairQ) Pop() interface{} {
 	return lastPair
 }
 
+type CmdBufferI interface {
+	InCh() chan NumberedCmd
+	BypassCh() chan NumberedCmd
+	Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64, bufSize int)
+	Len() int
+	Running() bool
+	Run()
+}
 type CmdBuffer struct {
-	InCh     chan NumberedCmd
-	BypassCh chan NumberedCmd
+	inCh     chan NumberedCmd
+	bypassCh chan NumberedCmd
 	OutCh    chan NumberedCmd
 	StopCh   chan bool
 	q        pairQ
@@ -100,10 +108,17 @@ type CmdBuffer struct {
 	running  bool
 }
 
+func (c *CmdBuffer) BypassCh() chan NumberedCmd {
+	return c.bypassCh
+}
+func (c *CmdBuffer) InCh() chan NumberedCmd {
+	return c.inCh
+}
+
 func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64, bufSize int) {
 	c.q = pairQ{}
-	c.InCh = make(chan NumberedCmd, bufSize)     // buffered
-	c.BypassCh = make(chan NumberedCmd, bufSize) // buffered
+	c.inCh = make(chan NumberedCmd, bufSize)     // buffered
+	c.bypassCh = make(chan NumberedCmd, bufSize) // buffered
 	c.OutCh = out                                // should also be buffered
 	c.StopCh = StopCh
 	c.lastSeqn = lastSeqn
@@ -175,13 +190,13 @@ func (c *CmdBuffer) Run() {
 			break
 		}
 		select {
-		case inPair, ok := <-c.InCh: // get the next command
+		case inPair, ok := <-c.inCh: // get the next command
 			if c.handleCmd(inPair, ok) {
 				continue
 			} else {
 				break
 			}
-		case inPair, ok := <-c.BypassCh: // get the next command
+		case inPair, ok := <-c.bypassCh: // get the next command
 			if c.handleCmd(inPair, ok) {
 				continue
 			} else {
