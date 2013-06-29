@@ -24,6 +24,8 @@ import (
 // in fact it is used to bypass the consensus mechanism, an ill-
 // advised practice.
 
+const LOG_BUFFER_SIZE = 16 * 256 * 256
+
 type NumberedCmd struct {
 	Seqn int64
 	Cmd  string
@@ -257,7 +259,7 @@ type logBuffer struct {
 func (b *logBuffer) init(fd *os.File) {
 	var rwM sync.RWMutex
 	b.fd = fd
-	b.buffer = make([]byte, 16*256*256)
+	b.buffer = make([]byte, LOG_BUFFER_SIZE)
 	b.c = sync.NewCond(&rwM)
 	fmt.Println("* buffer initialized *")
 	go b.writeToDisk() // sets up writes
@@ -268,17 +270,38 @@ func (b *logBuffer) copyAndLog(seqn int64, cmd string) {
 	size := len(txt)
 	b.c.L.Lock() // a write lock
 	var from = b.end
-	b.end += size
-	b.c.L.Unlock()
-	//    dest <-- src
-	count := copy(b.buffer[from:], txt)
-	if count != size {
-		ohMy := fmt.Sprintf("tried to copy %d bytes but only %d copied",
-			size, count)
-		panic(ohMy)
+	var to = b.end + size
+	b.end = to % LOG_BUFFER_SIZE
+	if to <= LOG_BUFFER_SIZE {
+		b.c.L.Unlock()
+		// the normal case //////////////////////////////////////////
+		//    dest <-- src
+		count := copy(b.buffer[from:], txt)
+		if count != size {
+			ohMy := fmt.Sprintf("tried to copy %d bytes but only %d copied",
+				size, count)
+			panic(ohMy)
+		}
+		b.c.Signal()
+	} else {
+		// buffer overflow: do it in two writes
+		fmt.Println("BUFFER OVERFLOW")
+		// this will block
+		count, _ := b.fd.Write(b.buffer[from:LOG_BUFFER_SIZE])
+		b.begin = count
+		b.c.L.Unlock()
+
+		// copy and write the second part of the buffer
+		//            dest     <-- src
+		count = copy(b.buffer[0:], txt[count:])
+		// XXX need to check count for consistency
+		_ = count
+		b.c.Signal()
 	}
-	b.c.Signal()
 }
+
+// This runs in a separate goroutine and starts when b.c.Signal is
+// invoked.
 func (b *logBuffer) writeToDisk() {
 	for {
 		b.c.L.Lock()

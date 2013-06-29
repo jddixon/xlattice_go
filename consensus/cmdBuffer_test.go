@@ -95,8 +95,9 @@ func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI, logging bool) {
 	c.Assert(p.Running(), Equals, true)
 
 	for n := 0; n < len(order); n++ {
-		cmd := pairMap[int64(n)]
-		pair := NumberedCmd{Seqn: int64(order[n]), Cmd: cmd}
+		which := order[n]
+		cmd := pairMap[int64(which)]
+		pair := NumberedCmd{Seqn: int64(which), Cmd: cmd}
 		// DEBUG
 		fmt.Printf("sending %d : %s\n", order[n], cmd)
 		// END
