@@ -4,7 +4,9 @@ package consensus
 
 import (
 	"container/heap"
-	// "fmt" // DEBUG
+	"fmt" // DEBUG
+	"os"
+	"strings"
 	"sync"
 )
 
@@ -92,20 +94,23 @@ func (q *pairQ) Pop() interface{} {
 type CmdBufferI interface {
 	InCh() chan NumberedCmd
 	BypassCh() chan NumberedCmd
-	Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64, bufSize int)
+	Init(chan NumberedCmd, chan bool, int64, int, string)
 	Len() int
 	Running() bool
-	Run()
+	Run() error
 }
 type CmdBuffer struct {
-	inCh     chan NumberedCmd
-	bypassCh chan NumberedCmd
-	OutCh    chan NumberedCmd
-	StopCh   chan bool
-	q        pairQ
-	sy       sync.Mutex
-	lastSeqn int64
-	running  bool
+	inCh      chan NumberedCmd
+	bypassCh  chan NumberedCmd
+	OutCh     chan NumberedCmd
+	StopCh    chan bool
+	q         pairQ
+	sy        sync.Mutex
+	lastSeqn  int64
+	running   bool
+	pathToLog string // if none, we aren't logging
+	fd        *os.File
+	b         *logBuffer
 }
 
 func (c *CmdBuffer) BypassCh() chan NumberedCmd {
@@ -115,13 +120,15 @@ func (c *CmdBuffer) InCh() chan NumberedCmd {
 	return c.inCh
 }
 
-func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64, bufSize int) {
+func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64, bufSize int, pathToLog string) {
 	c.q = pairQ{}
 	c.inCh = make(chan NumberedCmd, bufSize)     // buffered
 	c.bypassCh = make(chan NumberedCmd, bufSize) // buffered
 	c.OutCh = out                                // should also be buffered
 	c.StopCh = StopCh
 	c.lastSeqn = lastSeqn
+	c.pathToLog = pathToLog
+	fmt.Println("* CmdBuffer initialized *")
 }
 
 // This is synched at the q level.
@@ -151,6 +158,9 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 		return true // get next command
 	} else if seqN == c.lastSeqn+1 {
 		c.OutCh <- inPair
+		if c.b != nil {
+			c.b.copyAndLog(seqN, inPair.Cmd) // WORKING HERE
+		}
 		c.lastSeqn += 1
 		// fmt.Printf("    SEQN %v MATCHED LAST + 1, SENDING\n", seqN)
 		for c.q.Len() > 0 {
@@ -163,6 +173,9 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 			} else if first.pair.Seqn == c.lastSeqn+1 {
 				pp := heap.Pop(&c.q).(*cmdPlus)
 				c.OutCh <- *pp.pair
+				if c.b != nil {
+					c.b.copyAndLog(pp.pair.Seqn, pp.pair.Cmd) // WORKING HERE
+				}
 				c.lastSeqn += 1
 				//	// fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
 			} else {
@@ -180,7 +193,29 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 	return true // get next command
 }
 
-func (c *CmdBuffer) Run() {
+func (c *CmdBuffer) Run() (err error) {
+	if c.pathToLog != "" {
+		fmt.Println("    we have a log file")
+		parts := strings.Split(c.pathToLog, "/")
+		n := len(parts)
+		if n > 1 {
+			pathToDir := strings.Join(parts[:n-1], "/")
+			if err := os.MkdirAll(pathToDir, 0775); err != nil {
+				panic(err)
+			}
+		}
+		fmt.Printf("    opening %s\n", c.pathToLog)
+		c.fd, err = os.Create(c.pathToLog)
+		if err != nil {
+			fmt.Printf("    * ERROR * opening log file %v\n", err)
+			return
+		}
+		defer c.fd.Close()
+		fmt.Println("    initializing log buffer")
+		var buf logBuffer
+		c.b = &buf
+		c.b.init(c.fd)
+	}
 	c.running = true
 	for {
 		c.sy.Lock()
@@ -209,4 +244,61 @@ func (c *CmdBuffer) Run() {
 			// fmt.Println("c.running has been set to false")
 		}
 	}
+	return
+}
+
+type logBuffer struct {
+	fd         *os.File
+	buffer     []byte
+	c          *sync.Cond
+	begin, end int
+}
+
+func (b *logBuffer) init(fd *os.File) {
+	var rwM sync.RWMutex
+	b.fd = fd
+	b.buffer = make([]byte, 16*256*256)
+	b.c = sync.NewCond(&rwM)
+	fmt.Println("* buffer initialized *")
+	go b.writeToDisk() // sets up writes
+}
+
+func (b *logBuffer) copyAndLog(seqn int64, cmd string) {
+	txt := fmt.Sprintf("%v %s\n", seqn, cmd)
+	size := len(txt)
+	b.c.L.Lock() // a write lock
+	var from = b.end
+	b.end += size
+	b.c.L.Unlock()
+	//    dest <-- src
+	count := copy(b.buffer[from:], txt)
+	if count != size {
+		ohMy := fmt.Sprintf("tried to copy %d bytes but only %d copied",
+			size, count)
+		panic(ohMy)
+	}
+	b.c.Signal()
+}
+func (b *logBuffer) writeToDisk() {
+	for {
+		b.c.L.Lock()
+		b.c.Wait()
+		for b.begin >= b.end { // XXX WON"T HANDLE CIRCULAR BUFFER
+			b.c.L.Lock()
+			b.c.Wait()
+		}
+		// we have the lock again
+		from := b.begin
+		to := b.end
+		b.c.L.Unlock()
+
+		// this will block
+		b.fd.Write(b.buffer[from:to])
+		b.c.L.Lock()
+		b.begin = to
+		b.c.L.Unlock()
+	}
+}
+func (b *logBuffer) FlushLog() {
+
 }

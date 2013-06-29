@@ -2,9 +2,10 @@ package consensus
 
 import (
 	"container/heap"
-	// "fmt"
+	"fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
+	"os"
 	"testing"
 	"time"
 )
@@ -60,7 +61,7 @@ func (s *XLSuite) TestCmdQ(c *C) {
 	//zzz		:= heap.Pop(&q)
 	// c.Assert(zzz, Equals, nil)
 }
-func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI) {
+func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI, logging bool) {
 	var pairMap = map[int64]string{
 		1: "foo",
 		2: "bar",
@@ -74,9 +75,19 @@ func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI) {
 	order := [...]int{1, 2, 3, 6, 3, 2, 6, 5, 4, 1, 7}
 	var out = make(chan NumberedCmd, len(order)+1) // must exceed len(order)
 	var stopCh = make(chan bool, 1)
-	p.Init(out, stopCh, 0, 4) // 4 is bufSize
+	var logFile string
+	if logging {
+		logFile = "tmp/logFile"
+	}
+	p.Init(out, stopCh, 0, 4, logFile) // 4 is bufSize
+	if logging {
+		_, err := os.Stat(logFile)
+		c.Assert(err, Equals, nil)
+	}
 	c.Assert(p.Running(), Equals, false)
 
+	fmt.Println("  starting p loop ...")
+	// XXX Run() can return an error, which must be nil
 	go p.Run()
 	for !p.Running() {
 		time.Sleep(time.Millisecond)
@@ -86,6 +97,9 @@ func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI) {
 	for n := 0; n < len(order); n++ {
 		cmd := pairMap[int64(n)]
 		pair := NumberedCmd{Seqn: int64(order[n]), Cmd: cmd}
+		// DEBUG
+		fmt.Printf("sending %d : %s\n", order[n], cmd)
+		// END
 		p.InCh() <- pair
 	}
 
@@ -102,5 +116,8 @@ func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI) {
 }
 func (s *XLSuite) TestCmdBuffer(c *C) {
 	var buf CmdBuffer
-	s.doTestCmdBufferI(c, &buf)
+	fmt.Println("running test without logging")
+	s.doTestCmdBufferI(c, &buf, false)
+	fmt.Println("running test -with- logging")
+	s.doTestCmdBufferI(c, &buf, true)
 }
