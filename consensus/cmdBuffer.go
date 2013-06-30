@@ -104,8 +104,8 @@ type CmdBufferI interface {
 type CmdBuffer struct {
 	inCh      chan NumberedCmd
 	bypassCh  chan NumberedCmd
-	OutCh     chan NumberedCmd
-	StopCh    chan bool
+	OutCh     chan NumberedCmd // output only
+	StopCh    chan bool        // receive only
 	q         pairQ
 	sy        sync.Mutex
 	lastSeqn  int64
@@ -130,7 +130,7 @@ func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64,
 	c.StopCh = StopCh
 	c.lastSeqn = lastSeqn
 	c.pathToLog = pathToLog
-	fmt.Println("* CmdBuffer initialized *")
+	fmt.Println("\n* CmdBuffer initialized *")
 }
 
 // This is synched at the q level.
@@ -161,7 +161,7 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 	} else if seqN == c.lastSeqn+1 {
 		c.OutCh <- inPair
 		if c.b != nil {
-			c.b.copyAndLog(seqN, inPair.Cmd) // WORKING HERE
+			c.b.copyAndLog(seqN, inPair.Cmd)
 		}
 		c.lastSeqn += 1
 		// fmt.Printf("    SEQN %v MATCHED LAST + 1, SENDING\n", seqN)
@@ -176,7 +176,7 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 				pp := heap.Pop(&c.q).(*cmdPlus)
 				c.OutCh <- *pp.pair
 				if c.b != nil {
-					c.b.copyAndLog(pp.pair.Seqn, pp.pair.Cmd) // WORKING HERE
+					c.b.copyAndLog(pp.pair.Seqn, pp.pair.Cmd)
 				}
 				c.lastSeqn += 1
 				//	// fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
@@ -226,7 +226,7 @@ func (c *CmdBuffer) Run() (err error) {
 		if !whether {
 			break
 		}
-		select {
+		select { // SLEEP DEADLOCK
 		case inPair, ok := <-c.inCh: // get the next command
 			if c.handleCmd(inPair, ok) {
 				continue
