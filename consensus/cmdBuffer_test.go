@@ -191,7 +191,7 @@ func (s *XLSuite) TestLogBufferOverflow(c *C) {
 		c.Assert(int64(n+1), Equals, nextResult.Seqn)
 		c.Assert(cmd, Equals, nextResult.Cmd)
 
-		fmt.Printf("%d sent and received\n", n)
+		// fmt.Printf("%d sent and received\n", n)
 	}
 
 	c.Assert(p.Running(), Equals, true)

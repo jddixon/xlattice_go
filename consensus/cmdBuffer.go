@@ -268,35 +268,37 @@ func (b *logBuffer) init(fd *os.File) {
 func (b *logBuffer) copyAndLog(seqn int64, cmd string) {
 	txt := fmt.Sprintf("%v %s\n", seqn, cmd)
 	size := len(txt)
-	b.c.L.Lock() // a write lock
+	b.c.L.Lock() // LOCK ////////////////////////////////////////////
 	var from = b.end
 	var to = b.end + size
-	b.end = to % LOG_BUFFER_SIZE
 	if to <= LOG_BUFFER_SIZE {
-		b.c.L.Unlock()
-		// the normal case //////////////////////////////////////////
-		//    dest <-- src
+		b.end = to
+		// the normal case ////////////////////////////////
+		//            dest     <--     src
 		count := copy(b.buffer[from:], txt)
 		if count != size {
 			ohMy := fmt.Sprintf("tried to copy %d bytes but only %d copied",
 				size, count)
 			panic(ohMy)
 		}
+		b.c.L.Unlock() // UNLOCK ////////////////////////////////////
 		b.c.Signal()
 	} else {
-		// buffer overflow: do it in two writes
-		// fmt.Println("BUFFER OVERFLOW")
-		// this will block
-		count, _ := b.fd.Write(b.buffer[from:LOG_BUFFER_SIZE])
-		b.begin = count
-		b.c.L.Unlock()
+		// block while writing
+		// (a) flush the buffer while holding lock
+		var count int
+		count, _ = b.fd.Write(b.buffer[b.begin:b.end])
+		// XXX need to check for errors, check count for consistency
 
-		// copy and write the second part of the buffer
-		//            dest     <-- src
-		count = copy(b.buffer[0:], txt[count:])
-		// XXX need to check count for consistency
+		// (b) write the string that would have overflowed
+		count, _ = b.fd.Write([]byte(txt))
+		// XXX need to check for errors, check count for consistency
 		_ = count
-		b.c.Signal()
+
+		b.begin = 0
+		b.end = 0
+
+		b.c.L.Unlock() // UNLOCK ////////////////////////////////////
 	}
 }
 
@@ -316,7 +318,12 @@ func (b *logBuffer) writeToDisk() {
 		b.c.L.Unlock()
 
 		// this will block
-		b.fd.Write(b.buffer[from:to])
+		if to > from {
+			count, _ := b.fd.Write(b.buffer[from:to])
+			// XXX need to check for errors, check count for consistency
+			_ = count
+		}
+
 	}
 }
 func (b *logBuffer) FlushLog() {
