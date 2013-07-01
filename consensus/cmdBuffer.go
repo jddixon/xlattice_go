@@ -4,7 +4,7 @@ package consensus
 
 import (
 	"container/heap"
-	"fmt" // DEBUG
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -130,7 +130,7 @@ func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64,
 	c.StopCh = StopCh
 	c.lastSeqn = lastSeqn
 	c.pathToLog = pathToLog
-	fmt.Println("\n* CmdBuffer initialized *")
+	// fmt.Println("\n* CmdBuffer initialized *")
 }
 
 // This is synched at the q level.
@@ -197,7 +197,7 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 
 func (c *CmdBuffer) Run() (err error) {
 	if c.pathToLog != "" {
-		fmt.Println("    we have a log file")
+		// fmt.Println("    we have a log file")
 		parts := strings.Split(c.pathToLog, "/")
 		n := len(parts)
 		if n > 1 {
@@ -206,14 +206,14 @@ func (c *CmdBuffer) Run() (err error) {
 				panic(err)
 			}
 		}
-		fmt.Printf("    opening %s\n", c.pathToLog)
+		// fmt.Printf("    opening %s\n", c.pathToLog)
 		c.fd, err = os.Create(c.pathToLog)
 		if err != nil {
 			fmt.Printf("    * ERROR * opening log file %v\n", err)
 			return
 		}
 		defer c.fd.Close()
-		fmt.Println("    initializing log buffer")
+		// fmt.Println("    initializing log buffer")
 		var buf logBuffer
 		c.b = &buf
 		c.b.init(c.fd)
@@ -261,7 +261,7 @@ func (b *logBuffer) init(fd *os.File) {
 	b.fd = fd
 	b.buffer = make([]byte, LOG_BUFFER_SIZE)
 	b.c = sync.NewCond(&rwM)
-	fmt.Println("* buffer initialized *")
+	// fmt.Println("* buffer initialized *")
 	go b.writeToDisk() // sets up writes
 }
 
@@ -285,7 +285,7 @@ func (b *logBuffer) copyAndLog(seqn int64, cmd string) {
 		b.c.Signal()
 	} else {
 		// buffer overflow: do it in two writes
-		fmt.Println("BUFFER OVERFLOW")
+		// fmt.Println("BUFFER OVERFLOW")
 		// this will block
 		count, _ := b.fd.Write(b.buffer[from:LOG_BUFFER_SIZE])
 		b.begin = count
@@ -307,19 +307,16 @@ func (b *logBuffer) writeToDisk() {
 		b.c.L.Lock()
 		b.c.Wait()
 		for b.begin >= b.end { // XXX WON"T HANDLE CIRCULAR BUFFER
-			b.c.L.Lock()
 			b.c.Wait()
 		}
 		// we have the lock again
 		from := b.begin
 		to := b.end
+		b.begin = to
 		b.c.L.Unlock()
 
 		// this will block
 		b.fd.Write(b.buffer[from:to])
-		b.c.L.Lock()
-		b.begin = to
-		b.c.L.Unlock()
 	}
 }
 func (b *logBuffer) FlushLog() {

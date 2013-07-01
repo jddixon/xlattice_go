@@ -53,10 +53,12 @@ func doBenchmarkCmdBuffer(b *testing.B, pathToLog string) {
 
 // without log to disk, 2 million ops, 942 ns/op
 func BenchmarkCmdBufferWithoutLog(b *testing.B) {
+	fmt.Println("BENCHMARK WITHOUT LOGGING")
 	doBenchmarkCmdBuffer(b, "")
 }
 
 // then do it with a log
 func BenchmarkCmdBufferWithLog(b *testing.B) {
+	fmt.Println("BENCHMARK *WITH* LOGGING")
 	doBenchmarkCmdBuffer(b, "tmp/benchMark.log")
 }
