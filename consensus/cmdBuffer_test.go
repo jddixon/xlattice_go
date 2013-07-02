@@ -86,7 +86,7 @@ func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI, logging bool) {
 	if logging {
 		logFile = "tmp/logFile"
 	}
-	p.Init(out, stopCh, 0, 4, logFile) // 4 is bufSize
+	p.Init(out, stopCh, 0, 4, logFile, 0, false) // 4 is chan bufSize
 	if logging {
 		_, err := os.Stat(logFile)
 		c.Assert(err, Equals, nil)
@@ -155,7 +155,7 @@ func (s *XLSuite) TestLogBufferOverflow(c *C) {
 	var out = make(chan NumberedCmd, 4) //
 	var stopCh = make(chan bool, 1)
 	logFile := "tmp/overflows.log"
-	p.Init(out, stopCh, 0, 4, logFile) // 4 is bufSize
+	p.Init(out, stopCh, 0, 4, logFile, 0, false) // 4 is bufSize
 	c.Assert(p.Running(), Equals, false)
 
 	fmt.Println("  starting p loop for overflow test ...")

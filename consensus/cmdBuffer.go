@@ -96,7 +96,7 @@ func (q *pairQ) Pop() interface{} {
 type CmdBufferI interface {
 	InCh() chan NumberedCmd
 	BypassCh() chan NumberedCmd
-	Init(chan NumberedCmd, chan bool, int64, int, string)
+	Init(chan NumberedCmd, chan bool, int64, int, string, int, bool)
 	Len() int
 	Running() bool
 	Run() error
@@ -113,6 +113,9 @@ type CmdBuffer struct {
 	pathToLog string // if none, we aren't logging
 	fd        *os.File
 	b         *logBuffer
+
+	verbose  int  // :-(
+	disabled bool // :-( :-(
 }
 
 func (c *CmdBuffer) BypassCh() chan NumberedCmd {
@@ -122,7 +125,9 @@ func (c *CmdBuffer) InCh() chan NumberedCmd {
 	return c.inCh
 }
 
-func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64, bufSize int, pathToLog string) {
+func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool,
+	lastSeqn int64, bufSize int, pathToLog string,
+	verbose int, disabled bool) {
 	c.q = pairQ{}
 	c.inCh = make(chan NumberedCmd, bufSize)     // buffered
 	c.bypassCh = make(chan NumberedCmd, bufSize) // buffered
@@ -130,6 +135,8 @@ func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool, lastSeqn int64,
 	c.StopCh = StopCh
 	c.lastSeqn = lastSeqn
 	c.pathToLog = pathToLog
+	c.verbose = verbose
+	c.disabled = disabled
 	// fmt.Println("\n* CmdBuffer initialized *")
 }
 
@@ -154,9 +161,21 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 		return false // we are done
 	}
 	seqN := inPair.Seqn
-	// fmt.Printf("RECEIVED PAIR %v\n", seqN)
+	if c.verbose > 0 {
+		fmt.Printf("RECEIVED PAIR %v\n", seqN)
+	}
+	// DEBUG
+	if c.disabled {
+		c.OutCh <- inPair
+		return true
+	}
+	// END
 	if seqN <= c.lastSeqn { // already sent, so discard
-		// fmt.Printf("    ALREADY SEEN, DISCARDING\n")
+		if c.verbose == 1 {
+			fmt.Printf("    ALREADY SEEN, DISCARDING\n")
+		} else if c.verbose > 1 {
+			fmt.Printf("    %s ALREADY SEEN, DISCARDING\n", inPair.Cmd)
+		}
 		return true // get next command
 	} else if seqN == c.lastSeqn+1 {
 		c.OutCh <- inPair
@@ -164,12 +183,16 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 			c.b.copyAndLog(seqN, inPair.Cmd)
 		}
 		c.lastSeqn += 1
-		// fmt.Printf("    SEQN %v MATCHED LAST + 1, SENDING\n", seqN)
+		if c.verbose > 0 {
+			fmt.Printf("    SEQN %v MATCHED LAST + 1, SENDING\n", seqN)
+		}
 		for c.q.Len() > 0 {
 			first := c.q[0]
 			if first.pair.Seqn <= c.lastSeqn {
-				//	// fmt.Printf("        Q: DISCARDING %v, DUPE\n",
-				//							first.pair.Seqn)
+				if c.verbose > 0 {
+					fmt.Printf("        Q: DISCARDING %v, DUPE\n",
+						first.pair.Seqn)
+				}
 				// a duplicate, so discard
 				_ = heap.Pop(&c.q).(*cmdPlus)
 			} else if first.pair.Seqn == c.lastSeqn+1 {
@@ -179,16 +202,22 @@ func (c *CmdBuffer) handleCmd(inPair NumberedCmd, ok bool) bool {
 					c.b.copyAndLog(pp.pair.Seqn, pp.pair.Cmd)
 				}
 				c.lastSeqn += 1
-				//	// fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
+				if c.verbose > 0 {
+					fmt.Printf("        Q: SENT %v\n", c.lastSeqn)
+				}
 			} else {
-				//	// fmt.Printf("        Q: LEAVING %v IN Q\n",
-				//							first.pair.Seqn)
+				if c.verbose > 0 {
+					fmt.Printf("        Q: LEAVING %v IN Q\n",
+						first.pair.Seqn)
+				}
 				break
 			}
 		}
 	} else {
 		// seqN > c.lastSeqn + 1, so buffer
-		// fmt.Printf("    HIGH SEQN %v, SO BUFFERING\n", seqN)
+		if c.verbose > 0 {
+			fmt.Printf("    HIGH SEQN %v, SO BUFFERING\n", seqN)
+		}
 		pp := &cmdPlus{pair: &inPair}
 		heap.Push(&c.q, pp)
 	}
@@ -218,7 +247,9 @@ func (c *CmdBuffer) Run() (err error) {
 		c.b = &buf
 		c.b.init(c.fd)
 	}
+	c.sy.Lock()
 	c.running = true
+	c.sy.Unlock()
 	for {
 		c.sy.Lock()
 		whether := c.running
@@ -226,7 +257,7 @@ func (c *CmdBuffer) Run() (err error) {
 		if !whether {
 			break
 		}
-		select { // SLEEP DEADLOCK
+		select {
 		case inPair, ok := <-c.inCh: // get the next command
 			if c.handleCmd(inPair, ok) {
 				continue

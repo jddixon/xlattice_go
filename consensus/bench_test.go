@@ -35,7 +35,7 @@ func doBenchmarkCmdBuffer(b *testing.B, pathToLog string) {
 	stopCh := make(chan bool)
 	var buf CmdBuffer
 	p := &buf
-	p.Init(out, stopCh, 0, 4, pathToLog) // 4 is bufSize, "" means no log
+	p.Init(out, stopCh, 0, 4, pathToLog, 0, false) // 4 is bufSize, "" means no log
 	go p.Run()
 	for !p.Running() {
 		time.Sleep(10 * time.Millisecond)
