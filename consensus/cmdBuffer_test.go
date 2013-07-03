@@ -87,10 +87,6 @@ func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI, logging bool) {
 		logFile = "tmp/logFile"
 	}
 	p.Init(out, stopCh, 0, 4, logFile, 0, false) // 4 is chan bufSize
-	if logging {
-		_, err := os.Stat(logFile)
-		c.Assert(err, Equals, nil)
-	}
 	c.Assert(p.Running(), Equals, false)
 
 	fmt.Println("  starting p loop ...")
@@ -100,6 +96,10 @@ func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI, logging bool) {
 		time.Sleep(time.Millisecond)
 	}
 	c.Assert(p.Running(), Equals, true)
+	if logging {
+		_, err := os.Stat(logFile) // created by Run()
+		c.Assert(err, Equals, nil)
+	}
 
 	for n := 0; n < len(order); n++ {
 		which := order[n]
