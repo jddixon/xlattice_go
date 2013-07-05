@@ -10,6 +10,8 @@ import (
 	"sync"
 )
 
+var _ = fmt.Println
+
 // Mediates between a producer and a consumer, where the producer
 // sends a series of <number, command> pairs which will generally
 // be unordered and may contain pairs with the same sequence
@@ -137,7 +139,7 @@ func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool,
 	c.pathToLog = pathToLog
 	c.verbose = verbose
 	c.disabled = disabled
-	// fmt.Println("\n* CmdBuffer initialized *")
+	fmt.Println("\n* CmdBuffer initialized *")
 }
 
 // This is synched at the q level.
@@ -274,7 +276,7 @@ func (c *CmdBuffer) Run() (err error) {
 			c.sy.Lock()
 			c.running = false
 			c.sy.Unlock()
-			// fmt.Println("c.running has been set to false")
+			fmt.Println("c.running has been set to false")
 		}
 	}
 	return
