@@ -67,15 +67,13 @@ func doBenchmarkCmdBuffer(b *testing.B, pathToLog string, verbosity int) {
 }
 
 // without log to disk, 2 million ops, 942 ns/op
-func BenchmarkCmdBufferWithoutLog10(b *testing.B) {
-	fmt.Println("BENCHMARK WITHOUT LOGGING")
+func BenchmarkCmdBufferWithoutLog(b *testing.B) {
 	// About 1025 - 1100 ns/op over 1 million ops.
 	doBenchmarkCmdBuffer(b, "", 0) // 0 => not verbose
 }
 
 // then do it with a log - benchmark appears to hang
 func BenchmarkCmdBufferWithLog(b *testing.B) {
-	fmt.Println("\nBENCHMARK *WITH* LOGGING")
 	// about 4100 ns/op over 500,000 ops
 	doBenchmarkCmdBuffer(b, "tmp/benchMark.log", 0)
 }
