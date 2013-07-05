@@ -22,8 +22,10 @@ func sink(from chan NumberedCmd) {
 	// should use range and close the channel to shut down
 	for {
 		select {
-		case nc := <-from:
-			_ = nc
+		case _, ok := <-from:
+			if !ok {
+				return
+			}
 		}
 	}
 }
@@ -37,35 +39,43 @@ func doBenchmarkCmdBuffer(b *testing.B, pathToLog string, verbosity int) {
 	p := &buf
 	// 4 is bufSize, "" means no log
 	p.Init(out, stopCh, 0, 4, pathToLog, verbosity, false)
-	fmt.Println("initialization complete")
+	if verbosity > 1 {
+		fmt.Println("initialization complete")
+	}
 	go p.Run()
-	fmt.Println("goroutine started ...") // SEEN
+	if verbosity > 1 {
+		fmt.Println("goroutine started ...")
+	}
 	for !p.Running() {
 		time.Sleep(10 * time.Millisecond)
-		fmt.Print(".") // NOT SEEN! FOR SECOND LOOP
+		if verbosity > 0 {
+			fmt.Print(".")
+		}
 	}
-	fmt.Println("\nwould call ResetTimer") //
+	if verbosity > 1 {
+		fmt.Println("\ncalling ResetTimer") //
+	}
 	b.ResetTimer()
-	// typically 28.4 ns/op
-	fmt.Printf("  N is %d\n", b.N) // DEBUG
 	for i := 0; i < b.N; i++ {
 		p.InCh() <- *NCmds[i]
 	}
-	fmt.Println("sending to stopCh") // DEBUG
+	if verbosity > 1 {
+		fmt.Println("sending to stopCh") // DEBUG
+	}
 	stopCh <- true
-	close(out)
+	close(out) // should kill sink()
 }
 
-// XXX BOTH BENCHMARKS NOW HANG !!!  OTHER TESTS SUCCEED
-
 // without log to disk, 2 million ops, 942 ns/op
-func BenchmarkCmdBufferWithoutLog(b *testing.B) {
+func BenchmarkCmdBufferWithoutLog10(b *testing.B) {
 	fmt.Println("BENCHMARK WITHOUT LOGGING")
-	doBenchmarkCmdBuffer(b, "", 2)
+	// About 1025 - 1100 ns/op over 1 million ops.
+	doBenchmarkCmdBuffer(b, "", 0) // 0 => not verbose
 }
 
 // then do it with a log - benchmark appears to hang
 func BenchmarkCmdBufferWithLog(b *testing.B) {
 	fmt.Println("\nBENCHMARK *WITH* LOGGING")
-	doBenchmarkCmdBuffer(b, "tmp/benchMark.log", 2)
+	// about 4100 ns/op over 500,000 ops
+	doBenchmarkCmdBuffer(b, "tmp/benchMark.log", 0)
 }

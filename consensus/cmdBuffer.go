@@ -139,7 +139,9 @@ func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool,
 	c.pathToLog = pathToLog
 	c.verbose = verbose
 	c.disabled = disabled
-	fmt.Println("\n* CmdBuffer initialized *")
+	if c.verbose > 0 {
+		fmt.Println("\n* CmdBuffer initialized *")
+	}
 }
 
 // This is synched at the q level.
@@ -276,7 +278,9 @@ func (c *CmdBuffer) Run() (err error) {
 			c.sy.Lock()
 			c.running = false
 			c.sy.Unlock()
-			fmt.Println("c.running has been set to false")
+			if c.verbose > 0 {
+				fmt.Println("c.running has been set to false")
+			}
 		}
 	}
 	return
