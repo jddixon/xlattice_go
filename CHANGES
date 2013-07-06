@@ -1,5 +1,9 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.2.1
+    2013-07-05
+        * keep version data consistent with rnglib/rnglib.go
+        * consensus/cmdBuffer                                       SLOC 2726
 0.2.0
     2013-06-19
         * working and tested u256x256                               SLOC 2061

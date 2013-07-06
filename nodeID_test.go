@@ -2,18 +2,7 @@ package xlattice_go
 
 import (
 	. "launchpad.net/gocheck"
-	// "github.com/bmizerany/assert"
-	"testing"
 )
-
-// gocheck tie-in /////////////////////
-func Test(t *testing.T) { TestingT(t) }
-
-type XLSuite struct{}
-
-var _ = Suite(&XLSuite{})
-
-// end gocheck setup //////////////////
 
 func (s *XLSuite) TestBadNodeIDs(c *C) {
 	c.Assert(false, Equals, IsValidID(nil))

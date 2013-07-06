@@ -3,8 +3,9 @@ package rnglib
 import "os"
 import "strings"
 
+// Version number tracked in ../CHANGES
 func Version() (string, string) {
-	return "0.1.1", "2013-06-14"
+	return "0.2.1", "2013-07-05"
 }
 
 // a crude attempt at properties
