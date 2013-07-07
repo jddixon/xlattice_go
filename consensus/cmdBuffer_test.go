@@ -81,12 +81,11 @@ func (s *XLSuite) doTestCmdBufferI(c *C, p CmdBufferI, logging bool) {
 	// we send the messages somewhat out of order, with some duplicates
 	order := [...]int{1, 2, 3, 6, 3, 2, 6, 5, 4, 1, 7}
 	var out = make(chan NumberedCmd, len(order)+1) // must exceed len(order)
-	var stopCh = make(chan bool, 1)
 	var logFile string
 	if logging {
 		logFile = "tmp/logFile"
 	}
-	p.Init(out, stopCh, 0, 4, logFile, 0, false) // 4 is chan bufSize
+	stopCh := p.Init(out, 0, 4, logFile, 0, false) // 4 is chan bufSize
 	c.Assert(p.Running(), Equals, false)
 
 	fmt.Println("  starting p loop ...")
@@ -153,9 +152,8 @@ func (s *XLSuite) TestLogBufferOverflow(c *C) {
 	rng := s.makeSimpleRNG()
 
 	var out = make(chan NumberedCmd, 4) //
-	var stopCh = make(chan bool, 1)
 	logFile := "tmp/overflows.log"
-	p.Init(out, stopCh, 0, 4, logFile, 0, false) // 4 is bufSize
+	stopCh := p.Init(out, 0, 4, logFile, 0, false) // 4 is bufSize
 	c.Assert(p.Running(), Equals, false)
 
 	fmt.Println("  starting p loop for overflow test ...")

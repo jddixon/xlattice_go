@@ -34,11 +34,10 @@ func doBenchmarkCmdBuffer(b *testing.B, pathToLog string, verbosity int) {
 	NCmds := makeSomeCommands(b.N)
 	out := make(chan NumberedCmd)
 	go sink(out)
-	stopCh := make(chan bool)
 	var buf CmdBuffer
 	p := &buf
 	// 4 is bufSize, "" means no log
-	p.Init(out, stopCh, 0, 4, pathToLog, verbosity, false)
+	stopCh := p.Init(out, 0, 4, pathToLog, verbosity, false)
 	if verbosity > 1 {
 		fmt.Println("initialization complete")
 	}

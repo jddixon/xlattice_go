@@ -98,7 +98,7 @@ func (q *pairQ) Pop() interface{} {
 type CmdBufferI interface {
 	InCh() chan NumberedCmd
 	BypassCh() chan NumberedCmd
-	Init(chan NumberedCmd, chan bool, int64, int, string, int, bool)
+	Init(chan NumberedCmd, int64, int, string, int, bool) chan bool
 	Len() int
 	Running() bool
 	Run() error
@@ -107,7 +107,7 @@ type CmdBuffer struct {
 	inCh      chan NumberedCmd
 	bypassCh  chan NumberedCmd
 	OutCh     chan NumberedCmd // output only
-	StopCh    chan bool        // receive only
+	stopCh    chan bool        // receive only
 	q         pairQ
 	sy        sync.Mutex
 	lastSeqn  int64
@@ -127,14 +127,14 @@ func (c *CmdBuffer) InCh() chan NumberedCmd {
 	return c.inCh
 }
 
-func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool,
+func (c *CmdBuffer) Init(out chan NumberedCmd,
 	lastSeqn int64, bufSize int, pathToLog string,
-	verbose int, disabled bool) {
+	verbose int, disabled bool) (stopCh chan bool) {
 	c.q = pairQ{}
 	c.inCh = make(chan NumberedCmd, bufSize)     // buffered
 	c.bypassCh = make(chan NumberedCmd, bufSize) // buffered
 	c.OutCh = out                                // should also be buffered
-	c.StopCh = StopCh
+	c.stopCh = make(chan bool)
 	c.lastSeqn = lastSeqn
 	c.pathToLog = pathToLog
 	c.verbose = verbose
@@ -142,6 +142,7 @@ func (c *CmdBuffer) Init(out chan NumberedCmd, StopCh chan bool,
 	if c.verbose > 0 {
 		fmt.Println("\n* CmdBuffer initialized *")
 	}
+	return c.stopCh
 }
 
 // This is synched at the q level.
@@ -274,7 +275,7 @@ func (c *CmdBuffer) Run() (err error) {
 			} else {
 				break
 			}
-		case <-c.StopCh:
+		case <-c.stopCh:
 			c.sy.Lock()
 			c.running = false
 			c.sy.Unlock()
