@@ -1,8 +1,11 @@
 xlattice-go
 ===========
 
-A golang implementation of XLattice.
+An implementation of [XLattice](http://xlattice.sourceforge.net)
+for the Go language.  XLattice is a Java communications library 
+for peer-to-peer networks.
 
+This version of xlattice-go also includes a Go implementation of *rnglib*.
 
 ## rnglib
 
@@ -11,28 +14,37 @@ quasi-random strings, files, and directories.
 
 This package contains two classes, SimpleRNG and SystemRNG.
 Both of these subclass Go's rand package and so rand's functions 
-can be called through either of rnglib's two subclasses.
+can be called through either of rnglib's two subclasses using 
+exactly the same syntax.
 
-SimpleRNG is the faster of the subclasses.  It uses the Mersenne
+SimpleRNG is the faster of the two.  It uses the Mersenne
 Twister and so is completely predictable with a very long period.
 It is suitable where speed and predictability are both important.
-That is, you can be certain that if you provide the same seed, then
+You can be certain that if you provide the same seed, then
 the sequence of numbers generated will be exactly the same.  This is
-often important for debugging.  SimpleRNG is approximately 30% 
-faster than Go's rand package in our tests.
+often important for debugging.  
+
+SimpleRNG is also very fast.  It is approximately 30% faster 
+than Go's rand package in our tests.
+
+On the other hand, although the Mersenne Twister is absolutely predictable, 
+it also has extremely good statistical properties.  Tests using standard
+packages such as [Diehard]("http://en.wikipedia.org/wiki/Diehard_tests)
+and [Dieharder](http://www.phy.duke.edu/~rgb/General/dieharder.php) rank
+the Mersenned Twister very highly.  The Twister is quite widely used 
+(for example, in the Python libraries) because of this.
 
 SystemRNG is a secure random number generator, meaning that it is
 extremely difficult or impossible to predict the next number 
 generated in a sequence.  It is based on the system's /dev/urandom.
-This relies in part upon entropy accumulated by the system; when 
+This relies upon entropy accumulated by the system; when 
 this is insufficient it will revert to using a very secure 
 programmable random number generator.  SystemRNG is about 35x
 slower than SimpleRNG in our test runs.
 
 For normal use in testing, SimpleRNG is preferred.  When there is
-a requirement for a reasonable level of security, as in the 
-generation of passwords and cryptographic keys with reasonable 
-strength, SystemRNG is recommended.  
+a requirement for greater security, as in the generation of passwords 
+and cryptographic keys with reasonable strength, SystemRNG is recommended.  
 
 In addition to the functions available from Go's random package,
 rnglib also provides
