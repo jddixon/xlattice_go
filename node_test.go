@@ -16,6 +16,7 @@ import (
 
 func makeNodeID(rng *PRNG) *NodeID {
 	var buffer []byte
+	// quasi-random choice, whether to use an SHA1 or SHA3 nodeID
 	if rng.NextBoolean() {
 		buffer = make([]byte, SHA1_LEN)
 	} else {
@@ -27,17 +28,29 @@ func makeNodeID(rng *PRNG) *NodeID {
 
 // func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 func (s *XLSuite) doKeyTests(c *C, node *Node, rng *PRNG) {
-	pubkey := node.GetPublicKey()
-	c.Assert(pubkey, Not(IsNil)) // NOT
+	commsPubkey := node.GetCommsPublicKey()
+	c.Assert(commsPubkey, Not(IsNil)) // NOT
 
-	privkey := node.key // naughty
-	c.Assert(privkey.Validate(), IsNil)
+	privCommsKey := node.commsKey // naughty
+	c.Assert(privCommsKey.Validate(), IsNil)
 
-	expLen := (*privkey.D).BitLen()
+	expLen := (*privCommsKey.D).BitLen()
 	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
 	c.Assert(true, Equals, (2040 <= expLen) && (expLen <= 2048))
 
-	c.Assert(privkey.PublicKey, Equals, *pubkey)
+	c.Assert(privCommsKey.PublicKey, Equals, *commsPubkey) // FOO
+
+	sigPubkey := node.GetSigPublicKey()
+	c.Assert(sigPubkey, Not(IsNil)) // NOT
+
+	privSigKey := node.sigKey // naughty
+	c.Assert(privSigKey.Validate(), IsNil)
+
+	expLen = (*privSigKey.D).BitLen()
+	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
+	c.Assert(true, Equals, (2040 <= expLen) && (expLen <= 2048))
+
+	c.Assert(privSigKey.PublicKey, Equals, *sigPubkey) // FOO
 
 	// sign /////////////////////////////////////////////////////////
 	msgLen := 128
@@ -48,7 +61,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *PRNG) {
 	d.Write(msg)
 	hash := d.Sum(nil)
 
-	sig, err := rsa.SignPKCS1v15(rand.Reader, node.key, cr.SHA1, hash)
+	sig, err := rsa.SignPKCS1v15(rand.Reader, node.sigKey, cr.SHA1, hash)
 	c.Assert(err, IsNil)
 
 	signer := node.getSigner()
@@ -65,14 +78,14 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *PRNG) {
 	}
 
 	// verify ///////////////////////////////////////////////////////
-	err = rsa.VerifyPKCS1v15(pubkey, cr.SHA1, hash, sig)
+	err = rsa.VerifyPKCS1v15(sigPubkey, cr.SHA1, hash, sig)
 	c.Assert(err, IsNil)
 
 	// 2013-06-15, SigVerify now returns error, so nil means OK
-	c.Assert(nil, Equals, xc.SigVerify(pubkey, msg, sig))
+	c.Assert(nil, Equals, xc.SigVerify(sigPubkey, msg, sig))
 
 	s.nilArgCheck(c)
-}
+} // GEEP
 
 // XXX TODO: move these tests into crypto/sig_test.go
 // func nilArgCheck(t *testing.T) {

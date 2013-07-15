@@ -19,8 +19,10 @@ import (
  */
 type Node struct {
 	nodeID      *NodeID         // public
-	key         *rsa.PrivateKey // private
-	pubkey      *rsa.PublicKey  // public
+	commsKey    *rsa.PrivateKey // private
+	commsPubkey *rsa.PublicKey  // public
+	sigKey      *rsa.PrivateKey // private
+	sigPubkey   *rsa.PublicKey  // public
 	endPoints   []*EndPoint
 	overlays    []*OverlayI
 	peers       []*Peer
@@ -29,11 +31,11 @@ type Node struct {
 
 func NewNewNode(id *NodeID) (*Node, error) {
 	// XXX create default 2K bit RSA key
-	return NewNode(id, nil, nil, nil, nil)
+	return NewNode(id, nil, nil, nil, nil, nil)
 }
 
-func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
-	c *[]*ConnectionI) (*Node, error) {
+func NewNode(id *NodeID, commsKey *rsa.PrivateKey, sigKey *rsa.PrivateKey,
+	e *[]*EndPoint, p *[]*Peer, c *[]*ConnectionI) (*Node, error) {
 
 	if id == nil {
 		err := errors.New("IllegalArgument: nil NodeID")
@@ -46,12 +48,19 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
 	// * extract the public key
 	// * build the DigSigner
 	///////////////////////////////
-	if key == nil {
+	if commsKey == nil {
 		k, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
 			return nil, err
 		}
-		key = k
+		commsKey = k
+	}
+	if sigKey == nil {
+		k, err := rsa.GenerateKey(rand.Reader, 2048)
+		if err != nil {
+			return nil, err
+		}
+		sigKey = k
 	}
 
 	var endPoints []*EndPoint // an empty slice
@@ -80,8 +89,10 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
 	}
 	q := new(Node)
 	(*q).nodeID = nodeID // the clone
-	(*q).key = key
-	(*q).pubkey = &(*key).PublicKey
+	(*q).commsKey = commsKey
+	(*q).sigKey = sigKey
+	(*q).commsPubkey = &(*commsKey).PublicKey
+	(*q).sigPubkey = &(*sigKey).PublicKey
 	(*q).endPoints = endPoints
 	(*q).overlays = overlays
 	(*q).peers = peers
@@ -93,9 +104,13 @@ func NewNode(id *NodeID, key *rsa.PrivateKey, e *[]*EndPoint, p *[]*Peer,
 func (n *Node) GetNodeID() *NodeID {
 	return n.nodeID
 }
-func (n *Node) GetPublicKey() *rsa.PublicKey {
+func (n *Node) GetCommsPublicKey() *rsa.PublicKey {
 	// XXX This should be a copy or a serialization
-	return n.pubkey
+	return n.commsPubkey
+}
+func (n *Node) GetSigPublicKey() *rsa.PublicKey {
+	// XXX This should be a copy or a serialization
+	return n.sigPubkey
 }
 
 // Returns an instance of a DigSigner which can be run in a separate
@@ -104,7 +119,7 @@ func (n *Node) GetPublicKey() *rsa.PublicKey {
 //
 // XXX would prefer that *DigSigner be returned
 func (n *Node) getSigner() *signer {
-	return newSigner(n.key)
+	return newSigner(n.sigKey)
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
@@ -234,7 +249,7 @@ func (s *signer) Update(chunk []byte) {
 	s.digest.Write(chunk)
 }
 
-// XXX NOTE CHANGE IN INTERFACE
+// XXX NOTE CHANGE IN INTERFACE - this returns an error, not a bool
 func (s *signer) Sign() ([]byte, error) {
 	h := s.digest.Sum(nil)
 	sig, err := rsa.SignPKCS1v15(rand.Reader, s.key, crypto.SHA1, h)
