@@ -67,7 +67,7 @@ func FileSHA1(path string) (hash string, err error) {
 		hash = hex.EncodeToString(digest2)
 	}
 	return
-} // GEEP
+}
 
 // - FileSHA3 --------------------------------------------------------
 // returns the SHA3 hash of the contents of a file
@@ -230,35 +230,42 @@ func (u *U256x256) Put3(inFile, key string) (length int64, hash string, err erro
 		err = errors.New("IllegalArgument: Put3: key does not match content")
 		return
 	}
-	// XXX ERROR NOT HANDLED
-	info, _ := os.Stat(inFile)
+	info, err := os.Stat(inFile)
+	if err != nil {
+		return
+	}
 	length = info.Size()
 	topSubDir := hash[0:2]
 	lowerDir := hash[2:4]
 	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
 	if !PathExists(targetDir) {
 		// XXX ERROR NOT HANDLED; MODE IS SUSPECT
-		_ = os.MkdirAll(targetDir, 0775)
+		err = os.MkdirAll(targetDir, 0775)
+		if err != nil {
+			return
+		}
 
 	}
 	fullishPath := filepath.Join(targetDir, key[4:])
 	if PathExists(fullishPath) {
 		// drop the temporary input file
 		// XXX ERROR NOT HANDLED
-		_ = os.Remove(inFile)
+		err = os.Remove(inFile)
 	} else {
 		// rename the temporary file into U
 		// XXX ERROR NOT HANDLED
-		_ = os.Rename(inFile, fullishPath)
+		err = os.Rename(inFile, fullishPath)
+		if err != nil {
+			return
+		}
 		// XXX ERROR NOT HANDLED
-		_ = os.Chmod(fullishPath, 0444)
+		err = os.Chmod(fullishPath, 0444)
 	}
 	return
 }
 
 // - putData3 --------------------------------------------------------
-func (u *U256x256) PutData3(data []byte, key string) (
-	length int64, hash string, err error) {
+func (u *U256x256) PutData3(data []byte, key string) (length int64, hash string, err error) {
 	s := sha3.NewKeccak256()
 	s.Write(data)
 	hash = hex.EncodeToString(s.Sum(nil))
@@ -276,7 +283,7 @@ func (u *U256x256) PutData3(data []byte, key string) (
 		// XXX ERROR NOT HANDLED; MODE QUESTIONABLE
 		_ = os.MkdirAll(targetDir, 0775)
 	}
-	fullishPath := filepath.Join(targetDir, key)
+	fullishPath := filepath.Join(targetDir, key[4:])
 	if !PathExists(fullishPath) {
 		var dest *os.File
 		if dest, err = os.Create(fullishPath); err != nil {
@@ -354,28 +361,39 @@ func (u *U256x256) Put1(inFile, key string) (length int64, hash string, err erro
 		err = errors.New("IllegalArgument: Put1: key does not match content")
 		return
 	}
-	// XXX ERROR NOT HANDLED
-	info, _ := os.Stat(inFile)
+	info, err := os.Stat(inFile)
+	if err != nil {
+		return
+	}
 	length = info.Size()
 	topSubDir := hash[0:2]
 	lowerDir := hash[2:4]
 	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
 	if !PathExists(targetDir) {
-		// XXX ERROR NOT HANDLED; MODE IS SUSPECT
-		_ = os.MkdirAll(targetDir, 0775)
+		// XXX MODE IS SUSPECT
+		err = os.MkdirAll(targetDir, 0775)
+		if err != nil {
+			return
+		}
 
 	}
 	fullishPath := filepath.Join(targetDir, key[4:])
 	if PathExists(fullishPath) {
 		// drop the temporary input file
-		// XXX ERROR NOT HANDLED
-		_ = os.Remove(inFile)
+		err = os.Remove(inFile)
+		if err != nil {
+			return
+		}
 	} else {
 		// rename the temporary file into U
-		// XXX ERROR NOT HANDLED
-		_ = os.Rename(inFile, fullishPath)
-		// XXX ERROR NOT HANDLED
-		_ = os.Chmod(fullishPath, 0444)
+		err = os.Rename(inFile, fullishPath)
+		if err != nil {
+			return
+		}
+		err = os.Chmod(fullishPath, 0444)
+		if err != nil {
+			return
+		}
 	}
 	return
 }

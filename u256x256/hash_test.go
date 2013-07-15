@@ -23,10 +23,11 @@ var _ = Suite(&XLSuite{})
 // end gocheck setUp //////////////////
 
 var (
-	dataPath string
-	uPath    string
-	uInDir   string
-	uTmpDir  string
+	dataPath  string
+	uPath     string
+	uInDir    string
+	uTmpDir   string
+	usingSHA1 bool
 )
 
 // SETUP AND TEARDOWN ///////////////////////////////////////////////
@@ -63,16 +64,28 @@ func (s *XLSuite) teardownHashTest() {
 
 // UNIT TESTS ///////////////////////////////////////////////////////
 func (s *XLSuite) doTestCopyAndPut(
-	c *C, u *U256x256, digest hash.Hash, usingSHA1 bool) {
+	c *C, u *U256x256, digest hash.Hash) {
 	//we are testing uLen, uKey, err = u.CopyAndPut3(path, key)
 
 	// create a random file                   maxLen   minLen
 	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
-	dKey, err := FileSHA3(dPath)
+	var dKey string
+	var err error
+	if usingSHA1 {
+		dKey, err = FileSHA1(dPath)
+	} else {
+		dKey, err = FileSHA3(dPath)
+	}
 	c.Assert(err, Equals, nil) // actual, Equals, expected
 
 	// invoke function
-	uLen, uKey, err := u.CopyAndPut3(dPath, dKey)
+	var uLen int64
+	var uKey string
+	if usingSHA1 {
+		uLen, uKey, err = u.CopyAndPut1(dPath, dKey)
+	} else {
+		uLen, uKey, err = u.CopyAndPut3(dPath, dKey)
+	}
 	c.Assert(err, Equals, nil)
 	c.Assert(dLen, Equals, uLen)
 	c.Assert(dKey, Equals, uKey)
@@ -93,9 +106,21 @@ func (s *XLSuite) doTestExists(c *C, u *U256x256, digest hash.Hash) {
 	//we are testing whether = u.Exists( key)
 
 	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
-	dKey, err := FileSHA3(dPath)
+	var dKey string
+	var err error
+	if usingSHA1 {
+		dKey, err = FileSHA1(dPath)
+	} else {
+		dKey, err = FileSHA3(dPath)
+	}
 	c.Assert(err, Equals, nil)
-	uLen, uKey, err := u.CopyAndPut3(dPath, dKey)
+	var uLen int64
+	var uKey string
+	if usingSHA1 {
+		uLen, uKey, err = u.CopyAndPut1(dPath, dKey)
+	} else {
+		uLen, uKey, err = u.CopyAndPut3(dPath, dKey)
+	}
 	c.Assert(err, Equals, nil)
 	c.Assert(dLen, Equals, uLen)
 	kPath := u.GetPathForKey(uKey)
@@ -109,9 +134,21 @@ func (s *XLSuite) doTestFileLen(c *C, u *U256x256, digest hash.Hash) {
 	//we are testing len = u.fileLen(key)
 
 	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
-	dKey, err := FileSHA3(dPath)
+	var dKey string
+	var err error
+	if usingSHA1 {
+		dKey, err = FileSHA1(dPath)
+	} else {
+		dKey, err = FileSHA3(dPath)
+	}
 	c.Assert(err, Equals, nil)
-	uLen, uKey, err := u.CopyAndPut3(dPath, dKey)
+	var uLen int64
+	var uKey string
+	if usingSHA1 {
+		uLen, uKey, err = u.CopyAndPut1(dPath, dKey)
+	} else {
+		uLen, uKey, err = u.CopyAndPut3(dPath, dKey)
+	}
 	c.Assert(err, Equals, nil)
 	c.Assert(dLen, Equals, uLen)
 	kPath := u.GetPathForKey(uKey)
@@ -141,19 +178,23 @@ func (s *XLSuite) doTestFileHash(c *C, u *U256x256, digest hash.Hash) {
 	c.Assert(fKey, Equals, dKey)
 }
 
-func (s *XLSuite) doTestGetPathForKey(
-	c *C, u *U256x256, digest hash.Hash, usingSHA1 bool) {
+func (s *XLSuite) doTestGetPathForKey(c *C, u *U256x256, digest hash.Hash) {
 	// we are testing path = GetPathForKey(key)
 
 	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
+	var err error
 	var dKey, uKey string
 	var uLen int64
 	if usingSHA1 {
-		dKey, _ = FileSHA1(dPath) // ERRORS IGNORED
-		uLen, uKey, _ = u.CopyAndPut1(dPath, dKey)
+		dKey, err = FileSHA1(dPath)
+		c.Assert(err, Equals, nil)
+		uLen, uKey, err = u.CopyAndPut1(dPath, dKey)
+		c.Assert(err, Equals, nil)
 	} else {
-		dKey, _ = FileSHA3(dPath) // ERRORS IGNORED
-		uLen, uKey, _ = u.CopyAndPut3(dPath, dKey)
+		dKey, err = FileSHA3(dPath)
+		c.Assert(err, Equals, nil)
+		uLen, uKey, err = u.CopyAndPut3(dPath, dKey)
+		c.Assert(err, Equals, nil)
 	}
 	c.Assert(uLen, Equals, dLen)
 	kPath := u.GetPathForKey(uKey)
@@ -164,25 +205,31 @@ func (s *XLSuite) doTestGetPathForKey(
 	c.Assert(expectedPath, Equals, kPath)
 }
 
-func (s *XLSuite) doTestPut(
-	c *C, u *U256x256, digest hash.Hash, usingSHA1 bool) {
+func (s *XLSuite) doTestPut(c *C, u *U256x256, digest hash.Hash) {
 	//we are testing (len,hash)  = put(inFile, key)
 
 	var dLen, uLen int64
 	var dPath, dKey, uKey string
+	var err error
 	dLen, dPath = u.rng.NextDataFile(dataPath, 16*1024, 1)
 	if usingSHA1 {
-		dKey, _ = FileSHA1(dPath) // ERRORS IGNORED
+		dKey, err = FileSHA1(dPath)
+		c.Assert(err, Equals, nil)
 	} else {
-		dKey, _ = FileSHA3(dPath) // ERRORS IGNORED
+		dKey, err = FileSHA3(dPath)
+		c.Assert(err, Equals, nil)
 	}
-	data, _ := ioutil.ReadFile(dPath) // ERRORS IGNORED
+	data, err := ioutil.ReadFile(dPath)
+	c.Assert(err, Equals, nil)
 	dupePath := filepath.Join(dataPath, dKey)
-	_ = ioutil.WriteFile(dupePath, data, 0664) // ERRORS IGNORED
+	err = ioutil.WriteFile(dupePath, data, 0664)
+	c.Assert(err, Equals, nil)
 	if usingSHA1 {
-		uLen, uKey, _ = u.Put1(dPath, dKey) // ERRORS IGNORED
+		uLen, uKey, err = u.Put1(dPath, dKey)
+		c.Assert(err, Equals, nil)
 	} else {
-		uLen, uKey, _ = u.Put3(dPath, dKey) // ERRORS IGNORED
+		uLen, uKey, err = u.Put3(dPath, dKey)
+		c.Assert(err, Equals, nil)
 	}
 	c.Assert(dLen, Equals, uLen)
 	kPath := u.GetPathForKey(uKey)
@@ -194,19 +241,20 @@ func (s *XLSuite) doTestPut(
 	var dupeLen int64
 	var dupeKey string
 	if usingSHA1 {
-		dupeLen, dupeKey, _ = u.Put1(dupePath, dKey) // ERRORS IGNORED
+		dupeLen, dupeKey, err = u.Put1(dupePath, dKey)
+		c.Assert(err, Equals, nil)
 	} else {
-		dupeLen, dupeKey, _ = u.Put3(dupePath, dKey) // ERRORS IGNORED
+		dupeLen, dupeKey, err = u.Put3(dupePath, dKey)
+		c.Assert(err, Equals, nil)
 	}
 	c.Assert(uLen, Equals, dupeLen)
 	// dupe file is deleted'
 	c.Assert(uKey, Equals, dupeKey)
 	c.Assert(false, Equals, PathExists(dupePath))
-	c.Assert(true, Equals, u.Exists(uKey))
+	c.Assert(true, Equals, u.Exists(uKey)) // GEEP
 }
 
-func (s *XLSuite) doTestPutData(
-	c *C, u *U256x256, digest hash.Hash, usingSHA1 bool) {
+func (s *XLSuite) doTestPutData(c *C, u *U256x256, digest hash.Hash) {
 	// we are testing (len,hash)  = putData3(data, key)
 
 	var dPath, dKey, uKey string

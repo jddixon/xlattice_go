@@ -16,11 +16,12 @@ func (s *XLSuite) setUp1() {
 	uInDir = "myU1/in"
 	uTmpDir = "myU1/tmp"
 	s.setUpHashTest()
+	usingSHA1 = true
 }
 
 func (s *XLSuite) TestCopyAndPut1(c *C) {
 	s.setUp1()
-	s.doTestCopyAndPut(c, New(uPath), sha1.New(), true)
+	s.doTestCopyAndPut(c, New(uPath), sha1.New())
 }
 func (s *XLSuite) TestExists1(c *C) {
 	s.setUp1()
@@ -36,13 +37,13 @@ func (s *XLSuite) TestFileHash1(c *C) {
 }
 func (s *XLSuite) TestGetPathForKey1(c *C) {
 	s.setUp1()
-	s.doTestGetPathForKey(c, New(uPath), sha1.New(), true)
+	s.doTestGetPathForKey(c, New(uPath), sha1.New())
 }
 func (s *XLSuite) TestPut1(c *C) {
 	s.setUp1()
-	s.doTestPut(c, New(uPath), sha1.New(), true)
+	s.doTestPut(c, New(uPath), sha1.New())
 }
 func (s *XLSuite) TestPutData1(c *C) {
 	s.setUp1()
-	s.doTestPutData(c, New(uPath), sha1.New(), true)
+	s.doTestPutData(c, New(uPath), sha1.New())
 }
