@@ -1,4 +1,4 @@
-package xlattice_go
+package node
 
 import (
 	"crypto"
@@ -6,6 +6,8 @@ import (
 	"crypto/rsa"
 	"crypto/sha1"
 	"errors"
+	xo "github.com/jddixon/xlattice_go/overlay"
+	xt "github.com/jddixon/xlattice_go/transport"
 	"hash"
 )
 
@@ -23,10 +25,10 @@ type Node struct {
 	commsPubkey *rsa.PublicKey  // public
 	sigKey      *rsa.PrivateKey // private
 	sigPubkey   *rsa.PublicKey  // public
-	endPoints   []*EndPoint
-	overlays    []*OverlayI
+	endPoints   []*xt.EndPoint
+	overlays    []*xo.OverlayI
 	peers       []*Peer
-	connections []*ConnectionI
+	connections []*xt.ConnectionI
 }
 
 func NewNewNode(id *NodeID) (*Node, error) {
@@ -35,7 +37,7 @@ func NewNewNode(id *NodeID) (*Node, error) {
 }
 
 func NewNode(id *NodeID, commsKey *rsa.PrivateKey, sigKey *rsa.PrivateKey,
-	e *[]*EndPoint, p *[]*Peer, c *[]*ConnectionI) (*Node, error) {
+	e *[]*xt.EndPoint, p *[]*Peer, c *[]*xt.ConnectionI) (*Node, error) {
 
 	if id == nil {
 		err := errors.New("IllegalArgument: nil NodeID")
@@ -63,8 +65,8 @@ func NewNode(id *NodeID, commsKey *rsa.PrivateKey, sigKey *rsa.PrivateKey,
 		sigKey = k
 	}
 
-	var endPoints []*EndPoint // an empty slice
-	var overlays []*OverlayI
+	var endPoints []*xt.EndPoint // an empty slice
+	var overlays []*xo.OverlayI
 	if e != nil {
 		count := len(*e)
 		for i := 0; i < count; i++ {
@@ -80,7 +82,7 @@ func NewNode(id *NodeID, commsKey *rsa.PrivateKey, sigKey *rsa.PrivateKey,
 			peers = append(peers, (*p)[i])
 		}
 	}
-	var cnxs []*ConnectionI // another empty slice
+	var cnxs []*xt.ConnectionI // another empty slice
 	if c != nil {
 		count := len(*c)
 		for i := 0; i < count; i++ {
@@ -123,7 +125,7 @@ func (n *Node) getSigner() *signer {
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (n *Node) addOverlay(o *OverlayI) error {
+func (n *Node) addOverlay(o *xo.OverlayI) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil Overlay")
 	}
@@ -140,7 +142,7 @@ func (n *Node) SizeOverlays() int {
 }
 
 /** @return how to access the peer (transport, protocol, address) */
-func (n *Node) GetOverlay(x int) *OverlayI {
+func (n *Node) GetOverlay(x int) *xo.OverlayI {
 	return n.overlays[x]
 }
 
@@ -164,7 +166,7 @@ func (n *Node) GetPeer(x int) *Peer {
 }
 
 // CONNECTORS ///////////////////////////////////////////////////////
-func (n *Node) addConnectionI(c *ConnectionI) error {
+func (n *Node) addConnectionI(c *xt.ConnectionI) error {
 	if c == nil {
 		return errors.New("IllegalArgument: nil ConnectionI")
 	}
@@ -187,7 +189,7 @@ func (n *Node) SizeConnections() int {
  *
  * @return the Nth Connection
  */
-func (n *Node) GetConnection(x int) *ConnectionI {
+func (n *Node) GetConnection(x int) *xt.ConnectionI {
 	return n.connections[x]
 }
 
@@ -249,7 +251,7 @@ func (s *signer) Update(chunk []byte) {
 	s.digest.Write(chunk)
 }
 
-// XXX NOTE CHANGE IN INTERFACE - this returns an error, not a bool
+// XXX 2013-07-15 Golang crypto package currently does NOT support SHA3 (Keccak)
 func (s *signer) Sign() ([]byte, error) {
 	h := s.digest.Sum(nil)
 	sig, err := rsa.SignPKCS1v15(rand.Reader, s.key, crypto.SHA1, h)

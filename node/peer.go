@@ -1,24 +1,31 @@
-package xlattice_go
+package node
 
-import "errors"
+import (
+	"errors"
+	xc "github.com/jddixon/xlattice_go/crypto"
+	xo "github.com/jddixon/xlattice_go/overlay"
+	xt "github.com/jddixon/xlattice_go/transport"
+)
 
 /**
  * A Peer is another Node, a neighbor.
  */
 
 type Peer struct {
-	nodeID     *NodeID
-	pubkey     *PublicKeyI
-	overlays   []*OverlayI
-	connectors []*ConnectorI
+	nodeID      *NodeID
+	commsPubkey *xc.PublicKeyI
+	sigPubkey   *xc.PublicKeyI
+	overlays    []*xo.OverlayI
+	connectors  []*xt.ConnectorI // to reach the peer
 }
 
 func NewNewPeer(id *NodeID) (*Peer, error) {
-	return NewPeer(id, nil, nil, nil)
+	return NewPeer(id, nil, nil, nil, nil)
 }
 
-func NewPeer(id *NodeID, k *PublicKeyI, o *[]*OverlayI,
-	c *[]*ConnectorI) (*Peer, error) {
+func NewPeer(id *NodeID,
+	ck *xc.PublicKeyI, sk *xc.PublicKeyI,
+	o *[]*xo.OverlayI, c *[]*xt.ConnectorI) (*Peer, error) {
 
 	// IDENTITY /////////////////////////////////////////////////////
 	if id == nil {
@@ -26,15 +33,16 @@ func NewPeer(id *NodeID, k *PublicKeyI, o *[]*OverlayI,
 		return nil, err
 	}
 	nodeID := (*id).Clone()
-	pubkey := k
-	var overlays []*OverlayI // an empty slice
+	commsPubkey := sk
+	sigPubkey := sk
+	var overlays []*xo.OverlayI // an empty slice
 	if o != nil {
 		count := len(*o)
 		for i := 0; i < count; i++ {
 			overlays = append(overlays, (*o)[i])
 		}
 	} // FOO
-	var ctors []*ConnectorI // another empty slice
+	var ctors []*xt.ConnectorI // another empty slice
 	if c != nil {
 		count := len(*c)
 		for i := 0; i < count; i++ {
@@ -43,7 +51,8 @@ func NewPeer(id *NodeID, k *PublicKeyI, o *[]*OverlayI,
 	} // FOO
 	p := new(Peer)
 	p.nodeID = nodeID // the clone
-	p.pubkey = pubkey
+	p.commsPubkey = commsPubkey
+	p.sigPubkey = sigPubkey
 	p.overlays = overlays
 	p.connectors = ctors
 	return p, nil
@@ -51,23 +60,12 @@ func NewPeer(id *NodeID, k *PublicKeyI, o *[]*OverlayI,
 func (p *Peer) GetNodeID() *NodeID {
 	return p.nodeID
 }
-func (p *Peer) GetPublicKeyI() *PublicKeyI {
-	return p.pubkey
-}
-
-// XXX Is this a good idea ??
-func (p *Peer) SetPublicKeyI(k *PublicKeyI) error {
-	err := error(nil)
-	if k == nil {
-		err = errors.New("IllegalArgument: nil PublicKeyI")
-	} else {
-		p.pubkey = k
-	}
-	return err
+func (p *Peer) GetSigPublicKeyI() *xc.PublicKeyI {
+	return p.sigPubkey
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (p *Peer) addOverlayI(o *OverlayI) error {
+func (p *Peer) addOverlayI(o *xo.OverlayI) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil OverlayI")
 	}
@@ -84,12 +82,12 @@ func (p *Peer) sizeOverlays() int {
 }
 
 /** @return how to access the peer (transport, protocol, address) */
-func (p *Peer) GetOverlay(n int) *OverlayI {
+func (p *Peer) GetOverlay(n int) *xo.OverlayI {
 	return p.overlays[n]
 }
 
 // CONNECTORS ///////////////////////////////////////////////////////
-func (p *Peer) addConnector(c *ConnectorI) error {
+func (p *Peer) addConnector(c *xt.ConnectorI) error {
 	if c == nil {
 		return errors.New("IllegalArgument: nil Connector")
 	}
@@ -112,7 +110,7 @@ func (p *Peer) SizeConnectors() int {
  *
  * @return the Nth Connector
  */
-func (p *Peer) GetConnector(n int) *ConnectorI {
+func (p *Peer) GetConnector(n int) *xt.ConnectorI {
 	return p.connectors[n]
 }
 

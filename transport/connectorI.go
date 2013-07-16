@@ -1,4 +1,4 @@
-package xlattice_go
+package transport
 
 /**
  * Used to establish a Connection with another entity (Node).

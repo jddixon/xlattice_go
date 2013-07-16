@@ -1,4 +1,6 @@
-package xlattice_go
+package transport
+
+import xc "github.com/jddixon/xlattice_go/crypto"
 
 /**
  * A Connection is a relationship between two EndPoints.  In XLattice,
@@ -139,7 +141,7 @@ type ConnectionI interface {
 	 * @param myKey  this Node's asymmetric key
 	 * @param hisKey Peer's public key
 	 */
-	Negotiate(myKey KeyI, hisKey PublicKeyI) (s SecretI, e error)
+	Negotiate(myKey xc.KeyI, hisKey xc.PublicKeyI) (s xc.SecretI, e error)
 	// throws CryptoException
 
 	Equal(any interface{}) bool

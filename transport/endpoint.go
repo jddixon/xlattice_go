@@ -1,4 +1,4 @@
-package xlattice_go
+package transport
 
 import (
 	"strings"

@@ -1,4 +1,4 @@
-package xlattice_go
+package crypto
 
 type DigSignerI interface {
 	// Returns the name of the algorithm used to sign.

@@ -1,4 +1,4 @@
-package xlattice_go
+package crypto
 
 // SigVerifier is a translation of a Java abstract class.
 

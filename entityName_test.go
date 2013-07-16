@@ -18,7 +18,7 @@ func (s *XLSuite) noDotsOrDashes(rng *rnglib.PRNG) string {
 }
 
 func (s *XLSuite) TestGoodNames(c *C) {
-	rng := MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	var count int = 3 + rng.Intn(16)
 	for i := 0; i < count; i++ {
 		s := s.noDotsOrDashes(rng)
@@ -26,7 +26,7 @@ func (s *XLSuite) TestGoodNames(c *C) {
 	}
 }
 func (s *XLSuite) TestBadNames(c *C) {
-	rng := MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	var count int = 3 + rng.Intn(16)
 	for i := 0; i < count; i++ {
 		s := s.noDotsOrDashes(rng)

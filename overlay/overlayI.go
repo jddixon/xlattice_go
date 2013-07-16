@@ -1,6 +1,8 @@
-package xlattice_go
+package overlay
 
 // xlattice_go/overlayI.go
+
+import xt "github.com/jddixon/xlattice_go/transport"
 
 /**
  * A Overlay is characterized by an address space, a transport protocol,
@@ -24,7 +26,7 @@ package xlattice_go
 
 type OverlayI interface {
 	Name() string //  "eu-west-1.compute.amazonaws.com"
-	IsElement(*EndPoint) bool
+	IsElement(*xt.EndPoint) bool
 	Transport() string // eg "tcpip"
 	Cost() float32
 	Equal(any interface{}) bool

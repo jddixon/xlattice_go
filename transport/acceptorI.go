@@ -1,4 +1,4 @@
-package xlattice_go
+package transport
 
 /**
  * An Acceptor is used by a Node or Peer to accept connection requests.

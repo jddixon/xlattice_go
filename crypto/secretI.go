@@ -1,4 +1,4 @@
-package xlattice_go
+package crypto
 
 type SecretI interface {
 	Algorithm() string

@@ -1,4 +1,4 @@
-package xlattice_go
+package protocol
 
 // Abstracts a family of messages.
 type ProtocolI interface {

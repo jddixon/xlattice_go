@@ -1,4 +1,4 @@
-package xlattice_go
+package node
 
 import (
 	cr "crypto"
@@ -7,14 +7,14 @@ import (
 	"crypto/sha1"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
-	. "github.com/jddixon/xlattice_go/rnglib"
+	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 	// "strings"
 	// "github.com/bmizerany/assert"
 	// "testing"
 )
 
-func makeNodeID(rng *PRNG) *NodeID {
+func makeNodeID(rng *rnglib.PRNG) *NodeID {
 	var buffer []byte
 	// quasi-random choice, whether to use an SHA1 or SHA3 nodeID
 	if rng.NextBoolean() {
@@ -27,7 +27,7 @@ func makeNodeID(rng *PRNG) *NodeID {
 }
 
 // func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
-func (s *XLSuite) doKeyTests(c *C, node *Node, rng *PRNG) {
+func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	commsPubkey := node.GetCommsPublicKey()
 	c.Assert(commsPubkey, Not(IsNil)) // NOT
 
@@ -99,7 +99,7 @@ func (s *XLSuite) nilArgCheck(c *C) {
 
 // func TestNewNew(t *testing.T) {
 func (s *XLSuite) TestNewNew(c *C) {
-	rng := MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	_, err := NewNewNode(nil)
 	c.Assert(err, Not(IsNil)) // NOT
 
@@ -118,7 +118,7 @@ func (s *XLSuite) TestNewNew(c *C) {
 
 //func TestNewCtor(t *testing.T) {
 func (s *XLSuite) TestNewCtor(c *C) {
-	// rng := MakeRNG()
+	// rng := rnglib.MakeSimpleRNG()
 
 	// if  constructor assigns a nil NodeID, we should get an
 	// IllegalArgument panic
