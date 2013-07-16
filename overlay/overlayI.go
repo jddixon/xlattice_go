@@ -2,7 +2,9 @@ package overlay
 
 // xlattice_go/overlayI.go
 
-import xt "github.com/jddixon/xlattice_go/transport"
+import (
+	xt "github.com/jddixon/xlattice_go/transport"
+)
 
 /**
  * A Overlay is characterized by an address space, a transport protocol,

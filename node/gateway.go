@@ -1,23 +1,23 @@
-package overlay
+package node
 
-// xlattice_go/overlay/gateway.go
+// xlattice_go/overlay/node.go
 
 import (
-	x "github.com/jddixon/xlattice_go"
+	xo "github.com/jddixon/xlattice_go/overlay"
 )
 
 // This is meant to be a sort of map: the host named can provide
 // transport to hosts in the overlays listed.
 type Gateway struct {
-	peer *x.Peer // which provides transport
+	peer *Peer // which provides transport
 	// XXX not going to work: we need a cost via this peer
-	realms []*Overlay // overlays reachable through this peer
+	realms []*xo.Overlay // overlays reachable through this peer
 }
 
-func NewGateway(p *x.Peer, o []*Overlay) *Gateway {
+func NewGateway(p *Peer, o []*xo.Overlay) *Gateway {
 	// XXX validations
 	sizeNow := len(o)
-	r := make([]*Overlay, sizeNow, sizeNow+2)
+	r := make([]*xo.Overlay, sizeNow, sizeNow+2)
 	copy(r, o)
 	return &Gateway{p, r}
 }

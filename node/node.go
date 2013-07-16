@@ -6,10 +6,13 @@ import (
 	"crypto/rsa"
 	"crypto/sha1"
 	"errors"
+	"fmt"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"hash"
 )
+
+var _ = fmt.Print
 
 /**
  * A Node is uniquely identified by a NodeID and can satisfy an
@@ -20,15 +23,12 @@ import (
  * @author Jim Dixon
  */
 type Node struct {
-	nodeID      *NodeID         // public
 	commsKey    *rsa.PrivateKey // private
-	commsPubkey *rsa.PublicKey  // public
 	sigKey      *rsa.PrivateKey // private
-	sigPubkey   *rsa.PublicKey  // public
 	endPoints   []*xt.EndPoint
-	overlays    []*xo.OverlayI
 	peers       []*Peer
 	connections []*xt.ConnectionI
+	BaseNode
 }
 
 func NewNewNode(id *NodeID) (*Node, error) {
@@ -36,14 +36,8 @@ func NewNewNode(id *NodeID) (*Node, error) {
 	return NewNode(id, nil, nil, nil, nil, nil)
 }
 
-func NewNode(id *NodeID, commsKey *rsa.PrivateKey, sigKey *rsa.PrivateKey,
+func NewNode(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 	e *[]*xt.EndPoint, p *[]*Peer, c *[]*xt.ConnectionI) (*Node, error) {
-
-	if id == nil {
-		err := errors.New("IllegalArgument: nil NodeID")
-		return nil, err
-	}
-	nodeID := (*id).Clone() // we use this copy, not the nodeID passed
 
 	///////////////////////////////
 	// XXX STUB: switch on key type
@@ -74,7 +68,7 @@ func NewNode(id *NodeID, commsKey *rsa.PrivateKey, sigKey *rsa.PrivateKey,
 			// XXX get the overlay from the endPoint
 			// overlays = append(overlays, (*o)[i])
 		}
-	}
+	} // FOO
 	var peers []*Peer // an empty slice
 	if p != nil {
 		count := len(*p)
@@ -89,30 +83,17 @@ func NewNode(id *NodeID, commsKey *rsa.PrivateKey, sigKey *rsa.PrivateKey,
 			cnxs = append(cnxs, (*c)[i])
 		}
 	}
-	q := new(Node)
-	(*q).nodeID = nodeID // the clone
-	(*q).commsKey = commsKey
-	(*q).sigKey = sigKey
-	(*q).commsPubkey = &(*commsKey).PublicKey
-	(*q).sigPubkey = &(*sigKey).PublicKey
-	(*q).endPoints = endPoints
-	(*q).overlays = overlays
-	(*q).peers = peers
-	(*q).connections = cnxs
-	return q, nil
-}
 
-// IDENTITY /////////////////////////////////////////////////////////
-func (n *Node) GetNodeID() *NodeID {
-	return n.nodeID
-}
-func (n *Node) GetCommsPublicKey() *rsa.PublicKey {
-	// XXX This should be a copy or a serialization
-	return n.commsPubkey
-}
-func (n *Node) GetSigPublicKey() *rsa.PublicKey {
-	// XXX This should be a copy or a serialization
-	return n.sigPubkey
+	commsPubKey := &(*commsKey).PublicKey
+	sigPubKey := &(*sigKey).PublicKey
+
+	baseNode, err := NewBaseNode(id, commsPubKey, sigPubKey, &overlays)
+	if err == nil {
+		p := Node{commsKey, sigKey, endPoints, peers, cnxs, *baseNode}
+		return &p, nil
+	} else {
+		return nil, err
+	}
 }
 
 // Returns an instance of a DigSigner which can be run in a separate

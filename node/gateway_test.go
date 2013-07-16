@@ -1,6 +1,6 @@
-package overlay
+package node
 
-// xlattice_go/overlay/gateway_test.go
+// xlattice_go/node/gateway_test.go
 
 import (
 	. "launchpad.net/gocheck"

@@ -28,29 +28,30 @@ func makeNodeID(rng *rnglib.PRNG) *NodeID {
 
 // func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
-	commsPubkey := node.GetCommsPublicKey()
-	c.Assert(commsPubkey, Not(IsNil)) // NOT
+	commsPubKey := node.GetCommsPublicKey()
+	c.Assert(commsPubKey, Not(IsNil)) // NOT
 
 	privCommsKey := node.commsKey // naughty
 	c.Assert(privCommsKey.Validate(), IsNil)
 
 	expLen := (*privCommsKey.D).BitLen()
 	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
-	c.Assert(true, Equals, (2040 <= expLen) && (expLen <= 2048))
+	c.Assert(true, Equals, (2038 <= expLen) && (expLen <= 2048))
 
-	c.Assert(privCommsKey.PublicKey, Equals, *commsPubkey) // FOO
+	c.Assert(privCommsKey.PublicKey, Equals, *commsPubKey) // XXX FAILS
 
-	sigPubkey := node.GetSigPublicKey()
-	c.Assert(sigPubkey, Not(IsNil)) // NOT
+	sigPubKey := node.GetSigPublicKey()
+	c.Assert(sigPubKey, Not(IsNil)) // NOT
 
 	privSigKey := node.sigKey // naughty
 	c.Assert(privSigKey.Validate(), IsNil)
 
 	expLen = (*privSigKey.D).BitLen()
 	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
-	c.Assert(true, Equals, (2040 <= expLen) && (expLen <= 2048))
+	// lowest value seen as of 2013-07-16 was 2039
+	c.Assert(true, Equals, (2038 <= expLen) && (expLen <= 2048))
 
-	c.Assert(privSigKey.PublicKey, Equals, *sigPubkey) // FOO
+	c.Assert(privSigKey.PublicKey, Equals, *sigPubKey) // FOO
 
 	// sign /////////////////////////////////////////////////////////
 	msgLen := 128
@@ -78,11 +79,11 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	}
 
 	// verify ///////////////////////////////////////////////////////
-	err = rsa.VerifyPKCS1v15(sigPubkey, cr.SHA1, hash, sig)
+	err = rsa.VerifyPKCS1v15(sigPubKey, cr.SHA1, hash, sig)
 	c.Assert(err, IsNil)
 
 	// 2013-06-15, SigVerify now returns error, so nil means OK
-	c.Assert(nil, Equals, xc.SigVerify(sigPubkey, msg, sig))
+	c.Assert(nil, Equals, xc.SigVerify(sigPubKey, msg, sig))
 
 	s.nilArgCheck(c)
 } // GEEP

@@ -1,13 +1,11 @@
 package overlay
 
-// xlattice_go/ip_overlayI.go
+// xlattice_go/overlay/ip_overlay.go
 
-import (
-// x "github.com/jddixon/xlattice_go"
-)
+import ()
 
 /**
- * An IPOverlay is characterized by an address space, a transport protocol,
+ * A Overlay is characterized by an address space, a transport protocol,
  * and possibly a set of rules for navigating the address space using
  * the protocol.
  *
@@ -26,17 +24,24 @@ import (
  *
  */
 
-type IPOverlayI interface {
+type IPOverlay struct {
+	addrRange *AddrRange // eg 10/8 in ipv4		XXX THIS IS AN ERROR
+	Overlay
+}
 
-	// IPOverlay-specific
-	AddrRange() AddrRange // eg 10/8 in ipv4
-	OverlayI
+func NewIPOverlay(name string, addrRange *AddrRange, transport string, cost float32) (*IPOverlay, error) {
+	// XXX validate the parameters, please
 
-	// Overlay interface
-	// Name() string // eg "eu-west-1.compute.amazonaws.com"
-	// IsElement(*x.EndPoint) bool
-	// Transport() string // eg "tcpip"
-	// Cost() float32
-	// Equal(any interface{}) bool
-	// String() string
+	overlay, err := New(name, transport, cost)
+	if err == nil {
+		// XXX validate addrRange
+		ipOverlay := IPOverlay{addrRange, *overlay}
+		return &ipOverlay, nil
+	} else {
+		return nil, err
+	}
+}
+
+func (o *IPOverlay) AddrRange() *AddrRange {
+	return o.addrRange
 }
