@@ -11,11 +11,11 @@ import (
  */
 
 type EndPoint struct {
-	transport *TransportI
+	transport string
 	address   *AddressI
 }
 
-func NewEndPoint(t *TransportI, a *AddressI) *EndPoint {
+func NewEndPoint(t string, a *AddressI) *EndPoint {
 	// XXX need some checks
 	return &EndPoint{t, a}
 }
@@ -24,7 +24,7 @@ func (e *EndPoint) getAddress() *AddressI {
 	return e.address
 }
 
-func (e *EndPoint) getTransport() *TransportI {
+func (e *EndPoint) getTransport() string {
 	return e.transport
 }
 
@@ -35,6 +35,6 @@ func (e *EndPoint) getTransport() *TransportI {
 func (e *EndPoint) String() string {
 	// e.transport is a pointer to something that satisfies
 	//   the Transport interface and similarly for e.address
-	var parts = []string{(*e.transport).String(), " ", (*e.address).String()}
+	var parts = []string{e.transport, " ", (*e.address).String()}
 	return strings.Join(parts, "")
 }

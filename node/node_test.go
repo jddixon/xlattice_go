@@ -101,12 +101,12 @@ func (s *XLSuite) nilArgCheck(c *C) {
 // func TestNewNew(t *testing.T) {
 func (s *XLSuite) TestNewNew(c *C) {
 	rng := rnglib.MakeSimpleRNG()
-	_, err := NewNewNode(nil)
+	_, err := NewNew(nil)
 	c.Assert(err, Not(IsNil)) // NOT
 
 	id := makeNodeID(rng)
 	c.Assert(id, Not(IsNil)) // NOT
-	n, err2 := NewNewNode(id)
+	n, err2 := NewNew(id)
 	c.Assert(n, Not(IsNil)) // NOT
 	c.Assert(err2, IsNil)
 	actualID := n.GetNodeID()
@@ -125,7 +125,7 @@ func (s *XLSuite) TestNewCtor(c *C) {
 	// IllegalArgument panic
 	// XXX STUB
 
-	// if assigned a nil key, the NewNode constructor should panic
+	// if assigned a nil key, the New constructor should panic
 	// with an IllegalArgument string
 	// XXX STUB
 

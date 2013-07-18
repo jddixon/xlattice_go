@@ -28,15 +28,16 @@ type Node struct {
 	endPoints   []*xt.EndPoint
 	peers       []*Peer
 	connections []*xt.ConnectionI
+	gateways    []*Gateway
 	BaseNode
 }
 
-func NewNewNode(id *NodeID) (*Node, error) {
+func NewNew(id *NodeID) (*Node, error) {
 	// XXX create default 2K bit RSA key
-	return NewNode(id, nil, nil, nil, nil, nil)
+	return New(id, nil, nil, nil, nil, nil)
 }
 
-func NewNode(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
+func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 	e *[]*xt.EndPoint, p *[]*Peer, c *[]*xt.ConnectionI) (*Node, error) {
 
 	///////////////////////////////
@@ -89,7 +90,7 @@ func NewNode(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 
 	baseNode, err := NewBaseNode(id, commsPubKey, sigPubKey, &overlays)
 	if err == nil {
-		p := Node{commsKey, sigKey, endPoints, peers, cnxs, *baseNode}
+		p := Node{commsKey, sigKey, endPoints, peers, cnxs, nil, *baseNode}
 		return &p, nil
 	} else {
 		return nil, err
