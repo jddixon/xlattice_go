@@ -41,15 +41,19 @@ func (s *XLSuite) TestQuad(c *C) {
 		c.Assert(myRE.MatchString(val), Equals, true)
 	}
 
+	c.Assert(myRE.MatchString(""), Equals, false)
 	c.Assert(myRE.MatchString("abc"), Equals, false)
 	c.Assert(myRE.MatchString("301"), Equals, false)
 	c.Assert(myRE.MatchString("256"), Equals, false)
+	c.Assert(myRE.MatchString("1a"), Equals, false)
 	// XXX a flaw of the approach taken: leading zeroes invalidate
 	c.Assert(myRE.MatchString("0255"), Equals, false)
 }
 func (s *XLSuite) TestDottedQuad(c *C) {
 	rng := rnglib.MakeSimpleRNG()
-	myRE, err := regexp.Compile(V4_ADDR_PAT)
+	// Use of MustCompile makes no difference.
+	// If you use CompilePOSIX you get "invalid escape sequence", "\\d".
+	myRE, err := regexp.Compile(V4_ADDR_PAT2)
 	c.Assert(err, Equals, nil)
 	c.Assert(myRE, Not(Equals), nil)
 
@@ -62,7 +66,8 @@ func (s *XLSuite) TestDottedQuad(c *C) {
 		c.Assert(myRE.MatchString(val), Equals, true)
 	}
 	c.Assert(myRE.MatchString(`abc`), Equals, false)
-	// XXX the next three inexplicably return true
+	// XXX the next four inexplicably return true
+	c.Assert(myRE.MatchString(`1a.2b.3c.4d`), Equals, false)
 	c.Assert(myRE.MatchString(`1.2.3`), Equals, false)
 	c.Assert(myRE.MatchString(`301.2.3`), Equals, false)
 	c.Assert(myRE.MatchString(`1.2.3.4.5`), Equals, false)

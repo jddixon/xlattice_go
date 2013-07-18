@@ -13,7 +13,11 @@ var _ = fmt.Print
 const (
 	QUAD_PAT = `\d|\d\d|(?:[01]\d\d|2(?:[01234]\d|5[0-5]))`
 	// XXX If you add the dollar sign, the match fails
-	V4_ADDR_PAT     = `^` + QUAD_PAT + `\.` + QUAD_PAT + `\.` + QUAD_PAT + `\.` + QUAD_PAT + `$`
+	V4_ADDR_PAT = `^` + QUAD_PAT + `\.` + QUAD_PAT + `\.` + QUAD_PAT + `\.` + QUAD_PAT + `$`
+
+	// 2013-07-18 results using this pattern appear identical
+	V4_ADDR_PAT2 = "^\\d|\\d\\d|(?:[01]\\d\\d|2(?:[01234]\\d|5[0-5]))\\.\\d|\\d\\d|(?:[01]\\d\\d|2(?:[01234]\\d|5[0-5]))\\.\\d|\\d\\d|(?:[01]\\d\\d|2(?:[01234]\\d|5[0-5]))\\.\\d|\\d\\d|(?:[01]\\d\\d|2(?:[01234]\\d|5[0-5]))$"
+
 	bad_port_number = "not a valid IPv4 port number: "
 	bad_ipv4_addr   = "not a valid IPv4 address: "
 )
