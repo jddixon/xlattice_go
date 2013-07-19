@@ -26,9 +26,8 @@ func (s *XLSuite) TestGoodV4Addrs(c *C) {
 		a, err := NewV4Address(s)
 		c.Assert(err, Equals, nil)
 		c.Assert(a, Not(Equals), nil)
-		// addr := *a						// PANIC: nil pointer
-		c.Assert(a.String(), Equals, s) // PANIC (2)
-	} // GEEP
+		c.Assert(a.String(), Equals, s) 
+	} 
 }
 func (s *XLSuite) TestQuad(c *C) {
 	MY_PAT := `^(` + QUAD_PAT + `)$`

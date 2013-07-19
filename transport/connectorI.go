@@ -17,13 +17,13 @@ type ConnectorI interface {
 	 * @param nearEnd  local end point to use for connection
 	 * @param blocking whether the new Connection is to be blocking
 	 */
-	Connect(near *EndPoint, blocking bool) (
+	Connect(near *EndPointI, blocking bool) (
 		c ConnectionI, e error) // throws IOException
 
 	/**
 	 * @return the Acceptor EndPoint that this Connector is used to
 	 *          establish connections to
 	 */
-	GetFarEnd() *EndPoint
+	GetFarEnd() EndPointI
 	String() string
 }

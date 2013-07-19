@@ -21,33 +21,54 @@ package transport
  * @author Jim Dixon
  */
 
+import (
+	"net"
+)
+
 type TcpAcceptor struct {
 	closed   bool
-	endPoint EndPoint
+	endPoint *TcpEndPoint
+	listener *net.TCPListener
 }
 
-func NewAcceptor() (*TcpAcceptor, error) {
+// XXX IMPEDANCE MISMATCH: Go's Listener returns simplified stream
+// connections; ListenIP appears to return packet-by-packet
+// connections.  Investigating.
 
-	// XXX STUB
-	return nil, nil
+func NewAcceptor(strAddr string) (*TcpAcceptor, error) {
+	var err error
+	var listener *net.TCPListener
+	var tcpAddr *net.TCPAddr
+	if tcpAddr, err = net.ResolveTCPAddr("ip", strAddr); err == nil {
+		listener, err = net.ListenTCP("tcp", tcpAddr)
+	}
+	if err == nil {
+		a := TcpAcceptor{}
+		a.endPoint, _ = NewTcpEndPoint(strAddr)
+		a.listener = listener
+		return &a, nil
+	} else {
+		return nil, err
+	}
 }
-func (a *TcpAcceptor) Accept() (ConnectionI, error) {
-	// XXX STUB
-	return nil, nil
+func (a *TcpAcceptor) Accept() (cnx *TcpConnection, err error) {
+	conn, err := a.listener.AcceptTCP()
+	if err == nil {
+		cnx, err = NewTcpConnection(conn)
+	}
+	return
 }
 func (a *TcpAcceptor) Close() error {
-	// XXX STUB
-	return nil
+	a.closed = true
+	return a.listener.Close()
 }
 func (a *TcpAcceptor) IsClosed() bool {
-	// XXX STUB
-	return false
+	return a.closed
 }
-func (a *TcpAcceptor) GetEndPoint() *EndPoint {
-	// XXX STUB
-	return nil
+func (a *TcpAcceptor) GetEndPoint() *TcpEndPoint {
+	return a.endPoint
 
 }
 func (a *TcpAcceptor) String() string {
-	return "NOT IMPLEMENTED"
+	return "TcpAcceptor: " + a.endPoint.String()
 }

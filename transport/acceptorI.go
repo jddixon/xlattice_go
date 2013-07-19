@@ -24,6 +24,6 @@ type AcceptorI interface {
 	Accept() (ConnectionI, error)
 	Close() error
 	IsClosed() bool
-	GetEndPoint() *EndPoint
+	GetEndPoint() *EndPointI
 	String() string
 }

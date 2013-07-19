@@ -31,11 +31,16 @@ func makeRE() (err error) {
 
 // An IPv4 address
 type V4Address struct {
-	Address
+	host	string
+	port	string		// if it's an int, the default is zero
 }
 
 // Expect an IPV4 address in the form A.B.C.D:P, where P is the
 // port number and the :P is optional.
+//
+// NOTE that in Go usage ":8080" is a valid address, with an
+// implicit "127.0.0.1" host part.
+
 func NewV4Address(val string) (addr *V4Address, err error) {
 	if v4AddrRE == nil {
 		if err = makeRE(); err != nil {
@@ -43,6 +48,8 @@ func NewV4Address(val string) (addr *V4Address, err error) {
 		}
 	}
 	var validAddr bool // false by default
+	var portPart	string
+
 	parts := strings.Split(val, `:`)
 	partsCount := len(parts)
 	if partsCount == 0 || partsCount > 2 {
@@ -56,6 +63,8 @@ func NewV4Address(val string) (addr *V4Address, err error) {
 		if port, err = strconv.Atoi(parts[1]); err == nil {
 			if port >= 256*256 {
 				err = errors.New(bad_port_number + parts[1])
+			} else {
+				portPart = parts[1]
 			}
 		}
 		if err == nil {
@@ -63,7 +72,7 @@ func NewV4Address(val string) (addr *V4Address, err error) {
 		}
 	}
 	if validAddr {
-		addr = &V4Address{Address{val}}
+		addr = &V4Address{parts[0], portPart}
 	}
 	// DEBUG
 	if !validAddr {
@@ -71,4 +80,30 @@ func NewV4Address(val string) (addr *V4Address, err error) {
 	}
 	// END
 	return
+}
+func (a *V4Address) Clone() (AddressI, error) {
+	return NewV4Address(a.String())			// .(AddressI)
+}
+func (a *V4Address) Equal(any interface{}) bool {
+	if any == nil {
+		return false
+	}
+	if any == a {
+		return true
+	}
+	switch v := any.(type) {
+	case *V4Address:
+		_ = v
+	default:
+		return false
+	}
+	other := any.(*V4Address)
+	return a.host == other.host && a.port == other.port
+}
+func (a *V4Address) String() string {
+	if a.port == "" {
+		return a.host
+	} else {
+		return a.host + ":" + a.port
+	}
 }

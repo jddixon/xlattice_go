@@ -52,7 +52,6 @@ import xc "github.com/jddixon/xlattice_go/crypto"
  * @author Jim Dixon
  */
 
-// STATE ////////////////////////////////////////////////////////
 /** neither end point is set */
 const UNBOUND = 100
 
@@ -85,7 +84,7 @@ type ConnectionI interface {
 	 * cause an exception.  If successful, the connection's
 	 * state becomes BOUND.
 	 */
-	BindNearEnd(e *EndPoint) (err error) // throws IOException
+	BindNearEnd(e *EndPointI) (err error) // throws IOException
 
 	/**
 	 * Set the far end point of a connection.  If the near end
@@ -98,27 +97,17 @@ type ConnectionI interface {
 	 * XXX The state should become CONNECTED if the far end is on
 	 * XXX the same host and PENDING if it is on a remoted host.
 	 */
-	BindFarEnd(e *EndPoint) (err error) // throws IOException
+	BindFarEnd(e *EndPointI) (err error) // throws IOException
 
 	/**
 	 * Bring the connection to the DISCONNECTED state.
 	 */
 	Close() (err error) // throws IOException
 
-	/**
-	 * This should be considered deprecated.  Test on whether the
-	 * state is DISCONNECTED instead.
-	 *
-	 * @return whether the connection state is DISCONNECTED.
-	 */
-	IsClosed() bool
+	GetNearEnd() EndPointI
 
-	// END POINTS ///////////////////////////////////////////////////
-	GetNearEnd() *EndPoint
+	GetFarEnd() EndPointI
 
-	GetFarEnd() *EndPoint
-
-	// I/O //////////////////////////////////////////////////////////
 	IsBlocking() bool
 
 	// ///////////////////////////////////////////////////////////////////
@@ -130,7 +119,6 @@ type ConnectionI interface {
 	//  GetInputStream(i *InputStream, e error)     // throws IOException
 	//  GetOutputStream(o *OutputStream, e error)   // throws IOException
 
-	// ENCRYPTION ///////////////////////////////////////////////////
 	/** @return whether the connection is encrypted */
 	IsEncrypted() bool
 
