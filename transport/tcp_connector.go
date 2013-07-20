@@ -20,7 +20,7 @@ type TcpConnector struct {
 
 var NilEndPoint = errors.New("nil endpoint")
 
-func NewTcpConnector(farEnd TcpEndPoint) (*TcpConnector, error) {
+func NewTcpConnector(farEnd *TcpEndPoint) (*TcpConnector, error) {
 	ep2, err := farEnd.Clone()
 	if err == nil {
 		ctor := TcpConnector{ep2}

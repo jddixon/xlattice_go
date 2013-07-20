@@ -65,16 +65,24 @@ func (c *TcpConnection) Close() (err error) {
 	return c.conn.Close()
 }
 
+// XXX 2013-07-20: this returns the far end instead !
 func (c *TcpConnection) GetNearEnd() (ep *TcpEndPoint) {
 	ep, _ = NewTcpEndPoint(c.conn.LocalAddr().String())
 	return ep
 }
 
+// XXX 2013-07-20: this returns the near end instead !
 func (c *TcpConnection) GetFarEnd() (ep *TcpEndPoint) {
 	ep, _ = NewTcpEndPoint(c.conn.RemoteAddr().String())
 	return ep
 }
 
+func (c *TcpConnection) Read(b []byte) (int, error) {
+	return c.conn.Read(b)
+}
+func (c *TcpConnection) Write(b []byte) (int, error) {
+	return c.conn.Write(b)
+}
 func (c *TcpConnection) IsBlocking() bool {
 	// XXX STUB NotImplemented
 	return false

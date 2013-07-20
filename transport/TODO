@@ -1,0 +1,11 @@
+xlattice_go/transport/TODO
+
+2013-07-20
+    * TcpConnection.{Read,Write}() should test the connection's
+        state
+    * TcpConnection.Get{Near,Far}End returns FarEnd and NearEnd
+        respectively
+    * tcp_server_test succeeds if K=16, N=32 but hangs if N=64
+
+2013-07-19
+    * various tcp*.go should rely upon an ip_address abstraction

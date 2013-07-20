@@ -35,11 +35,11 @@ type TcpAcceptor struct {
 // connections; ListenIP appears to return packet-by-packet
 // connections.  Investigating.
 
-func NewAcceptor(strAddr string) (*TcpAcceptor, error) {
+func NewTcpAcceptor(strAddr string) (*TcpAcceptor, error) {
 	var err error
 	var listener *net.TCPListener
 	var tcpAddr *net.TCPAddr
-	if tcpAddr, err = net.ResolveTCPAddr("ip", strAddr); err == nil {
+	if tcpAddr, err = net.ResolveTCPAddr("tcp", strAddr); err == nil {
 		listener, err = net.ListenTCP("tcp", tcpAddr)
 	}
 	if err == nil {
