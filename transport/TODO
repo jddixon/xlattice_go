@@ -1,5 +1,11 @@
 xlattice_go/transport/TODO
 
+2013-07-21
+    * If a :0 endPoint is given to a TcpAcceptor, it should         // DONE
+        be assigned a different port by the operating system.
+        However, NewTcpAcceptor will save the :0 endPoint and
+        never change it.  Modify it to correct the port number.
+
 2013-07-20
     * TcpConnection.{Read,Write}() should test the connection's
         state
@@ -8,4 +14,5 @@ xlattice_go/transport/TODO
     * tcp_server_test succeeds if K=16, N=32 but hangs if N=64
 
 2013-07-19
-    * various tcp*.go should rely upon an ip_address abstraction
+    * Various tcp*.go should rely upon an ip_address abstraction;
+        an IPv4 address is OK for now.

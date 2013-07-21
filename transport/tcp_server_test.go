@@ -20,8 +20,10 @@ import (
 // correct.
 
 const (
-	K = 16				// number of clients
-	N = 32				// number of messages for each client
+	// XXX 2013-07-20 test hangs if K=16,N=32 and K increasd to 32 OR
+	// N increased from 32 to 64
+	K = 32				// number of clients
+	N = 16				// number of messages for each client
 	MIN_LEN = 1024		// minimum length of message
 	MAX_LEN = 2048		// maximum
 	SHA1_LEN = 20
@@ -54,11 +56,8 @@ func (s *XLSuite) handleMsg(cnx *TcpConnection) error {
 }
 
 func (s *XLSuite) TestHashingServer(c *C) {
-	const (
-		SERVER_ADDR = "127.0.0.1:55555"
-	)	
 	ANY_END_POINT, _ := NewTcpEndPoint("127.0.0.1:0")
-	SERVER_END_POINT, _ := NewTcpEndPoint(SERVER_ADDR)
+	SERVER_ADDR		 := "127.0.0.1:0"
 
 	// -- setup  -----------------------------------------------------
 	fmt.Println("building messages")
@@ -101,7 +100,7 @@ func (s *XLSuite) TestHashingServer(c *C) {
 	// -- create K client connectors --------------------------------
 	ktors := make([]*TcpConnector, K)
 	for i := 0; i < K; i++ {
-		ktors[i],err = NewTcpConnector(SERVER_END_POINT)
+		ktors[i],err = NewTcpConnector(accEndPoint)
 		c.Assert(err, Equals, nil)
 	}
 

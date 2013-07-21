@@ -49,6 +49,6 @@ func (e *TcpEndPoint) Network() string {
 }
 
 // Shortcut for Go
-func (e *TcpEndPoint) GetTcpEndPoint() *net.TCPAddr {
+func (e *TcpEndPoint) GetTcpAddr() *net.TCPAddr {
 	return e.tcpAddr
 }

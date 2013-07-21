@@ -22,18 +22,16 @@ package transport
  */
 
 import (
+	"fmt"
 	"net"
 )
+var _ = fmt.Printf
 
 type TcpAcceptor struct {
 	closed   bool
 	endPoint *TcpEndPoint
 	listener *net.TCPListener
 }
-
-// XXX IMPEDANCE MISMATCH: Go's Listener returns simplified stream
-// connections; ListenIP appears to return packet-by-packet
-// connections.  Investigating.
 
 func NewTcpAcceptor(strAddr string) (*TcpAcceptor, error) {
 	var err error
@@ -44,8 +42,9 @@ func NewTcpAcceptor(strAddr string) (*TcpAcceptor, error) {
 	}
 	if err == nil {
 		a := TcpAcceptor{}
-		a.endPoint, _ = NewTcpEndPoint(strAddr)
 		a.listener = listener
+		addr := listener.Addr().String()	
+		a.endPoint, _ = NewTcpEndPoint(addr)
 		return &a, nil
 	} else {
 		return nil, err

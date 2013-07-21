@@ -41,8 +41,8 @@ func NewTcpConnector(farEnd *TcpEndPoint) (*TcpConnector, error) {
 
 func (c *TcpConnector) Connect(nearEnd *TcpEndPoint) (*TcpConnection, error) {
 
-	tcpConn, err := net.DialTCP("tcp", nearEnd.GetTcpEndPoint(),
-		c.farEnd.GetTcpEndPoint())
+	tcpConn, err := net.DialTCP("tcp", nearEnd.GetTcpAddr(),
+		c.farEnd.GetTcpAddr())
 	if err == nil {
 		cnx := TcpConnection{tcpConn, CONNECTED}
 		return &cnx, nil
