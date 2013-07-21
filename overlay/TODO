@@ -1,0 +1,5 @@
+xlattice_go/overlay/TODO
+
+2013-07-16
+    * need to add validation of addrRange to ip_overlay.go
+    * need to add addr range to test
