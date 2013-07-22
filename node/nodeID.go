@@ -7,7 +7,7 @@ import (
 )
 
 // these SHOULD be in a crypto package
-const SHA1_LEN = 20
+const SHA1_LEN = 20			// in bytes; hex SHA1_LEN is twice this
 const SHA3_LEN = 32
 
 // END SHOULD

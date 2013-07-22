@@ -1,6 +1,8 @@
 package overlay
 
-import ()
+import (
+	xt "github.com/jddixon/xlattice_go/transport"
+)
 
 /**
  * A Overlay is characterized by an address space, a transport protocol,
@@ -24,7 +26,7 @@ import ()
 
 type Overlay struct {
 	name      string // eg "eu-west-1.compute.amazonaws.com"
-	transport string // eg "tcpip"
+	transport string // eg "tcp"
 	cost      float32
 }
 
@@ -42,6 +44,10 @@ func (o *Overlay) Transport() string {
 	return o.transport
 }
 
+func (o *Overlay) IsElement(xt.EndPointI) bool {
+	// XXX STUB
+	return false
+}
 func (o *Overlay) Cost() float32 {
 	return o.cost
 }

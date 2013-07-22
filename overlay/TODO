@@ -1,5 +1,9 @@
 xlattice_go/overlay/TODO
 
+2013-07-22
+    * Overlay should be dropped; it is an abstraction
+        - IPOverlay is OK
+
 2013-07-16
     * need to add validation of addrRange to ip_overlay.go
     * need to add addr range to test

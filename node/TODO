@@ -1,5 +1,9 @@
 xlattice_go/node/TODO
 
+2013-07-22
+    * rework to not use Overlay as concrete class; should
+        be using OverlayI and IPOverlay
+
 2013-07-16
     * Node and Peer should extend a base class
         - Peer extends BaseNode                                     # DONE
