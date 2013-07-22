@@ -28,6 +28,7 @@ func makeNodeID(rng *rnglib.PRNG) *NodeID {
 
 // func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
+	// COMMS KEY
 	commsPubKey := node.GetCommsPublicKey()
 	c.Assert(commsPubKey, Not(IsNil)) // NOT
 
@@ -40,6 +41,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 
 	c.Assert(privCommsKey.PublicKey, Equals, *commsPubKey) // XXX FAILS
 
+	// SIG KEY
 	sigPubKey := node.GetSigPublicKey()
 	c.Assert(sigPubKey, Not(IsNil)) // NOT
 

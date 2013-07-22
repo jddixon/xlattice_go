@@ -25,7 +25,7 @@ var _ = fmt.Print
 type Node struct {
 	commsKey    *rsa.PrivateKey // private
 	sigKey      *rsa.PrivateKey // private
-	endPoints   []*xt.EndPoint
+	endPoints   []*xt.EndPointI
 	peers       []*Peer
 	connections []*xt.ConnectionI
 	gateways    []*Gateway
@@ -38,7 +38,7 @@ func NewNew(id *NodeID) (*Node, error) {
 }
 
 func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
-	e *[]*xt.EndPoint, p *[]*Peer, c *[]*xt.ConnectionI) (*Node, error) {
+	e *[]*xt.EndPointI, p *[]*Peer, c *[]*xt.ConnectionI) (*Node, error) {
 
 	///////////////////////////////
 	// XXX STUB: switch on key type
@@ -60,7 +60,7 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 		sigKey = k
 	}
 
-	var endPoints []*xt.EndPoint // an empty slice
+	var endPoints []*xt.EndPointI // an empty slice
 	var overlays []*xo.OverlayI
 	if e != nil {
 		count := len(*e)
