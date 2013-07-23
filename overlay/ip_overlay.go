@@ -2,7 +2,12 @@ package overlay
 
 // xlattice_go/overlay/ip_overlay.go
 
-import ()
+import (
+	"fmt"
+	xt "github.com/jddixon/xlattice_go/transport"
+	"net"
+)
+var _ = fmt.Print					// DEBUG
 
 /**
  * A Overlay is characterized by an address space, a transport protocol,
@@ -25,8 +30,8 @@ import ()
  */
 
 type IPOverlay struct {
-	addrRange *AddrRange // eg 10/8 in ipv4		XXX THIS IS AN ERROR
-	Overlay
+	addrRange *AddrRange // eg 10/8 in ipv4	
+	BaseOverlay
 }
 
 func NewIPOverlay(name string, addrRange *AddrRange, transport string, cost float32) (*IPOverlay, error) {
@@ -43,5 +48,33 @@ func NewIPOverlay(name string, addrRange *AddrRange, transport string, cost floa
 }
 
 func (o *IPOverlay) AddrRange() *AddrRange {
+	// XXX should clone
 	return o.addrRange
+}
+
+// XXX This belongs in ../transport
+func CompatibleTransports( overlayT, endPointT string ) bool {
+	if overlayT == endPointT {	return true }
+	// more elaborate structure needed here
+	if overlayT == "ip" && ( endPointT == "tcp" || endPointT == "udp" ) {
+		return true
+	}
+	return false
+}
+func (o *IPOverlay) IsElement(e xt.EndPointI) bool {
+	oT := o.Transport()
+	eT := e.Transport()
+	if ! CompatibleTransports(oT, eT)	{ return false }
+
+	eA := e.Address().String()
+	bs := net.ParseIP(eA)			// returns an IP, a []byte
+	if bs == nil { 
+		fmt.Printf("could not parse '%s'\n", eA)
+		return false 
+	}
+	bitLen := 8 * len(bs)
+	fmt.Printf("%s has bit length %d\n", bs, bitLen)
+
+	// XXX STUB XXX  WORKING HERE 
+	return false
 }

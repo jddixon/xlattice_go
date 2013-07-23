@@ -1,7 +1,6 @@
 package overlay
 
 import (
-	xt "github.com/jddixon/xlattice_go/transport"
 )
 
 /**
@@ -24,38 +23,34 @@ import (
  *
  */
 
-type Overlay struct {
+type BaseOverlay struct {
 	name      string // eg "eu-west-1.compute.amazonaws.com"
 	transport string // eg "tcp"
 	cost      float32
 }
 
-func New(name string, transport string, cost float32) (*Overlay, error) {
+func New(name string, transport string, cost float32) (*BaseOverlay, error) {
 	// XXX validate the parameters, please
 
-	return &Overlay{name, transport, cost}, nil
+	return &BaseOverlay{name, transport, cost}, nil
 }
 
-func (o *Overlay) Name() string {
+func (o *BaseOverlay) Name() string {
 	return o.name
 }
 
-func (o *Overlay) Transport() string {
+func (o *BaseOverlay) Transport() string {
 	return o.transport
 }
 
-func (o *Overlay) IsElement(xt.EndPointI) bool {
-	// XXX STUB
-	return false
-}
-func (o *Overlay) Cost() float32 {
+func (o *BaseOverlay) Cost() float32 {
 	return o.cost
 }
 
-func (o *Overlay) Equal(any interface{}) bool {
+func (o *BaseOverlay) Equal(any interface{}) bool {
 	// XXX STUB XXX
 	return false
 }
-func (o *Overlay) String() string {
+func (o *BaseOverlay) String() string {
 	return "NOT IMPLEMENTED"
 }

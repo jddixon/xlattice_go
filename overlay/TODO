@@ -1,9 +1,14 @@
 xlattice_go/overlay/TODO
 
-2013-07-22
-    * Overlay should be dropped; it is an abstraction
-        - IPOverlay is OK
+2013-07-23
+    * Overlay is badly named; it is a base type and should be       # FIXED
+        named accordingly
+    * if the transport for an overlay is "ip", IsElement() should 
+        regard "udp" and "tcp" as acceptable
+        - in the longer run, Transport should be a real abstract
+            type and should support a partial ordering (so that
+            for example "ip" < "tcp" < "http" < "https")
 
 2013-07-16
     * need to add validation of addrRange to ip_overlay.go
-    * need to add addr range to test
+    * need to add addr range to test                                # DONE
