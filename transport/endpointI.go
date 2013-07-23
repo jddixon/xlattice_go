@@ -8,8 +8,8 @@ package transport
  */
 
 type EndPointI interface {
-	Clone() (*EndPointI, error)
-	GetAddress() AddressI
-	GetTransport() string
+	Clone() (EndPointI, error)
+	Address() AddressI
+	Transport() string
 	String() string
 }

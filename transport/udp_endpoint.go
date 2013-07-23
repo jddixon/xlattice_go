@@ -24,17 +24,17 @@ func NewUdpEndPoint(addr string) (*UdpEndPoint, error) {
 	}
 }
 
-func (e *UdpEndPoint) GetAddress() AddressI {
+func (e *UdpEndPoint) Address() AddressI {
 	a, _ := NewV4Address(e.udpAddr.String())
 	return a
 }
 
-func (e *UdpEndPoint) GetTransport() string {
+func (e *UdpEndPoint) Transport() string {
 	return "udp"
 }
 
 func (e *UdpEndPoint) Clone() (*UdpEndPoint, error) {
-	return NewUdpEndPoint(e.GetAddress().String())
+	return NewUdpEndPoint(e.Address().String())
 }
 
 func (e *UdpEndPoint) String() string {
@@ -43,9 +43,9 @@ func (e *UdpEndPoint) String() string {
 
 // net.Addr interface ///////////////////////////////////////////////
 
-// This is just an alias for GetTransport
+// This is just an alias for Transport
 func (e *UdpEndPoint) Network() string {
-	return e.GetTransport()
+	return e.Transport()
 }
 
 // Shortcut for Go

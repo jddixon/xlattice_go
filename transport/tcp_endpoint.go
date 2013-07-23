@@ -24,17 +24,17 @@ func NewTcpEndPoint(addr string) (*TcpEndPoint, error) {
 	}
 }
 
-func (e *TcpEndPoint) GetAddress() AddressI {
+func (e *TcpEndPoint) Address() AddressI {
 	a, _ := NewV4Address(e.tcpAddr.String())
 	return a
 }
 
-func (e *TcpEndPoint) GetTransport() string {
+func (e *TcpEndPoint) Transport() string {
 	return "tcp"
 }
 
 func (e *TcpEndPoint) Clone() (*TcpEndPoint, error) {
-	return NewTcpEndPoint(e.GetAddress().String())
+	return NewTcpEndPoint(e.Address().String())
 }
 
 func (e *TcpEndPoint) String() string {
@@ -43,9 +43,9 @@ func (e *TcpEndPoint) String() string {
 
 // net.Addr interface ///////////////////////////////////////////////
 
-// This is just an alias for GetTransport
+// This is just an alias for Transport
 func (e *TcpEndPoint) Network() string {
-	return e.GetTransport()
+	return e.Transport()
 }
 
 // Shortcut for Go
