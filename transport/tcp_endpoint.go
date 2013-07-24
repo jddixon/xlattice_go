@@ -33,7 +33,7 @@ func (e *TcpEndPoint) Transport() string {
 	return "tcp"
 }
 
-func (e *TcpEndPoint) Clone() (*TcpEndPoint, error) {
+func (e *TcpEndPoint) Clone() (ep EndPointI, err error) {
 	return NewTcpEndPoint(e.Address().String())
 }
 

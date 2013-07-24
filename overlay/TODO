@@ -3,11 +3,13 @@ xlattice_go/overlay/TODO
 2013-07-23
     * Overlay is badly named; it is a base type and should be       # FIXED
         named accordingly
-    * if the transport for an overlay is "ip", IsElement() should 
+    * if the transport for an overlay is "ip", IsElement() should   # DONE 
         regard "udp" and "tcp" as acceptable
-        - in the longer run, Transport should be a real abstract
-            type and should support a partial ordering (so that
-            for example "ip" < "tcp" < "http" < "https")
+    * in the longer run, Transport should be a real abstract type 
+        and should support a partial ordering (so that for example 
+        "ip" < "tcp" < "http" < "https")
+    * improve use of Golang abstractions such as IPNet in
+        AddrRange 
 
 2013-07-16
     * need to add validation of addrRange to ip_overlay.go

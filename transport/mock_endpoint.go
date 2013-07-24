@@ -7,17 +7,17 @@ import (
 // Something with the EndPointI interface - for use in testing.
 
 type MockEndPoint struct {
-	T		string			// transport
-	Addr	AddressI		// usually a MockAddress
+	T    string   // transport
+	Addr AddressI // usually a MockAddress
 }
 
-func NewMockEndPoint( transport, addr string ) EndPointI {
-	mockA := NewMockAddress( addr )
-	return &MockEndPoint{ transport, mockA }
+func NewMockEndPoint(transport, addr string) EndPointI {
+	mockA := NewMockAddress(addr)
+	return &MockEndPoint{transport, mockA}
 }
 
 func (m *MockEndPoint) Clone() (EndPointI, error) {
-	klone := MockEndPoint{ m.T, NewMockAddress(m.Addr.String()) }
+	klone := MockEndPoint{m.T, NewMockAddress(m.Addr.String())}
 	return &klone, nil
 }
 func (m *MockEndPoint) Equal(any interface{}) bool {
@@ -34,7 +34,7 @@ func (m *MockEndPoint) Equal(any interface{}) bool {
 		return false
 	}
 	other := any.(*MockEndPoint)
-	return other.T == other.T && 
+	return other.T == other.T &&
 		other.Addr.String() == other.Addr.String()
 }
 func (m *MockEndPoint) Address() AddressI {

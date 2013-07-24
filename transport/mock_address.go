@@ -6,11 +6,11 @@ type MockAddress struct {
 	Address string
 }
 
-func NewMockAddress( s string ) (AddressI) {
-	return &MockAddress{ s }
+func NewMockAddress(s string) AddressI {
+	return &MockAddress{s}
 }
 func (m *MockAddress) Clone() (AddressI, error) {
-	m2 := MockAddress{ m.Address }
+	m2 := MockAddress{m.Address}
 	return &m2, nil
 }
 func (m *MockAddress) Equal(any interface{}) bool {

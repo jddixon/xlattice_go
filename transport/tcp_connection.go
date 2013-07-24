@@ -121,7 +121,7 @@ func (c *TcpConnection) Equal(any interface{}) bool {
 }
 
 func (c *TcpConnection) String() string {
-	return fmt.Sprintf("tcp: %s --> %s", 
+	return fmt.Sprintf("tcp: %s --> %s",
 		c.GetNearEnd().String(),
 		c.GetFarEnd().String())
 }

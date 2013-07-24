@@ -23,7 +23,7 @@ var NilEndPoint = errors.New("nil endpoint")
 func NewTcpConnector(farEnd *TcpEndPoint) (*TcpConnector, error) {
 	ep2, err := farEnd.Clone()
 	if err == nil {
-		ctor := TcpConnector{ep2}
+		ctor := TcpConnector{ep2.(*TcpEndPoint)}
 		if err == nil {
 			return &ctor, nil
 		}

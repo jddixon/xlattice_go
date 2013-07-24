@@ -14,15 +14,16 @@ import (
 // bits in that prefix, and the number of bits in a valid address.  So
 // an ipv4 10/8 address range would be represented as [10], 8, 32.
 type AddrRange struct {
+	// XXX all of this information is contained in ipNet
 	prefix    []byte // all addresses in the range match this prefix
 	prefixLen uint   // number of leading bits, the 8 in 10/8
-	addrLen   uint   // in bits: 32 for ipv4, 64 for ipv6
+	addrLen   uint   // in bits: 32 for ipv4, 128 for ipv6
 
-	ipNet	*net.IPNet
+	ipNet *net.IPNet
 }
 
 // XXX UNSAFE: should copy
-func (r *AddrRange) Prefix() []byte  { return r.prefix }
+func (r *AddrRange) Prefix() []byte { return r.prefix }
 
 func (r *AddrRange) PrefixLen() uint { return r.prefixLen }
 func (r *AddrRange) AddrLen() uint   { return r.addrLen }
@@ -39,20 +40,20 @@ func NewAddrRange(prefix []byte, prefixLen uint, addrLen uint) (*AddrRange, erro
 		return nil, errors.New("IllegalArgument: prefix too long for addr len")
 	}
 	// XXX BEGIN HACK -----------------------------------------------
-	pLen := len(prefix) 
-	if pLen != 4 &&  pLen != 16{
+	pLen := len(prefix)
+	if pLen != 4 && pLen != 16 {
 		return nil, errors.New("implementation requires 4 or 16 byte prefixes")
 	}
 	var str string
 	if pLen == 4 {
-		str = fmt.Sprintf("%d.%d.%d.%d/%d", 
+		str = fmt.Sprintf("%d.%d.%d.%d/%d",
 			prefix[0], prefix[1], prefix[2], prefix[3], prefixLen)
 	} else {
-		str = fmt.Sprintf("%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x/%d", 
-			prefix[0], prefix[1], prefix[2], prefix[3], 
-			prefix[4], prefix[5], prefix[6], prefix[7], 
-			prefix[8], prefix[9], prefix[10], prefix[11], 
-			prefix[12], prefix[13], prefix[14], prefix[15], 
+		str = fmt.Sprintf("%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x/%d",
+			prefix[0], prefix[1], prefix[2], prefix[3],
+			prefix[4], prefix[5], prefix[6], prefix[7],
+			prefix[8], prefix[9], prefix[10], prefix[11],
+			prefix[12], prefix[13], prefix[14], prefix[15],
 			prefixLen)
 	}
 	_, ipNet, err := net.ParseCIDR(str)
@@ -72,6 +73,19 @@ func NewV6AddrRange(prefix []byte, prefixLen uint) (*AddrRange, error) {
 	return NewAddrRange(prefix, prefixLen, uint(128))
 }
 
+func NewCIDRAddrRange(s string) (*AddrRange, error) {
+	_, ipNet, err := net.ParseCIDR(s)
+	if err == nil {
+		// prefix    []byte // all addresses in the range match this prefix
+		// prefixLen uint   // number of leading bits, the 8 in 10/8
+		// addrLen   uint   // in bits: 32 for ipv4, 128 for ipv6
+		prefix := ipNet.IP
+		ones, bits := ipNet.Mask.Size() // number of bits in mask
+		return &AddrRange{prefix, uint(ones), uint(bits), ipNet}, nil
+	} else {
+		return nil, err
+	}
+}
 func (r *AddrRange) Equal(any interface{}) bool {
 	if any == r {
 		return true

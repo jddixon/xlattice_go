@@ -31,8 +31,8 @@ func makeRE() (err error) {
 
 // An IPv4 address
 type V4Address struct {
-	host	string
-	port	string		// if it's an int, the default is zero
+	host string
+	port string // if it's an int, the default is zero
 }
 
 // Expect an IPV4 address in the form A.B.C.D:P, where P is the
@@ -48,7 +48,7 @@ func NewV4Address(val string) (addr *V4Address, err error) {
 		}
 	}
 	var validAddr bool // false by default
-	var portPart	string
+	var portPart string
 
 	parts := strings.Split(val, `:`)
 	partsCount := len(parts)
@@ -82,7 +82,7 @@ func NewV4Address(val string) (addr *V4Address, err error) {
 	return
 }
 func (a *V4Address) Clone() (AddressI, error) {
-	return NewV4Address(a.String())			// .(AddressI)
+	return NewV4Address(a.String()) // .(AddressI)
 }
 func (a *V4Address) Equal(any interface{}) bool {
 	if any == nil {

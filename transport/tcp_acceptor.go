@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"net"
 )
+
 var _ = fmt.Printf
 
 type TcpAcceptor struct {
@@ -43,7 +44,7 @@ func NewTcpAcceptor(strAddr string) (*TcpAcceptor, error) {
 	if err == nil {
 		a := TcpAcceptor{}
 		a.listener = listener
-		addr := listener.Addr().String()	
+		addr := listener.Addr().String()
 		a.endPoint, _ = NewTcpEndPoint(addr)
 		return &a, nil
 	} else {

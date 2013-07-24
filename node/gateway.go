@@ -11,13 +11,13 @@ import (
 type Gateway struct {
 	peer *Peer // which provides transport
 	// XXX not going to work: we need a cost via this peer
-	realms []*xo.Overlay // overlays reachable through this peer
+	realms []xo.OverlayI // overlays reachable through this peer
 }
 
-func NewGateway(p *Peer, o []*xo.Overlay) *Gateway {
+func NewGateway(p *Peer, o []xo.OverlayI) *Gateway {
 	// XXX validations
 	sizeNow := len(o)
-	r := make([]*xo.Overlay, sizeNow, sizeNow+2)
+	r := make([]xo.OverlayI, sizeNow, sizeNow+2)
 	copy(r, o)
 	return &Gateway{p, r}
 }

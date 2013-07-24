@@ -1,7 +1,6 @@
 package overlay
 
-import (
-)
+import ()
 
 /**
  * A Overlay is characterized by an address space, a transport protocol,
