@@ -9,6 +9,21 @@ import (
 	"regexp"
 )
 
+func (s *XLSuite) TestV4AddressInterface(c *C) {
+	const myWeb = "127.0.0.1:80"
+	w, err := NewV4Address(myWeb)
+	c.Assert(err, Equals, nil)
+	c.Assert(w, Not(Equals), nil)
+
+	x, err := w.Clone()
+	c.Assert(err, Equals, nil)
+	c.Assert(x, Not(Equals), nil)
+	c.Assert(w.String(), Equals, x.String())
+	c.Assert(w.Equal(x), Equals, true)
+
+	foo := AddressI(w)
+	_ = foo
+}
 func (s *XLSuite) TestGoodV4Addrs(c *C) {
 	rng := rnglib.MakeSimpleRNG()
 	for i := 0; i < 16; i++ {

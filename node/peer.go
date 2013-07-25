@@ -12,7 +12,7 @@ import (
  */
 
 type Peer struct {
-	connectors []*xt.ConnectorI // to reach the peer
+	connectors []xt.ConnectorI // to reach the peer
 	BaseNode
 }
 
@@ -22,16 +22,16 @@ func NewNewPeer(id *NodeID) (*Peer, error) {
 
 func NewPeer(id *NodeID,
 	ck *rsa.PublicKey, sk *rsa.PublicKey,
-	o *[]*xo.OverlayI, c *[]*xt.ConnectorI) (*Peer, error) {
+	o []xo.OverlayI, c []xt.ConnectorI) (*Peer, error) {
 
 	baseNode, err := NewBaseNode(id, ck, sk, o)
 
 	if err == nil {
-		var ctors []*xt.ConnectorI // another empty slice
+		var ctors []xt.ConnectorI // another empty slice
 		if c != nil {
-			count := len(*c)
+			count := len(c)
 			for i := 0; i < count; i++ {
-				ctors = append(ctors, (*c)[i])
+				ctors = append(ctors, c[i])
 			}
 		}
 		p := Peer{ctors, *baseNode}
@@ -42,7 +42,7 @@ func NewPeer(id *NodeID,
 }
 
 // CONNECTORS ///////////////////////////////////////////////////////
-func (p *Peer) addConnector(c *xt.ConnectorI) error {
+func (p *Peer) addConnector(c xt.ConnectorI) error {
 	if c == nil {
 		return errors.New("IllegalArgument: nil Connector")
 	}
@@ -65,7 +65,7 @@ func (p *Peer) SizeConnectors() int {
  *
  * @return the Nth Connector
  */
-func (p *Peer) GetConnector(n int) *xt.ConnectorI {
+func (p *Peer) GetConnector(n int) xt.ConnectorI {
 	return p.connectors[n]
 }
 

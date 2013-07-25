@@ -25,20 +25,47 @@ func NewTcpEndPoint(addr string) (*TcpEndPoint, error) {
 }
 
 func (e *TcpEndPoint) Address() AddressI {
+	// return a copy
 	a, _ := NewV4Address(e.tcpAddr.String())
 	return a
-}
-
-func (e *TcpEndPoint) Transport() string {
-	return "tcp"
 }
 
 func (e *TcpEndPoint) Clone() (ep EndPointI, err error) {
 	return NewTcpEndPoint(e.Address().String())
 }
 
+func (e *TcpEndPoint) Equal(any interface{}) bool {
+	if any == nil {
+		return false
+	}
+	if any == e {
+		return true
+	}
+	switch v := any.(type) {
+	case *TcpEndPoint:
+		_ = v
+	default:
+		return false
+	}
+	other := any.(*TcpEndPoint)
+	t, ot := e.tcpAddr, other.tcpAddr
+	if len(t.IP) != len(ot.IP) {
+		return false
+	}
+	for i := 0; i < len(t.IP); i++ {
+		if t.IP[i] != ot.IP[i] {
+			return false
+		}
+	}
+	return t.Port == ot.Port && t.Zone == ot.Zone
+}
+
 func (e *TcpEndPoint) String() string {
 	return e.tcpAddr.String()
+}
+
+func (e *TcpEndPoint) Transport() string {
+	return "tcp"
 }
 
 // net.Addr interface ///////////////////////////////////////////////

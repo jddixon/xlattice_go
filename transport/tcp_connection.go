@@ -66,13 +66,13 @@ func (c *TcpConnection) Close() (err error) {
 }
 
 // XXX 2013-07-20: this returns the far end instead !
-func (c *TcpConnection) GetNearEnd() (ep *TcpEndPoint) {
+func (c *TcpConnection) GetNearEnd() (ep EndPointI) {
 	ep, _ = NewTcpEndPoint(c.conn.LocalAddr().String())
 	return ep
 }
 
 // XXX 2013-07-20: this returns the near end instead !
-func (c *TcpConnection) GetFarEnd() (ep *TcpEndPoint) {
+func (c *TcpConnection) GetFarEnd() (ep EndPointI) {
 	ep, _ = NewTcpEndPoint(c.conn.RemoteAddr().String())
 	return ep
 }

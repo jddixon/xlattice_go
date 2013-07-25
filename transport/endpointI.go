@@ -8,8 +8,9 @@ package transport
  */
 
 type EndPointI interface {
-	Clone() (EndPointI, error)
 	Address() AddressI
-	Transport() string
+	Clone() (EndPointI, error)
+	Equal(any interface{}) bool
 	String() string
+	Transport() string
 }

@@ -111,13 +111,8 @@ type ConnectionI interface {
 	IsBlocking() bool
 
 	// ///////////////////////////////////////////////////////////////////
-	// XXX CONFUSION BETWEEN PACKET vs STREAM AND BLOCKING vs NON-BLOCKING
+	// XXX CONFUSION BETWEEN PACKET vs STREAM
 	// ///////////////////////////////////////////////////////////////////
-	// non-blocking
-
-	// blocking
-	//  GetInputStream(i *InputStream, e error)     // throws IOException
-	//  GetOutputStream(o *OutputStream, e error)   // throws IOException
 
 	/** @return whether the connection is encrypted */
 	IsEncrypted() bool

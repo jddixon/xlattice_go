@@ -61,7 +61,7 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 	}
 
 	var endPoints []*xt.EndPointI // an empty slice
-	var overlays []*xo.OverlayI
+	var overlays []xo.OverlayI
 	if e != nil {
 		count := len(*e)
 		for i := 0; i < count; i++ {
@@ -88,7 +88,7 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 	commsPubKey := &(*commsKey).PublicKey
 	sigPubKey := &(*sigKey).PublicKey
 
-	baseNode, err := NewBaseNode(id, commsPubKey, sigPubKey, &overlays)
+	baseNode, err := NewBaseNode(id, commsPubKey, sigPubKey, overlays)
 	if err == nil {
 		p := Node{commsKey, sigKey, endPoints, peers, cnxs, nil, *baseNode}
 		return &p, nil
@@ -107,7 +107,7 @@ func (n *Node) getSigner() *signer {
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (n *Node) addOverlay(o *xo.OverlayI) error {
+func (n *Node) addOverlay(o xo.OverlayI) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil Overlay")
 	}
@@ -124,7 +124,7 @@ func (n *Node) SizeOverlays() int {
 }
 
 /** @return how to access the peer (transport, protocol, address) */
-func (n *Node) GetOverlay(x int) *xo.OverlayI {
+func (n *Node) GetOverlay(x int) xo.OverlayI {
 	return n.overlays[x]
 }
 

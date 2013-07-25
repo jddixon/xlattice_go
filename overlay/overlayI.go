@@ -28,7 +28,7 @@ import (
 
 type OverlayI interface {
 	Name() string // eg "eu-west-1.compute.amazonaws.com"
-	IsElement(*xt.EndPointI) bool
+	IsElement(xt.EndPointI) bool
 	Transport() string // eg "tcp"
 	Cost() float32
 	Equal(any interface{}) bool

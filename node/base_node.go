@@ -17,7 +17,7 @@ type BaseNode struct {
 	nodeID      *NodeID
 	commsPubkey *rsa.PublicKey
 	sigPubkey   *rsa.PublicKey
-	overlays    []*xo.OverlayI
+	overlays    []xo.OverlayI
 }
 
 func NewNewBaseNode(id *NodeID) (*BaseNode, error) {
@@ -26,7 +26,7 @@ func NewNewBaseNode(id *NodeID) (*BaseNode, error) {
 
 func NewBaseNode(id *NodeID,
 	ck *rsa.PublicKey, sk *rsa.PublicKey,
-	o *[]*xo.OverlayI) (*BaseNode, error) {
+	o []xo.OverlayI) (*BaseNode, error) {
 
 	// IDENTITY /////////////////////////////////////////////////////
 	if id == nil {
@@ -36,11 +36,11 @@ func NewBaseNode(id *NodeID,
 	nodeID := (*id).Clone()
 	commsPubkey := ck
 	sigPubkey := sk
-	var overlays []*xo.OverlayI // an empty slice
+	var overlays []xo.OverlayI // an empty slice
 	if o != nil {
-		count := len(*o)
+		count := len(o)
 		for i := 0; i < count; i++ {
-			overlays = append(overlays, (*o)[i])
+			overlays = append(overlays, o[i])
 		}
 	} // FOO
 	p := new(BaseNode)
@@ -61,7 +61,7 @@ func (p *BaseNode) GetSigPublicKey() *rsa.PublicKey {
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (p *BaseNode) addOverlayI(o *xo.OverlayI) error {
+func (p *BaseNode) addOverlayI(o xo.OverlayI) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil OverlayI")
 	}
@@ -78,7 +78,7 @@ func (p *BaseNode) sizeOverlays() int {
 }
 
 /** @return how to access the peer (transport, protocol, address) */
-func (p *BaseNode) GetOverlay(n int) *xo.OverlayI {
+func (p *BaseNode) GetOverlay(n int) xo.OverlayI {
 	return p.overlays[n]
 }
 

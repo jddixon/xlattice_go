@@ -15,10 +15,8 @@ type ConnectorI interface {
 	 * and address in the EndPoint.
 	 *
 	 * @param nearEnd  local end point to use for connection
-	 * @param blocking whether the new Connection is to be blocking
 	 */
-	Connect(near *EndPointI, blocking bool) (
-		c ConnectionI, e error) // throws IOException
+	Connect(near EndPointI) (c ConnectionI, e error)
 
 	/**
 	 * @return the Acceptor EndPoint that this Connector is used to

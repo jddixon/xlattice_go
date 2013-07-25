@@ -4,12 +4,14 @@ package node
 
 import (
 	"crypto/rsa"
+	"fmt"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 )
 
+var _ = fmt.Print
 var _ = xo.NewIPOverlay
 
 // See cluster_test.go for a general description of these tests.
@@ -19,6 +21,7 @@ var _ = xo.NewIPOverlay
 // port number.
 
 func (s *XLSuite) TestLocalHostCluster(c *C) {
+	fmt.Println("TEST_LOCAL_HOST_CLUSTER")
 	var err error
 	const K = 5
 	rng := rnglib.MakeSimpleRNG()
@@ -54,7 +57,9 @@ func (s *XLSuite) TestLocalHostCluster(c *C) {
 
 	// XXX WORKING HERE:
 	// XXX SIMPLIFICATION - all nodes on the same overlay for now
-	overlay, err := xo.NewIPOverlay("XO", "tcp", 1.0)
+	ar, err := xo.NewCIDRAddrRange("127.0.0.0/8")
+	c.Assert(err, Equals, nil)
+	overlay, err := xo.NewIPOverlay("XO", ar, "tcp", 1.0)
 	c.Assert(err, Equals, nil)
 
 	commsKeys := make([]*rsa.PublicKey, K)
@@ -69,19 +74,19 @@ func (s *XLSuite) TestLocalHostCluster(c *C) {
 		c.Assert(err, Equals, nil)
 	}
 
-	overlaySlice := []xo.OverlayI{overlay} // AND HERE
+	overlaySlice := []xo.OverlayI{overlay}
 	peers := make([]*Peer, K)
 	for i := 0; i < K; i++ {
-		ctorSlice := []*xt.TcpConnector{ctors[i]}
-		_ = ctorSlice // AND HERE
-		// peers[i],err = NewPeer(nodeIDs[i], commsKeys[i], sigKeys[i],
-		//			&overlaySlice, &ctorSlice)				// AND HERE
+		ctorSlice := []xt.ConnectorI{ctors[i]}
+		_ = ctorSlice
+		peers[i], err = NewPeer(nodeIDs[i], commsKeys[i], sigKeys[i],
+			overlaySlice, ctorSlice)
 		c.Assert(err, Equals, nil)
 	}
 
 	// Use the information collected to configure each node.
 	for i := 0; i < K; i++ {
-		err = nodes[i].addOverlay(overlay) // all in one overlay AND HERE
+		err = nodes[i].addOverlay(overlay) // all in the same overlay
 		c.Assert(err, Equals, nil)
 		c.Assert(nodes[i].SizeOverlays(), Equals, 1)
 		for j := 0; j < K; j++ {
@@ -114,4 +119,8 @@ func (s *XLSuite) TestLocalHostCluster(c *C) {
 
 	// When the supervisor has received stopped signals from all nodes,
 	// it summarize results and terminates.
+
+	for i := 0; i < K; i++ {
+		accs[i].Close()
+	}
 }

@@ -81,7 +81,7 @@ func (s *XLSuite) TestHashingServer(c *C) {
 	c.Assert(err, Equals, nil)
 	defer acc.Close()
 	accEndPoint := acc.GetEndPoint()
-	fmt.Printf("acceptor listening on %s\n", accEndPoint.String())
+	fmt.Printf("server_test acceptor listening on %s\n", accEndPoint.String())
 	go func() {
 		for {
 			cnx, err := acc.Accept()
@@ -116,11 +116,12 @@ func (s *XLSuite) TestHashingServer(c *C) {
 				var count int
 				cnx, err := ktors[i].Connect(ANY_END_POINT)
 				c.Assert(err, Equals, nil)
-				count, err = cnx.Write(messages[i][j])
+				tcpCnx := cnx.(*TcpConnection)
+				count, err = tcpCnx.Write(messages[i][j])
 				if err != nil {
 					fmt.Printf("error writing [%d][%d]: %v\n", i, j, err)
 				}
-				count, err = cnx.Read(hashes[i][j])
+				count, err = tcpCnx.Read(hashes[i][j])
 				if err != nil {
 					fmt.Printf("error reading [%d][%d]: %v\n", i, j, err)
 				}

@@ -19,9 +19,19 @@ type TcpConnector struct {
 }
 
 var NilEndPoint = errors.New("nil endpoint")
+var NotTcpEndPoint = errors.New("not a Tcp endpoint")
 
-func NewTcpConnector(farEnd *TcpEndPoint) (*TcpConnector, error) {
-	ep2, err := farEnd.Clone()
+func NewTcpConnector(farEnd EndPointI) (*TcpConnector, error) {
+	switch v := farEnd.(type) {
+	case *TcpEndPoint:
+		_ = v
+	default:
+		return nil, NotTcpEndPoint
+	}
+	tcpFarEnd := farEnd.(*TcpEndPoint)
+
+	// copy the far end
+	ep2, err := tcpFarEnd.Clone()
 	if err == nil {
 		ctor := TcpConnector{ep2.(*TcpEndPoint)}
 		if err == nil {
@@ -39,9 +49,10 @@ func NewTcpConnector(farEnd *TcpEndPoint) (*TcpConnector, error) {
  * @param blocking whether the new Connection is to be blocking
  */
 
-func (c *TcpConnector) Connect(nearEnd *TcpEndPoint) (*TcpConnection, error) {
-
-	tcpConn, err := net.DialTCP("tcp", nearEnd.GetTcpAddr(),
+func (c *TcpConnector) Connect(nearEnd EndPointI) (ConnectionI, error) {
+	// XXX CHECK TYPE
+	tcpNearEnd := nearEnd.(*TcpEndPoint)
+	tcpConn, err := net.DialTCP("tcp", tcpNearEnd.GetTcpAddr(),
 		c.farEnd.GetTcpAddr())
 	if err == nil {
 		cnx := TcpConnection{tcpConn, CONNECTED}
@@ -54,7 +65,7 @@ func (c *TcpConnector) Connect(nearEnd *TcpEndPoint) (*TcpConnection, error) {
 // return the Acceptor EndPoint that this Connector is used to
 //          establish connections to
 
-func (c *TcpConnector) GetFarEnd() *TcpEndPoint {
+func (c *TcpConnector) GetFarEnd() EndPointI {
 	// XXX Should return copy
 	return c.farEnd
 }
