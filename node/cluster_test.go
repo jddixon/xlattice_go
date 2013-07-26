@@ -3,9 +3,12 @@ package node
 // xlattice_go/node/cluster_test.go
 
 import (
+	"fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
+
+var _ = fmt.Print
 
 // Data shared by the different versions of TestCluster.  These
 // are
@@ -35,6 +38,9 @@ import (
 // information about peers.
 
 func (s *XLSuite) TestCluster(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_CLUSTER")
+	}
 	rng := rnglib.MakeSimpleRNG()
 	_ = rng
 

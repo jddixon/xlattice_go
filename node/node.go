@@ -25,26 +25,23 @@ var _ = fmt.Print
 type Node struct {
 	commsKey    *rsa.PrivateKey // private
 	sigKey      *rsa.PrivateKey // private
-	endPoints   []*xt.EndPointI
-	peers       []*Peer
-	connections []*xt.ConnectionI
-	gateways    []*Gateway
+	overlays    []xo.OverlayI
+	endPoints   []xt.EndPointI
+	peers       []Peer
+	connections []xt.ConnectionI
+	gateways    []Gateway
 	BaseNode
 }
 
 func NewNew(id *NodeID) (*Node, error) {
 	// XXX create default 2K bit RSA key
-	return New(id, nil, nil, nil, nil, nil)
+	return New(id, nil, nil, nil, nil, nil, nil)
 }
 
-func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
-	e *[]*xt.EndPointI, p *[]*Peer, c *[]*xt.ConnectionI) (*Node, error) {
+func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
+	e []xt.EndPointI, p []Peer, c []xt.ConnectionI) (*Node, error) {
 
-	///////////////////////////////
-	// XXX STUB: switch on key type
-	// * extract the public key
-	// * build the DigSigner
-	///////////////////////////////
+	// The commsKey is an RSA key used to encrypt short messages.
 	if commsKey == nil {
 		k, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
@@ -52,6 +49,7 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 		}
 		commsKey = k
 	}
+	// The sigKey is an RSA key used to create digital signatures.
 	if sigKey == nil {
 		k, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
@@ -59,29 +57,46 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 		}
 		sigKey = k
 	}
+	// The node communicates through its endpoints.  These are
+	// contained in overlays.  If an endpoint in 127.0.0.0/8
+	// is in the list of endpoints, that overlay is automatically
+	// added to the list of overlays with the name "localhost".
+	// Other IPv4 endpoints are assumed to be in 0.0.0.0/0
+	// ("globalV4") unless there is another containing overlay
+	// except that endpoints in private address space are treated
+	// differently.  Unless there is an overlay with a containing
+	// address space, addresses in 10/8 are assigned to "privateA",
+	// addresses in 172.16/12 are assigned to "privateB", and
+	// any in 192.168/16 are assigned to "privateC".  All of these
+	// overlays are automatically created unless there is a
+	// pre-existing overlay whose address range is the same as one
+	// of these are contained within one of them.
 
-	var endPoints []*xt.EndPointI // an empty slice
+	var endPoints []xt.EndPointI // an empty slice
 	var overlays []xo.OverlayI
+
+	// XXX should first scan the list of overlays
+
 	if e != nil {
-		count := len(*e)
+		count := len(e)
 		for i := 0; i < count; i++ {
-			endPoints = append(endPoints, (*e)[i])
+			endPoints = append(endPoints, e[i])
 			// XXX get the overlay from the endPoint
 			// overlays = append(overlays, (*o)[i])
 		}
-	} // FOO
-	var peers []*Peer // an empty slice
+	}
+	var peers []Peer // an empty slice
 	if p != nil {
-		count := len(*p)
+		count := len(p)
 		for i := 0; i < count; i++ {
-			peers = append(peers, (*p)[i])
+			peers = append(peers, p[i])
 		}
 	}
-	var cnxs []*xt.ConnectionI // another empty slice
+	var cnxs []xt.ConnectionI // another empty slice
 	if c != nil {
-		count := len(*c)
+		count := len(c)
 		for i := 0; i < count; i++ {
-			cnxs = append(cnxs, (*c)[i])
+			cnxs = append(cnxs, c[i])
 		}
 	}
 
@@ -90,7 +105,7 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 
 	baseNode, err := NewBaseNode(id, commsPubKey, sigPubKey, overlays)
 	if err == nil {
-		p := Node{commsKey, sigKey, endPoints, peers, cnxs, nil, *baseNode}
+		p := Node{commsKey, sigKey, overlays, endPoints, peers, cnxs, nil, *baseNode}
 		return &p, nil
 	} else {
 		return nil, err
@@ -104,6 +119,28 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey,
 // XXX would prefer that *DigSigner be returned
 func (n *Node) getSigner() *signer {
 	return newSigner(n.sigKey)
+}
+
+// ENDPOINTS ////////////////////////////////////////////////////////
+func (n *Node) addEndPoint(e xt.EndPointI) error {
+	if e == nil {
+		return errors.New("IllegalArgument: nil EndPoint")
+	}
+	// XXX ATTEMPT TO LISTEN ON THE ENDPOINT XXX
+	n.endPoints = append(n.endPoints, e)
+	return nil
+}
+
+/**
+ * @return a count of the number of endPoints the peer can be
+ *         accessed through
+ */
+func (n *Node) SizeEndPoints() int {
+	return len(n.endPoints)
+}
+
+func (n *Node) GetEndPoint(x int) xt.EndPointI {
+	return n.endPoints[x]
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
@@ -126,14 +163,14 @@ func (n *Node) SizeOverlays() int {
 /** @return how to access the peer (transport, protocol, address) */
 func (n *Node) GetOverlay(x int) xo.OverlayI {
 	return n.overlays[x]
-}
+} // GEEP
 
 // PEERS ////////////////////////////////////////////////////////////
 func (n *Node) addPeer(o *Peer) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil Peer")
 	}
-	n.peers = append(n.peers, o)
+	n.peers = append(n.peers, *o)
 	return nil
 }
 
@@ -144,11 +181,12 @@ func (n *Node) SizePeers() int {
 	return len(n.peers)
 }
 func (n *Node) GetPeer(x int) *Peer {
-	return n.peers[x]
+	// XXX should return copy
+	return &n.peers[x]
 }
 
 // CONNECTORS ///////////////////////////////////////////////////////
-func (n *Node) addConnectionI(c *xt.ConnectionI) error {
+func (n *Node) addConnectionI(c xt.ConnectionI) error {
 	if c == nil {
 		return errors.New("IllegalArgument: nil ConnectionI")
 	}
@@ -165,14 +203,20 @@ func (n *Node) SizeConnections() int {
  * Return a ConnectionI, an Address-Protocol pair identifying
  * an Acceptor for the Peer.  Connections are arranged in order
  * of preference, with the zero-th ConnectionI being the most
- * preferred.
+ * preferred.  THESE ARE OPEN, LIVE CONNECTIONS.
  *
  * XXX Could as easily return an EndPoint.
  *
  * @return the Nth Connection
  */
-func (n *Node) GetConnection(x int) *xt.ConnectionI {
+func (n *Node) GetConnection(x int) xt.ConnectionI {
 	return n.connections[x]
+}
+
+// CLOSE ////////////////////////////////////////////////////////////
+func (n *Node) Close() {
+	// XXX should run down list of connections and close each,
+	// then run down list of endpoints and close any active acceptors.
 }
 
 // EQUAL ////////////////////////////////////////////////////////////

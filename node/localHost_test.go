@@ -20,8 +20,10 @@ var _ = xo.NewIPOverlay
 // IP addresses 127.0.0.1:P, where P represents a system-assigned unique
 // port number.
 
-func (s *XLSuite) TestLocalHostCluster(c *C) {
-	fmt.Println("TEST_LOCAL_HOST_CLUSTER")
+func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_LOCAL_HOST_TCP_CLUSTER")
+	}
 	var err error
 	const K = 5
 	rng := rnglib.MakeSimpleRNG()

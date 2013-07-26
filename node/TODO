@@ -1,5 +1,15 @@
 xlattice_go/node/TODO
 
+2013-07-26
+    * add logic that associates each node endpoint with an overlay,
+        creating it where necessary
+    * and test it
+        - TestLocalHost must create "localhost" overlay with addr
+            range 127.0.0.0/8 and open acceptors on each endpoint
+            in that range; multiple 127.0.0.1:0 endpoints creates
+            that many unique acceptors; we can get the port using
+            GetEndPoint(n)
+
 2013-07-22
     * rework to not use Overlay as concrete class; should
         be using OverlayI and IPOverlay

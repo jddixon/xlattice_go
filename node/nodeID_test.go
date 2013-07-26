@@ -1,11 +1,15 @@
 package node
 
 import (
+	"fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
 
 func (s *XLSuite) TestBadNodeIDs(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_BAD_NODE_IDS")
+	}
 	c.Assert(false, Equals, IsValidID(nil))
 	candidate := make([]byte, SHA1_LEN-1)
 	c.Assert(false, Equals, IsValidID(candidate))
@@ -17,6 +21,9 @@ func (s *XLSuite) TestBadNodeIDs(c *C) {
 	c.Assert(true, Equals, IsValidID(candidate)) // FOO
 }
 func (s *XLSuite) TestThisAndThat(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_THIS_AND_THAT")
+	}
 	rng := rnglib.MakeSimpleRNG()
 	v1 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v1)
@@ -49,6 +56,9 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 }
 
 func (s *XLSuite) TestComparator(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_COMPARATOR")
+	}
 	rng := rnglib.MakeSimpleRNG()
 	v1 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v1)

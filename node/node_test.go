@@ -14,6 +14,10 @@ import (
 	// "testing"
 )
 
+const (
+	VERBOSITY = 1
+)
+
 func makeNodeID(rng *rnglib.PRNG) *NodeID {
 	var buffer []byte
 	// quasi-random choice, whether to use an SHA1 or SHA3 nodeID
@@ -36,7 +40,9 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	c.Assert(privCommsKey.Validate(), IsNil)
 
 	expLen := (*privCommsKey.D).BitLen()
-	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
+	if VERBOSITY > 0 {
+		fmt.Printf("bit length of private key exponent is %d\n", expLen)
+	}
 	c.Assert(true, Equals, (2038 <= expLen) && (expLen <= 2048))
 
 	c.Assert(privCommsKey.PublicKey, Equals, *commsPubKey) // XXX FAILS
@@ -49,7 +55,9 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	c.Assert(privSigKey.Validate(), IsNil)
 
 	expLen = (*privSigKey.D).BitLen()
-	fmt.Printf("bit length of private key exponent is %d\n", expLen) // DEBUG
+	if VERBOSITY > 0 {
+		fmt.Printf("bit length of private key exponent is %d\n", expLen)
+	}
 	// lowest value seen as of 2013-07-16 was 2039
 	c.Assert(true, Equals, (2038 <= expLen) && (expLen <= 2048))
 
@@ -88,7 +96,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	c.Assert(nil, Equals, xc.SigVerify(sigPubKey, msg, sig))
 
 	s.nilArgCheck(c)
-} // GEEP
+}
 
 // XXX TODO: move these tests into crypto/sig_test.go
 // func nilArgCheck(t *testing.T) {
@@ -102,6 +110,9 @@ func (s *XLSuite) nilArgCheck(c *C) {
 
 // func TestNewNew(t *testing.T) {
 func (s *XLSuite) TestNewNew(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_NEW_NEW")
+	}
 	rng := rnglib.MakeSimpleRNG()
 	_, err := NewNew(nil)
 	c.Assert(err, Not(IsNil)) // NOT
@@ -120,7 +131,10 @@ func (s *XLSuite) TestNewNew(c *C) {
 }
 
 //func TestNewCtor(t *testing.T) {
-func (s *XLSuite) TestNewCtor(c *C) {
+func (s *XLSuite) TestNewConstructor(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_NEW_CONSTRUCTOR")
+	}
 	// rng := rnglib.MakeSimpleRNG()
 
 	// if  constructor assigns a nil NodeID, we should get an
