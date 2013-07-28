@@ -38,6 +38,7 @@ func NewNew(id *NodeID) (*Node, error) {
 	return New(id, nil, nil, nil, nil, nil, nil)
 }
 
+// XXX Creating a Node with a list of live connections seems nonsensical.
 func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 	e []xt.EndPointI, p []Peer, c []xt.ConnectionI) (*Node, error) {
 
@@ -72,17 +73,39 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 	// pre-existing overlay whose address range is the same as one
 	// of these are contained within one of them.
 
-	var endPoints []xt.EndPointI // an empty slice
+	var endPoints []xt.EndPointI 
 	var overlays []xo.OverlayI
 
-	// XXX should first scan the list of overlays
-
+	if o != nil {
+		count := len(o)
+		for i := 0; i < count; i++ {
+			overlays = append(overlays, o[i])
+		}
+	}
 	if e != nil {
 		count := len(e)
 		for i := 0; i < count; i++ {
 			endPoints = append(endPoints, e[i])
-			// XXX get the overlay from the endPoint
-			// overlays = append(overlays, (*o)[i])
+			foundIt := false
+			if len(overlays) > 0 {
+				for j := 0; j < len(overlays); j++ {
+					if overlays[j].IsElement(e[i]) {
+						foundIt = true
+						break
+					}
+				}
+			}
+			if ! foundIt {
+				// create a suitable overlay
+				// WORKING HERE 
+				newO,err := xo.DefaultOverlay(e[i])
+				if err != nil {
+					return nil, err
+				}
+				// add it to our collection
+				overlays = append(overlays, newO)
+
+			}
 		}
 	}
 	var peers []Peer // an empty slice

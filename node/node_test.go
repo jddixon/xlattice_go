@@ -8,10 +8,8 @@ import (
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	"github.com/jddixon/xlattice_go/rnglib"
+	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
-	// "strings"
-	// "github.com/bmizerany/assert"
-	// "testing"
 )
 
 const (
@@ -108,7 +106,6 @@ func (s *XLSuite) nilArgCheck(c *C) {
 
 // END OF TODO
 
-// func TestNewNew(t *testing.T) {
 func (s *XLSuite) TestNewNew(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_NEW_NEW")
@@ -130,13 +127,10 @@ func (s *XLSuite) TestNewNew(c *C) {
 	c.Assert(0, Equals, n.SizeConnections())
 }
 
-//func TestNewCtor(t *testing.T) {
 func (s *XLSuite) TestNewConstructor(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_NEW_CONSTRUCTOR")
 	}
-	// rng := rnglib.MakeSimpleRNG()
-
 	// if  constructor assigns a nil NodeID, we should get an
 	// IllegalArgument panic
 	// XXX STUB
@@ -145,4 +139,36 @@ func (s *XLSuite) TestNewConstructor(c *C) {
 	// with an IllegalArgument string
 	// XXX STUB
 
+}
+
+func (s *XLSuite) shouldCreateTcpEndPoint(c *C, addr string ) *xt.TcpEndPoint {
+	ep, err := xt.NewTcpEndPoint(addr)
+	c.Assert(err, Equals, nil)
+	c.Assert(ep, Not(Equals), nil)
+	return ep
+}
+func (s *XLSuite) TestAutoCreateOverlays(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_AUTO_CREATE_OVERLAYS")
+	}
+	rng := rnglib.MakeSimpleRNG()
+	id := makeNodeID(rng)
+	c.Assert(id, Not(IsNil))
+
+	ep0 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
+	ep1 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
+	ep2 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
+	e        := []xt.EndPointI{ep0, ep1, ep2}
+
+	node, err := New(id, nil, nil, nil, e, nil, nil)
+	c.Assert(err, Equals, nil)
+	c.Assert(node, Not(Equals), nil)
+	defer node.Close()
+
+	c.Assert(node.SizeEndPoints(), Equals, len(e))
+	c.Assert(node.SizeOverlays(), Equals, 1)
+
+	// expect to find an acceptor for each endpoint
+
+	// Close must close all three acceptors
 }

@@ -1,5 +1,9 @@
 xlattice_go/overlay/TODO
 
+2013-07-27
+    * passing "172.16/12" to NewCIDRAddrRange() resulted in a
+        null pointer exception; must track this down
+
 2013-07-23
     * Overlay is badly named; it is a base type and should be       # FIXED
         named accordingly

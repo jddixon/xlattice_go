@@ -52,13 +52,10 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 			accs[i].Close()
 		}
 	}()
-	// XXX NO WAY TO ASSIGN ACCEPTORS TO NODES :-)
-
 	// Collect the nodeID, public keys, and listening address from each
 	// node.
 
-	// XXX WORKING HERE:
-	// XXX SIMPLIFICATION - all nodes on the same overlay for now
+	// all nodes on the same overlay 
 	ar, err := xo.NewCIDRAddrRange("127.0.0.0/8")
 	c.Assert(err, Equals, nil)
 	overlay, err := xo.NewIPOverlay("XO", ar, "tcp", 1.0)

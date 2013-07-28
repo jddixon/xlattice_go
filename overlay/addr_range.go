@@ -76,9 +76,6 @@ func NewV6AddrRange(prefix []byte, prefixLen uint) (*AddrRange, error) {
 func NewCIDRAddrRange(s string) (*AddrRange, error) {
 	_, ipNet, err := net.ParseCIDR(s)
 	if err == nil {
-		// prefix    []byte // all addresses in the range match this prefix
-		// prefixLen uint   // number of leading bits, the 8 in 10/8
-		// addrLen   uint   // in bits: 32 for ipv4, 128 for ipv6
 		prefix := ipNet.IP
 		ones, bits := ipNet.Mask.Size() // number of bits in mask
 		return &AddrRange{prefix, uint(ones), uint(bits), ipNet}, nil
