@@ -43,23 +43,45 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 	for i := 0; i < K; i++ {
 		nodes[i], err = NewNew(nodeIDs[i])
 		c.Assert(err, Equals, nil)
-		accs[i], err = xt.NewTcpAcceptor("127.0.0.1:0")
-		c.Assert(err, Equals, nil)
-		accEndPoints[i] = accs[i].GetEndPoint()
 	}
 	defer func() {
 		for i := 0; i < K; i++ {
-			accs[i].Close()
+			if accs[i] != nil {
+				accs[i].Close()
+			}
 		}
 	}()
+
 	// Collect the nodeID, public keys, and listening address from each
 	// node.
 
-	// all nodes on the same overlay 
+	// all nodes on the same overlay
 	ar, err := xo.NewCIDRAddrRange("127.0.0.0/8")
 	c.Assert(err, Equals, nil)
 	overlay, err := xo.NewIPOverlay("XO", ar, "tcp", 1.0)
 	c.Assert(err, Equals, nil)
+
+	// add an endpoint to each node
+	for i := 0; i < K; i++ {
+		ep, err := xt.NewTcpEndPoint("127.0.0.1:0")
+		c.Assert(err, Equals, nil)
+		err = nodes[i].AddEndPoint(ep)
+		c.Assert(err, Equals, nil)
+		endPoint := nodes[i].GetEndPoint(0).(*xt.TcpEndPoint)
+		accs[i] = nodes[i].GetAcceptor(0).(*xt.TcpAcceptor)
+		accEndPoints[i] = accs[i].GetEndPoint().(*xt.TcpEndPoint)
+		myAccEnd := accEndPoints[i]
+		c.Assert((endPoint).Equal(myAccEnd), Equals, true)
+
+		// adding the endPoint added an acceptor and an overlay
+		c.Assert(nodes[i].SizeEndPoints(), Equals, 1)
+		c.Assert(nodes[i].SizeAcceptors(), Equals, 1)
+		c.Assert(nodes[i].SizeOverlays(), Equals, 1) // FAILS
+
+		// XXX we should verify that each node has the same overlay
+		// as calculated above
+
+	}
 
 	commsKeys := make([]*rsa.PublicKey, K)
 	sigKeys := make([]*rsa.PublicKey, K)
@@ -85,12 +107,12 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 
 	// Use the information collected to configure each node.
 	for i := 0; i < K; i++ {
-		err = nodes[i].addOverlay(overlay) // all in the same overlay
+		err = nodes[i].AddOverlay(overlay) // all in the same overlay
 		c.Assert(err, Equals, nil)
 		c.Assert(nodes[i].SizeOverlays(), Equals, 1)
 		for j := 0; j < K; j++ {
 			if i != j {
-				err = nodes[i].addPeer(peers[j])
+				err = nodes[i].AddPeer(peers[j])
 				c.Assert(err, Equals, nil)
 			}
 		}

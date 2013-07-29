@@ -27,6 +27,7 @@ type Node struct {
 	sigKey      *rsa.PrivateKey // private
 	overlays    []xo.OverlayI
 	endPoints   []xt.EndPointI
+	acceptors   []xt.AcceptorI
 	peers       []Peer
 	connections []xt.ConnectionI
 	gateways    []Gateway
@@ -41,6 +42,8 @@ func NewNew(id *NodeID) (*Node, error) {
 // XXX Creating a Node with a list of live connections seems nonsensical.
 func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 	e []xt.EndPointI, p []Peer, c []xt.ConnectionI) (*Node, error) {
+
+	var err error
 
 	// The commsKey is an RSA key used to encrypt short messages.
 	if commsKey == nil {
@@ -73,7 +76,9 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 	// pre-existing overlay whose address range is the same as one
 	// of these are contained within one of them.
 
-	var endPoints []xt.EndPointI 
+	var endPoints []xt.EndPointI
+	var acceptors []xt.AcceptorI // each must share index with endPoint
+
 	var overlays []xo.OverlayI
 
 	if o != nil {
@@ -85,26 +90,9 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 	if e != nil {
 		count := len(e)
 		for i := 0; i < count; i++ {
-			endPoints = append(endPoints, e[i])
-			foundIt := false
-			if len(overlays) > 0 {
-				for j := 0; j < len(overlays); j++ {
-					if overlays[j].IsElement(e[i]) {
-						foundIt = true
-						break
-					}
-				}
-			}
-			if ! foundIt {
-				// create a suitable overlay
-				// WORKING HERE 
-				newO,err := xo.DefaultOverlay(e[i])
-				if err != nil {
-					return nil, err
-				}
-				// add it to our collection
-				overlays = append(overlays, newO)
-
+			err = addEndPoint(e[i], endPoints, acceptors, overlays)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -128,11 +116,55 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 
 	baseNode, err := NewBaseNode(id, commsPubKey, sigPubKey, overlays)
 	if err == nil {
-		p := Node{commsKey, sigKey, overlays, endPoints, peers, cnxs, nil, *baseNode}
+		p := Node{commsKey: commsKey,
+			sigKey:      sigKey,
+			overlays:    overlays,
+			endPoints:   endPoints,
+			peers:       peers,
+			connections: cnxs,
+			gateways:    nil,
+			BaseNode:    *baseNode}
 		return &p, nil
 	} else {
 		return nil, err
 	}
+}
+
+// Add an endPoint to a node and open an acceptor.  If a compatible
+// overlay does not exist, add the default for the endPoint.
+func addEndPoint(e xt.EndPointI, endPoints []xt.EndPointI,
+	acceptors []xt.AcceptorI, overlays []xo.OverlayI) (err error) {
+	endPoints = append(endPoints, e)
+	fmt.Printf("after adding endPoint, there are %d\n", len(endPoints))
+	foundIt := false
+	if len(overlays) > 0 {
+		for j := 0; j < len(overlays); j++ {
+			if overlays[j].IsElement(e) {
+				foundIt = true
+				break
+			}
+		}
+	}
+	if !foundIt {
+		// create a suitable overlay
+		var newO xo.OverlayI
+		newO, err = xo.DefaultOverlay(e)
+		if err != nil {
+			return
+		}
+		// add it to our collection
+		overlays = append(overlays, newO)
+		fmt.Printf("after adding overlay, there are %d\n", len(overlays))
+	}
+	var acc *xt.TcpAcceptor
+	if e.Transport() == "tcp" {
+		acc, err = xt.NewTcpAcceptor(e.String())
+		if err != nil {
+			return
+		}
+	}
+	acceptors = append(acceptors, acc)
+	return
 }
 
 // Returns an instance of a DigSigner which can be run in a separate
@@ -145,13 +177,20 @@ func (n *Node) getSigner() *signer {
 }
 
 // ENDPOINTS ////////////////////////////////////////////////////////
-func (n *Node) addEndPoint(e xt.EndPointI) error {
+func (n *Node) AddEndPoint(e xt.EndPointI) (err error) {
 	if e == nil {
 		return errors.New("IllegalArgument: nil EndPoint")
 	}
-	// XXX ATTEMPT TO LISTEN ON THE ENDPOINT XXX
+	var acc *xt.TcpAcceptor
+	if e.Transport() == "tcp" {
+		if acc, err = xt.NewTcpAcceptor(e.String()); err != nil {
+			return
+		}
+		n.acceptors = append(n.acceptors, acc)
+		e = acc.GetEndPoint()
+	}
 	n.endPoints = append(n.endPoints, e)
-	return nil
+	return
 }
 
 /**
@@ -166,8 +205,20 @@ func (n *Node) GetEndPoint(x int) xt.EndPointI {
 	return n.endPoints[x]
 }
 
+// ACCEPTORS ////////////////////////////////////////////////////////
+// no accAcceptor() function; add the endPoint instead
+
+// return a count of the number of acceptors the node listens on
+func (n *Node) SizeAcceptors() int {
+	return len(n.acceptors)
+}
+
+func (n *Node) GetAcceptor(x int) xt.AcceptorI {
+	return n.acceptors[x]
+}
+
 // OVERLAYS /////////////////////////////////////////////////////////
-func (n *Node) addOverlay(o xo.OverlayI) error {
+func (n *Node) AddOverlay(o xo.OverlayI) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil Overlay")
 	}
@@ -189,7 +240,7 @@ func (n *Node) GetOverlay(x int) xo.OverlayI {
 } // GEEP
 
 // PEERS ////////////////////////////////////////////////////////////
-func (n *Node) addPeer(o *Peer) error {
+func (n *Node) AddPeer(o *Peer) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil Peer")
 	}
@@ -209,7 +260,7 @@ func (n *Node) GetPeer(x int) *Peer {
 }
 
 // CONNECTORS ///////////////////////////////////////////////////////
-func (n *Node) addConnectionI(c xt.ConnectionI) error {
+func (n *Node) AddConnectionI(c xt.ConnectionI) error {
 	if c == nil {
 		return errors.New("IllegalArgument: nil ConnectionI")
 	}
@@ -239,7 +290,17 @@ func (n *Node) GetConnection(x int) xt.ConnectionI {
 // CLOSE ////////////////////////////////////////////////////////////
 func (n *Node) Close() {
 	// XXX should run down list of connections and close each,
+
+	// XXX STUB
+
 	// then run down list of endpoints and close any active acceptors.
+	if n.acceptors != nil {
+		for i := 0; i < len(n.acceptors); i++ {
+			if n.acceptors[i] != nil {
+				n.acceptors[i].Close()
+			}
+		}
+	}
 }
 
 // EQUAL ////////////////////////////////////////////////////////////

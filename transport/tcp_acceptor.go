@@ -51,7 +51,7 @@ func NewTcpAcceptor(strAddr string) (*TcpAcceptor, error) {
 		return nil, err
 	}
 }
-func (a *TcpAcceptor) Accept() (cnx *TcpConnection, err error) {
+func (a *TcpAcceptor) Accept() (cnx ConnectionI, err error) {
 	conn, err := a.listener.AcceptTCP()
 	if err == nil {
 		cnx, err = NewTcpConnection(conn)
@@ -65,7 +65,7 @@ func (a *TcpAcceptor) Close() error {
 func (a *TcpAcceptor) IsClosed() bool {
 	return a.closed
 }
-func (a *TcpAcceptor) GetEndPoint() *TcpEndPoint {
+func (a *TcpAcceptor) GetEndPoint() EndPointI {
 	return a.endPoint
 
 }

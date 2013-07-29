@@ -1,8 +1,11 @@
 package transport
 
 import (
+	"fmt"
 	"net"
 )
+
+var _ = fmt.Print // DEBUG
 
 /**
  * An EndPoint is specified by a transport and an Address, including
@@ -36,6 +39,7 @@ func (e *TcpEndPoint) Clone() (ep EndPointI, err error) {
 
 func (e *TcpEndPoint) Equal(any interface{}) bool {
 	if any == nil {
+		fmt.Println("Equal: nil other") // DEBUG
 		return false
 	}
 	if any == e {
@@ -45,15 +49,18 @@ func (e *TcpEndPoint) Equal(any interface{}) bool {
 	case *TcpEndPoint:
 		_ = v
 	default:
+		fmt.Println("Equal: other not *TcpEndPoint") // DEBUG
 		return false
 	}
 	other := any.(*TcpEndPoint)
 	t, ot := e.tcpAddr, other.tcpAddr
 	if len(t.IP) != len(ot.IP) {
+		fmt.Println("Equal: other has different len(IP)") // DEBUG
 		return false
 	}
 	for i := 0; i < len(t.IP); i++ {
 		if t.IP[i] != ot.IP[i] {
+			fmt.Println("Equal: other has different IP[i]") // DEBUG
 			return false
 		}
 	}

@@ -141,7 +141,7 @@ func (s *XLSuite) TestNewConstructor(c *C) {
 
 }
 
-func (s *XLSuite) shouldCreateTcpEndPoint(c *C, addr string ) *xt.TcpEndPoint {
+func (s *XLSuite) shouldCreateTcpEndPoint(c *C, addr string) *xt.TcpEndPoint {
 	ep, err := xt.NewTcpEndPoint(addr)
 	c.Assert(err, Equals, nil)
 	c.Assert(ep, Not(Equals), nil)
@@ -158,7 +158,7 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	ep0 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
 	ep1 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
 	ep2 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
-	e        := []xt.EndPointI{ep0, ep1, ep2}
+	e := []xt.EndPointI{ep0, ep1, ep2}
 
 	node, err := New(id, nil, nil, nil, e, nil, nil)
 	c.Assert(err, Equals, nil)

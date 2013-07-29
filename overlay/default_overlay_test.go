@@ -8,14 +8,14 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) shouldGetDefault(c *C, addr string) OverlayI{
+func (s *XLSuite) shouldGetDefault(c *C, addr string) OverlayI {
 	e, err := xt.NewTcpEndPoint(addr)
 	c.Assert(err, Equals, nil)
 	c.Assert(e, Not(Equals), nil)
 
 	o, err := DefaultOverlay(e)
 	c.Assert(err, Equals, nil)
-	c.Assert(o.Name(), Not(Equals), "")			// NPE?
+	c.Assert(o.Name(), Not(Equals), "") // NPE?
 	c.Assert(o.Transport(), Equals, "ip")
 	c.Assert(o.Cost(), Equals, float32(1.0))
 	return o

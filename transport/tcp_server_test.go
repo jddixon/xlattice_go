@@ -31,12 +31,14 @@ const (
 
 var rng = rnglib.MakeSimpleRNG()
 
-func (s *XLSuite) handleMsg(cnx *TcpConnection) error {
-	defer cnx.Close()
+func (s *XLSuite) handleMsg(cnx ConnectionI) error {
+	myCnx := cnx.(*TcpConnection)
+	defer myCnx.Close()
+
 	buf := make([]byte, MAX_LEN)
 
 	// read the message
-	count, err := cnx.Read(buf)
+	count, err := myCnx.Read(buf)
 	buf = buf[:count] // ESSENTIAL
 	if err == nil {
 		// calculate its hash
@@ -45,7 +47,7 @@ func (s *XLSuite) handleMsg(cnx *TcpConnection) error {
 		digest := d.Sum(nil) // a binary value
 
 		// send the digest as a reply
-		count, err = cnx.Write(digest)
+		count, err = myCnx.Write(digest)
 
 		_ = count // XXX verify length of 20
 	}
@@ -89,7 +91,7 @@ func (s *XLSuite) TestHashingServer(c *C) {
 				break
 			}
 			if cnx != nil {
-				go func(cnx *TcpConnection) {
+				go func(cnx ConnectionI) {
 					_ = s.handleMsg(cnx)
 					// c.Assert(err, Equals, nil)
 				}(cnx)
