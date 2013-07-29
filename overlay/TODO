@@ -1,5 +1,9 @@
 xlattice_go/overlay/TODO
 
+2013-07-29
+    * need to test AddrRange.String()
+    * need to test IPOverlay.Equal
+
 2013-07-27
     * passing "172.16/12" to NewCIDRAddrRange() resulted in a
         null pointer exception; must track this down

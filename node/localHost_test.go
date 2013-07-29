@@ -71,7 +71,7 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 		accs[i] = nodes[i].GetAcceptor(0).(*xt.TcpAcceptor)
 		accEndPoints[i] = accs[i].GetEndPoint().(*xt.TcpEndPoint)
 		myAccEnd := accEndPoints[i]
-		c.Assert((endPoint).Equal(myAccEnd), Equals, true)
+		c.Assert(endPoint.Equal(myAccEnd), Equals, true) // FAILS
 
 		// adding the endPoint added an acceptor and an overlay
 		c.Assert(nodes[i].SizeEndPoints(), Equals, 1)
@@ -107,8 +107,11 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 
 	// Use the information collected to configure each node.
 	for i := 0; i < K; i++ {
-		err = nodes[i].AddOverlay(overlay) // all in the same overlay
+		// This is not necessary, because the overlay should have
+		// been auto-created by AddEndPoint()
+		err = nodes[i].AddOverlay(overlay)
 		c.Assert(err, Equals, nil)
+		// Despite our adding an overlay, the count hasn't changed.
 		c.Assert(nodes[i].SizeOverlays(), Equals, 1)
 		for j := 0; j < K; j++ {
 			if i != j {

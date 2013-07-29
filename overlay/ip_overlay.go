@@ -82,3 +82,26 @@ func (o *IPOverlay) IsElement(e xt.EndPointI) bool {
 	}
 	return o.addrRange.ipNet.Contains(bs)
 }
+func (o *IPOverlay) String() string {
+	return "IPOverlay: " + o.addrRange.String()
+}
+
+func (o *IPOverlay) Equal(any interface{}) bool {
+	if any == o {
+		return true
+	}
+	if any == nil {
+		return false
+	}
+	switch v := any.(type) {
+	case *IPOverlay:
+		_ = v
+	default:
+		return false
+	}
+	other := any.(*IPOverlay)
+	if o.addrRange.String() != other.addrRange.String() {
+		return false
+	}
+	return true
+}

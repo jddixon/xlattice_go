@@ -90,7 +90,7 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 	if e != nil {
 		count := len(e)
 		for i := 0; i < count; i++ {
-			err = addEndPoint(e[i], endPoints, acceptors, overlays)
+			err = addEndPoint(e[i], &endPoints, &acceptors, &overlays)
 			if err != nil {
 				return nil, err
 			}
@@ -132,14 +132,13 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 
 // Add an endPoint to a node and open an acceptor.  If a compatible
 // overlay does not exist, add the default for the endPoint.
-func addEndPoint(e xt.EndPointI, endPoints []xt.EndPointI,
-	acceptors []xt.AcceptorI, overlays []xo.OverlayI) (err error) {
-	endPoints = append(endPoints, e)
-	fmt.Printf("after adding endPoint, there are %d\n", len(endPoints))
+func addEndPoint(e xt.EndPointI, endPoints *[]xt.EndPointI,
+	acceptors *[]xt.AcceptorI, overlays *[]xo.OverlayI) (err error) {
 	foundIt := false
-	if len(overlays) > 0 {
-		for j := 0; j < len(overlays); j++ {
-			if overlays[j].IsElement(e) {
+	if len(*overlays) > 0 {
+		for j := 0; j < len(*overlays); j++ {
+			overlay := (*overlays)[j]
+			if overlay.IsElement(e) {
 				foundIt = true
 				break
 			}
@@ -153,8 +152,7 @@ func addEndPoint(e xt.EndPointI, endPoints []xt.EndPointI,
 			return
 		}
 		// add it to our collection
-		overlays = append(overlays, newO)
-		fmt.Printf("after adding overlay, there are %d\n", len(overlays))
+		*overlays = append(*overlays, newO)
 	}
 	var acc *xt.TcpAcceptor
 	if e.Transport() == "tcp" {
@@ -162,8 +160,10 @@ func addEndPoint(e xt.EndPointI, endPoints []xt.EndPointI,
 		if err != nil {
 			return
 		}
+		e = acc.GetEndPoint()
 	}
-	acceptors = append(acceptors, acc)
+	*acceptors = append(*acceptors, acc)
+	*endPoints = append(*endPoints, e)
 	return
 }
 
@@ -177,20 +177,11 @@ func (n *Node) getSigner() *signer {
 }
 
 // ENDPOINTS ////////////////////////////////////////////////////////
-func (n *Node) AddEndPoint(e xt.EndPointI) (err error) {
+func (n *Node) AddEndPoint(e xt.EndPointI) error {
 	if e == nil {
 		return errors.New("IllegalArgument: nil EndPoint")
 	}
-	var acc *xt.TcpAcceptor
-	if e.Transport() == "tcp" {
-		if acc, err = xt.NewTcpAcceptor(e.String()); err != nil {
-			return
-		}
-		n.acceptors = append(n.acceptors, acc)
-		e = acc.GetEndPoint()
-	}
-	n.endPoints = append(n.endPoints, e)
-	return
+	return addEndPoint(e, &n.endPoints, &n.acceptors, &n.overlays)
 }
 
 /**
@@ -222,7 +213,15 @@ func (n *Node) AddOverlay(o xo.OverlayI) error {
 	if o == nil {
 		return errors.New("IllegalArgument: nil Overlay")
 	}
-	n.overlays = append(n.overlays, o)
+	foundIt := false
+	for i := 0; i < len(n.overlays); i++ {
+		if n.overlays[i].Equal(o) {
+			foundIt = true
+		}
+	}
+	if !foundIt {
+		n.overlays = append(n.overlays, o)
+	}
 	return nil
 }
 

@@ -3,7 +3,7 @@ package overlay
 // xlattice_go/overlay/addr_range.go
 
 import (
-	"encoding/hex"
+	// "encoding/hex"
 	"errors"
 	"fmt"
 	"net"
@@ -114,6 +114,5 @@ func (r *AddrRange) Equal(any interface{}) bool {
 	return true
 }
 func (r *AddrRange) String() string {
-	// XXX SOMETHING OF A HACK, because the AddrLen is absent
-	return fmt.Sprintf("%s/%u", hex.EncodeToString(r.prefix), r.prefixLen)
+	return r.ipNet.String()
 }
