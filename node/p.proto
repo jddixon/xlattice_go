@@ -1,0 +1,28 @@
+package node;
+
+message XLatticeMsg {
+    enum Op {
+        Hello       = 1;    // first msg, initiates comms cycle
+        Bye         = 2;    // ends comms cycle
+        KeepAlive   = 3;    // seqn, id, opt salt, opt sig
+        Ack         = 4;    // above plus yourSeqN, yourID
+        Error       = 5;    // above plus errCode, errDesc
+        Get         = 6;    // like KeepAlive plus hash
+        Put         = 7;    // above plus payload
+        IHave       = 8;    // like KeepAlive plus payload = list of hashes
+    }
+    optional uint64 seqN        = 1;        // starting at 1
+    optional bytes  id          = 2;
+    optional bytes  salt        = 3;
+    optional bytes  sig         = 4;
+    optional uint64 yourSeqN	= 5;
+    optional bytes  yourID		= 6;
+    optional uint64 errCode     = 7;
+    optional string errDesc     = 8;
+    optional bytes  hash        = 9;
+    optional bytes  payload     = 10;
+    optional bytes  commsKey    = 11;       // hello
+    optional bytes  sigKey      = 12;       // hello
+    optional string myEnd       = 13;       // hello, optional
+}
+

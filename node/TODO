@@ -1,11 +1,23 @@
 xlattice_go/node/TODO
 
+2013-07-30
+    * p_test.go should be done over the wire, so to speak; that
+        is, between two 127.0.0.1 endpoints
+    * the protocol must be documented
+
 2013-07-29
     * Node.AddEndPoint() must screen for identical endPoints
+    * Adding a peer must add at least one connector
+    * Need a simple protocol to allow nodes to talk to each other   # DONE
+    * Change Peer, replacing list of connectors in NewPeer 
+        parameters with list of endpoints (from which we determine 
+        connectors)
+    * Node.Close must close all open connections 
+        - take care, servers may have MANY such connections
+            * could put each Close() in separate goroutine
 
 2013-07-27
     * Node.Close must close all open acceptors                      # DONE
-    * ... and connections
     * node_test.go should add multiple 127.0.0.1:0 Tcp endpoints    # DONE
         - node initialization must create an Acceptor for each      # DONE
         - TestLocalHost must verify that each has a unique non-zero

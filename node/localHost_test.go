@@ -119,8 +119,14 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 				c.Assert(err, Equals, nil)
 			}
 		}
+		c.Assert(nodes[i].SizeAcceptors(), Equals, 1)
+		// XXX NOT IMPLEMENTED !
+		// c.Assert(nodes[i].SizeConnectors(),Equals, K-1)
+		c.Assert(nodes[i].SizeEndPoints(), Equals, 1)
+		c.Assert(nodes[i].SizeOverlays(), Equals, 1)
 		c.Assert(nodes[i].SizePeers(), Equals, K-1)
 	}
+	// AT THIS POINT we have K nodes, each with K-1 peers.
 
 	// Start each node running in a separate goroutine.
 	// XXX STUB XXX
