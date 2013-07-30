@@ -4,9 +4,25 @@ xlattice_go/node/TODO
     * p_test.go should be done over the wire, so to speak; that
         is, between two 127.0.0.1 endpoints
     * the protocol must be documented
+    * add local file system = path to my private area on disk       # DONE
+        for node 
+        - need test of this capability
+        - node should be serializable, and if a node is started
+            with only the id and lfs specified, it should load its 
+            configuration from say lfs/.xlattice
+    * integrating gateways into node requires ability to create
+        composite connections
+        - Gateway extends Node
+    * from 07-16: need peer_test.go
+    * need UDP transport
+    * Node.AddEndPoint() must screen for identical endPoints; that  # DONE
+        is, if an EndPoint is already present it should silently
+        ignore the attempt to add it again
+        - to make this sensible, AddEndPoint shd return an index    # DONE
+    * AddOverlay should also return an index                        # DONE
+    * AddPeer should also return an index
 
 2013-07-29
-    * Node.AddEndPoint() must screen for identical endPoints
     * Adding a peer must add at least one connector
     * Need a simple protocol to allow nodes to talk to each other   # DONE
     * Change Peer, replacing list of connectors in NewPeer 
@@ -25,13 +41,13 @@ xlattice_go/node/TODO
         - node.New() should create the 127.0.0.0/8 overlay          # DONE
             automatically, calling it "localhost" and setting
             its protocol as "ip"
-    * Get rid of slice of open connections passed to Node being
+    * Get rid of slice of open connections passed to Node being     # DONE
         created !
 
 2013-07-26
-    * add logic that associates each node endpoint with an overlay,
+    * add logic that associates each node endpoint with an overlay, # DONE
         creating it where necessary
-    * and test it
+    * and test it                                                   # DONE
 
 2013-07-22
     * rework to not use Overlay as concrete class; should           # DONE
@@ -41,5 +57,3 @@ xlattice_go/node/TODO
     * Node and Peer should extend a base class
         - Peer extends BaseNode                                     # DONE
         - Node extends BaseNode                                     # DONE
-    * need peer_test.go
-    * integrate gateways into Node

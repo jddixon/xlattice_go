@@ -23,6 +23,7 @@ var _ = fmt.Print
  * @author Jim Dixon
  */
 type Node struct {
+	lfs         string
 	commsKey    *rsa.PrivateKey // private
 	sigKey      *rsa.PrivateKey // private
 	overlays    []xo.OverlayI
@@ -36,12 +37,12 @@ type Node struct {
 
 func NewNew(id *NodeID) (*Node, error) {
 	// XXX create default 2K bit RSA key
-	return New(id, nil, nil, nil, nil, nil, nil)
+	return New(id, "", nil, nil, nil, nil, nil)
 }
 
 // XXX Creating a Node with a list of live connections seems nonsensical.
-func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
-	e []xt.EndPointI, p []Peer, c []xt.ConnectionI) (*Node, error) {
+func New(id *NodeID, lfs string, commsKey, sigKey *rsa.PrivateKey,
+	o []xo.OverlayI, e []xt.EndPointI, p []Peer) (*Node, error) {
 
 	var err error
 
@@ -90,7 +91,7 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 	if e != nil {
 		count := len(e)
 		for i := 0; i < count; i++ {
-			err = addEndPoint(e[i], &endPoints, &acceptors, &overlays)
+			_, err = addEndPoint(e[i], &endPoints, &acceptors, &overlays)
 			if err != nil {
 				return nil, err
 			}
@@ -103,48 +104,43 @@ func New(id *NodeID, commsKey, sigKey *rsa.PrivateKey, o []xo.OverlayI,
 			peers = append(peers, p[i])
 		}
 	}
-	var cnxs []xt.ConnectionI // another empty slice
-	if c != nil {
-		count := len(c)
-		for i := 0; i < count; i++ {
-			cnxs = append(cnxs, c[i])
-		}
-	}
-
 	commsPubKey := &(*commsKey).PublicKey
 	sigPubKey := &(*sigKey).PublicKey
 
 	baseNode, err := NewBaseNode(id, commsPubKey, sigPubKey, overlays)
 	if err == nil {
 		p := Node{commsKey: commsKey,
-			sigKey:      sigKey,
-			overlays:    overlays,
-			endPoints:   endPoints,
-			peers:       peers,
-			connections: cnxs,
-			gateways:    nil,
-			BaseNode:    *baseNode}
+			sigKey:    sigKey,
+			overlays:  overlays,
+			endPoints: endPoints,
+			peers:     peers,
+			gateways:  nil,
+			lfs:       lfs,
+			BaseNode:  *baseNode}
 		return &p, nil
 	} else {
 		return nil, err
 	}
 }
 
+// ENDPOINTS ////////////////////////////////////////////////////////
+
 // Add an endPoint to a node and open an acceptor.  If a compatible
 // overlay does not exist, add the default for the endPoint.
 func addEndPoint(e xt.EndPointI, endPoints *[]xt.EndPointI,
-	acceptors *[]xt.AcceptorI, overlays *[]xo.OverlayI) (err error) {
-	foundIt := false
+	acceptors *[]xt.AcceptorI, overlays *[]xo.OverlayI) (ndx int, err error) {
+	ndx = -1
+	foundOverlay := false
 	if len(*overlays) > 0 {
 		for j := 0; j < len(*overlays); j++ {
 			overlay := (*overlays)[j]
 			if overlay.IsElement(e) {
-				foundIt = true
+				foundOverlay = true
 				break
 			}
 		}
 	}
-	if !foundIt {
+	if !foundOverlay {
 		// create a suitable overlay
 		var newO xo.OverlayI
 		newO, err = xo.DefaultOverlay(e)
@@ -161,9 +157,22 @@ func addEndPoint(e xt.EndPointI, endPoints *[]xt.EndPointI,
 			return
 		}
 		e = acc.GetEndPoint()
+
+		if *endPoints != nil {
+			for i := 0; i < len(*endPoints); i++ {
+				if e.Equal((*endPoints)[i]) {
+					ndx = i
+					acc.Close()
+					break
+				}
+			}
+		}
 	}
-	*acceptors = append(*acceptors, acc)
-	*endPoints = append(*endPoints, e)
+	if ndx == -1 {
+		*acceptors = append(*acceptors, acc)
+		*endPoints = append(*endPoints, e)
+		ndx = len(*endPoints) - 1
+	}
 	return
 }
 
@@ -176,10 +185,9 @@ func (n *Node) getSigner() *signer {
 	return newSigner(n.sigKey)
 }
 
-// ENDPOINTS ////////////////////////////////////////////////////////
-func (n *Node) AddEndPoint(e xt.EndPointI) error {
+func (n *Node) AddEndPoint(e xt.EndPointI) (ndx int, err error) {
 	if e == nil {
-		return errors.New("IllegalArgument: nil EndPoint")
+		return -1, errors.New("IllegalArgument: nil EndPoint")
 	}
 	return addEndPoint(e, &n.endPoints, &n.acceptors, &n.overlays)
 }
@@ -209,20 +217,23 @@ func (n *Node) GetAcceptor(x int) xt.AcceptorI {
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (n *Node) AddOverlay(o xo.OverlayI) error {
+func (n *Node) AddOverlay(o xo.OverlayI) (ndx int, err error) {
+	ndx = -1
 	if o == nil {
-		return errors.New("IllegalArgument: nil Overlay")
-	}
-	foundIt := false
-	for i := 0; i < len(n.overlays); i++ {
-		if n.overlays[i].Equal(o) {
-			foundIt = true
+		err = errors.New("IllegalArgument: nil Overlay")
+	} else {
+		for i := 0; i < len(n.overlays); i++ {
+			if n.overlays[i].Equal(o) {
+				ndx = i
+				break
+			}
+		}
+		if ndx == -1 {
+			n.overlays = append(n.overlays, o)
+			ndx = len(n.overlays) - 1
 		}
 	}
-	if !foundIt {
-		n.overlays = append(n.overlays, o)
-	}
-	return nil
+	return
 }
 
 /**
@@ -239,12 +250,25 @@ func (n *Node) GetOverlay(x int) xo.OverlayI {
 } // GEEP
 
 // PEERS ////////////////////////////////////////////////////////////
-func (n *Node) AddPeer(o *Peer) error {
+func (n *Node) AddPeer(o *Peer) (ndx int, err error) {
+	ndx = -1
 	if o == nil {
-		return errors.New("IllegalArgument: nil Peer")
+		err = errors.New("IllegalArgument: nil Peer")
+	} else {
+		if n.peers != nil {
+			for i := 0; i < len(n.peers); i++ {
+				if n.peers[i].Equal(o) {
+					ndx = i
+					break
+				}
+			}
+		}
+		if ndx == -1 {
+			n.peers = append(n.peers, *o)
+			ndx = len(n.peers) - 1
+		}
 	}
-	n.peers = append(n.peers, *o)
-	return nil
+	return
 }
 
 /**
@@ -258,13 +282,14 @@ func (n *Node) GetPeer(x int) *Peer {
 	return &n.peers[x]
 }
 
-// CONNECTORS ///////////////////////////////////////////////////////
-func (n *Node) AddConnectionI(c xt.ConnectionI) error {
+// CONNECTIONS //////////////////////////////////////////////////////
+func (n *Node) addConnection(c xt.ConnectionI) (ndx int, err error) {
 	if c == nil {
-		return errors.New("IllegalArgument: nil ConnectionI")
+		return -1, errors.New("IllegalArgument: nil ConnectionI")
 	}
 	n.connections = append(n.connections, c)
-	return nil
+	ndx = len(n.connections) - 1
+	return
 }
 
 /** @return a count of known Connections for this Peer */
@@ -278,12 +303,20 @@ func (n *Node) SizeConnections() int {
  * of preference, with the zero-th ConnectionI being the most
  * preferred.  THESE ARE OPEN, LIVE CONNECTIONS.
  *
- * XXX Could as easily return an EndPoint.
- *
  * @return the Nth Connection
  */
 func (n *Node) GetConnection(x int) xt.ConnectionI {
 	return n.connections[x]
+}
+
+// LOCAL FILE SYSTEM ////////////////////////////////////////////////
+
+// Return the path to the Node's local file system, its private
+// persistent storage.  Conventionally there is a .xlattice subdirectory
+// for storage of the Node's configuration information.
+
+func (n *Node) GetLFS() string {
+	return n.lfs
 }
 
 // CLOSE ////////////////////////////////////////////////////////////
@@ -333,6 +366,8 @@ func (n *Node) Equal(any interface{}) bool {
 	}
 	return false
 }
+
+// SERIALIZATION ////////////////////////////////////////////////////
 func (n *Node) String() string {
 	return "NOT IMPLEMENTED"
 }

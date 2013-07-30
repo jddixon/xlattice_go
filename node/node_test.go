@@ -125,6 +125,7 @@ func (s *XLSuite) TestNewNew(c *C) {
 	c.Assert(0, Equals, (*n).SizePeers())
 	c.Assert(0, Equals, (*n).SizeOverlays())
 	c.Assert(0, Equals, n.SizeConnections())
+	c.Assert("", Equals, n.GetLFS())
 }
 
 func (s *XLSuite) TestNewConstructor(c *C) {
@@ -160,7 +161,7 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	ep2 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
 	e := []xt.EndPointI{ep0, ep1, ep2}
 
-	node, err := New(id, nil, nil, nil, e, nil, nil)
+	node, err := New(id, "", nil, nil, nil, e, nil)
 	c.Assert(err, Equals, nil)
 	c.Assert(node, Not(Equals), nil)
 	defer node.Close()
