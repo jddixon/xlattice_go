@@ -5,15 +5,20 @@ package crypto
 import (
 	// "bytes"
 	"crypto/rsa"
+	"crypto/x509"
 	"errors"
 	//"encoding/binary"
 	"code.google.com/p/go.crypto/ssh"
+	"encoding/pem"
 	//"math/big"
 )
 
 var (
-	NotAnRSAPrivateKey = errors.New("Not an RSA private key")
-	NotAnRSAPublicKey  = errors.New("Not an RSA public key")
+	NilData                 = errors.New("Nil data")
+	NotAnRSAPrivateKey      = errors.New("Not an RSA private key")
+	NotAnRSAPublicKey       = errors.New("Not an RSA public key")
+	PemEncodeDecodeFailure  = errors.New("Pem encode/decode failure")
+	X509ParseOrMarshalError = errors.New("X509 parse/marshal error")
 )
 
 // CONVERSION TO AND FROM WIRE FORMAT ///////////////////////////////
@@ -73,17 +78,32 @@ func RSAPubKeyFromDisk(data []byte) (*rsa.PublicKey, error) {
 }
 
 // Serialize an RSA private key to disk format
-func RSAPrivKeyToDisk(pubKey *rsa.PrivateKey) ([]byte, bool) {
-
-	// XXX STUB
-
-	return nil, false
+func RSAPrivKeyToDisk(privKey *rsa.PrivateKey) (data []byte, err error) {
+	if privKey == nil {
+		err = NilData
+	} else {
+		data509 := x509.MarshalPKCS1PrivateKey(privKey)
+		if data509 == nil {
+			err = X509ParseOrMarshalError
+		} else {
+			block := pem.Block{Bytes: data509}
+			data = pem.EncodeToMemory(&block)
+		}
+	}
+	return
 }
 
 // Deserialize an RSA private key from disk format
-func RSAPrivKeyFromDisk(data []byte) (*rsa.PrivateKey, error) {
-
-	// XXX STUB
-
-	return nil, nil
-} // FOO
+func RSAPrivKeyFromDisk(data []byte) (key *rsa.PrivateKey, err error) {
+	if data == nil {
+		err = NilData
+	} else {
+		block, _ := pem.Decode(data)
+		if block == nil {
+			err = PemEncodeDecodeFailure
+		} else {
+			key, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+		}
+	}
+	return
+}

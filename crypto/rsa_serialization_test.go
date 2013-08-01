@@ -13,6 +13,8 @@ import (
 	. "launchpad.net/gocheck"
 )
 
+var _ = fmt.Print
+
 func (s *XLSuite) TestRSAPubKeyToFromDisk(c *C) {
 	rng := rnglib.MakeSimpleRNG()
 
@@ -48,4 +50,31 @@ func (s *XLSuite) TestRSAPubKeyToFromDisk(c *C) {
 
 	err = rsa.VerifyPKCS1v15(pk2, cr.SHA1, hash, sig)
 	c.Assert(err, IsNil)
+}
+func (s *XLSuite) TestRSAPrivateKeyToFromDisk(c *C) {
+
+	key, err := rsa.GenerateKey(rand.Reader, 1024)
+	c.Assert(err, Equals, nil)
+	c.Assert(key, Not(Equals), nil)
+
+	pubKey := key.PublicKey
+	c.Assert(pubKey, Not(Equals), nil)
+
+	// the public key in SSH disk format
+	sshAuthKey, ok := RSAPubKeyToDisk(&pubKey)
+	c.Assert(ok, Equals, true)
+
+	// serialize private key
+	serPrivKey, err := RSAPrivKeyToDisk(key)
+	c.Assert(err, Equals, nil)
+
+	// deserialize it
+	key2, err := RSAPrivKeyFromDisk(serPrivKey)
+	c.Assert(err, Equals, nil)
+	c.Assert(key2, Not(Equals), nil)
+
+	// compare serialized versions of public keys
+	pubKey2 := key2.PublicKey
+	sshAuthKey2, ok := RSAPubKeyToDisk(&pubKey2)
+	c.Assert(string(sshAuthKey), Equals, string(sshAuthKey2))
 }
