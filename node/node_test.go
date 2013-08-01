@@ -126,6 +126,12 @@ func (s *XLSuite) TestNewNew(c *C) {
 	c.Assert(0, Equals, (*n).SizeOverlays())
 	c.Assert(0, Equals, n.SizeConnections())
 	c.Assert("", Equals, n.GetLFS())
+
+	// playing with serialization
+	ck := n.GetCommsPublicKey()
+	fmt.Printf("comms pubKey: %v\n", ck)
+	ckSSH := n.GetSSHCommsPublicKey()
+	fmt.Printf("SSH version: %s\n", string(ckSSH))
 }
 
 func (s *XLSuite) TestNewConstructor(c *C) {

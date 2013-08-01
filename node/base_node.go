@@ -3,10 +3,14 @@ package node
 // xlattice_go/node/base_node.go
 
 import (
+	"code.google.com/p/go.crypto/ssh"
 	"crypto/rsa"
 	"errors"
+	"fmt" // DEBUG
 	xo "github.com/jddixon/xlattice_go/overlay"
 )
+
+var _ = fmt.Print
 
 /**
  * Basic abstraction underlying Peer and Node
@@ -56,6 +60,20 @@ func (p *BaseNode) GetNodeID() *NodeID {
 func (p *BaseNode) GetCommsPublicKey() *rsa.PublicKey {
 	return p.commsPubkey
 }
+func (p *BaseNode) GetSSHCommsPublicKey() string {
+	out := ssh.MarshalAuthorizedKey(p.commsPubkey)
+	// PLAYING AROUND
+	outAgain, comment, options, rest, ok := ssh.ParseAuthorizedKey(out)
+	pubKey := outAgain.(*rsa.PublicKey)
+	fmt.Printf("outAgain: %v\n", pubKey)
+	fmt.Printf("comment: '%s'\n", comment)
+	fmt.Printf("len(options) = %d\n", len(options))
+	fmt.Printf("len(rest) = %d\n", len(rest))
+	fmt.Printf("OK = %v\n", ok)
+	// END PLAYING
+	return string(out)
+}
+
 func (p *BaseNode) GetSigPublicKey() *rsa.PublicKey {
 	return p.sigPubkey
 }

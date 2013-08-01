@@ -15,12 +15,6 @@ xlattice_go/node/TODO
         - Gateway extends Node
     * from 07-16: need peer_test.go
     * need UDP transport
-    * Node.AddEndPoint() must screen for identical endPoints; that  # DONE
-        is, if an EndPoint is already present it should silently
-        ignore the attempt to add it again
-        - to make this sensible, AddEndPoint shd return an index    # DONE
-    * AddOverlay should also return an index                        # DONE
-    * AddPeer should also return an index
 
 2013-07-29
     * Adding a peer must add at least one connector
@@ -31,29 +25,3 @@ xlattice_go/node/TODO
     * Node.Close must close all open connections 
         - take care, servers may have MANY such connections
             * could put each Close() in separate goroutine
-
-2013-07-27
-    * Node.Close must close all open acceptors                      # DONE
-    * node_test.go should add multiple 127.0.0.1:0 Tcp endpoints    # DONE
-        - node initialization must create an Acceptor for each      # DONE
-        - TestLocalHost must verify that each has a unique non-zero
-            port (use GetEndPoint())
-        - node.New() should create the 127.0.0.0/8 overlay          # DONE
-            automatically, calling it "localhost" and setting
-            its protocol as "ip"
-    * Get rid of slice of open connections passed to Node being     # DONE
-        created !
-
-2013-07-26
-    * add logic that associates each node endpoint with an overlay, # DONE
-        creating it where necessary
-    * and test it                                                   # DONE
-
-2013-07-22
-    * rework to not use Overlay as concrete class; should           # DONE
-        be using OverlayI and IPOverlay
-
-2013-07-16
-    * Node and Peer should extend a base class
-        - Peer extends BaseNode                                     # DONE
-        - Node extends BaseNode                                     # DONE
