@@ -1,5 +1,24 @@
 xlattice_go/node/TODO
 
+2013-08-02
+    * lfs is a path; it must be filtered accordingly
+    * need peer.Parse() which converts a slice of strings back
+        into a Peer object
+        - first version of parser can be quite strict
+        - eventually should be syntactically liberal when
+            parsing (although strict when writing)
+
+    * peer.Parse will require overlay.Parse()
+    * and connector.Parse
+    * need node.Strings(), node.String()
+    * and node.Parse()
+    * and from these node.Save() and node.Load()
+        - if a node is started with only the name, id, and lfs 
+            specified, it should load its configuration from say 
+            LFS/.xlattice/config
+        - LFS will conventionally be ./tmp/nodeID/ in testing, 
+            where the nodeID is in hex
+
 2013-07-30
     * p_test.go should be done over the wire, so to speak; that
         is, between two 127.0.0.1 endpoints
@@ -7,9 +26,6 @@ xlattice_go/node/TODO
     * add local file system = path to my private area on disk       # DONE
         for node 
         - need test of this capability
-        - node should be serializable, and if a node is started
-            with only the id and lfs specified, it should load its 
-            configuration from say lfs/.xlattice
     * integrating gateways into node requires ability to create
         composite connections
         - Gateway extends Node

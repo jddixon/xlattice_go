@@ -71,5 +71,5 @@ func (c *TcpConnector) GetFarEnd() EndPointI {
 }
 
 func (c *TcpConnector) String() string {
-	return "TCPConnector: " + c.farEnd.String()
+	return "TcpConnector: " + c.farEnd.String()
 }

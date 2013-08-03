@@ -23,10 +23,10 @@ var _ = fmt.Print
  * @author Jim Dixon
  */
 type Node struct {
-	lfs         string
-	commsKey    *rsa.PrivateKey // private
-	sigKey      *rsa.PrivateKey // private
-	overlays    []xo.OverlayI
+	lfs      string
+	commsKey *rsa.PrivateKey // private
+	sigKey   *rsa.PrivateKey // private
+	//	overlays    []xo.OverlayI
 	endPoints   []xt.EndPointI
 	acceptors   []xt.AcceptorI
 	peers       []Peer
@@ -35,13 +35,13 @@ type Node struct {
 	BaseNode
 }
 
-func NewNew(id *NodeID) (*Node, error) {
+func NewNew(name string, id *NodeID) (*Node, error) {
 	// XXX create default 2K bit RSA key
-	return New(id, "", nil, nil, nil, nil, nil)
+	return New(name, id, "", nil, nil, nil, nil, nil)
 }
 
 // XXX Creating a Node with a list of live connections seems nonsensical.
-func New(id *NodeID, lfs string, commsKey, sigKey *rsa.PrivateKey,
+func New(name string, id *NodeID, lfs string, commsKey, sigKey *rsa.PrivateKey,
 	o []xo.OverlayI, e []xt.EndPointI, p []Peer) (*Node, error) {
 
 	var err error
@@ -107,11 +107,10 @@ func New(id *NodeID, lfs string, commsKey, sigKey *rsa.PrivateKey,
 	commsPubKey := &(*commsKey).PublicKey
 	sigPubKey := &(*sigKey).PublicKey
 
-	baseNode, err := NewBaseNode(id, commsPubKey, sigPubKey, overlays)
+	baseNode, err := NewBaseNode(name, id, commsPubKey, sigPubKey, overlays)
 	if err == nil {
 		p := Node{commsKey: commsKey,
 			sigKey:    sigKey,
-			overlays:  overlays,
 			endPoints: endPoints,
 			peers:     peers,
 			gateways:  nil,
@@ -217,37 +216,33 @@ func (n *Node) GetAcceptor(x int) xt.AcceptorI {
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (n *Node) AddOverlay(o xo.OverlayI) (ndx int, err error) {
-	ndx = -1
-	if o == nil {
-		err = errors.New("IllegalArgument: nil Overlay")
-	} else {
-		for i := 0; i < len(n.overlays); i++ {
-			if n.overlays[i].Equal(o) {
-				ndx = i
-				break
-			}
-		}
-		if ndx == -1 {
-			n.overlays = append(n.overlays, o)
-			ndx = len(n.overlays) - 1
-		}
-	}
-	return
-}
-
-/**
- * @return a count of the number of overlays the peer can be
- *         accessed through
- */
-func (n *Node) SizeOverlays() int {
-	return len(n.overlays)
-}
-
-/** @return how to access the peer (transport, protocol, address) */
-func (n *Node) GetOverlay(x int) xo.OverlayI {
-	return n.overlays[x]
-} // GEEP
+//func (n *Node) AddOverlay(o xo.OverlayI) (ndx int, err error) {
+//	ndx = -1
+//	if o == nil {
+//		err = errors.New("IllegalArgument: nil Overlay")
+//	} else {
+//		for i := 0; i < len(n.overlays); i++ {
+//			if n.overlays[i].Equal(o) {
+//				ndx = i
+//				break
+//			}
+//		}
+//		if ndx == -1 {
+//			n.overlays = append(n.overlays, o)
+//			ndx = len(n.overlays) - 1
+//		}
+//	}
+//	return
+//}
+//
+//func (n *Node) SizeOverlays() int {
+//	return len(n.overlays)
+//}
+//FOO
+/////** @return how to access the peer (transport, protocol, address) */
+////func (n *Node) GetOverlay(x int) xo.OverlayI {
+////	return n.overlays[x]
+////} // GEEP
 
 // PEERS ////////////////////////////////////////////////////////////
 func (n *Node) AddPeer(o *Peer) (ndx int, err error) {

@@ -3,8 +3,10 @@ package node
 import (
 	"crypto/rsa"
 	"errors"
+	"fmt"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
+	"strings"
 )
 
 /**
@@ -16,15 +18,15 @@ type Peer struct {
 	BaseNode
 }
 
-func NewNewPeer(id *NodeID) (*Peer, error) {
-	return NewPeer(id, nil, nil, nil, nil)
+func NewNewPeer(name string, id *NodeID) (*Peer, error) {
+	return NewPeer(name, id, nil, nil, nil, nil)
 }
 
-func NewPeer(id *NodeID,
+func NewPeer(name string, id *NodeID,
 	ck *rsa.PublicKey, sk *rsa.PublicKey,
 	o []xo.OverlayI, c []xt.ConnectorI) (*Peer, error) {
 
-	baseNode, err := NewBaseNode(id, ck, sk, o)
+	baseNode, err := NewBaseNode(name, id, ck, sk, o)
 
 	if err == nil {
 		var ctors []xt.ConnectorI // another empty slice
@@ -101,6 +103,15 @@ func (p *Peer) GetConnector(n int) xt.ConnectorI {
 //	return false
 //} // GEEP
 
+func (p *Peer) Strings() []string {
+	bns := p.BaseNode.String()
+	bns = append(bns, "connectors {")
+	for i := 0; i < len(p.connectors); i++ {
+		bns = append(bns, fmt.Sprintf("    %s", p.connectors[i].String()))
+	}
+	bns = append(bns, "}")
+	return bns
+}
 func (p *Peer) String() string {
-	return "NOT IMPLEMENTED"
+	return strings.Join(p.Strings(), "\n")
 }

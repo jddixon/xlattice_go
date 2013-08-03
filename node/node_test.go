@@ -111,14 +111,16 @@ func (s *XLSuite) TestNewNew(c *C) {
 		fmt.Println("TEST_NEW_NEW")
 	}
 	rng := rnglib.MakeSimpleRNG()
-	_, err := NewNew(nil)
+	name := rng.NextFileName(4)
+	_, err := NewNew(name, nil)
 	c.Assert(err, Not(IsNil)) // NOT
 
 	id := makeNodeID(rng)
 	c.Assert(id, Not(IsNil)) // NOT
-	n, err2 := NewNew(id)
+	n, err2 := NewNew(name, id)
 	c.Assert(n, Not(IsNil)) // NOT
 	c.Assert(err2, IsNil)
+	c.Assert(name, Equals, n.GetName())
 	actualID := n.GetNodeID()
 	c.Assert(true, Equals, id.Equal(actualID))
 	s.doKeyTests(c, n, rng)
@@ -126,12 +128,6 @@ func (s *XLSuite) TestNewNew(c *C) {
 	c.Assert(0, Equals, (*n).SizeOverlays())
 	c.Assert(0, Equals, n.SizeConnections())
 	c.Assert("", Equals, n.GetLFS())
-
-	// playing with serialization
-	ck := n.GetCommsPublicKey()
-	fmt.Printf("comms pubKey: %v\n", ck)
-	ckSSH := n.GetSSHCommsPublicKey()
-	fmt.Printf("SSH version: %s\n", string(ckSSH))
 }
 
 func (s *XLSuite) TestNewConstructor(c *C) {
@@ -159,6 +155,7 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 		fmt.Println("TEST_AUTO_CREATE_OVERLAYS")
 	}
 	rng := rnglib.MakeSimpleRNG()
+	name := rng.NextFileName(4)
 	id := makeNodeID(rng)
 	c.Assert(id, Not(IsNil))
 
@@ -167,7 +164,7 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	ep2 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
 	e := []xt.EndPointI{ep0, ep1, ep2}
 
-	node, err := New(id, "", nil, nil, nil, e, nil)
+	node, err := New(name, id, "", nil, nil, nil, e, nil)
 	c.Assert(err, Equals, nil)
 	c.Assert(node, Not(Equals), nil)
 	defer node.Close()

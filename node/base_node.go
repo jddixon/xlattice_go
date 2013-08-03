@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt" // DEBUG
+	xc "github.com/jddixon/xlattice_go/crypto"
 	xo "github.com/jddixon/xlattice_go/overlay"
 )
 
@@ -19,16 +20,16 @@ var _ = fmt.Print
 type BaseNode struct {
 	name        string // convenience for testing
 	nodeID      *NodeID
-	commsPubkey *rsa.PublicKey
-	sigPubkey   *rsa.PublicKey
+	commsPubKey *rsa.PublicKey
+	sigPubKey   *rsa.PublicKey
 	overlays    []xo.OverlayI
 }
 
-func NewNewBaseNode(id *NodeID) (*BaseNode, error) {
-	return NewBaseNode(id, nil, nil, nil)
+func NewNewBaseNode(name string, id *NodeID) (*BaseNode, error) {
+	return NewBaseNode(name, id, nil, nil, nil)
 }
 
-func NewBaseNode(id *NodeID,
+func NewBaseNode(name string, id *NodeID,
 	ck *rsa.PublicKey, sk *rsa.PublicKey,
 	o []xo.OverlayI) (*BaseNode, error) {
 
@@ -38,8 +39,8 @@ func NewBaseNode(id *NodeID,
 		return nil, err
 	}
 	nodeID := (*id).Clone()
-	commsPubkey := ck
-	sigPubkey := sk
+	commsPubKey := ck
+	sigPubKey := sk
 	var overlays []xo.OverlayI // an empty slice
 	if o != nil {
 		count := len(o)
@@ -48,54 +49,63 @@ func NewBaseNode(id *NodeID,
 		}
 	} // FOO
 	p := new(BaseNode)
+	p.name = name
 	p.nodeID = nodeID // the clone
-	p.commsPubkey = commsPubkey
-	p.sigPubkey = sigPubkey
+	p.commsPubKey = commsPubKey
+	p.sigPubKey = sigPubKey
 	p.overlays = overlays
 	return p, nil
+}
+func (p *BaseNode) GetName() string {
+	return p.name
 }
 func (p *BaseNode) GetNodeID() *NodeID {
 	return p.nodeID
 }
 func (p *BaseNode) GetCommsPublicKey() *rsa.PublicKey {
-	return p.commsPubkey
+	return p.commsPubKey
 }
 func (p *BaseNode) GetSSHCommsPublicKey() string {
-	out := ssh.MarshalAuthorizedKey(p.commsPubkey)
-	// PLAYING AROUND
-	outAgain, comment, options, rest, ok := ssh.ParseAuthorizedKey(out)
-	pubKey := outAgain.(*rsa.PublicKey)
-	fmt.Printf("outAgain: %v\n", pubKey)
-	fmt.Printf("comment: '%s'\n", comment)
-	fmt.Printf("len(options) = %d\n", len(options))
-	fmt.Printf("len(rest) = %d\n", len(rest))
-	fmt.Printf("OK = %v\n", ok)
-	// END PLAYING
+	out := ssh.MarshalAuthorizedKey(p.commsPubKey)
 	return string(out)
 }
 
 func (p *BaseNode) GetSigPublicKey() *rsa.PublicKey {
-	return p.sigPubkey
+	return p.sigPubKey
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
-func (p *BaseNode) addOverlayI(o xo.OverlayI) error {
+//func (p *BaseNode) addOverlayI(o xo.OverlayI) error {
+//	if o == nil {
+//		return errors.New("IllegalArgument: nil OverlayI")
+//	}
+//	p.overlays = append(p.overlays, o)
+//	return nil
+//} // FOO
+func (n *BaseNode) AddOverlay(o xo.OverlayI) (ndx int, err error) {
+	ndx = -1
 	if o == nil {
-		return errors.New("IllegalArgument: nil OverlayI")
+		err = errors.New("IllegalArgument: nil Overlay")
+	} else {
+		for i := 0; i < len(n.overlays); i++ {
+			if n.overlays[i].Equal(o) {
+				ndx = i
+				break
+			}
+		}
+		if ndx == -1 {
+			n.overlays = append(n.overlays, o)
+			ndx = len(n.overlays) - 1
+		}
 	}
-	p.overlays = append(p.overlays, o)
-	return nil
-}
+	return
+} // FOO
 
-/**
- * @return a count of the number of overlays the peer can be
- *         accessed through
- */
-func (p *BaseNode) sizeOverlays() int {
+// Return a count of the number of overlays.
+func (p *BaseNode) SizeOverlays() int {
 	return len(p.overlays)
 }
 
-/** @return how to access the peer (transport, protocol, address) */
 func (p *BaseNode) GetOverlay(n int) xo.OverlayI {
 	return p.overlays[n]
 }
@@ -131,6 +141,28 @@ func (p *BaseNode) Equal(any interface{}) bool {
 	}
 	return false
 }
-func (p *BaseNode) String() string {
-	return "NOT IMPLEMENTED"
+func addStringlet(slice *[]string, s string) {
+	*slice = append(*slice, s)
+}
+func (p *BaseNode) String() []string {
+	ckSSH, err := xc.RSAPubKeyToDisk(p.commsPubKey)
+	if err != nil {
+		panic(err)
+	}
+	skSSH, err := xc.RSAPubKeyToDisk(p.sigPubKey)
+	if err != nil {
+		panic(err)
+	}
+
+	var s []string
+	addStringlet(&s, fmt.Sprintf("name: %s", p.name))
+	addStringlet(&s, fmt.Sprintf("nodeID: %s", p.nodeID.String()))
+	addStringlet(&s, fmt.Sprintf("commsPubKey: %s", ckSSH))
+	addStringlet(&s, fmt.Sprintf("sigPubKey: %s", skSSH))
+	addStringlet(&s, fmt.Sprintf("overlays {"))
+	for i := 0; i < len(p.overlays); i++ {
+		addStringlet(&s, fmt.Sprintf("    %s", p.overlays[i].String()))
+	}
+	addStringlet(&s, fmt.Sprintf("}"))
+	return s
 }

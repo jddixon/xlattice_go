@@ -31,8 +31,11 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 	// Create K nodes, each with a NodeID, two RSA private keys (sig and
 	// comms), and two RSA public keys.  Each node creates a TcpAcceptor
 	// running on 127.0.0.1 and a random (= system-supplied) port.
+	names := make([]string, K)
 	nodeIDs := make([]*NodeID, K)
 	for i := 0; i < K; i++ {
+		// XXX NAMES MUST BE UNIQUE
+		names[i] = rng.NextFileName(4)
 		val := make([]byte, SHA1_LEN)
 		rng.NextBytes(&val)
 		nodeIDs[i] = NewNodeID(val)
@@ -41,7 +44,7 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 	accs := make([]*xt.TcpAcceptor, K)
 	accEndPoints := make([]*xt.TcpEndPoint, K)
 	for i := 0; i < K; i++ {
-		nodes[i], err = NewNew(nodeIDs[i])
+		nodes[i], err = NewNew(names[i], nodeIDs[i])
 		c.Assert(err, Equals, nil)
 	}
 	defer func() {
@@ -101,7 +104,7 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 	for i := 0; i < K; i++ {
 		ctorSlice := []xt.ConnectorI{ctors[i]}
 		_ = ctorSlice
-		peers[i], err = NewPeer(nodeIDs[i], commsKeys[i], sigKeys[i],
+		peers[i], err = NewPeer(names[i], nodeIDs[i], commsKeys[i], sigKeys[i],
 			overlaySlice, ctorSlice)
 		c.Assert(err, Equals, nil)
 	}

@@ -24,11 +24,11 @@ var (
 // CONVERSION TO AND FROM WIRE FORMAT ///////////////////////////////
 
 // Serialize an RSA public key to wire format
-func RSAPubKeyToWire(pubKey *rsa.PublicKey) ([]byte, bool) {
+func RSAPubKeyToWire(pubKey *rsa.PublicKey) ([]byte, error) {
 
 	// XXX STUB
 
-	return nil, false
+	return nil, nil
 }
 
 // Deserialize an RSA public key from wire format
@@ -40,11 +40,11 @@ func RSAPubKeyFromWire(data []byte) (*rsa.PublicKey, error) {
 } // FOO
 
 // Serialize an RSA private key to wire format
-func RSAPrivKeyToWire(pubKey *rsa.PrivateKey) ([]byte, bool) {
+func RSAPrivKeyToWire(pubKey *rsa.PrivateKey) ([]byte, error) {
 
 	// XXX STUB
 
-	return nil, false
+	return nil, nil
 }
 
 // Deserialize an RSA private key from wire format
@@ -59,10 +59,10 @@ func RSAPrivKeyFromWire(data []byte) (*rsa.PrivateKey, error) {
 
 // Serialize an RSA public key to disk format, specifically to the
 // format used by SSH. Should return nil if the conversion fails.
-func RSAPubKeyToDisk(pubKey *rsa.PublicKey) ([]byte, bool) {
+func RSAPubKeyToDisk(pubKey *rsa.PublicKey) ([]byte, error) {
 	out := ssh.MarshalAuthorizedKey(pubKey)
 	// STUB ?
-	return out, true
+	return out, nil
 }
 
 // Deserialize an RSA public key from the format used in SSH

@@ -26,8 +26,8 @@ func (s *XLSuite) TestRSAPubKeyToFromDisk(c *C) {
 	c.Assert(pubKey, Not(Equals), nil)
 
 	// the public key in SSH disk format
-	sshAuthKey, ok := RSAPubKeyToDisk(&pubKey)
-	c.Assert(ok, Equals, true)
+	sshAuthKey, err := RSAPubKeyToDisk(&pubKey)
+	c.Assert(err, Equals, nil)
 
 	// generate the public key from the serialized version
 	pk2, err := RSAPubKeyFromDisk(sshAuthKey)
@@ -61,8 +61,8 @@ func (s *XLSuite) TestRSAPrivateKeyToFromDisk(c *C) {
 	c.Assert(pubKey, Not(Equals), nil)
 
 	// the public key in SSH disk format
-	sshAuthKey, ok := RSAPubKeyToDisk(&pubKey)
-	c.Assert(ok, Equals, true)
+	sshAuthKey, err := RSAPubKeyToDisk(&pubKey)
+	c.Assert(err, Equals, nil)
 
 	// serialize private key
 	serPrivKey, err := RSAPrivKeyToDisk(key)
@@ -75,6 +75,7 @@ func (s *XLSuite) TestRSAPrivateKeyToFromDisk(c *C) {
 
 	// compare serialized versions of public keys
 	pubKey2 := key2.PublicKey
-	sshAuthKey2, ok := RSAPubKeyToDisk(&pubKey2)
+	sshAuthKey2, err := RSAPubKeyToDisk(&pubKey2)
+	c.Assert(err, Equals, nil)
 	c.Assert(string(sshAuthKey), Equals, string(sshAuthKey2))
 }
