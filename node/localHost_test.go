@@ -38,7 +38,8 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 		names[i] = rng.NextFileName(4)
 		val := make([]byte, SHA1_LEN)
 		rng.NextBytes(&val)
-		nodeIDs[i] = NewNodeID(val)
+		nodeIDs[i], err = NewNodeID(val)
+		c.Assert(err, Equals, nil)
 	}
 	nodes := make([]*Node, K)
 	accs := make([]*xt.TcpAcceptor, K)

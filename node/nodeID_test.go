@@ -24,13 +24,16 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_THIS_AND_THAT")
 	}
+	var err error
 	rng := rnglib.MakeSimpleRNG()
 	v1 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v1)
 	v2 := make([]byte, SHA1_LEN)
 	rng.NextBytes(&v2)
-	id1 := NewNodeID(v1)
-	id2 := NewNodeID(v2)
+	id1, err := NewNodeID(v1)
+	c.Assert(err, Equals, nil)
+	id2, err := NewNodeID(v2)
+	c.Assert(err, Equals, nil)
 	c.Assert(id1, Not(Equals), id2)
 
 	v1a := id1.Value()
@@ -56,6 +59,7 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 }
 
 func (s *XLSuite) TestComparator(c *C) {
+	var err error
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_COMPARATOR")
 	}
@@ -64,8 +68,10 @@ func (s *XLSuite) TestComparator(c *C) {
 	rng.NextBytes(&v1)
 	v3 := make([]byte, SHA3_LEN)
 	rng.NextBytes(&v3)
-	id1 := NewNodeID(v1) // SHA1
-	id3 := NewNodeID(v3) // SHA3
+	id1, err := NewNodeID(v1) // SHA1
+	c.Assert(err, Equals, nil)
+	id3, err := NewNodeID(v3) // SHA3
+	c.Assert(err, Equals, nil)
 
 	// make clones which will sort before and after v1
 	v1a := make([]byte, SHA1_LEN) // sorts AFTER v1
@@ -86,14 +92,18 @@ func (s *XLSuite) TestComparator(c *C) {
 			break
 		}
 	}
-	id1a := NewNodeID(v1a)
-	id1b := NewNodeID(v1b)
+	id1a, err := NewNodeID(v1a)
+	c.Assert(err, Equals, nil)
+	id1b, err := NewNodeID(v1b)
+	c.Assert(err, Equals, nil)
 
 	result, err := id1.Compare(id1) // self
 	c.Assert(0, Equals, result)
 	c.Assert(err, IsNil)
 
-	result, err = id1.Compare(id1.Clone()) // identical copy
+	klone, err := id1.Clone() // identical copy
+	c.Assert(err, IsNil)
+	result, err = id1.Compare(klone)
 	c.Assert(0, Equals, result)
 	c.Assert(err, IsNil)
 

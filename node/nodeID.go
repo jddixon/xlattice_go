@@ -17,29 +17,35 @@ type NodeID struct {
 	_nodeID []byte
 }
 
-func NewNodeID(id []byte) *NodeID {
+var (
+	BadNodeIDLen = errors.New("bad length for nodeID")
+	NilNodeID    = errors.New("nil byte array for nodeID")
+)
+
+func NewNodeID(id []byte) (q *NodeID, err error) {
 	if id == nil {
-		panic("IllegalArgument: nil nodeID")
+		err = NilNodeID
+	} else {
+		q = new(NodeID)
+		// deep copy the slice
+		size := len(id)
+		myID := make([]byte, size)
+		for i := 0; i < size; i++ {
+			myID[i] = id[i]
+		}
+		q._nodeID = myID
+		if !IsValidID(id) {
+			err = BadNodeIDLen
+		}
 	}
-	q := new(NodeID)
-	// deep copy the slice
-	size := len(id)
-	myID := make([]byte, size)
-	for i := 0; i < size; i++ {
-		myID[i] = id[i]
-	}
-	q._nodeID = myID
-	if !IsValidID(id) {
-		panic("IllegalArgument: invalid id length")
-	}
-	return q
+	return
 }
 
 // func NewNodeIDFromString(id string) *NodeID {
 //     ...
 // }
 
-func (n *NodeID) Clone() *NodeID {
+func (n *NodeID) Clone() (*NodeID, error) {
 	v := n.Value()
 	return NewNodeID(v)
 }

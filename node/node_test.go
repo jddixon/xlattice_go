@@ -16,7 +16,7 @@ const (
 	VERBOSITY = 1
 )
 
-func makeNodeID(rng *rnglib.PRNG) *NodeID {
+func makeNodeID(rng *rnglib.PRNG) (*NodeID, error) {
 	var buffer []byte
 	// quasi-random choice, whether to use an SHA1 or SHA3 nodeID
 	if rng.NextBoolean() {
@@ -115,7 +115,8 @@ func (s *XLSuite) TestNewNew(c *C) {
 	_, err := NewNew(name, nil)
 	c.Assert(err, Not(IsNil)) // NOT
 
-	id := makeNodeID(rng)
+	id, err := makeNodeID(rng)
+	c.Assert(err, Equals, nil)
 	c.Assert(id, Not(IsNil)) // NOT
 	n, err2 := NewNew(name, id)
 	c.Assert(n, Not(IsNil)) // NOT
@@ -156,7 +157,8 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	}
 	rng := rnglib.MakeSimpleRNG()
 	name := rng.NextFileName(4)
-	id := makeNodeID(rng)
+	id, err := makeNodeID(rng)
+	c.Assert(err, Equals, nil)
 	c.Assert(id, Not(IsNil))
 
 	ep0 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")

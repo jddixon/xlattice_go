@@ -104,7 +104,7 @@ func (p *Peer) GetConnector(n int) xt.ConnectorI {
 //} // GEEP
 
 func (p *Peer) Strings() []string {
-	bns := p.BaseNode.String()
+	bns := p.BaseNode.Strings()
 	bns = append(bns, "connectors {")
 	for i := 0; i < len(p.connectors); i++ {
 		bns = append(bns, fmt.Sprintf("    %s", p.connectors[i].String()))

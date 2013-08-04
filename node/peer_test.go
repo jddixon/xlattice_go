@@ -27,7 +27,8 @@ func (s *XLSuite) TestPeerSerialization(c *C) {
 
 	// this is just a lazy way of building a peer
 	name := rng.NextFileName(4)
-	nid := makeNodeID(rng)
+	nid, err := makeNodeID(rng)
+	c.Assert(err, Equals, nil)
 	node, err := NewNew(name, nid)
 	c.Assert(err, Equals, nil)
 

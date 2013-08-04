@@ -5,10 +5,12 @@ package node
 import (
 	"code.google.com/p/go.crypto/ssh"
 	"crypto/rsa"
+	"encoding/hex"
 	"errors"
-	"fmt" // DEBUG
+	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xo "github.com/jddixon/xlattice_go/overlay"
+	"strings"
 )
 
 var _ = fmt.Print
@@ -31,14 +33,17 @@ func NewNewBaseNode(name string, id *NodeID) (*BaseNode, error) {
 
 func NewBaseNode(name string, id *NodeID,
 	ck *rsa.PublicKey, sk *rsa.PublicKey,
-	o []xo.OverlayI) (*BaseNode, error) {
+	o []xo.OverlayI) (p *BaseNode, err error) {
 
 	// IDENTITY /////////////////////////////////////////////////////
 	if id == nil {
 		err := errors.New("IllegalArgument: nil NodeID")
 		return nil, err
 	}
-	nodeID := (*id).Clone()
+	nodeID, err := (*id).Clone()
+	if err != nil {
+		return
+	}
 	commsPubKey := ck
 	sigPubKey := sk
 	var overlays []xo.OverlayI // an empty slice
@@ -48,7 +53,7 @@ func NewBaseNode(name string, id *NodeID,
 			overlays = append(overlays, o[i])
 		}
 	} // FOO
-	p := new(BaseNode)
+	p = new(BaseNode)
 	p.name = name
 	p.nodeID = nodeID // the clone
 	p.commsPubKey = commsPubKey
@@ -141,10 +146,13 @@ func (p *BaseNode) Equal(any interface{}) bool {
 	}
 	return false
 }
+
+// SERIALIZATION ////////////////////////////////////////////////////
+
 func addStringlet(slice *[]string, s string) {
 	*slice = append(*slice, s)
 }
-func (p *BaseNode) String() []string {
+func (p *BaseNode) Strings() []string {
 	ckSSH, err := xc.RSAPubKeyToDisk(p.commsPubKey)
 	if err != nil {
 		panic(err)
@@ -165,4 +173,122 @@ func (p *BaseNode) String() []string {
 	}
 	addStringlet(&s, fmt.Sprintf("}"))
 	return s
+}
+
+// DESERIALIZATION //////////////////////////////////////////////////
+
+var (
+	NotABaseNode = errors.New("not a serialized BaseNode - missing bits")
+)
+
+// Return the next non-blank line in the slice of strings
+func nextLine(lines *[]string) string {
+	if lines != nil {
+		for len(*lines) > 0 {
+			s := strings.TrimSpace((*lines)[0])
+			*lines = (*lines)[1:]
+			if s != "" {
+				return s
+			}
+		}
+	}
+	return ""
+}
+
+// Parse a serialized BaseNode, ignoring blank lines and leading
+// and trailing whitespace
+func ParseBaseNode(data string) (bn *BaseNode, rest []string, err error) {
+	ss := strings.Split(data, "\n") // yields a slice of strings
+	var (
+		name        string
+		nodeID      *NodeID
+		commsPubKey *rsa.PublicKey
+		sigPubKey   *rsa.PublicKey
+		overlays    []xo.OverlayI
+	)
+	s := nextLine(&ss)
+	if strings.HasPrefix(s, "name: ") {
+		name = s[6:]
+	} else {
+		err = NotABaseNode
+	}
+	if err == nil {
+		s = nextLine(&ss)
+		if strings.HasPrefix(s, "nodeID: ") {
+			var val []byte
+			val, err = hex.DecodeString(s[7:])
+			if err == nil {
+				nodeID, err = NewNodeID(val)
+			}
+		} else {
+			err = NotABaseNode
+		}
+	}
+	if err == nil {
+		s = nextLine(&ss)
+		if strings.HasPrefix(s, "commsPubKey: ") {
+			// XXX we do not verify that the next line is empty
+			ckSSH := []byte(s[13:] + "\n")
+			commsPubKey, err = xc.RSAPubKeyFromDisk(ckSSH)
+		} else {
+			err = NotABaseNode
+		}
+	}
+	if err == nil {
+		s = nextLine(&ss)
+		if strings.HasPrefix(s, "SigPubKey: ") {
+			skSSH := []byte(s[12:] + "\n")
+			commsPubKey, err = xc.RSAPubKeyFromDisk(skSSH)
+		} else {
+			err = NotABaseNode
+		}
+	}
+	if err == nil {
+		s = nextLine(&ss)
+		if s == "overlays {" {
+			for {
+				s = nextLine(&ss)
+				if s == "" { // end of strings
+					err = NotABaseNode
+					break
+				} else if s == "}" {
+					prepend := []string{s}
+					ss = append(prepend, ss...)
+					break
+				} else if strings.HasPrefix("IPOverlay: ", s) {
+					var ar *xo.AddrRange
+					ar, err = xo.NewCIDRAddrRange(s[11:])
+					if err != nil {
+						break
+					}
+					var o xo.OverlayI
+					// XXX WE DON'T HAVE ITS NAME OR COST!
+					o, err = xo.NewIPOverlay("", ar, "ip", 1.0)
+					if err != nil {
+						break
+					}
+					overlays = append(overlays, o)
+				} else {
+					// we can only handle IP overlays
+					fmt.Printf("not a recognized IP overlay: %s\n", s)
+					err = NotABaseNode
+					break
+				}
+			}
+		} else {
+			err = NotABaseNode
+		}
+	}
+	if err == nil {
+		s = nextLine(&ss)
+		if s != "}" {
+			err = NotABaseNode
+		}
+	}
+	if err == nil {
+		var bn = BaseNode{name, nodeID, commsPubKey, sigPubKey, overlays}
+		return &bn, ss, nil
+	} else {
+		return nil, nil, err
+	}
 }
