@@ -62,7 +62,7 @@ func (s *XLSuite) TestHashingServer(c *C) {
 	SERVER_ADDR := "127.0.0.1:0"
 
 	// -- setup  -----------------------------------------------------
-	fmt.Println("building messages")
+	// fmt.Println("building messages")
 	var messages [][][]byte = make([][][]byte, K)
 	var hashes [][][]byte = make([][][]byte, K)
 	for i := 0; i < K; i++ {
@@ -83,7 +83,7 @@ func (s *XLSuite) TestHashingServer(c *C) {
 	c.Assert(err, Equals, nil)
 	defer acc.Close()
 	accEndPoint := acc.GetEndPoint()
-	fmt.Printf("server_test acceptor listening on %s\n", accEndPoint.String())
+	// fmt.Printf("server_test acceptor listening on %s\n", accEndPoint.String())
 	go func() {
 		for {
 			cnx, err := acc.Accept()

@@ -13,11 +13,10 @@ import (
 var _ = fmt.Print
 
 const (
-	NAME       = `[` + x.NAME_STARTERS + `][` + x.NAME_CHARS + `]`
+	NAME       = `[` + x.NAME_STARTERS + `][` + x.NAME_CHARS + `]*`
 	QUAD       = xt.QUAD_PAT
 	ADDR_RANGE = QUAD + `.` + QUAD + `.` + QUAD + `.` + QUAD + `/\d+`
-	// XXX omitted ^ and $
-	IP_OVERLAY = `overlay:\s*(` + NAME + `),\s*(` + NAME + `),\s*(` + ADDR_RANGE + `),\s*(\d\.\d*)`
+	IP_OVERLAY = `^overlay:\s*(` + NAME + `),\s*(` + NAME + `),\s*(` + ADDR_RANGE + `),\s*(\d+\.\d*)$`
 )
 
 var (
@@ -30,11 +29,6 @@ var (
 
 func makeRE() (err error) {
 	overlayRE, err = regexp.Compile(IP_OVERLAY)
-	// DEBUG
-	if err != nil {
-		fmt.Printf("BAD OVERLAY REGEXP: %v\n", err)
-	}
-	// END
 	return
 }
 
@@ -47,25 +41,22 @@ func Parse(s string) (o OverlayI, err error) {
 		err = makeRE()
 	}
 	if err == nil {
-		// DEBUG
-		fmt.Printf("MatchString yields %v\n", overlayRE.MatchString(s))
-		// END
 		groups := overlayRE.FindStringSubmatch(s)
 		if groups == nil {
-			fmt.Printf("NO MATCH for '%s'\n", s)
+			// fmt.Printf("NO MATCH for '%s'\n", s)
 			err = NotAnOverlay
 		} else {
-			fmt.Println("MATCH")
+			// fmt.Println("MATCH")
 			name := groups[1]
 			transport := groups[2]
 			aRange := groups[3]
 			cost := groups[4] // a string
 
 			// DEBUG
-			fmt.Printf("name:      %s\n", name)
-			fmt.Printf("transport: %s\n", transport)
-			fmt.Printf("aRange:    %s\n", aRange)
-			fmt.Printf("cost:      %s\n", cost)
+			// fmt.Printf("name:      %s\n", name)
+			// fmt.Printf("transport: %s\n", transport)
+			// fmt.Printf("aRange:    %s\n", aRange)
+			// fmt.Printf("cost:      %s\n", cost)
 			// END
 
 			var ar *AddrRange
