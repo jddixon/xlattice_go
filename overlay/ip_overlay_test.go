@@ -8,19 +8,9 @@ import (
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 	"net"
-	"testing"
 )
 
 var _ = fmt.Print
-
-// gocheck tie-in /////////////////////
-func Test(t *testing.T) { TestingT(t) }
-
-type XLSuite struct{}
-
-var _ = Suite(&XLSuite{})
-
-// end gocheck setup //////////////////
 
 func (s *XLSuite) TestCtor(c *C) {
 	rng := x.MakeSimpleRNG()

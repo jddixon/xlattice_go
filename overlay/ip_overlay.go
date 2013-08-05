@@ -83,7 +83,8 @@ func (o *IPOverlay) IsElement(e xt.EndPointI) bool {
 	return o.addrRange.ipNet.Contains(bs)
 }
 func (o *IPOverlay) String() string {
-	return "IPOverlay: " + o.addrRange.String()
+	return fmt.Sprintf("overlay: %s, %s, %s, %f", o.name,
+		o.transport, o.addrRange.String(), o.cost)
 }
 
 func (o *IPOverlay) Equal(any interface{}) bool {

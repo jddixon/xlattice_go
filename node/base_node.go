@@ -266,7 +266,7 @@ func ParseBaseNode(data string) (bn *BaseNode, rest []string, err error) {
 					o, err = xo.NewIPOverlay("", ar, "ip", 1.0)
 					if err != nil {
 						break
-					}
+					}	// GEEP
 					overlays = append(overlays, o)
 				} else {
 					// we can only handle IP overlays
