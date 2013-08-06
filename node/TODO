@@ -8,8 +8,8 @@ xlattice_go/node/TODO
         - eventually should be syntactically liberal when
             parsing (although strict when writing)
 
-    * peer.Parse will require overlay.Parse()
-    * and connector.Parse
+    * ParsePeer will require overlay.Parse()                        # DONE
+    * and transport.ParseConnector                                  # DONE
     * need node.Strings(), node.String()
     * and node.Parse()
     * and from these node.Save() and node.Load()

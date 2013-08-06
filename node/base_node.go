@@ -13,8 +13,6 @@ import (
 	"strings"
 )
 
-var _ = fmt.Print
-
 /**
  * Basic abstraction underlying Peer and Node
  */
@@ -216,7 +214,7 @@ func ParseBaseNode(data string) (bn *BaseNode, rest []string, err error) {
 		s = nextLine(&ss)
 		if strings.HasPrefix(s, "nodeID: ") {
 			var val []byte
-			val, err = hex.DecodeString(s[7:])
+			val, err = hex.DecodeString(s[8:])
 			if err == nil {
 				nodeID, err = NewNodeID(val)
 			}
@@ -236,9 +234,9 @@ func ParseBaseNode(data string) (bn *BaseNode, rest []string, err error) {
 	}
 	if err == nil {
 		s = nextLine(&ss)
-		if strings.HasPrefix(s, "SigPubKey: ") {
-			skSSH := []byte(s[12:] + "\n")
-			commsPubKey, err = xc.RSAPubKeyFromDisk(skSSH)
+		if strings.HasPrefix(s, "sigPubKey: ") {
+			skSSH := []byte(s[11:] + "\n")
+			sigPubKey, err = xc.RSAPubKeyFromDisk(skSSH)
 		} else {
 			err = NotABaseNode
 		}
@@ -255,24 +253,11 @@ func ParseBaseNode(data string) (bn *BaseNode, rest []string, err error) {
 					prepend := []string{s}
 					ss = append(prepend, ss...)
 					break
-				} else if strings.HasPrefix("IPOverlay: ", s) {
-					var ar *xo.AddrRange
-					ar, err = xo.NewCIDRAddrRange(s[11:])
-					if err != nil {
-						break
-					}
-					var o xo.OverlayI
-					// XXX WE DON'T HAVE ITS NAME OR COST!
-					o, err = xo.NewIPOverlay("", ar, "ip", 1.0)
-					if err != nil {
-						break
-					}	// GEEP
+				}
+				var o xo.OverlayI
+				o, err = xo.Parse(s)
+				if err == nil {
 					overlays = append(overlays, o)
-				} else {
-					// we can only handle IP overlays
-					fmt.Printf("not a recognized IP overlay: %s\n", s)
-					err = NotABaseNode
-					break
 				}
 			}
 		} else {

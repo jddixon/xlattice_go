@@ -68,15 +68,22 @@ func (s *XLSuite) TestPeerSerialization(c *C) {
 	for i := 0; i < len(oSlice); i++ {
 		s.addAString(&bns, fmt.Sprintf("    %s", oSlice[i].String()))
 	}
-	s.addAString(&bns, fmt.Sprintf("}")) // FOO
+	s.addAString(&bns, fmt.Sprintf("}"))
 
 	// Specific to Peer
 	s.addAString(&bns, fmt.Sprintf("connectors {"))
 	for i := 0; i < len(ctorSlice); i++ {
 		s.addAString(&bns, fmt.Sprintf("    %s", ctorSlice[i].String()))
 	}
-	s.addAString(&bns, fmt.Sprintf("}")) // FOO
+	s.addAString(&bns, fmt.Sprintf("}"))
 	myVersion := strings.Join(bns, "\n")
 
-	c.Assert(myVersion, Equals, peer.String())
+	serialized := peer.String()
+
+	c.Assert(myVersion, Equals, serialized)
+	backAgain, err := ParsePeer(serialized)
+	c.Assert(err, Equals, nil)
+	reserialized := backAgain.String()
+	c.Assert(serialized, Equals, reserialized)
+
 }

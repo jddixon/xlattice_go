@@ -57,7 +57,7 @@ func (s *XLSuite) doTestParser(c *C, rng *rnglib.PRNG) {
 
 	text := o.String()
 	// DEBUG
-	fmt.Printf("serialized overlay is %s\n", text)
+	// fmt.Printf("serialized overlay is %s\n", text)
 	// END
 	o2, err := Parse(text)
 	c.Assert(err, IsNil)

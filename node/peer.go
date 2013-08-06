@@ -115,3 +115,28 @@ func (p *Peer) Strings() []string {
 func (p *Peer) String() string {
 	return strings.Join(p.Strings(), "\n")
 }
+func ParsePeer(s string) (peer *Peer, err error) {
+	bn, rest, err := ParseBaseNode(s)
+	if err == nil {
+		peer = &Peer{nil, *bn}
+		line := nextLine(&rest)
+		if line == "connectors {" {
+			for {
+				line = nextLine(&rest)
+				if line == "}" {
+					break
+				}
+				var ctor xt.ConnectorI
+				ctor, err = xt.ParseConnector(line)
+				if err != nil {
+					return
+				}
+				err = peer.addConnector(ctor)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
+	return
+}
