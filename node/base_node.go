@@ -177,6 +177,7 @@ func (p *BaseNode) Strings() []string {
 
 var (
 	NotABaseNode = errors.New("not a serialized BaseNode - missing bits")
+	NotExpectedOpener = errors.New("not expected BaseNode serialization opener")
 )
 
 // Return the next non-blank line in the slice of strings
@@ -193,9 +194,10 @@ func nextLine(lines *[]string) string {
 	return ""
 }
 
-// Parse a serialized BaseNode, ignoring blank lines and leading
-// and trailing whitespace
-func ParseBaseNode(data string) (bn *BaseNode, rest []string, err error) {
+// Parse a serialized BaseNode, ignoring blank lines and leading and 
+// trailing whitespace.  Expect the first line to be like "TYPE {"
+
+func ParseBaseNode(data, whichType string) (bn *BaseNode, rest []string, err error) {
 	ss := strings.Split(data, "\n") // yields a slice of strings
 	var (
 		name        string
@@ -205,10 +207,17 @@ func ParseBaseNode(data string) (bn *BaseNode, rest []string, err error) {
 		overlays    []xo.OverlayI
 	)
 	s := nextLine(&ss)
-	if strings.HasPrefix(s, "name: ") {
-		name = s[6:]
-	} else {
-		err = NotABaseNode
+	opener := fmt.Sprintf("%s {", whichType)	// "peer {" or "node {"
+	if s != opener {
+		err = NotExpectedOpener
+	}
+	if err == nil {
+		s := nextLine(&ss)
+		if strings.HasPrefix(s, "name: ") {
+			name = s[6:]
+		} else {
+			err = NotABaseNode
+		}
 	}
 	if err == nil {
 		s = nextLine(&ss)

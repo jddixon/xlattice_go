@@ -7,9 +7,11 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	xc "github.com/jddixon/xlattice_go/crypto"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"hash"
+	"strings"
 )
 
 var _ = fmt.Print
@@ -23,16 +25,15 @@ var _ = fmt.Print
  * @author Jim Dixon
  */
 type Node struct {
-	lfs      string
-	commsKey *rsa.PrivateKey // private
-	sigKey   *rsa.PrivateKey // private
-	//	overlays    []xo.OverlayI
+	lfs         string
+	commsKey    *rsa.PrivateKey // private
+	sigKey      *rsa.PrivateKey // private
 	endPoints   []xt.EndPointI
-	acceptors   []xt.AcceptorI
+	acceptors   []xt.AcceptorI // volatile, do not serialize
 	peers       []Peer
-	connections []xt.ConnectionI
+	connections []xt.ConnectionI // volatile
 	gateways    []Gateway
-	BaseNode
+	BaseNode    // listed last, but serialize first
 }
 
 func NewNew(name string, id *NodeID) (*Node, error) {
@@ -363,8 +364,44 @@ func (n *Node) Equal(any interface{}) bool {
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////
+func (n *Node) Strings() []string {
+	ss  := []string{"node {"}
+	bns := n.BaseNode.Strings()
+	for i := 0; i < len(bns); i++ {
+		ss = append(ss, "    " + bns[i])
+	}
+	addStringlet( &ss, fmt.Sprintf("    lfs: %s", n.lfs) )
+	
+	cPriv, _ := xc.RSAPrivKeyToDisk(n.commsKey)
+	addStringlet(&ss, "    commsKey: " + string(cPriv))
+
+	sPriv, _ := xc.RSAPrivKeyToDisk(n.sigKey)
+	addStringlet(&ss, "    sigKey: " + string(sPriv))
+
+	addStringlet(&ss, "    endPoints {")
+	for i := 0; i < len(n.endPoints); i++ {
+		addStringlet(&ss, "        " + n.GetEndPoint(i).String())
+	}
+	addStringlet(&ss, "    }")
+	
+	// peers 
+	addStringlet(&ss, "    peers {")
+	for i := 0; i < len(n.peers); i++ {
+		p := n.GetPeer(i).Strings()
+		for j := 0; j < len(p); j++ {
+			addStringlet(&ss, "        " + p[j])
+		}
+	}
+	addStringlet(&ss, "    }")
+	
+	
+	// gateways ?
+
+	addStringlet(&ss, "}")
+	return ss
+}
 func (n *Node) String() string {
-	return "NOT IMPLEMENTED"
+	return strings.Join(n.Strings(), "\n")
 }
 
 // DIG SIGNER ///////////////////////////////////////////////////////

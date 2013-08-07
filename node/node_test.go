@@ -10,6 +10,7 @@ import (
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
+	"strings"
 )
 
 const (
@@ -106,31 +107,6 @@ func (s *XLSuite) nilArgCheck(c *C) {
 
 // END OF TODO
 
-func (s *XLSuite) TestNewNew(c *C) {
-	if VERBOSITY > 0 {
-		fmt.Println("TEST_NEW_NEW")
-	}
-	rng := rnglib.MakeSimpleRNG()
-	name := rng.NextFileName(4)
-	_, err := NewNew(name, nil)
-	c.Assert(err, Not(IsNil)) // NOT
-
-	id, err := makeNodeID(rng)
-	c.Assert(err, Equals, nil)
-	c.Assert(id, Not(IsNil)) // NOT
-	n, err2 := NewNew(name, id)
-	c.Assert(n, Not(IsNil)) // NOT
-	c.Assert(err2, IsNil)
-	c.Assert(name, Equals, n.GetName())
-	actualID := n.GetNodeID()
-	c.Assert(true, Equals, id.Equal(actualID))
-	s.doKeyTests(c, n, rng)
-	c.Assert(0, Equals, (*n).SizePeers())
-	c.Assert(0, Equals, (*n).SizeOverlays())
-	c.Assert(0, Equals, n.SizeConnections())
-	c.Assert("", Equals, n.GetLFS())
-}
-
 func (s *XLSuite) TestNewConstructor(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_NEW_CONSTRUCTOR")
@@ -175,6 +151,99 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	c.Assert(node.SizeOverlays(), Equals, 1)
 
 	// expect to find an acceptor for each endpoint
+	// XXX STUB XXX
 
 	// Close must close all three acceptors
+	// XXX STUB XXX
+
+}
+
+// Return an initialized and tested host, with a NodeID, commsKey,
+// and sigKey
+func (s *XLSuite) makeHost (c *C, rng *rnglib.PRNG) *Node {
+	// XXX names may not be unique
+	name := rng.NextFileName(6)
+	for {
+		first := string(name[0])
+		if !strings.Contains(first, "0123456789") && 
+				!strings.Contains(name,"-"){
+			break
+		}
+		name = rng.NextFileName(6)
+	}
+	id, err := makeNodeID(rng)
+	c.Assert(err, Equals, nil)
+	c.Assert(id, Not(IsNil))
+	
+	n, err2 := NewNew(name, id)
+	c.Assert(n, Not(IsNil)) 
+	c.Assert(err2, IsNil)
+	c.Assert(name, Equals, n.GetName())
+	actualID := n.GetNodeID()
+	c.Assert(true, Equals, id.Equal(actualID))
+	s.doKeyTests(c, n, rng)
+	c.Assert(0, Equals, (*n).SizePeers())
+	c.Assert(0, Equals, (*n).SizeOverlays())
+	c.Assert(0, Equals, n.SizeConnections())
+	c.Assert("", Equals, n.GetLFS())
+	return n
+}
+
+// Create a Peer from information in the Node passed.  Endpoints
+// (and so Overlays) must have already been added to the Node.
+func (s *XLSuite) peerFromHost(c *C, n *Node) (peer *Peer) {
+	var err error
+	k := len(n.endPoints)
+	ctors := make([]xt.ConnectorI, k)
+	for i := 0; i < k; i++ {
+		ctors[i], err = xt.NewTcpConnector(n.GetEndPoint(i))
+		c.Assert(err, Equals, nil)
+	}
+	peer = &Peer{ctors, n.BaseNode}
+	//peer.commsPubKey =  n.GetCommsPublicKey()
+	//peer.sigPubKey	 =  n.GetSigPublicKey()
+
+
+	return peer
+}
+func (s *XLSuite) makeAnEndPoint(c *C, rng *rnglib.PRNG, node *Node) {
+	// XXX these may not be unique
+	port 	:= rng.Intn(256*256)
+	addr 	:= fmt.Sprintf("127.0.0.1:%d", port)
+	ep,err	:= xt.NewTcpEndPoint(addr)
+	c.Assert(err, IsNil)
+	c.Assert(ep, Not(IsNil))
+	ndx,err := node.AddEndPoint(ep)
+	c.Assert(err, IsNil)
+	c.Assert(ndx, Equals, 0)		// it's the only one
+}
+func (s *XLSuite) TestNodeSerialization (c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_NODE_SERIALIZATION")
+	}
+	rng := rnglib.MakeSimpleRNG()
+
+	node := s.makeHost(c, rng)
+	s.makeAnEndPoint(c, rng, node)
+	lfs := rng.NextFileName(4)
+	node.SetLFS(lfs)
+	c.Assert(node.GetLFS(), Equals, lfs)
+
+	const K = 3
+	peers := make([]*Peer, K)
+
+	for i := 0; i < K; i++ {
+		host 	:= s.makeHost(c, rng)
+		s.makeAnEndPoint(c, rng, host)
+		peers[i] = s.peerFromHost(c, host)
+		ndx,err := node.AddPeer(peers[i])
+		c.Assert(err, IsNil)
+		c.Assert(ndx, Equals, i)
+	}
+	// we now have a node with K peers
+	serialized := node.String()
+	fmt.Printf("SERIALIZED NODE WITH PEERS:\n%s\n", serialized)
+
+
+
 }

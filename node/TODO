@@ -2,7 +2,7 @@ xlattice_go/node/TODO
 
 2013-08-02
     * lfs is a path; it must be filtered accordingly
-    * need peer.Parse() which converts a slice of strings back
+    * need peer.Parse() which converts a slice of strings back      # DONE
         into a Peer object
         - first version of parser can be quite strict
         - eventually should be syntactically liberal when
@@ -10,7 +10,7 @@ xlattice_go/node/TODO
 
     * ParsePeer will require overlay.Parse()                        # DONE
     * and transport.ParseConnector                                  # DONE
-    * need node.Strings(), node.String()
+    * need node.Strings(), node.String()                            # DONE
     * and node.Parse()
     * and from these node.Save() and node.Load()
         - if a node is started with only the name, id, and lfs 
@@ -29,7 +29,7 @@ xlattice_go/node/TODO
     * integrating gateways into node requires ability to create
         composite connections
         - Gateway extends Node
-    * from 07-16: need peer_test.go
+    * from 07-16: need peer_test.go                                 # DONE
     * need UDP transport
 
 2013-07-29

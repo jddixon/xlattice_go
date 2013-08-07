@@ -59,31 +59,32 @@ func (s *XLSuite) TestPeerSerialization(c *C) {
 
 	// BaseNode
 	var bns []string
-
-	s.addAString(&bns, fmt.Sprintf("name: %s", name))
-	s.addAString(&bns, fmt.Sprintf("nodeID: %s", nid.String()))
-	s.addAString(&bns, fmt.Sprintf("commsPubKey: %s", ckSSH))
-	s.addAString(&bns, fmt.Sprintf("sigPubKey: %s", skSSH))
-	s.addAString(&bns, fmt.Sprintf("overlays {"))
+	s.addAString(&bns, "peer {")
+	s.addAString(&bns, fmt.Sprintf("    name: %s", name))
+	s.addAString(&bns, fmt.Sprintf("    nodeID: %s", nid.String()))
+	s.addAString(&bns, fmt.Sprintf("    commsPubKey: %s", ckSSH))
+	s.addAString(&bns, fmt.Sprintf("    sigPubKey: %s", skSSH))
+	s.addAString(&bns, fmt.Sprintf("    overlays {"))
 	for i := 0; i < len(oSlice); i++ {
-		s.addAString(&bns, fmt.Sprintf("    %s", oSlice[i].String()))
+		s.addAString(&bns, fmt.Sprintf("        %s", oSlice[i].String()))
 	}
-	s.addAString(&bns, fmt.Sprintf("}"))
+	s.addAString(&bns, fmt.Sprintf("    }"))
 
 	// Specific to Peer
-	s.addAString(&bns, fmt.Sprintf("connectors {"))
+	s.addAString(&bns, fmt.Sprintf("    connectors {"))
 	for i := 0; i < len(ctorSlice); i++ {
-		s.addAString(&bns, fmt.Sprintf("    %s", ctorSlice[i].String()))
+		s.addAString(&bns, fmt.Sprintf("        %s", ctorSlice[i].String()))
 	}
-	s.addAString(&bns, fmt.Sprintf("}"))
+	s.addAString(&bns, fmt.Sprintf("    }"))	// closes connectors
+	s.addAString(&bns, fmt.Sprintf("}"))	// closes peer
 	myVersion := strings.Join(bns, "\n")
 
 	serialized := peer.String()
+	c.Assert(serialized, Equals, myVersion)
 
-	c.Assert(myVersion, Equals, serialized)
 	backAgain, err := ParsePeer(serialized)
 	c.Assert(err, Equals, nil)
 	reserialized := backAgain.String()
-	c.Assert(serialized, Equals, reserialized)
+	c.Assert(reserialized, Equals, serialized)
 
 }

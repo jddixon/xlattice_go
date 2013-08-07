@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+var (
+	NotASerializedPeer	= errors.New("not a serialized peer")
+)
 /**
  * A Peer is another Node, a neighbor.
  */
@@ -104,19 +107,24 @@ func (p *Peer) GetConnector(n int) xt.ConnectorI {
 //} // GEEP
 
 func (p *Peer) Strings() []string {
+	ss  := []string{"peer {"}
 	bns := p.BaseNode.Strings()
-	bns = append(bns, "connectors {")
-	for i := 0; i < len(p.connectors); i++ {
-		bns = append(bns, fmt.Sprintf("    %s", p.connectors[i].String()))
+	for i := 0; i < len(bns); i++ {
+		ss = append(ss, "    " + bns[i])
 	}
-	bns = append(bns, "}")
-	return bns
+	ss = append(ss, "    connectors {")
+	for i := 0; i < len(p.connectors); i++ {
+		ss = append(ss, fmt.Sprintf("        %s", p.connectors[i].String()))
+	}
+	ss = append(ss, "    }")
+	ss = append(ss, "}")
+	return ss
 }
 func (p *Peer) String() string {
 	return strings.Join(p.Strings(), "\n")
 }
 func ParsePeer(s string) (peer *Peer, err error) {
-	bn, rest, err := ParseBaseNode(s)
+	bn, rest, err := ParseBaseNode(s, "peer")
 	if err == nil {
 		peer = &Peer{nil, *bn}
 		line := nextLine(&rest)
@@ -135,6 +143,10 @@ func ParsePeer(s string) (peer *Peer, err error) {
 				if err != nil {
 					return
 				}
+			}
+			line = nextLine(&rest)
+			if line != "}" {
+				err = NotASerializedPeer
 			}
 		}
 	}
