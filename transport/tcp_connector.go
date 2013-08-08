@@ -71,5 +71,6 @@ func (c *TcpConnector) GetFarEnd() EndPointI {
 }
 
 func (c *TcpConnector) String() string {
-	return "TcpConnector: " + c.farEnd.String()
+	// farEnd serialization begins with "TcpEndPoint: "
+	return "TcpConnector: " + c.farEnd.String()[13:]
 }

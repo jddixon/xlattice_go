@@ -11,6 +11,7 @@ import (
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 	"strings"
+	"time"
 )
 
 const (
@@ -42,7 +43,8 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	if VERBOSITY > 0 {
 		fmt.Printf("bit length of private key exponent is %d\n", expLen)
 	}
-	c.Assert(true, Equals, (2038 <= expLen) && (expLen <= 2048))
+	// 2037 seen at least once
+	c.Assert(true, Equals, (2036 <= expLen) && (expLen <= 2048))
 
 	c.Assert(privCommsKey.PublicKey, Equals, *commsPubKey) // XXX FAILS
 
@@ -160,13 +162,13 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 
 // Return an initialized and tested host, with a NodeID, commsKey,
 // and sigKey
-func (s *XLSuite) makeHost (c *C, rng *rnglib.PRNG) *Node {
+func (s *XLSuite) makeHost(c *C, rng *rnglib.PRNG) *Node {
 	// XXX names may not be unique
 	name := rng.NextFileName(6)
 	for {
 		first := string(name[0])
-		if !strings.Contains(first, "0123456789") && 
-				!strings.Contains(name,"-"){
+		if !strings.Contains(first, "0123456789") &&
+			!strings.Contains(name, "-") {
 			break
 		}
 		name = rng.NextFileName(6)
@@ -174,9 +176,9 @@ func (s *XLSuite) makeHost (c *C, rng *rnglib.PRNG) *Node {
 	id, err := makeNodeID(rng)
 	c.Assert(err, Equals, nil)
 	c.Assert(id, Not(IsNil))
-	
+
 	n, err2 := NewNew(name, id)
-	c.Assert(n, Not(IsNil)) 
+	c.Assert(n, Not(IsNil))
 	c.Assert(err2, IsNil)
 	c.Assert(name, Equals, n.GetName())
 	actualID := n.GetNodeID()
@@ -203,21 +205,20 @@ func (s *XLSuite) peerFromHost(c *C, n *Node) (peer *Peer) {
 	//peer.commsPubKey =  n.GetCommsPublicKey()
 	//peer.sigPubKey	 =  n.GetSigPublicKey()
 
-
 	return peer
 }
 func (s *XLSuite) makeAnEndPoint(c *C, rng *rnglib.PRNG, node *Node) {
 	// XXX these may not be unique
-	port 	:= rng.Intn(256*256)
-	addr 	:= fmt.Sprintf("127.0.0.1:%d", port)
-	ep,err	:= xt.NewTcpEndPoint(addr)
+	port := rng.Intn(256 * 256)
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
+	ep, err := xt.NewTcpEndPoint(addr)
 	c.Assert(err, IsNil)
 	c.Assert(ep, Not(IsNil))
-	ndx,err := node.AddEndPoint(ep)
+	ndx, err := node.AddEndPoint(ep)
 	c.Assert(err, IsNil)
-	c.Assert(ndx, Equals, 0)		// it's the only one
+	c.Assert(ndx, Equals, 0) // it's the only one
 }
-func (s *XLSuite) TestNodeSerialization (c *C) {
+func (s *XLSuite) TestNodeSerialization(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_NODE_SERIALIZATION")
 	}
@@ -226,17 +227,18 @@ func (s *XLSuite) TestNodeSerialization (c *C) {
 	node := s.makeHost(c, rng)
 	s.makeAnEndPoint(c, rng, node)
 	lfs := rng.NextFileName(4)
-	node.SetLFS(lfs)
+	err := node.setLFS(lfs)
+	c.Assert(err, IsNil)
 	c.Assert(node.GetLFS(), Equals, lfs)
 
 	const K = 3
 	peers := make([]*Peer, K)
 
 	for i := 0; i < K; i++ {
-		host 	:= s.makeHost(c, rng)
+		host := s.makeHost(c, rng)
 		s.makeAnEndPoint(c, rng, host)
 		peers[i] = s.peerFromHost(c, host)
-		ndx,err := node.AddPeer(peers[i])
+		ndx, err := node.AddPeer(peers[i])
 		c.Assert(err, IsNil)
 		c.Assert(ndx, Equals, i)
 	}
@@ -244,6 +246,17 @@ func (s *XLSuite) TestNodeSerialization (c *C) {
 	serialized := node.String()
 	fmt.Printf("SERIALIZED NODE WITH PEERS:\n%s\n", serialized)
 
+	// we can't deserialize the node - it contains live acceptors!
+	for i := 0; i < node.SizeAcceptors(); i++ {
+		node.GetAcceptor(i).Close()
+	}
+	// XXX parse succeeds if we sleep 100ms, fails if we sleep 10ms
+	time.Sleep(50 * time.Millisecond)
 
+	backAgain, rest, err := Parse(serialized)
+	c.Assert(err, IsNil)
+	c.Assert(len(rest), Equals, 0)
 
+	reserialized := backAgain.String()
+	c.Assert(reserialized, Equals, serialized)
 }

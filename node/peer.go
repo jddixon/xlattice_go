@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	NotASerializedPeer	= errors.New("not a serialized peer")
+	NotASerializedPeer = errors.New("not a serialized peer")
 )
+
 /**
  * A Peer is another Node, a neighbor.
  */
@@ -107,10 +108,10 @@ func (p *Peer) GetConnector(n int) xt.ConnectorI {
 //} // GEEP
 
 func (p *Peer) Strings() []string {
-	ss  := []string{"peer {"}
+	ss := []string{"peer {"}
 	bns := p.BaseNode.Strings()
 	for i := 0; i < len(bns); i++ {
-		ss = append(ss, "    " + bns[i])
+		ss = append(ss, "    "+bns[i])
 	}
 	ss = append(ss, "    connectors {")
 	for i := 0; i < len(p.connectors); i++ {
@@ -123,32 +124,50 @@ func (p *Peer) Strings() []string {
 func (p *Peer) String() string {
 	return strings.Join(p.Strings(), "\n")
 }
-func ParsePeer(s string) (peer *Peer, err error) {
+
+func collectConnectors(peer *Peer, ss []string) (rest []string, err error) {
+	rest = ss
+	line := nextLine(&rest)
+	if line == "connectors {" {
+		for {
+			line = nextLine(&rest)
+			if line == "}" {
+				break
+			}
+			var ctor xt.ConnectorI
+			ctor, err = xt.ParseConnector(line)
+			if err != nil {
+				return
+			}
+			err = peer.addConnector(ctor)
+			if err != nil {
+				return
+			}
+		}
+		line = nextLine(&rest)
+		if line != "}" {
+			err = NotASerializedPeer
+		}
+	} else {
+		// no connectors, not a very useful peer
+		err = NotASerializedPeer
+		peer = nil
+	}
+	return
+}
+func ParsePeer(s string) (peer *Peer, rest []string, err error) {
 	bn, rest, err := ParseBaseNode(s, "peer")
 	if err == nil {
 		peer = &Peer{nil, *bn}
-		line := nextLine(&rest)
-		if line == "connectors {" {
-			for {
-				line = nextLine(&rest)
-				if line == "}" {
-					break
-				}
-				var ctor xt.ConnectorI
-				ctor, err = xt.ParseConnector(line)
-				if err != nil {
-					return
-				}
-				err = peer.addConnector(ctor)
-				if err != nil {
-					return
-				}
-			}
-			line = nextLine(&rest)
-			if line != "}" {
-				err = NotASerializedPeer
-			}
-		}
+		rest, err = collectConnectors(peer, rest)
+	}
+	return
+}
+func parsePeerFromStrings(ss []string) (peer *Peer, rest []string, err error) {
+	bn, rest, err := parseBNFromStrings(ss, "peer")
+	if err == nil {
+		peer = &Peer{nil, *bn}
+		rest, err = collectConnectors(peer, rest)
 	}
 	return
 }

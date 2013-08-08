@@ -16,6 +16,10 @@ import (
 
 var _ = fmt.Print
 
+var (
+	NotASerializedNode = errors.New("not a serialized node")
+)
+
 /**
  * A Node is uniquely identified by a NodeID and can satisfy an
  * identity test constructed using its public key.  That is, it
@@ -152,7 +156,9 @@ func addEndPoint(e xt.EndPointI, endPoints *[]xt.EndPointI,
 	}
 	var acc *xt.TcpAcceptor
 	if e.Transport() == "tcp" {
-		acc, err = xt.NewTcpAcceptor(e.String())
+		// XXX HACK ON ADDRESS
+		strAddr := e.String()[13:]
+		acc, err = xt.NewTcpAcceptor(strAddr)
 		if err != nil {
 			return
 		}
@@ -314,6 +320,11 @@ func (n *Node) GetConnection(x int) xt.ConnectionI {
 func (n *Node) GetLFS() string {
 	return n.lfs
 }
+func (n *Node) setLFS(val string) error {
+	// XXX SHOULD VALIDATE
+	n.lfs = val
+	return nil
+}
 
 // CLOSE ////////////////////////////////////////////////////////////
 func (n *Node) Close() {
@@ -365,36 +376,35 @@ func (n *Node) Equal(any interface{}) bool {
 
 // SERIALIZATION ////////////////////////////////////////////////////
 func (n *Node) Strings() []string {
-	ss  := []string{"node {"}
+	ss := []string{"node {"}
 	bns := n.BaseNode.Strings()
 	for i := 0; i < len(bns); i++ {
-		ss = append(ss, "    " + bns[i])
+		ss = append(ss, "    "+bns[i])
 	}
-	addStringlet( &ss, fmt.Sprintf("    lfs: %s", n.lfs) )
-	
+	addStringlet(&ss, fmt.Sprintf("    lfs: %s", n.lfs))
+
 	cPriv, _ := xc.RSAPrivKeyToDisk(n.commsKey)
-	addStringlet(&ss, "    commsKey: " + string(cPriv))
+	addStringlet(&ss, "    commsKey: "+string(cPriv))
 
 	sPriv, _ := xc.RSAPrivKeyToDisk(n.sigKey)
-	addStringlet(&ss, "    sigKey: " + string(sPriv))
+	addStringlet(&ss, "    sigKey: "+string(sPriv))
 
 	addStringlet(&ss, "    endPoints {")
 	for i := 0; i < len(n.endPoints); i++ {
-		addStringlet(&ss, "        " + n.GetEndPoint(i).String())
+		addStringlet(&ss, "        "+n.GetEndPoint(i).String())
 	}
 	addStringlet(&ss, "    }")
-	
-	// peers 
+
+	// peers
 	addStringlet(&ss, "    peers {")
 	for i := 0; i < len(n.peers); i++ {
 		p := n.GetPeer(i).Strings()
 		for j := 0; j < len(p); j++ {
-			addStringlet(&ss, "        " + p[j])
+			addStringlet(&ss, "        "+p[j])
 		}
 	}
 	addStringlet(&ss, "    }")
-	
-	
+
 	// gateways ?
 
 	addStringlet(&ss, "}")
@@ -402,6 +412,138 @@ func (n *Node) Strings() []string {
 }
 func (n *Node) String() string {
 	return strings.Join(n.Strings(), "\n")
+}
+
+// Collect an RSA private key in string form.  Only call this if
+// '-----BEGIN -----' has already been seen
+
+func collectKey(rest *[]string) (key *rsa.PrivateKey, err error) {
+	ss := []string{"-----BEGIN -----"}
+	for {
+		// NOT ROBUST; should detect end of rest, blank line, any other errors
+		line := (*rest)[0]
+		*rest = (*rest)[1:]
+		ss = append(ss, line)
+		if line == "-----END -----" {
+			break
+		}
+	}
+	if err == nil {
+		text := strings.Join(ss, "\n")
+		key, err = xc.RSAPrivKeyFromDisk([]byte(text))
+	}
+	return
+}
+func Parse(s string) (node *Node, rest []string, err error) {
+	bn, rest, err := ParseBaseNode(s, "node")
+	if err == nil {
+		node = &Node{BaseNode: *bn}
+
+		line := nextLine(&rest)
+		parts := strings.Split(line, ": ")
+		if parts[0] == "lfs" {
+			node.lfs = strings.TrimSpace(parts[1])
+		} else {
+			fmt.Println("MISSING LFS")
+			err = NotASerializedNode
+		}
+
+		var commsKey, sigKey *rsa.PrivateKey
+		if err == nil {
+			// move some of this into collectKey() !
+			line = nextLine(&rest)
+			parts = strings.Split(line, ": ")
+			if parts[0] == "commsKey" && parts[1] == "-----BEGIN -----" {
+				commsKey, err = collectKey(&rest)
+				node.commsKey = commsKey
+			} else {
+				fmt.Println("MISSING OR ILL-FORMED COMMS_KEY")
+				err = NotASerializedNode
+			}
+		} // FOO
+
+		if err == nil {
+			// move some of this into collectKey() !
+			line = nextLine(&rest)
+			parts = strings.Split(line, ": ")
+			if parts[0] == "sigKey" && parts[1] == "-----BEGIN -----" {
+				sigKey, err = collectKey(&rest)
+				node.sigKey = sigKey
+			} else {
+				fmt.Println("MISSING OR ILL-FORMED SIG_KEY")
+				err = NotASerializedNode
+			}
+		} // FOO
+
+		// endPoints
+		if err == nil {
+			line = nextLine(&rest)
+			if line == "endPoints {" {
+				for {
+					line = nextLine(&rest)
+					if line == "}" {
+						// prepend := []string{line}
+						// rest = append(prepend, rest...)
+						break
+					}
+					var ep xt.EndPointI
+					ep, err = xt.ParseEndPoint(line)
+					if err != nil {
+						break
+					}
+					_, err = node.AddEndPoint(ep)
+					if err != nil {
+						break
+					}
+				}
+			} else {
+				fmt.Println("MISSING END_POINTS BLOCK")
+				fmt.Printf("    EXPECTED 'endPoints {', GOT: '%s'\n", line)
+				err = NotASerializedNode
+			}
+		}
+
+		// peers
+		if err == nil {
+			line = nextLine(&rest)
+			if line == "peers {" {
+				for {
+					line = strings.TrimSpace(rest[0])
+					if line == "}" { // ZZZ
+						break
+					}
+					var peer *Peer
+					peer, rest, err = parsePeerFromStrings(rest)
+					if err != nil {
+						break
+					}
+					_, err = node.AddPeer(peer)
+					if err != nil {
+						break
+					}
+				}
+			} else {
+				fmt.Println("MISSING PEERS BLOCK")
+				fmt.Printf("    EXPECTED 'peers {', GOT: '%s'\n", line)
+				err = NotASerializedNode
+			}
+			line = nextLine(&rest) // discard the ZZZ }
+
+		}
+		// gateways, but not yet
+
+		// expect closing brace for node {
+		// XXX we need an expect(&rest)
+
+		line = nextLine(&rest)
+		if line != "}" {
+			fmt.Printf("extra text at end of node declaration: '%s'\n", line)
+		}
+	}
+	if err != nil {
+		node = nil
+	}
+	return
 }
 
 // DIG SIGNER ///////////////////////////////////////////////////////

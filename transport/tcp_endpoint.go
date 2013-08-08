@@ -68,7 +68,7 @@ func (e *TcpEndPoint) Equal(any interface{}) bool {
 }
 
 func (e *TcpEndPoint) String() string {
-	return e.tcpAddr.String()
+	return "TcpEndPoint: " + e.tcpAddr.String()
 }
 
 func (e *TcpEndPoint) Transport() string {
