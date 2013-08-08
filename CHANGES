@@ -1,5 +1,9 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.3.0
+    2013-08-07
+        * node.Parse with lfs, keys, endPoints, overlays, peers 
+            tests successfully                                      SLOC 5152
 0.2.1
     2013-07-05
         * keep version data consistent with rnglib/rnglib.go
