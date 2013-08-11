@@ -68,7 +68,7 @@ func (x *XLatticeMsg_Op) UnmarshalJSON(data []byte) error {
 }
 
 type XLatticeMsg struct {
-	SeqN             *uint64 `protobuf:"varint,1,opt,name=seqN" json:"seqN,omitempty"`
+	MsgN             *uint64 `protobuf:"varint,1,opt,name=msgN" json:"msgN,omitempty"`
 	Id               []byte  `protobuf:"bytes,2,opt,name=id" json:"id,omitempty"`
 	Salt             []byte  `protobuf:"bytes,3,opt,name=salt" json:"salt,omitempty"`
 	Sig              []byte  `protobuf:"bytes,4,opt,name=sig" json:"sig,omitempty"`
@@ -88,9 +88,9 @@ func (m *XLatticeMsg) Reset()         { *m = XLatticeMsg{} }
 func (m *XLatticeMsg) String() string { return proto.CompactTextString(m) }
 func (*XLatticeMsg) ProtoMessage()    {}
 
-func (m *XLatticeMsg) GetSeqN() uint64 {
-	if m != nil && m.SeqN != nil {
-		return *m.SeqN
+func (m *XLatticeMsg) GetMsgN() uint64 {
+	if m != nil && m.MsgN != nil {
+		return *m.MsgN
 	}
 	return 0
 }

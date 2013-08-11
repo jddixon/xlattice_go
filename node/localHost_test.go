@@ -4,11 +4,15 @@ package node
 
 import (
 	"crypto/rsa"
+	"encoding/hex"
 	"fmt"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
+	"io/ioutil"
 	. "launchpad.net/gocheck"
+	"os"
+	"path"
 )
 
 var _ = fmt.Print
@@ -20,13 +24,26 @@ var _ = xo.NewIPOverlay
 // IP addresses 127.0.0.1:P, where P represents a system-assigned unique
 // port number.
 
-func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
-	if VERBOSITY > 0 {
-		fmt.Println("TEST_LOCAL_HOST_TCP_CLUSTER")
-	}
+// Accept connections from peers until a message is received on stopCh.
+// For each message received from a peer, calculate its SHA3-256 hash,
+// send that as a reply, and close the connection.  Send on stoppedCh
+// when all replies have been sent.
+func (s *XLSuite) nodeAsServer(c *C, node *Node, stopCh, stoppedCh chan bool) {
+
+}
+
+// Send Q messages to each peer, expecting to receive an SHA3-256 hash
+// back.  When all are received and verified, send on doneCh.
+
+func (s *XLSuite) nodeAsClient(c *C, node *Node, Q int, doneCh chan bool) {
+
+}
+
+// This creates LIVE acceptors!
+func (s *XLSuite) makeLocalHostCluster(c *C,
+	K int, rng *rnglib.PRNG) (nodes []*Node, accs []*xt.TcpAcceptor) {
+
 	var err error
-	const K = 5
-	rng := rnglib.MakeSimpleRNG()
 
 	// Create K nodes, each with a NodeID, two RSA private keys (sig and
 	// comms), and two RSA public keys.  Each node creates a TcpAcceptor
@@ -41,20 +58,21 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 		nodeIDs[i], err = NewNodeID(val)
 		c.Assert(err, Equals, nil)
 	}
-	nodes := make([]*Node, K)
-	accs := make([]*xt.TcpAcceptor, K)
+	nodes = make([]*Node, K)
+	accs = make([]*xt.TcpAcceptor, K)
 	accEndPoints := make([]*xt.TcpEndPoint, K)
 	for i := 0; i < K; i++ {
 		nodes[i], err = NewNew(names[i], nodeIDs[i])
 		c.Assert(err, Equals, nil)
 	}
-	defer func() {
-		for i := 0; i < K; i++ {
-			if accs[i] != nil {
-				accs[i].Close()
-			}
-		}
-	}()
+	// XXX We need this functionality
+	//	defer func() {
+	//		for i := 0; i < K; i++ {
+	//			if accs[i] != nil {
+	//				accs[i].Close()
+	//			}
+	//		}
+	//	}()
 
 	// Collect the nodeID, public keys, and listening address from each
 	// node.
@@ -139,9 +157,42 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 		c.Assert(nodes[i].SizeOverlays(), Equals, 1)
 		c.Assert(nodes[i].SizePeers(), Equals, K-1)
 	}
+	return // GEEP
+}
+
+func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_LOCAL_HOST_TCP_CLUSTER")
+	}
+	var err error
+	const K = 5
+	rng := rnglib.MakeSimpleRNG()
+	nodes, accs := s.makeLocalHostCluster(c, K, rng)
+
 	// AT THIS POINT we have K nodes, each with K-1 peers.
+	// Save the configurations
+	pathsToCfg := make([]string, K)
+	for i := 0; i < K; i++ {
+		hexNodeID := hex.EncodeToString(nodes[i].GetNodeID().Value())
+		pathsToCfg[i] = path.Join("tmp", hexNodeID, ".xlattice")
+
+		err = os.MkdirAll(pathsToCfg[i], 0755)
+		c.Assert(err, IsNil)
+		cfgFileName := path.Join(pathsToCfg[i], "config")
+
+		fmt.Printf("WRITING CONFIG FILE %s\n", cfgFileName)
+
+		cfg := nodes[i].String()
+		err = ioutil.WriteFile(cfgFileName, []byte(cfg), 0644)
+		c.Assert(err, IsNil)
+	}
 
 	// Start each node running in a separate goroutine.
+	doneCh := make(chan (bool), K)
+	stopCh := make(chan (bool), K)
+	stoppedCh := make(chan (bool), K)
+	_, _, _ = doneCh, stopCh, stoppedCh // DEBUG
+
 	// XXX STUB XXX
 
 	// Each node will in a somewhat randomized fashion send N messages
@@ -162,6 +213,7 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 
 	// When the supervisor has received stopped signals from all nodes,
 	// it summarize results and terminates.
+	// XXX STUB XXX
 
 	for i := 0; i < K; i++ {
 		accs[i].Close()

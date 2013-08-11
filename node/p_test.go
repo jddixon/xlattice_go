@@ -20,16 +20,16 @@ func (d *XLSuite) TestXLatticePkt(c *C) {
 
 	rng := rnglib.MakeSimpleRNG()
 
-	mySeqN := uint64(rng.Int63())
-	for mySeqN == 0 { // must not be zero
-		mySeqN = uint64(rng.Int63())
+	myMsgN := uint64(rng.Int63())
+	for myMsgN == 0 { // must not be zero
+		myMsgN = uint64(rng.Int63())
 	}
 
 	id := make([]byte, 32) // sha3 length
 	rng.NextBytes(&id)     // random bytes
 
 	seqBuf := new(bytes.Buffer)
-	binary.Write(seqBuf, binary.LittleEndian, mySeqN)
+	binary.Write(seqBuf, binary.LittleEndian, myMsgN)
 
 	msgLen := 64 + rng.Intn(64)
 	msg := make([]byte, msgLen)
@@ -50,7 +50,7 @@ func (d *XLSuite) TestXLatticePkt(c *C) {
 	// since it has a payload it must be a Put, and so the id is
 	// also required and the Hash field should be a Sig instead, right?
 	var pkt = XLatticeMsg{
-		SeqN:    &mySeqN,
+		MsgN:    &myMsgN,
 		Payload: msg,
 		Salt:    salt,
 		Hash:    hash,
@@ -59,8 +59,8 @@ func (d *XLSuite) TestXLatticePkt(c *C) {
 	// In each of these cases, the test proves that the field
 	// was present; otherwise the 'empty' value (zero, nil, etc)
 	// would have been returned.
-	seqNOut := pkt.GetSeqN()
-	c.Assert(seqNOut, Equals, mySeqN)
+	msgNOut := pkt.GetMsgN()
+	c.Assert(msgNOut, Equals, myMsgN)
 
 	msgOut := pkt.GetPayload()
 	d.compareByteSlices(c, msgOut, msg)

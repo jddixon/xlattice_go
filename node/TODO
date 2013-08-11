@@ -1,7 +1,23 @@
 xlattice_go/node/TODO
 
+2013-08-10
+    * implement node.Save() and node.Load()
+    * if a node is started with only the name, id, and lfs 
+        specified, it should load its configuration from say 
+        LFS/.xlattice/config
+    * LFS will conventionally be ./tmp/nodeID/ in testing, where 
+        the nodeID is in hex
+   
+    * extract localHost cluster configuration from localHost_test
+
+    * extend localHostTest so that after configurations have
+        been saved, all of the nodes in the cluster are shut 
+        down and then all are restarted from their saved 
+        configurations.  The save-and-reload should precede
+        the communications checks.
+
 2013-08-07
-    * problem with deserializing node: the listener is live
+    * problem with deserializing node: the listener is live         # FIXED
 
 2013-08-02
     * lfs is a path; it must be filtered accordingly
@@ -10,17 +26,6 @@ xlattice_go/node/TODO
         - first version of parser can be quite strict
         - eventually should be syntactically liberal when
             parsing (although strict when writing)
-
-    * ParsePeer will require overlay.Parse()                        # DONE
-    * and transport.ParseConnector                                  # DONE
-    * need node.Strings(), node.String()                            # DONE
-    * and node.Parse()
-    * and from these node.Save() and node.Load()
-        - if a node is started with only the name, id, and lfs 
-            specified, it should load its configuration from say 
-            LFS/.xlattice/config
-        - LFS will conventionally be ./tmp/nodeID/ in testing, 
-            where the nodeID is in hex
 
 2013-07-30
     * p_test.go should be done over the wire, so to speak; that

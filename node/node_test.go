@@ -244,7 +244,6 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 	}
 	// we now have a node with K peers
 	serialized := node.String()
-	fmt.Printf("SERIALIZED NODE WITH PEERS:\n%s\n", serialized)
 
 	// we can't deserialize the node - it contains live acceptors!
 	for i := 0; i < node.SizeAcceptors(); i++ {
