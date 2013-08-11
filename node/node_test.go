@@ -207,9 +207,11 @@ func (s *XLSuite) peerFromHost(c *C, n *Node) (peer *Peer) {
 
 	return peer
 }
+
+// Creates a dummy endPoint.  This is not a real endPoint, it's only
+// for use in testing.  It may not be unique.
 func (s *XLSuite) makeAnEndPoint(c *C, rng *rnglib.PRNG, node *Node) {
-	// XXX these may not be unique
-	port := rng.Intn(256 * 256)
+	port := 1024 + rng.Intn(256*256-1024)
 	addr := fmt.Sprintf("127.0.0.1:%d", port)
 	ep, err := xt.NewTcpEndPoint(addr)
 	c.Assert(err, IsNil)

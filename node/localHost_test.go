@@ -3,12 +3,10 @@ package node
 // xlattice_go/node/localHost_test.go
 
 import (
-	"crypto/rsa"
 	"encoding/hex"
 	"fmt"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	"github.com/jddixon/xlattice_go/rnglib"
-	xt "github.com/jddixon/xlattice_go/transport"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"os"
@@ -29,135 +27,14 @@ var _ = xo.NewIPOverlay
 // send that as a reply, and close the connection.  Send on stoppedCh
 // when all replies have been sent.
 func (s *XLSuite) nodeAsServer(c *C, node *Node, stopCh, stoppedCh chan bool) {
-
+	// XXX STUB XXX
 }
 
 // Send Q messages to each peer, expecting to receive an SHA3-256 hash
 // back.  When all are received and verified, send on doneCh.
 
 func (s *XLSuite) nodeAsClient(c *C, node *Node, Q int, doneCh chan bool) {
-
-}
-
-// This creates LIVE acceptors!
-func (s *XLSuite) makeLocalHostCluster(c *C,
-	K int, rng *rnglib.PRNG) (nodes []*Node, accs []*xt.TcpAcceptor) {
-
-	var err error
-
-	// Create K nodes, each with a NodeID, two RSA private keys (sig and
-	// comms), and two RSA public keys.  Each node creates a TcpAcceptor
-	// running on 127.0.0.1 and a random (= system-supplied) port.
-	names := make([]string, K)
-	nodeIDs := make([]*NodeID, K)
-	for i := 0; i < K; i++ {
-		// XXX NAMES MUST BE UNIQUE
-		names[i] = rng.NextFileName(4)
-		val := make([]byte, SHA1_LEN)
-		rng.NextBytes(&val)
-		nodeIDs[i], err = NewNodeID(val)
-		c.Assert(err, Equals, nil)
-	}
-	nodes = make([]*Node, K)
-	accs = make([]*xt.TcpAcceptor, K)
-	accEndPoints := make([]*xt.TcpEndPoint, K)
-	for i := 0; i < K; i++ {
-		nodes[i], err = NewNew(names[i], nodeIDs[i])
-		c.Assert(err, Equals, nil)
-	}
-	// XXX We need this functionality
-	//	defer func() {
-	//		for i := 0; i < K; i++ {
-	//			if accs[i] != nil {
-	//				accs[i].Close()
-	//			}
-	//		}
-	//	}()
-
-	// Collect the nodeID, public keys, and listening address from each
-	// node.
-
-	// all nodes on the same overlay
-	ar, err := xo.NewCIDRAddrRange("127.0.0.0/8")
-	c.Assert(err, Equals, nil)
-	overlay, err := xo.NewIPOverlay("XO", ar, "tcp", 1.0)
-	c.Assert(err, Equals, nil)
-
-	// add an endpoint to each node
-	for i := 0; i < K; i++ {
-		ep, err := xt.NewTcpEndPoint("127.0.0.1:0")
-		c.Assert(err, Equals, nil)
-		ndx, err := nodes[i].AddEndPoint(ep)
-		c.Assert(err, Equals, nil)
-		c.Assert(ndx, Equals, 0)
-		endPoint := nodes[i].GetEndPoint(0).(*xt.TcpEndPoint)
-		accs[i] = nodes[i].GetAcceptor(0).(*xt.TcpAcceptor)
-		accEndPoints[i] = accs[i].GetEndPoint().(*xt.TcpEndPoint)
-		myAccEnd := accEndPoints[i]
-		c.Assert(endPoint.Equal(myAccEnd), Equals, true) // FAILS
-
-		// adding the endPoint added an acceptor and an overlay
-		c.Assert(nodes[i].SizeEndPoints(), Equals, 1)
-		c.Assert(nodes[i].SizeAcceptors(), Equals, 1)
-		c.Assert(nodes[i].SizeOverlays(), Equals, 1) // FAILS
-
-		// XXX we should verify that each node has the same overlay
-		// as calculated above
-
-	}
-
-	commsKeys := make([]*rsa.PublicKey, K)
-	sigKeys := make([]*rsa.PublicKey, K)
-	ctors := make([]*xt.TcpConnector, K)
-
-	for i := 0; i < K; i++ {
-		// we have nodeIDs
-		commsKeys[i] = nodes[i].GetCommsPublicKey()
-		sigKeys[i] = nodes[i].GetSigPublicKey()
-		ctors[i], err = xt.NewTcpConnector(accEndPoints[i])
-		c.Assert(err, Equals, nil)
-	}
-
-	overlaySlice := []xo.OverlayI{overlay}
-	peers := make([]*Peer, K)
-	for i := 0; i < K; i++ {
-		ctorSlice := []xt.ConnectorI{ctors[i]}
-		_ = ctorSlice
-		peers[i], err = NewPeer(names[i], nodeIDs[i], commsKeys[i], sigKeys[i],
-			overlaySlice, ctorSlice)
-		c.Assert(err, Equals, nil)
-	}
-
-	// Use the information collected to configure each node.
-	for i := 0; i < K; i++ {
-		// This is not necessary, because the overlay should have
-		// been auto-created by AddEndPoint()
-		ndx, err := nodes[i].AddOverlay(overlay)
-		c.Assert(err, Equals, nil)
-		c.Assert(ndx, Equals, 0)
-		// Despite our adding an overlay, the count hasn't changed.
-		c.Assert(nodes[i].SizeOverlays(), Equals, 1)
-		for j := 0; j < K; j++ {
-			if i != j {
-				ndx, err := nodes[i].AddPeer(peers[j])
-				c.Assert(err, Equals, nil)
-				var expectedNdx int
-				if j < i {
-					expectedNdx = j
-				} else {
-					expectedNdx = j - 1
-				}
-				c.Assert(ndx, Equals, expectedNdx)
-			}
-		}
-		c.Assert(nodes[i].SizeAcceptors(), Equals, 1)
-		// XXX NOT IMPLEMENTED !
-		// c.Assert(nodes[i].SizeConnectors(),Equals, K-1)
-		c.Assert(nodes[i].SizeEndPoints(), Equals, 1)
-		c.Assert(nodes[i].SizeOverlays(), Equals, 1)
-		c.Assert(nodes[i].SizePeers(), Equals, K-1)
-	}
-	return // GEEP
+	// XXX STUB XXX
 }
 
 func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
@@ -167,7 +44,16 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 	var err error
 	const K = 5
 	rng := rnglib.MakeSimpleRNG()
-	nodes, accs := s.makeLocalHostCluster(c, K, rng)
+	_ = rng // XXX
+
+	nodes, accs := MockLocalHostCluster(K)
+	defer func() {
+		for i := 0; i < K; i++ {
+			if accs[i] != nil {
+				accs[i].Close()
+			}
+		}
+	}()
 
 	// AT THIS POINT we have K nodes, each with K-1 peers.
 	// Save the configurations
@@ -215,7 +101,4 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 	// it summarize results and terminates.
 	// XXX STUB XXX
 
-	for i := 0; i < K; i++ {
-		accs[i].Close()
-	}
 }
