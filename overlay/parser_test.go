@@ -4,7 +4,6 @@ package overlay
 
 import (
 	"fmt"
-	x "github.com/jddixon/xlattice_go"
 	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 	"regexp"
@@ -26,7 +25,7 @@ func (s *XLSuite) getAName(rng *rnglib.PRNG) (name string) {
 }
 func (s *XLSuite) TestParser(c *C) {
 	// fmt.Println("TEST_PARSER")
-	rng := x.MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	for i := 0; i < 16; i++ {
 		s.doTestParser(c, rng)
 	}

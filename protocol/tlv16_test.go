@@ -2,7 +2,7 @@ package protocol
 
 import (
 	// "fmt"
-	x "github.com/jddixon/xlattice_go"
+	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 	"testing"
 )
@@ -17,7 +17,7 @@ var _ = Suite(&XLSuite{})
 // end gocheck setup //////////////////
 
 func (s *XLSuite) TestConstructors(c *C) {
-	rng := x.MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	tType := uint16(rng.NextInt32(256 * 256))
 
 	const BUF_SIZE = 16
@@ -36,7 +36,7 @@ func (s *XLSuite) TestConstructors(c *C) {
 }
 
 func (s *XLSuite) TestCFields(c *C) {
-	rng := x.MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	tType := uint16(rng.NextInt32(256 * 256))
 
 	const BUF_SIZE = 16
@@ -65,7 +65,7 @@ func (s *XLSuite) TestCFields(c *C) {
 func (s *XLSuite) TestReadWrite(c *C) {
 	const COUNT = 16
 	const MAX_TYPE = 128
-	rng := x.MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	for i := 0; i < COUNT; i++ {
 		tType := uint16(rng.NextInt32(MAX_TYPE))
 		bufLen := 4 * (1 + int(rng.NextInt32(16)))

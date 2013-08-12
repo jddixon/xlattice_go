@@ -4,7 +4,7 @@ package overlay
 
 import (
 	"fmt"
-	x "github.com/jddixon/xlattice_go"
+	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 	"net"
@@ -13,7 +13,7 @@ import (
 var _ = fmt.Print
 
 func (s *XLSuite) TestCtor(c *C) {
-	rng := x.MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	name := rng.NextFileName(8)
 
 	o, err := NewIPOverlay(name, nil, "tcpip", 0.42)
@@ -25,7 +25,7 @@ func (s *XLSuite) TestCtor(c *C) {
 }
 
 func (s *XLSuite) TestIsElement(c *C) {
-	rng := x.MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	name := rng.NextFileName(8)
 	p10_8 := net.ParseIP("10.0.0.0")[12:]
 	a10_8, err := NewAddrRange(p10_8, 8, 32)
@@ -69,7 +69,7 @@ func (s *XLSuite) TestIsElement(c *C) {
 
 // same test using NewCIDRAddrRange()
 func (s *XLSuite) TestIsElement2(c *C) {
-	rng := x.MakeSimpleRNG()
+	rng := rnglib.MakeSimpleRNG()
 	name := rng.NextFileName(8)
 	a10_8, err := NewCIDRAddrRange("10.0.0.0/8")
 	c.Assert(err, IsNil)

@@ -28,6 +28,16 @@ var _ = xo.NewIPOverlay
 // when all replies have been sent.
 func (s *XLSuite) nodeAsServer(c *C, node *Node, stopCh, stoppedCh chan bool) {
 	// XXX STUB XXX
+	// select
+	//	cnx <- acceptor
+	//		go
+	//			read
+	//			calculate hash
+	//			send hash
+	//			close cnx
+	//	stopCh <-
+	//		stoppedCh <- true
+	//
 }
 
 // Send Q messages to each peer, expecting to receive an SHA3-256 hash
@@ -35,6 +45,17 @@ func (s *XLSuite) nodeAsServer(c *C, node *Node, stopCh, stoppedCh chan bool) {
 
 func (s *XLSuite) nodeAsClient(c *C, node *Node, Q int, doneCh chan bool) {
 	// XXX STUB XXX
+	//	for i := 0; i < Q; i++
+	//		for j := 0; j < K; j++
+	//			if j == myNdx
+	//				continue
+	//			open cnx to peer j
+	//			make msg, random length, random content
+	//			send msg
+	//			calculate hash
+	//			wait for reply
+	//			complain if hash differs from reply
+	//	doneCh <- true
 }
 
 func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
