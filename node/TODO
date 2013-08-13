@@ -1,12 +1,22 @@
 xlattice_go/node/TODO
 
+2013-08-12
+    * In order to force an orderly shutdown of a Node, it must be
+        doing something.  In other words, we need a set of commands
+        which take a node through a series of states: probably
+        Load(), Run(), Close(), Shutdown(), and Save(), where the
+        third closes all connections and the fourth releases other
+        resources.  This approach precludes or at least constrains
+        controlling a node through one of those connections.
+
 2013-08-10
     * implement node.Save() and node.Load()
+        - Save() is not just a SnapShot(): it forces an orderly
+            shutdown of the node
+
     * if a node is started with only the name, id, and lfs 
         specified, it should load its configuration from say 
         LFS/.xlattice/config
-    * LFS will conventionally be ./tmp/nodeID/ in testing, where 
-        the nodeID is in hex
    
     * extract localHost cluster configuration from localHost_test
 
@@ -15,9 +25,6 @@ xlattice_go/node/TODO
         down and then all are restarted from their saved 
         configurations.  The save-and-reload should precede
         the communications checks.
-
-2013-08-07
-    * problem with deserializing node: the listener is live         # FIXED
 
 2013-08-02
     * lfs is a path; it must be filtered accordingly
@@ -31,21 +38,12 @@ xlattice_go/node/TODO
     * p_test.go should be done over the wire, so to speak; that
         is, between two 127.0.0.1 endpoints
     * the protocol must be documented
-    * add local file system = path to my private area on disk       # DONE
-        for node 
-        - need test of this capability
     * integrating gateways into node requires ability to create
         composite connections
         - Gateway extends Node
-    * from 07-16: need peer_test.go                                 # DONE
     * need UDP transport
 
 2013-07-29
-    * Adding a peer must add at least one connector
-    * Need a simple protocol to allow nodes to talk to each other   # DONE
-    * Change Peer, replacing list of connectors in NewPeer 
-        parameters with list of endpoints (from which we determine 
-        connectors)
     * Node.Close must close all open connections 
         - take care, servers may have MANY such connections
             * could put each Close() in separate goroutine
