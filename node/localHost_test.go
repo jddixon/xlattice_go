@@ -24,7 +24,7 @@ const (
 	MAX_LEN = 2048
 	// SHA1_LEN	= 20		// declared elsewhere
 	// SHA3_LEN	= 32
-	Q = 16
+	Q = 64 // "too many open files" if 64
 )
 
 var (
@@ -76,13 +76,13 @@ func (s *XLSuite) nodeAsServer(c *C, node *Node, stopCh, stoppedCh chan bool) {
 	stoppedCh <- true
 }
 
-// Send Q messages to each peer, expecting to receive an SHA1 hash
+// Send q messages to each peer, expecting to receive an SHA1 hash
 // back.  When all are received and verified, send on doneCh.
 
-func (s *XLSuite) nodeAsClient(c *C, node *Node, Q int, doneCh chan bool) {
+func (s *XLSuite) nodeAsClient(c *C, node *Node, q int, doneCh chan bool) {
 	P := node.SizePeers()
 
-	for i := 0; i < Q; i++ {
+	for i := 0; i < q; i++ {
 		for j := 0; j < P; j++ {
 			go func(j int) {
 				var err error

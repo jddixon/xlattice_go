@@ -7,6 +7,7 @@ import (
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"strings"
+	"sync"
 )
 
 var (
@@ -19,6 +20,9 @@ var (
 
 type Peer struct {
 	connectors []xt.ConnectorI // to reach the peer
+	timeout    int64           // ns from epoch
+	prev       int64           // last contact from this peer, ns from epoch
+	mu         sync.Mutex
 	BaseNode
 }
 
@@ -40,7 +44,7 @@ func NewPeer(name string, id *NodeID,
 				ctors = append(ctors, c[i])
 			}
 		}
-		p := Peer{ctors, *baseNode}
+		p := Peer{connectors: ctors, BaseNode: *baseNode}
 		return &p, nil // FOO
 	} else {
 		return nil, err
@@ -158,7 +162,7 @@ func collectConnectors(peer *Peer, ss []string) (rest []string, err error) {
 func ParsePeer(s string) (peer *Peer, rest []string, err error) {
 	bn, rest, err := ParseBaseNode(s, "peer")
 	if err == nil {
-		peer = &Peer{nil, *bn}
+		peer = &Peer{BaseNode: *bn}
 		rest, err = collectConnectors(peer, rest)
 	}
 	return
@@ -166,7 +170,7 @@ func ParsePeer(s string) (peer *Peer, rest []string, err error) {
 func parsePeerFromStrings(ss []string) (peer *Peer, rest []string, err error) {
 	bn, rest, err := parseBNFromStrings(ss, "peer")
 	if err == nil {
-		peer = &Peer{nil, *bn}
+		peer = &Peer{BaseNode: *bn}
 		rest, err = collectConnectors(peer, rest)
 	}
 	return

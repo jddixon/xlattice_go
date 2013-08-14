@@ -201,7 +201,7 @@ func (s *XLSuite) peerFromHost(c *C, n *Node) (peer *Peer) {
 		ctors[i], err = xt.NewTcpConnector(n.GetEndPoint(i))
 		c.Assert(err, Equals, nil)
 	}
-	peer = &Peer{ctors, n.BaseNode}
+	peer = &Peer{connectors: ctors, BaseNode: n.BaseNode}
 	//peer.commsPubKey =  n.GetCommsPublicKey()
 	//peer.sigPubKey	 =  n.GetSigPublicKey()
 

@@ -1,5 +1,21 @@
 xlattice_go/node/TODO
 
+2013-08-13
+    * localHost_test.go crashes complaining about open files if 
+        Q is set to 64 (it's OK with Q = 16 or Q = 32), in each 
+        case taking about 29 sec.  cat /proc/sys/fs/file-max 
+        returns 3241704.  I should be opening about 5*4*Q 
+        connections, 1280, a tiny number. 
+        - found system was setting a limit of 1024.  Jumped this to 16K.
+        - nevertheless, still getting this error
+            * rebooting doesn't help
+            * I get 916 "too many open files" messages in a single
+                run with Q=64
+        - running as root after setting ulimit -n 16384 everything works
+        - on Ubuntu /etc/security/limits.conf add
+            * soft nofile 16384
+            * hard nofile 65536
+
 2013-08-12
     * In order to force an orderly shutdown of a Node, it must be
         doing something.  In other words, we need a set of commands
@@ -8,6 +24,17 @@ xlattice_go/node/TODO
         third closes all connections and the fourth releases other
         resources.  This approach precludes or at least constrains
         controlling a node through one of those connections.
+
+    * While the test is running, CPU usage goes up to 100% - 
+        which would seem to mean it's only using 1 CPU out of the
+        8 available.  Not good.
+
+    * while the test was running lsof | wc -l returned 4735
+        - after the test it returned 4710 or so for quite some time
+
+    * FWIW free memory was about 26 GB before, during, and after the test
+
+    * edited /etc/security/limits.conf, no benefit, may require reboot
 
 2013-08-10
     * implement node.Save() and node.Load()
