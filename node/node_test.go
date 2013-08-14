@@ -40,7 +40,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	c.Assert(privCommsKey.Validate(), IsNil)
 
 	expLen := (*privCommsKey.D).BitLen()
-	if VERBOSITY > 0 {
+	if VERBOSITY > 1 {
 		fmt.Printf("bit length of private key exponent is %d\n", expLen)
 	}
 	// 2037 seen at least once
@@ -56,7 +56,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	c.Assert(privSigKey.Validate(), IsNil)
 
 	expLen = (*privSigKey.D).BitLen()
-	if VERBOSITY > 0 {
+	if VERBOSITY > 1 {
 		fmt.Printf("bit length of private key exponent is %d\n", expLen)
 	}
 	// lowest value seen as of 2013-07-16 was 2039
