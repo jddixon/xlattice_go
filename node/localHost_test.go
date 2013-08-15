@@ -24,7 +24,7 @@ const (
 	MAX_LEN = 2048
 	// SHA1_LEN	= 20		// declared elsewhere
 	// SHA3_LEN	= 32
-	Q = 32 // "too many open files" if 64
+	Q = 64 // "too many open files" if 64
 )
 
 var (

@@ -1,18 +1,8 @@
 xlattice_go/node/TODO
 
-2013-08-13
-    * localHost_test.go crashes complaining about open files if 
-        Q is set to 64 (it's OK with Q = 16 or Q = 32), in each 
-        case taking about 29 sec.  cat /proc/sys/fs/file-max 
-        returns 3241704.  I should be opening about 5*4*Q 
-        connections, 1280, a tiny number. 
-        - found system was setting a limit of 1024.  Jumped this to 16K.
-        - nevertheless, still getting this error
-            * rebooting doesn't help
-            * I get 916 "too many open files" messages in a single
-                run with Q=64
-        - running as root after setting ulimit -n 16384 everything works
-        - on Ubuntu /etc/security/limits.conf add
+2013-08-15
+    * document this: running localHost_test.go with Q=64 now just works 
+        - on Ubuntu edit /etc/security/limits.conf adding
             * soft nofile 16384
             * hard nofile 65536
 

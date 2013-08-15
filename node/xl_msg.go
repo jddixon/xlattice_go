@@ -29,7 +29,7 @@ import (
 
 type MsgQueue struct {
 	first    *MsgCarrier
-	nextSeqN uint64
+	nextMsgN uint64
 	t        int64 // ns
 	mu       sync.Mutex
 }

@@ -4,8 +4,8 @@ message XLatticeMsg {
     enum Op {
         Hello       = 1;    // first msg, initiates comms cycle
         Bye         = 2;    // ends comms cycle
-        KeepAlive   = 3;    // seqn, id, opt salt, opt sig
-        Ack         = 4;    // above plus yourSeqN, yourID
+        KeepAlive   = 3;    // msgN, id, opt salt, opt sig
+        Ack         = 4;    // above plus yourMsgN, yourID
         Error       = 5;    // above plus errCode, errDesc
         Get         = 6;    // like KeepAlive plus hash
         Put         = 7;    // above plus payload
@@ -16,7 +16,7 @@ message XLatticeMsg {
     optional bytes  id          = 3;
     optional bytes  salt        = 4;
     optional bytes  sig         = 5;
-    optional uint64 yourSeqN	= 6;
+    optional uint64 yourMsgN	= 6;
     optional bytes  yourID		= 7;
     optional uint64 errCode     = 8;
     optional string errDesc     = 9;

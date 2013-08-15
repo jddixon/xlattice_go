@@ -10,6 +10,7 @@ import (
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
+    "runtime"
 	"strings"
 	"time"
 )
@@ -56,10 +57,11 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	c.Assert(privSigKey.Validate(), IsNil)
 
 	expLen = (*privSigKey.D).BitLen()
-	if VERBOSITY > 1 {
+	if VERBOSITY > -1 {
 		fmt.Printf("bit length of private key exponent is %d\n", expLen)
 	}
 	// lowest value seen as of 2013-07-16 was 2039
+    // XXX This test on 2038 seen to fail 2013-08-15.
 	c.Assert(true, Equals, (2038 <= expLen) && (expLen <= 2048))
 
 	c.Assert(privSigKey.PublicKey, Equals, *sigPubKey) // FOO
@@ -260,4 +262,13 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 
 	reserialized := backAgain.String()
 	c.Assert(reserialized, Equals, serialized)
+}
+func (s *XLSuite) TestRuntime(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_RUN_TIME")
+	}
+    const SET_TO = 8
+    was := runtime.GOMAXPROCS(SET_TO)
+    fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, SET_TO)
+    fmt.Printf("Number of CPUs: %d\n", runtime.NumCPU())
 }
