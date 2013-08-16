@@ -13,6 +13,7 @@ import (
 	. "launchpad.net/gocheck"
 	"os"
 	"path"
+	"runtime"
 	"time"
 )
 
@@ -87,12 +88,19 @@ func (s *XLSuite) nodeAsClient(c *C, node *Node, q int, doneCh chan bool) {
 			go func(j int) {
 				var err error
 				var count int
+				var cnx xt.ConnectionI
 				rng := rnglib.MakeSimpleRNG()
 
 				// open cnx to peer j
 				peer := node.GetPeer(j)
 				ctor := peer.GetConnector(0)
-				cnx, err := ctor.Connect(ANY_END_POINT)
+				for soFar := 0; soFar < 3; soFar++ {
+					cnx, err = ctor.Connect(ANY_END_POINT)
+					if err == nil {
+						break
+					}
+					time.Sleep(time.Millisecond)
+				}
 				c.Assert(err, Equals, nil)
 				c.Assert(cnx, Not(IsNil))
 				defer cnx.Close()
@@ -134,6 +142,11 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_LOCAL_HOST_TCP_CLUSTER")
 	}
+	// XXX EXPERIMENT - I sometimes get panics if == 4 or 5, always if > 5
+	was := runtime.GOMAXPROCS(1)
+	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, 1)
+	// END EXPERIMENT
+
 	var err error
 	const K = 5
 	var doneCh, stopCh, stoppedCh []chan (bool)

@@ -5,7 +5,38 @@ xlattice_go/node/TODO
         - on Ubuntu edit /etc/security/limits.conf adding
             * soft nofile 16384
             * hard nofile 65536
+        - Panicked on test; then made the above change, rebooted, and
+            tried again.  Succeeded as normal user.
+    * Added code to set MAXPROC to 8 at the beginning of each unit 
+        test.  Definitely improved cpu usage as reported by top,
+        usually by 2 or 3% but peak usage went from 100% to 127%
+        on a 2-cpu system (not yet tested on 4-cpu).  However, 
+        local_host_test line 96 now blows up with
+        "connection reset by peer" within nodeAsClient(), invoked
+        by TestLocalHostTcpCluster().
+        - if I reset MAXPROC to 1 or 2, the test succeeds :-)
+        - at MAXPROC of 3 to 5 it sometimes blows up; higher 
+            values seem to always blow up
+        - if I do two test runs at the same time, both blow up
+            * this suggests that Go multi-threading is not safe
+        - if I run six tests simultaneouwly by detaching with
+            ampersand, at least one blows up with connection
+            errors.  CPU usage is good, totalling about 200% 
+            with 2 cores.
+        - I ran eight tests simultaneously: 1 failed with connection
+            errors, 2 failed because a listening address was already
+            in use when deserializing 
+        _ Reran 8 detached, 1 failed with "connection reset by peer"
+        _ Reran 8 detached, 1 failed with 'address already in use'
+            in serialization/deserialization test
 
+    * If possible, modify tests to cope with these problems.  This  # DONE!
+        probably means wait-and-retry on both 'address already
+        in use' and 'connection reset by peer'.  In the first case
+        we already wait 50 ms after closing acceptors; we could
+        just increase this.
+            - edited node_test.go      (delay 10 more ms)
+            - edited localHost_test.go (retries up to 3x)
 2013-08-12
     * In order to force an orderly shutdown of a Node, it must be
         doing something.  In other words, we need a set of commands
@@ -23,6 +54,7 @@ xlattice_go/node/TODO
         - after the test it returned 4710 or so for quite some time
 
     * FWIW free memory was about 26 GB before, during, and after the test
+        (on a 8-core system with 32 GB of RAM)
 
     * edited /etc/security/limits.conf, no benefit, may require reboot
 

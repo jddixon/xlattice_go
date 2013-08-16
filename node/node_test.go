@@ -10,13 +10,14 @@ import (
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
-    "runtime"
+	"runtime"
 	"strings"
 	"time"
 )
 
 const (
-	VERBOSITY = 1
+	VERBOSITY       = 1
+	SET_MAX_PROC_TO = 1 // = 8
 )
 
 func makeNodeID(rng *rnglib.PRNG) (*NodeID, error) {
@@ -31,7 +32,6 @@ func makeNodeID(rng *rnglib.PRNG) (*NodeID, error) {
 	return NewNodeID(buffer)
 }
 
-// func doKeyTests(t *testing.T, node *Node, rng *SimpleRNG) {
 func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	// COMMS KEY
 	commsPubKey := node.GetCommsPublicKey()
@@ -41,7 +41,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	c.Assert(privCommsKey.Validate(), IsNil)
 
 	expLen := (*privCommsKey.D).BitLen()
-	if VERBOSITY > 1 {
+	if VERBOSITY > 0 {
 		fmt.Printf("bit length of private key exponent is %d\n", expLen)
 	}
 	// 2037 seen at least once
@@ -61,7 +61,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 		fmt.Printf("bit length of private key exponent is %d\n", expLen)
 	}
 	// lowest value seen as of 2013-07-16 was 2039
-    // XXX This test on 2038 seen to fail 2013-08-15.
+	// XXX This test on 2038 seen to fail 2013-08-15.
 	c.Assert(true, Equals, (2038 <= expLen) && (expLen <= 2048))
 
 	c.Assert(privSigKey.PublicKey, Equals, *sigPubKey) // FOO
@@ -111,6 +111,15 @@ func (s *XLSuite) nilArgCheck(c *C) {
 
 // END OF TODO
 
+func (s *XLSuite) TestRuntime(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_RUN_TIME")
+	}
+	was := runtime.GOMAXPROCS(SET_MAX_PROC_TO)
+	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, SET_MAX_PROC_TO)
+	fmt.Printf("Number of CPUs: %d\n", runtime.NumCPU())
+}
+
 func (s *XLSuite) TestNewConstructor(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_NEW_CONSTRUCTOR")
@@ -135,6 +144,9 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_AUTO_CREATE_OVERLAYS")
 	}
+	was := runtime.GOMAXPROCS(SET_MAX_PROC_TO)
+	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, SET_MAX_PROC_TO)
+
 	rng := rnglib.MakeSimpleRNG()
 	name := rng.NextFileName(4)
 	id, err := makeNodeID(rng)
@@ -226,6 +238,9 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_NODE_SERIALIZATION")
 	}
+	was := runtime.GOMAXPROCS(SET_MAX_PROC_TO)
+	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, SET_MAX_PROC_TO)
+
 	rng := rnglib.MakeSimpleRNG()
 
 	node := s.makeHost(c, rng)
@@ -254,7 +269,7 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 		node.GetAcceptor(i).Close()
 	}
 	// XXX parse succeeds if we sleep 100ms, fails if we sleep 10ms
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(60 * time.Millisecond)
 
 	backAgain, rest, err := Parse(serialized)
 	c.Assert(err, IsNil)
@@ -262,13 +277,4 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 
 	reserialized := backAgain.String()
 	c.Assert(reserialized, Equals, serialized)
-}
-func (s *XLSuite) TestRuntime(c *C) {
-	if VERBOSITY > 0 {
-		fmt.Println("TEST_RUN_TIME")
-	}
-    const SET_TO = 8
-    was := runtime.GOMAXPROCS(SET_TO)
-    fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, SET_TO)
-    fmt.Printf("Number of CPUs: %d\n", runtime.NumCPU())
 }
