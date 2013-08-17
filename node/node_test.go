@@ -17,7 +17,7 @@ import (
 
 const (
 	VERBOSITY       = 1
-	SET_MAX_PROC_TO = 1 // = 8
+	MY_MAX_PROC = 2     // should be OK for test, a 2-core machine
 )
 
 func makeNodeID(rng *rnglib.PRNG) (*NodeID, error) {
@@ -115,8 +115,8 @@ func (s *XLSuite) TestRuntime(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_RUN_TIME")
 	}
-	was := runtime.GOMAXPROCS(SET_MAX_PROC_TO)
-	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, SET_MAX_PROC_TO)
+	was := runtime.GOMAXPROCS(MY_MAX_PROC)
+	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, MY_MAX_PROC)
 	fmt.Printf("Number of CPUs: %d\n", runtime.NumCPU())
 }
 
@@ -144,8 +144,8 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_AUTO_CREATE_OVERLAYS")
 	}
-	was := runtime.GOMAXPROCS(SET_MAX_PROC_TO)
-	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, SET_MAX_PROC_TO)
+	was := runtime.GOMAXPROCS(MY_MAX_PROC)
+	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, MY_MAX_PROC)
 
 	rng := rnglib.MakeSimpleRNG()
 	name := rng.NextFileName(4)
@@ -238,8 +238,8 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_NODE_SERIALIZATION")
 	}
-	was := runtime.GOMAXPROCS(SET_MAX_PROC_TO)
-	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, SET_MAX_PROC_TO)
+	was := runtime.GOMAXPROCS(MY_MAX_PROC)
+	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, MY_MAX_PROC)
 
 	rng := rnglib.MakeSimpleRNG()
 

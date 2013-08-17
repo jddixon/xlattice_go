@@ -143,8 +143,8 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 		fmt.Println("TEST_LOCAL_HOST_TCP_CLUSTER")
 	}
 	// XXX EXPERIMENT - I sometimes get panics if == 4 or 5, always if > 5
-	was := runtime.GOMAXPROCS(1)
-	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, 1)
+	was := runtime.GOMAXPROCS(MY_MAX_PROC)
+	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, MY_MAX_PROC)
 	// END EXPERIMENT
 
 	var err error

@@ -68,25 +68,33 @@ func (x *XLatticeMsg_Op) UnmarshalJSON(data []byte) error {
 }
 
 type XLatticeMsg struct {
-	MsgN             *uint64 `protobuf:"varint,1,opt,name=msgN" json:"msgN,omitempty"`
-	Id               []byte  `protobuf:"bytes,2,opt,name=id" json:"id,omitempty"`
-	Salt             []byte  `protobuf:"bytes,3,opt,name=salt" json:"salt,omitempty"`
-	Sig              []byte  `protobuf:"bytes,4,opt,name=sig" json:"sig,omitempty"`
-	YourSeqN         *uint64 `protobuf:"varint,5,opt,name=yourSeqN" json:"yourSeqN,omitempty"`
-	YourID           []byte  `protobuf:"bytes,6,opt,name=yourID" json:"yourID,omitempty"`
-	ErrCode          *uint64 `protobuf:"varint,7,opt,name=errCode" json:"errCode,omitempty"`
-	ErrDesc          *string `protobuf:"bytes,8,opt,name=errDesc" json:"errDesc,omitempty"`
-	Hash             []byte  `protobuf:"bytes,9,opt,name=hash" json:"hash,omitempty"`
-	Payload          []byte  `protobuf:"bytes,10,opt,name=payload" json:"payload,omitempty"`
-	CommsKey         []byte  `protobuf:"bytes,11,opt,name=commsKey" json:"commsKey,omitempty"`
-	SigKey           []byte  `protobuf:"bytes,12,opt,name=sigKey" json:"sigKey,omitempty"`
-	MyEnd            *string `protobuf:"bytes,13,opt,name=myEnd" json:"myEnd,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
+	Op               *XLatticeMsg_Op `protobuf:"varint,1,opt,name=op,enum=node.XLatticeMsg_Op" json:"op,omitempty"`
+	MsgN             *uint64         `protobuf:"varint,2,opt,name=msgN" json:"msgN,omitempty"`
+	Id               []byte          `protobuf:"bytes,3,opt,name=id" json:"id,omitempty"`
+	Salt             []byte          `protobuf:"bytes,4,opt,name=salt" json:"salt,omitempty"`
+	Sig              []byte          `protobuf:"bytes,5,opt,name=sig" json:"sig,omitempty"`
+	YourMsgN         *uint64         `protobuf:"varint,6,opt,name=yourMsgN" json:"yourMsgN,omitempty"`
+	YourID           []byte          `protobuf:"bytes,7,opt,name=yourID" json:"yourID,omitempty"`
+	ErrCode          *uint64         `protobuf:"varint,8,opt,name=errCode" json:"errCode,omitempty"`
+	ErrDesc          *string         `protobuf:"bytes,9,opt,name=errDesc" json:"errDesc,omitempty"`
+	Hash             []byte          `protobuf:"bytes,10,opt,name=hash" json:"hash,omitempty"`
+	Payload          []byte          `protobuf:"bytes,11,opt,name=payload" json:"payload,omitempty"`
+	CommsKey         []byte          `protobuf:"bytes,12,opt,name=commsKey" json:"commsKey,omitempty"`
+	SigKey           []byte          `protobuf:"bytes,13,opt,name=sigKey" json:"sigKey,omitempty"`
+	MyEnd            *string         `protobuf:"bytes,14,opt,name=myEnd" json:"myEnd,omitempty"`
+	XXX_unrecognized []byte          `json:"-"`
 }
 
 func (m *XLatticeMsg) Reset()         { *m = XLatticeMsg{} }
 func (m *XLatticeMsg) String() string { return proto.CompactTextString(m) }
 func (*XLatticeMsg) ProtoMessage()    {}
+
+func (m *XLatticeMsg) GetOp() XLatticeMsg_Op {
+	if m != nil && m.Op != nil {
+		return *m.Op
+	}
+	return 0
+}
 
 func (m *XLatticeMsg) GetMsgN() uint64 {
 	if m != nil && m.MsgN != nil {
@@ -116,9 +124,9 @@ func (m *XLatticeMsg) GetSig() []byte {
 	return nil
 }
 
-func (m *XLatticeMsg) GetYourSeqN() uint64 {
-	if m != nil && m.YourSeqN != nil {
-		return *m.YourSeqN
+func (m *XLatticeMsg) GetYourMsgN() uint64 {
+	if m != nil && m.YourMsgN != nil {
+		return *m.YourMsgN
 	}
 	return 0
 }

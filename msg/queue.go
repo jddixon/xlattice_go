@@ -1,11 +1,14 @@
-package node
+package msg
+
+// xlattice_go/msg/queue.go
 
 import (
+    "errors"
+    "fmt"
 	"sync"
 )
+var _ = fmt.Print
 
-// XXX This almost certainly belongs in its own package.
-//
 // A node maintains a queue of message carriers for each outbound
 // connection to a peer.  Each message carrier has a pointer to a message.
 // The message carrier contains information about the message queued.
@@ -27,6 +30,8 @@ import (
 // number, making it possible to search the message queue and delete
 // the copy scheduled for retransmission.
 
+const MSG_BUF_LEN = 16 * 1024
+
 type MsgQueue struct {
 	first    *MsgCarrier
 	nextMsgN uint64
@@ -34,9 +39,15 @@ type MsgQueue struct {
 	mu       sync.Mutex
 }
 
+// a field of 64 bit flags
 const (
 	WIRE_FORM uint64 = 2 * iota // set if message has been marshaled
 	FOO_FOO
+)
+
+var (
+    MissingHello  = errors.New("expected a Hello msg")
+    NilConnection = errors.New("nil connection")
 )
 
 type MsgCarrier struct {
