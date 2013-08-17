@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	VERBOSITY       = 1
-	MY_MAX_PROC = 2     // should be OK for test, a 2-core machine
+	VERBOSITY   = 1
+	MY_MAX_PROC = 2 // should be OK for test, a 2-core machine
 )
 
 func makeNodeID(rng *rnglib.PRNG) (*NodeID, error) {

@@ -5,5 +5,5 @@ package msg
 import (
 	"fmt"
 )
-var _ = fmt.Print
 
+var _ = fmt.Print

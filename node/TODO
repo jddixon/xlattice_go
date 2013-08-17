@@ -1,5 +1,15 @@
 xlattice_go/node/TODO
 
+2013-08-16
+    * Add a method to locate a node's peer by its nodeID
+        - This should be a fast nodeID -> peer index map; if
+            we are using a fixed peer index then we will never
+            be able to delete peers, so the data must be kept
+            but marked deleted.  So what we actually retain is
+            a slice of pointers, with a nil signfying that that
+            peer has been deleted.  With the understanding that
+            the slice is not to have entries deleted from it.
+
 2013-08-15
     * document this: running localHost_test.go with Q=64 now just works 
         - on Ubuntu edit /etc/security/limits.conf adding

@@ -3,10 +3,11 @@ package msg
 // xlattice_go/msg/queue.go
 
 import (
-    "errors"
-    "fmt"
+	"errors"
+	"fmt"
 	"sync"
 )
+
 var _ = fmt.Print
 
 // A node maintains a queue of message carriers for each outbound
@@ -46,8 +47,8 @@ const (
 )
 
 var (
-    MissingHello  = errors.New("expected a Hello msg")
-    NilConnection = errors.New("nil connection")
+	MissingHello  = errors.New("expected a Hello msg")
+	NilConnection = errors.New("nil connection")
 )
 
 type MsgCarrier struct {
