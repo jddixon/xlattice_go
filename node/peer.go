@@ -22,6 +22,8 @@ type Peer struct {
 	connectors []xt.ConnectorI // to reach the peer
 	timeout    int64           // ns from epoch
 	prev       int64           // last contact from this peer, ns from epoch
+	ndx        int             // order in which added
+	down       bool            // set to true if considered unreachable
 	mu         sync.Mutex
 	BaseNode
 }

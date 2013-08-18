@@ -16,7 +16,10 @@ import (
 )
 
 const (
-	VERBOSITY   = 1
+	VERBOSITY = 1
+)
+
+var (
 	MY_MAX_PROC = 2 // should be OK for test, a 2-core machine
 )
 
@@ -115,6 +118,8 @@ func (s *XLSuite) TestRuntime(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_RUN_TIME")
 	}
+	MY_MAX_PROC = runtime.NumCPU()
+
 	was := runtime.GOMAXPROCS(MY_MAX_PROC)
 	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, MY_MAX_PROC)
 	fmt.Printf("Number of CPUs: %d\n", runtime.NumCPU())
@@ -144,6 +149,7 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_AUTO_CREATE_OVERLAYS")
 	}
+	MY_MAX_PROC = runtime.NumCPU()
 	was := runtime.GOMAXPROCS(MY_MAX_PROC)
 	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, MY_MAX_PROC)
 
