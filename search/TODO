@@ -1,0 +1,5 @@
+xlattice_go/search/TODO
+
+2013-08-18
+    * TestTopBottomMap is failing at two points, apparently because
+        of a bug in Peer.Equal().  Fix it.
