@@ -1,0 +1,7 @@
+xlattice_go/nodeID/TODO
+
+2013-08-19
+    * need performance difference between n.Compare(other) and
+        SameNodeID(a, b)
+        - that is, we could use Compare() to implement SameNodeID(),
+            if it's faster

@@ -3,6 +3,7 @@ package node
 import (
 	"crypto/rsa"
 	"fmt"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
@@ -18,13 +19,13 @@ func MockLocalHostCluster(K int) (nodes []*Node, accs []*xt.TcpAcceptor) {
 	// comms), and two RSA public keys.  Each node creates a TcpAcceptor
 	// running on 127.0.0.1 and a random (= system-supplied) port.
 	names := make([]string, K)
-	nodeIDs := make([]*NodeID, K)
+	nodeIDs := make([]*xi.NodeID, K)
 	for i := 0; i < K; i++ {
 		// TODO: MAKE NAMES UNIQUE
 		names[i] = rng.NextFileName(4)
-		val := make([]byte, SHA1_LEN)
+		val := make([]byte, xi.SHA1_LEN)
 		rng.NextBytes(&val)
-		nodeIDs[i], _ = NewNodeID(val)
+		nodeIDs[i], _ = xi.NewNodeID(val)
 	}
 	nodes = make([]*Node, K)
 	accs = make([]*xt.TcpAcceptor, K)

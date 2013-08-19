@@ -1,8 +1,8 @@
 xlattice_go/node/TODO
 
-2013-08-18
-    * peer_map.FindPeer(id) -> *Peer implemented
-    * peer_map_test.go
+2013-08-19
+    * "connection reset by peer" in localHost_test.go at lines
+        115, 126 seen once
 
 2013-08-16
     * Add a method to locate a node's peer by its nodeID

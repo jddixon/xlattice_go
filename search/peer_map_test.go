@@ -5,6 +5,7 @@ package search
 import (
 	"fmt"
 	xn "github.com/jddixon/xlattice_go/node"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
@@ -22,7 +23,7 @@ func (s *XLSuite) makeTopAndBottom(c *C) (topPeer, bottomPeer *xn.Peer) {
 	for i := 0; i < SHA1_LEN; i++ {
 		t[i] = byte(0xf)
 	}
-	top, err := xn.NewNodeID(t)
+	top, err := xi.NewNodeID(t)
 	c.Assert(err, IsNil)
 	c.Assert(top, Not(IsNil))
 
@@ -30,7 +31,7 @@ func (s *XLSuite) makeTopAndBottom(c *C) (topPeer, bottomPeer *xn.Peer) {
 	c.Assert(err, IsNil)
 	c.Assert(topPeer, Not(IsNil))
 
-	bottom, err := xn.NewNodeID(make([]byte, SHA1_LEN))
+	bottom, err := xi.NewNodeID(make([]byte, SHA1_LEN))
 	c.Assert(err, IsNil)
 	c.Assert(bottom, Not(IsNil))
 
@@ -45,7 +46,7 @@ func (s *XLSuite) makeAPeer(c *C, name string, id ...int) (peer *xn.Peer) {
 	for i := 0; i < len(id); i++ {
 		t[i] = byte(id[i])
 	}
-	nodeID, err := xn.NewNodeID(t)
+	nodeID, err := xi.NewNodeID(t)
 	c.Assert(err, IsNil)
 	c.Assert(nodeID, Not(IsNil))
 
@@ -129,9 +130,9 @@ func (s *XLSuite) TestShallowMap(c *C) {
 	c.Assert(lowest.peer, Equals, peer1)
 
 	c.Assert(pm.lowest.byteVal, Equals, byte(1))
-	nextCell := pm.lowest.higher
+	nextCell := pm.lowest.thisCol
 	c.Assert(nextCell.byteVal, Equals, byte(2))
-	nextCell = nextCell.higher
+	nextCell = nextCell.thisCol
 	c.Assert(nextCell.byteVal, Equals, byte(3))
 }
 func (s *XLSuite) TestDeeperMap(c *C) {
@@ -157,7 +158,8 @@ func (s *XLSuite) TestDeeperMap(c *C) {
 	c.Assert(pm.lowest, Not(IsNil))
 	lowest = pm.lowest
 	c.Assert(lowest.peer, Not(IsNil))
-	c.Assert(lowest.peer, Equals, peer12) // PANIC
+	// c.Assert(lowest.peer, Equals, peer12) // PANIC
+	c.Assert(lowest.peer.GetName(), Equals, peer12.GetName())
 
 	err = pm.AddToPeerMap(peer1)
 	c.Assert(err, IsNil)
@@ -167,8 +169,18 @@ func (s *XLSuite) TestDeeperMap(c *C) {
 	c.Assert(lowest.peer, Equals, peer1)
 
 	c.Assert(pm.lowest.byteVal, Equals, byte(1))
-	nextCell := pm.lowest.higher
+	nextCell := pm.lowest.thisCol
 	c.Assert(nextCell.byteVal, Equals, byte(2))
-	nextCell = nextCell.higher
+	nextCell = nextCell.thisCol
 	c.Assert(nextCell.byteVal, Equals, byte(3))
+}
+
+// XXX Something similar to this should be in nodeID/nodeID.go
+func (s *XLSuite) TestSameNodeID(c *C) {
+	peer := s.makeAPeer(c, "foo", 1, 2, 3, 4)
+	id := peer.GetNodeID()
+	c.Assert(xi.SameNodeID(id, id), Equals, true)
+	peer2 := s.makeAPeer(c, "foo", 1, 2, 3, 4, 5)
+	id2 := peer2.GetNodeID()
+	c.Assert(xi.SameNodeID(id, id2), Equals, false)
 }

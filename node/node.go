@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"hash"
@@ -40,13 +41,14 @@ type Node struct {
 	BaseNode    // listed last, but serialize first
 }
 
-func NewNew(name string, id *NodeID) (*Node, error) {
+func NewNew(name string, id *xi.NodeID) (*Node, error) {
 	// XXX create default 2K bit RSA key
 	return New(name, id, "", nil, nil, nil, nil, nil)
 }
 
 // XXX Creating a Node with a list of live connections seems nonsensical.
-func New(name string, id *NodeID, lfs string, commsKey, sigKey *rsa.PrivateKey,
+func New(name string, id *xi.NodeID, lfs string,
+	commsKey, sigKey *rsa.PrivateKey,
 	o []xo.OverlayI, e []xt.EndPointI, p []Peer) (*Node, error) {
 
 	var err error

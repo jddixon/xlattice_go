@@ -1,9 +1,13 @@
-package node
+package nodeID
 
 import (
 	"fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
+)
+
+var (
+	VERBOSITY = 0
 )
 
 func (s *XLSuite) TestBadNodeIDs(c *C) {
@@ -18,7 +22,7 @@ func (s *XLSuite) TestBadNodeIDs(c *C) {
 	candidate = make([]byte, SHA1_LEN+1)
 	c.Assert(false, Equals, IsValidID(candidate))
 	candidate = make([]byte, SHA3_LEN)
-	c.Assert(true, Equals, IsValidID(candidate)) // FOO
+	c.Assert(true, Equals, IsValidID(candidate))
 }
 func (s *XLSuite) TestThisAndThat(c *C) {
 	if VERBOSITY > 0 {
@@ -40,7 +44,7 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 	v2a := id2.Value()
 
 	// XXX gocheck cannot handle these comparisons
-	// c.Assert(v1, Not(DeepEquals), v1a)				// 'Deep' is for desperation
+	// c.Assert(v1, Not(DeepEquals), v1a)		// 'Deep' is for desperation
 	// c.Assert(v2, Not(Equals), v2a)
 
 	// XXX not sure that gocheck results are meaningful

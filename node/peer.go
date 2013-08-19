@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"strings"
@@ -28,11 +29,11 @@ type Peer struct {
 	BaseNode
 }
 
-func NewNewPeer(name string, id *NodeID) (*Peer, error) {
+func NewNewPeer(name string, id *xi.NodeID) (*Peer, error) {
 	return NewPeer(name, id, nil, nil, nil, nil)
 }
 
-func NewPeer(name string, id *NodeID,
+func NewPeer(name string, id *xi.NodeID,
 	ck *rsa.PublicKey, sk *rsa.PublicKey,
 	o []xo.OverlayI, c []xt.ConnectorI) (*Peer, error) {
 

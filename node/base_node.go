@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	"strings"
 )
@@ -19,17 +20,17 @@ import (
 
 type BaseNode struct {
 	name        string // convenience for testing
-	nodeID      *NodeID
+	nodeID      *xi.NodeID
 	commsPubKey *rsa.PublicKey
 	sigPubKey   *rsa.PublicKey
 	overlays    []xo.OverlayI
 }
 
-func NewNewBaseNode(name string, id *NodeID) (*BaseNode, error) {
+func NewNewBaseNode(name string, id *xi.NodeID) (*BaseNode, error) {
 	return NewBaseNode(name, id, nil, nil, nil)
 }
 
-func NewBaseNode(name string, id *NodeID,
+func NewBaseNode(name string, id *xi.NodeID,
 	ck *rsa.PublicKey, sk *rsa.PublicKey,
 	o []xo.OverlayI) (p *BaseNode, err error) {
 
@@ -62,7 +63,7 @@ func NewBaseNode(name string, id *NodeID,
 func (p *BaseNode) GetName() string {
 	return p.name
 }
-func (p *BaseNode) GetNodeID() *NodeID {
+func (p *BaseNode) GetNodeID() *xi.NodeID {
 	return p.nodeID
 }
 func (p *BaseNode) GetCommsPublicKey() *rsa.PublicKey {
@@ -207,7 +208,7 @@ func ParseBaseNode(data, whichType string) (bn *BaseNode, rest []string, err err
 func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []string, err error) {
 	var (
 		name        string
-		nodeID      *NodeID
+		nodeID      *xi.NodeID
 		commsPubKey *rsa.PublicKey
 		sigPubKey   *rsa.PublicKey
 		overlays    []xo.OverlayI
@@ -231,7 +232,7 @@ func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []str
 			var val []byte
 			val, err = hex.DecodeString(s[8:])
 			if err == nil {
-				nodeID, err = NewNodeID(val)
+				nodeID, err = xi.NewNodeID(val)
 			}
 		} else {
 			err = NotABaseNode

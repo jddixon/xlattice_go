@@ -5,6 +5,7 @@ package node
 import (
 	"crypto/rsa"
 	"fmt"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
@@ -38,7 +39,7 @@ func (s *XLSuite) TestMockLocalHostTcpCluster(c *C) {
 	}
 	nameSet := make(map[string]bool)
 	names := make([]string, K)
-	nodeIDs := make([]*NodeID, K)
+	nodeIDs := make([]*xi.NodeID, K)
 	for i := 0; i < K; i++ {
 		names[i] = nodes[i].GetName()
 		_, ok := nameSet[names[i]]

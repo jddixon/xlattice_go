@@ -1,16 +1,15 @@
-package node
+package nodeID
 
 import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"unsafe"
 )
 
-// these SHOULD be in a crypto package
-const SHA1_LEN = 20 // in bytes; hex SHA1_LEN is twice this
+// TAKE CARE: these in bytes; hex values are twice these
+const SHA1_LEN = 20
 const SHA3_LEN = 32
-
-// END SHOULD
 
 // CONSTRUCTORS /////////////////////////////////////////////////////
 type NodeID struct {
@@ -76,6 +75,28 @@ func (n *NodeID) Compare(any interface{}) (int, error) {
 	return bytes.Compare(n.Value(), other.Value()), nil
 }
 
+func SameNodeID(a, b *NodeID) (same bool) {
+	if a == nil || b == nil {
+		return false
+	}
+	aVal, bVal := a.Value(), b.Value()
+	if len(aVal) != len(bVal) {
+		return false
+	}
+	length := len(aVal)
+
+	var aInt, bInt int
+	sizeInt := int(unsafe.Sizeof(aInt))
+
+	for i := 0; i < length; i += sizeInt {
+		aInt = *(*int)(unsafe.Pointer(&aVal[i]))
+		bInt = *(*int)(unsafe.Pointer(&bVal[i]))
+		if aInt != bInt {
+			return false
+		}
+	}
+	return true
+}
 func (n *NodeID) Equal(any interface{}) bool {
 	if any == n {
 		return true
@@ -93,12 +114,13 @@ func (n *NodeID) Equal(any interface{}) bool {
 	if n.Length() != other.Length() {
 		return false
 	}
-	for i := 0; i < n.Length(); i++ {
-		if (*n)._nodeID[i] != (*other)._nodeID[i] {
-			return false
-		}
-	}
-	return true
+	//for i := 0; i < n.Length(); i++ {
+	//	if (*n)._nodeID[i] != (*other)._nodeID[i] {
+	//		return false
+	//	}
+	//}
+	// return true
+	return SameNodeID(n, other)
 }
 
 func IsValidID(value []byte) bool {

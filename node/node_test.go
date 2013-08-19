@@ -7,6 +7,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
@@ -23,16 +24,16 @@ var (
 	MY_MAX_PROC = 2 // should be OK for test, a 2-core machine
 )
 
-func makeNodeID(rng *rnglib.PRNG) (*NodeID, error) {
+func makeNodeID(rng *rnglib.PRNG) (*xi.NodeID, error) {
 	var buffer []byte
 	// quasi-random choice, whether to use an SHA1 or SHA3 nodeID
 	if rng.NextBoolean() {
-		buffer = make([]byte, SHA1_LEN)
+		buffer = make([]byte, xi.SHA1_LEN)
 	} else {
-		buffer = make([]byte, SHA3_LEN)
+		buffer = make([]byte, xi.SHA3_LEN)
 	}
 	rng.NextBytes(&buffer)
-	return NewNodeID(buffer)
+	return xi.NewNodeID(buffer)
 }
 
 func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {

@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
@@ -23,9 +24,7 @@ var _ = xo.NewIPOverlay
 const (
 	MIN_LEN = 1024
 	MAX_LEN = 2048
-	// SHA1_LEN	= 20		// declared elsewhere
-	// SHA3_LEN	= 32
-	Q = 64 // "too many open files" if 64
+	Q       = 64 // "too many open files" if 64
 )
 
 var (
@@ -120,12 +119,12 @@ func (s *XLSuite) nodeAsClient(c *C, node *Node, q int, doneCh chan bool) {
 				dig := sha1.New()
 				dig.Write(buf)
 				hash := dig.Sum(nil)
-				hashBuf := make([]byte, SHA1_LEN)
+				hashBuf := make([]byte, xi.SHA1_LEN)
 
 				// wait for reply
 				count, err = tcpCnx.Read(hashBuf)
 				c.Assert(err, IsNil)
-				c.Assert(count, Equals, SHA1_LEN)
+				c.Assert(count, Equals, xi.SHA1_LEN)
 
 				// complain if hash differs from reply
 				hashOut := hex.EncodeToString(hash)

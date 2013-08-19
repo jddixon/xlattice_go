@@ -12,15 +12,14 @@ type PeerMap struct {
 }
 type PeerMapCell struct {
 	byteVal byte
-	sameVal *PeerMapCell // points to a cell with same val for this byte
-	higher  *PeerMapCell // points to a cell with higher val for this byte
+	nextCol *PeerMapCell // points to a cell with same val for this byte
+	thisCol *PeerMapCell // points to a cell with higher val for this byte
 	peer    *xn.Peer
 }
 
 // Add a Peer to the map.  This should be idempotent: adding a Peer
 // that is already in the map should have no effect at all.  The cell map
-// allows us to very efficiently return a reference to a Peer, given its
-// nodeID.
+// allows us to efficiently return a reference to a Peer, given its nodeID.
 
 func (m *PeerMap) AddToPeerMap(peer *xn.Peer) (err error) {
 	id := peer.GetNodeID().Value()
@@ -36,8 +35,22 @@ func (m *PeerMap) AddToPeerMap(peer *xn.Peer) (err error) {
 		m.lowest = &PeerMapCell{byte0, nil, root, peer}
 
 	} else if byte0 == root.byteVal {
-		// THIS DOESN'T WORK because we have to look ahead to determine
-		// which is going to be the sibling
+		// THIS DOESN'T WORK AS IT IS:
+
+		// If there is a non-nil pointer in the peer field, we are at
+		// the end of the chain.  We remove the pointer and then search
+		// forward until we find a differing byte, leaving a trail of
+		// cells.  When we find the byte that differs, we want this cell's
+		// nextCol to point to the cell for the lower-valued peer and
+		// that cell's thisCol to point to the higher-valued peer.
+		// We MUST NOT ever run all the way down the chain.
+		// XXX STUB XXX
+
+		// Otherwise (the peer field is non-nil) we are not at the
+		// end of the chain.
+		// XXX STUB XXX
+
+		// OLD CODE, KNOWN TO BE WRONG
 		fmt.Printf("adding %s as sibling, byte0 is %d\n", peer.GetName(), byte0)
 		root.AddSibling(id, 0, peer)
 
@@ -56,10 +69,10 @@ func (p *PeerMapCell) AddSibling(id []byte, depth int, peer *xn.Peer) (
 	depth += 1
 	nextByte := id[depth]
 
-	if p.sameVal == nil {
-		p.sameVal = &PeerMapCell{nextByte, nil, nil, peer}
+	if p.nextCol == nil {
+		p.nextCol = &PeerMapCell{nextByte, nil, nil, peer}
 	} else {
-		curSib := p.sameVal // current sibling
+		curSib := p.nextCol // current sibling
 		if nextByte < curSib.byteVal {
 			curSib = &PeerMapCell{nextByte, nil, curSib, peer}
 
@@ -78,10 +91,10 @@ func (p *PeerMapCell) AddHigher(id []byte, depth int, peer *xn.Peer) (
 	err error) {
 
 	nextByte := id[depth]
-	if p.sameVal == nil {
-		p.sameVal = &PeerMapCell{nextByte, nil, nil, peer}
+	if p.nextCol == nil {
+		p.nextCol = &PeerMapCell{nextByte, nil, nil, peer}
 	} else {
-		curHigher := p.higher // current higher value
+		curHigher := p.thisCol // current higher value
 		if nextByte < curHigher.byteVal {
 			curHigher = &PeerMapCell{nextByte, nil, curHigher, peer}
 		} else if nextByte == curHigher.byteVal {
@@ -102,20 +115,20 @@ func (m *PeerMap) FindPeer(id []byte) (peer *xn.Peer) {
 		if myVal < mapCell.byteVal {
 			return nil
 		} else if myVal == mapCell.byteVal {
-			if mapCell.sameVal == nil {
+			if mapCell.nextCol == nil {
 				return mapCell.peer
 			} else {
 				// we have a sibling - check it
-				mapCell = mapCell.sameVal
+				mapCell = mapCell.nextCol
 				continue
 			}
 		} else {
 			// myVal > mapCell.byteVal
-			for mapCell = mapCell.higher; mapCell != nil; mapCell = mapCell.higher {
+			for mapCell = mapCell.thisCol; mapCell != nil; mapCell = mapCell.thisCol {
 				if myVal < mapCell.byteVal {
 					return
 				} else if myVal == mapCell.byteVal {
-					mapCell = mapCell.sameVal
+					mapCell = mapCell.nextCol
 					break
 				} else {
 					continue // down the chain of higher values
