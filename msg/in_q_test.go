@@ -8,8 +8,8 @@ import (
 	//	"crypto/rsa"
 	//	"crypto/sha1"
 	"fmt"
-	//	xc "github.com/jddixon/xlattice_go/crypto"
 	"github.com/jddixon/xlattice_go/node"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
@@ -44,7 +44,7 @@ func (s *XLSuite) makeBadGuy(c *C) (acc xt.AcceptorI, badGuy *node.Node) {
 	rng := rnglib.MakeSimpleRNG()
 	id := make([]byte, SHA1_LEN)
 	rng.NextBytes(&id)
-	nodeID, err := node.NewNodeID(id)
+	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)
 	name := rng.NextFileName(8)
 	badGuy, err = node.NewNew(name, nodeID)

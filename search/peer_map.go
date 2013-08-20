@@ -8,12 +8,14 @@ import (
 var _ = fmt.Print
 
 type PeerMap struct {
-	lowest *PeerMapCell
+	// lowest *PeerMapCell
+	PeerMapCell
 }
 type PeerMapCell struct {
 	byteVal byte
+	pred    *PeerMapCell // predecessor
 	nextCol *PeerMapCell // points to a cell with same val for this byte
-	thisCol *PeerMapCell // points to a cell with higher val for this byte
+	thisCol *PeerMapCell // points to a cell with higher val for this col
 	peer    *xn.Peer
 }
 
@@ -25,89 +27,203 @@ func (m *PeerMap) AddToPeerMap(peer *xn.Peer) (err error) {
 	id := peer.GetNodeID().Value()
 	byte0 := id[0]
 
-	root := m.lowest
+	root := m.nextCol
 	if root == nil {
-		fmt.Printf("empty, adding %s as lowest, byte0 is %d\n", peer.GetName(), byte0)
-		m.lowest = &PeerMapCell{byte0, nil, nil, peer}
-
-	} else if byte0 < root.byteVal {
-		fmt.Printf("lower, adding %s as lowest, byte0 is %d\n", peer.GetName(), byte0)
-		m.lowest = &PeerMapCell{byte0, nil, root, peer}
-
-	} else if byte0 == root.byteVal {
-		// THIS DOESN'T WORK AS IT IS:
-
-		// If there is a non-nil pointer in the peer field, we are at
-		// the end of the chain.  We remove the pointer and then search
-		// forward until we find a differing byte, leaving a trail of
-		// cells.  When we find the byte that differs, we want this cell's
-		// nextCol to point to the cell for the lower-valued peer and
-		// that cell's thisCol to point to the higher-valued peer.
-		// We MUST NOT ever run all the way down the chain.
-		// XXX STUB XXX
-
-		// Otherwise (the peer field is non-nil) we are not at the
-		// end of the chain.
-		// XXX STUB XXX
-
-		// OLD CODE, KNOWN TO BE WRONG
-		fmt.Printf("adding %s as sibling, byte0 is %d\n", peer.GetName(), byte0)
-		root.AddSibling(id, 0, peer)
-
-	} else { // byte0 > root.byteVal
-		fmt.Printf("adding %s as higher, byte0 is %d\n", peer.GetName(), byte0)
-		root.AddHigher(id, 0, peer)
+		m.nextCol = &PeerMapCell{byteVal: byte0, pred: &m.PeerMapCell, peer: peer}
+	} else {
+		err = root.AddAtCell(0, peer, id)
 	}
 	return
 }
 
-// The nodeID of the peer being added has the same value for this depth.
-//
-func (p *PeerMapCell) AddSibling(id []byte, depth int, peer *xn.Peer) (
-	err error) {
+// depth is that of cell, with the root cell at column 0, and also the
+// index into the id slice.
 
+func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error) {
+	curByte := id[depth]
+	if curByte < p.byteVal {
+		// DEBUG
+		fmt.Printf("lower, adding %s as lowest, curByte is %d\n",
+			peer.GetName(), curByte)
+		// END
+		p.pred.nextCol = &PeerMapCell{
+			byteVal: curByte, pred: p.pred, thisCol: p, peer: peer}
+
+	} else if curByte == p.byteVal {
+		// DEBUG
+		fmt.Printf("%s has match, curByte is %d\n", peer.GetName(), curByte)
+		// END
+		// XXX If p.nextCol is nil, we know exactly what to do
+		if p.nextCol == nil {
+			peer2 := p.peer
+			var id2 []byte
+			if peer2 != nil {
+				id2 = peer2.GetNodeID().Value()
+			}
+			p.peer = nil
+
+			depth++
+			nextByte := id[depth]
+			nextByte2 := id2[depth]
+			curCell := p
+			for nextByte == nextByte2 {
+				nextCell := &PeerMapCell{byteVal: nextByte, pred: curCell}
+				curCell.nextCol = nextCell
+				curCell = nextCell
+				depth++
+				fmt.Printf("depth := %d\n", depth)
+				nextByte = id[depth]
+				nextByte2 = id2[depth]
+			}
+			lastCell := &PeerMapCell{byteVal: nextByte, peer: peer}
+			lastCell2 := &PeerMapCell{byteVal: nextByte2, peer: peer2}
+			if nextByte < nextByte2 {
+				curCell.nextCol = lastCell
+				lastCell.pred = curCell
+				lastCell.thisCol = lastCell2
+				lastCell2.pred = lastCell
+			} else {
+				curCell.nextCol = lastCell2
+				lastCell2.pred = curCell
+				lastCell2.thisCol = lastCell
+				lastCell.pred = lastCell2
+			}
+			fmt.Printf("END OF CHAINLET, peers %s and %s\n",
+				peer.GetName(), peer2.GetName()) // GEEP
+		} else {
+			// we are guaranteed that this is not nil
+			curCell := p.nextCol
+			depth++
+			var nextB byte
+			// skip any cells with matching values
+			for nextB = id[depth]; nextB == curCell.byteVal; nextB = id[depth] {
+				if curCell.nextCol == nil {
+					break
+				}
+				curCell = curCell.nextCol
+				depth++
+			}
+			newCell := &PeerMapCell{byteVal: nextB, peer: peer}
+			if nextB < curCell.byteVal {
+				// case C
+				pred := curCell.pred
+				pred.nextCol = newCell
+				newCell.thisCol = curCell
+				curCell.pred = newCell
+			} else {
+				// case D
+				curCell.thisCol = newCell
+				newCell.pred = curCell
+			} // FOO
+		}
+
+	} else { // curByte > p.byteVal
+		// DEBUG
+		fmt.Printf("CALLING AddThisCol: adding %s as higher, curByte is %d\n",
+			peer.GetName(), curByte)
+		p.AddThisCol(id, 0, peer)
+		// END
+	}
+
+	return
+}
+
+// The nodeID of the peer being added has the same value for the byte at
+// this depth.  id and peer represent the new peer being added, where id
+// is the byte slice for its nodeID and peer is a reference to that.
+// id2 and peer2 represent any pre-existing value.
+func (p *PeerMapCell) AddMatchingToDepth(depth int,
+	id, id2 []byte, peer, peer2 *xn.Peer) (err error) {
+
+	// The byte string id has matched the chain up to this point.
+	// We examine the next byte in id and the byte value for the next
+	// cell in the chain.
 	depth += 1
 	nextByte := id[depth]
 
 	if p.nextCol == nil {
-		p.nextCol = &PeerMapCell{nextByte, nil, nil, peer}
+		if peer2 == nil {
+			p.nextCol = &PeerMapCell{nextByte, p, nil, nil, peer}
+		} else {
+			nextByte2 := id2[depth]
+			if nextByte == nextByte2 {
+				fmt.Printf("Case 1b1, %s\n", peer.GetName())
+				p.nextCol = &PeerMapCell{nextByte, p, nil, nil, nil}
+				p.nextCol.AddMatchingToDepth(depth, id, id2, peer, peer2)
+			} else {
+				nextCell := &PeerMapCell{nextByte, nil, nil, nil, peer}
+				nextCell2 := &PeerMapCell{nextByte2, nil, nil, nil, peer2}
+				if nextByte < nextByte2 {
+					fmt.Printf("Case 1b2a, %s\n", peer.GetName())
+					nextCell.thisCol = nextCell2
+					p.nextCol = nextCell
+					nextCell.pred = p
+					nextCell2.pred = nextCell
+				} else {
+					fmt.Printf("Case 1b2b, %s\n", peer.GetName())
+					nextCell2.thisCol = nextCell
+					p.nextCol = nextCell2
+					nextCell2.pred = p
+					nextCell.pred = nextCell2
+				}
+			}
+		}
 	} else {
-		curSib := p.nextCol // current sibling
-		if nextByte < curSib.byteVal {
-			curSib = &PeerMapCell{nextByte, nil, curSib, peer}
+		// XXX doesn't handle peer2
+		curCell := p.nextCol
+		if nextByte < curCell.byteVal {
+			// DEBUG
+			var nextPeerStr string
+			if curCell.peer == nil {
+				nextPeerStr = "<nil>"
+			} else {
+				nextPeerStr = curCell.peer.GetName()
+			}
+			fmt.Printf("CASE 2a: %s => %s\n", peer.GetName(), nextPeerStr)
+			// END
+			p.peer = peer
+			p.nextCol = &PeerMapCell{nextByte, p, nil, curCell, peer2}
 
-		} else if nextByte == curSib.byteVal {
-			// WON'T WORK, need to look ahead to see which sorts lower
-			curSib.AddSibling(id, 0, peer)
+		} else if nextByte == curCell.byteVal {
+			fmt.Printf("CASE 2b, %s\n", peer.GetName()) // DEBUG
+			peer2 := curCell.peer
+			var id2 []byte
+			if peer2 != nil {
+				id2 = peer2.GetNodeID().Value()
+			}
+			curCell.peer = nil
+			curCell.AddMatchingToDepth(depth, id, id2, peer, peer2)
 
-		} else { // nextByte > curSib.byteVal
-			curSib.AddHigher(id, 0, peer)
+		} else { // nextByte > curCell.byteVal
+			fmt.Printf("CASE 2c, %s\n", peer.GetName()) // DEBUG
+			curCell.AddThisCol(id, 0, peer)
 		}
 	}
 	return
-}
+} // GEEP
 
-func (p *PeerMapCell) AddHigher(id []byte, depth int, peer *xn.Peer) (
+func (p *PeerMapCell) AddThisCol(id []byte, depth int, peer *xn.Peer) (
 	err error) {
 
 	nextByte := id[depth]
 	if p.nextCol == nil {
-		p.nextCol = &PeerMapCell{nextByte, nil, nil, peer}
+		p.nextCol = &PeerMapCell{nextByte, p, nil, nil, peer}
 	} else {
 		curHigher := p.thisCol // current higher value
 		if nextByte < curHigher.byteVal {
-			curHigher = &PeerMapCell{nextByte, nil, curHigher, peer}
+			curHigher = &PeerMapCell{nextByte, p, nil, curHigher, peer}
 		} else if nextByte == curHigher.byteVal {
-			curHigher.AddSibling(id, 0, peer)
+			// WORKING HERE
+			curHigher.AddMatchingToDepth(0, id, nil, peer, nil)
 		} else { // nextByte > curHigher.byteVal
-			curHigher.AddHigher(id, 0, peer)
+			curHigher.AddThisCol(id, 0, peer)
 		}
 	}
 	return
 }
 
 func (m *PeerMap) FindPeer(id []byte) (peer *xn.Peer) {
-	mapCell := m.lowest
+	mapCell := m.nextCol
 	for depth := 0; depth < len(id); depth++ {
 		// continue to check sibling
 

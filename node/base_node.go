@@ -129,21 +129,10 @@ func (p *BaseNode) Equal(any interface{}) bool {
 		return false
 	}
 	other := any.(Peer) // type assertion
+
 	// THINK ABOUT publicKey.equals(any.publicKey)
-	if p.nodeID == other.nodeID {
-		return true
-	}
-	if p.nodeID.Length() != other.nodeID.Length() {
-		return false
-	}
-	myVal := p.nodeID.Value()
-	otherVal := other.nodeID.Value()
-	for i := 0; i < p.nodeID.Length(); i++ {
-		if myVal[i] != otherVal[i] {
-			return false
-		}
-	}
-	return false
+
+	return xi.SameNodeID(p.nodeID, other.nodeID)
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////

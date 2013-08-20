@@ -83,36 +83,9 @@ func (p *Peer) GetConnector(n int) xt.ConnectorI {
 }
 
 // EQUAL ////////////////////////////////////////////////////////////
-//func (p *Peer) Equal(any interface{}) bool {
-//	if any == p {
-//		return true
-//	}
-//	if any == nil {
-//		return false
-//	}
-//	switch v := any.(type) {
-//	case Peer:
-//		_ = v
-//	default:
-//		return false
-//	}
-//	other := any.(Peer) // type assertion
-//	// THINK ABOUT publicKey.equals(any.publicKey)
-//	if p.nodeID == other.nodeID {
-//		return true
-//	}
-//	if p.nodeID.Length() != other.nodeID.Length() {
-//		return false
-//	}
-//	myVal := p.nodeID.Value()
-//	otherVal := other.nodeID.Value()
-//	for i := 0; i < p.nodeID.Length(); i++ {
-//		if myVal[i] != otherVal[i] {
-//			return false
-//		}
-//	}
-//	return false
-//} // GEEP
+// func (p *Peer) Equal(any interface{}) bool {
+//     XXX Uses BaseNode.Equal()
+// }
 
 func (p *Peer) Strings() []string {
 	ss := []string{"peer {"}
@@ -128,6 +101,7 @@ func (p *Peer) Strings() []string {
 	ss = append(ss, "}")
 	return ss
 }
+
 func (p *Peer) String() string {
 	return strings.Join(p.Strings(), "\n")
 }

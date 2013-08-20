@@ -77,13 +77,13 @@ func (s *XLSuite) TestTopBottomMap(c *C) {
 	}
 
 	var pm PeerMap
-	c.Assert(pm.lowest, IsNil)
+	c.Assert(pm.nextCol, IsNil)
 
 	topPeer, bottomPeer := s.makeTopAndBottom(c)
 	err := pm.AddToPeerMap(topPeer)
 	c.Assert(err, IsNil)
-	c.Assert(pm.lowest, Not(IsNil))
-	lowest := pm.lowest
+	c.Assert(pm.nextCol, Not(IsNil))
+	lowest := pm.nextCol
 	c.Assert(lowest.peer, Not(IsNil))
 	c.Assert(lowest.peer, Equals, topPeer) // succeeds ...
 	// c.Assert(topPeer.Equal(lowest.peer), Equals, true)      // FAILS!
@@ -93,7 +93,7 @@ func (s *XLSuite) TestTopBottomMap(c *C) {
 	// higher field pointing at topPeer.
 	err = pm.AddToPeerMap(bottomPeer)
 	c.Assert(err, IsNil)
-	lowest = pm.lowest
+	lowest = pm.nextCol
 	// c.Assert(bottomPeer.Equal(lowest.peer), Equals, true)   // FAILS
 	c.Assert(lowest.peer.GetName(), Equals, "bottom") // XXX gets 'top'
 }
@@ -102,7 +102,7 @@ func (s *XLSuite) TestShallowMap(c *C) {
 		fmt.Println("TEST_SHALLOW_MAP")
 	}
 	var pm PeerMap
-	c.Assert(pm.lowest, IsNil)
+	c.Assert(pm.nextCol, IsNil)
 
 	peer1 := s.makeAPeer(c, "peer1", 1)
 	peer2 := s.makeAPeer(c, "peer2", 2)
@@ -110,71 +110,137 @@ func (s *XLSuite) TestShallowMap(c *C) {
 
 	err := pm.AddToPeerMap(peer3)
 	c.Assert(err, IsNil)
-	c.Assert(pm.lowest, Not(IsNil))
-	lowest := pm.lowest
+	c.Assert(pm.nextCol, Not(IsNil))
+	lowest := pm.nextCol
 	c.Assert(lowest.peer, Not(IsNil))
 	c.Assert(lowest.peer, Equals, peer3)
 
 	err = pm.AddToPeerMap(peer2)
 	c.Assert(err, IsNil)
-	c.Assert(pm.lowest, Not(IsNil))
-	lowest = pm.lowest
+	c.Assert(pm.nextCol, Not(IsNil))
+	lowest = pm.nextCol
 	c.Assert(lowest.peer, Not(IsNil))
 	c.Assert(lowest.peer, Equals, peer2)
 
 	err = pm.AddToPeerMap(peer1)
 	c.Assert(err, IsNil)
-	c.Assert(pm.lowest, Not(IsNil))
-	lowest = pm.lowest
+	c.Assert(pm.nextCol, Not(IsNil))
+	lowest = pm.nextCol
 	c.Assert(lowest.peer, Not(IsNil))
 	c.Assert(lowest.peer, Equals, peer1)
 
-	c.Assert(pm.lowest.byteVal, Equals, byte(1))
-	nextCell := pm.lowest.thisCol
+	rootCell := pm.nextCol
+	c.Assert(rootCell.byteVal, Equals, byte(1))
+	c.Assert(rootCell.peer.GetName(), Equals, "peer1")
+	nextCell := rootCell.thisCol
+	c.Assert(nextCell, Not(IsNil)) // FAILS
 	c.Assert(nextCell.byteVal, Equals, byte(2))
 	nextCell = nextCell.thisCol
 	c.Assert(nextCell.byteVal, Equals, byte(3))
 }
+
 func (s *XLSuite) TestDeeperMap(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_SHALLOW_MAP")
 	}
 	var pm PeerMap
-	c.Assert(pm.lowest, IsNil)
+	c.Assert(pm.nextCol, IsNil)
 
 	peer1 := s.makeAPeer(c, "peer1", 1)
 	peer12 := s.makeAPeer(c, "peer12", 1, 2)
 	peer123 := s.makeAPeer(c, "peer123", 1, 2, 3)
 
+	// add peer123 ================================================
 	err := pm.AddToPeerMap(peer123)
 	c.Assert(err, IsNil)
-	c.Assert(pm.lowest, Not(IsNil))
-	lowest := pm.lowest
+	c.Assert(pm.nextCol, Not(IsNil))
+	lowest := pm.nextCol
 	c.Assert(lowest.peer, Not(IsNil))
 	c.Assert(lowest.peer, Equals, peer123)
 
+	// now add peer12 ============================================
 	err = pm.AddToPeerMap(peer12)
 	c.Assert(err, IsNil)
-	c.Assert(pm.lowest, Not(IsNil))
-	lowest = pm.lowest
-	c.Assert(lowest.peer, Not(IsNil))
-	// c.Assert(lowest.peer, Equals, peer12) // PANIC
-	c.Assert(lowest.peer.GetName(), Equals, peer12.GetName())
+	c.Assert(pm.nextCol, Not(IsNil))
+	col0 := pm.nextCol
 
+	// column 0 check - expect an empty cell
+	c.Assert(col0.thisCol, IsNil)
+	c.Assert(col0.peer, IsNil)
+
+	// column 1 check - another empty cell
+	col1 := col0.nextCol
+	c.Assert(col1, Not(IsNil))
+	c.Assert(col1.thisCol, IsNil)
+	c.Assert(col1.peer, IsNil)
+
+	// column 2a checks - peer12 with peer123 on the nextCol chain
+	col2a := col1.nextCol
+	c.Assert(col2a, Not(IsNil))
+	c.Assert(col2a.nextCol, IsNil)
+	c.Assert(col2a.peer, Not(IsNil))
+	c.Assert(col2a.peer.GetName(), Equals, "peer12")
+
+	// column 2b checks
+	col2b := col2a.thisCol
+	c.Assert(col2b, Not(IsNil))
+	c.Assert(col2b.nextCol, IsNil)
+	c.Assert(col2b.thisCol, IsNil)
+	c.Assert(col2b.peer, Not(IsNil))
+	c.Assert(col2b.peer.GetName(), Equals, "peer123")
+
+	// now add peer1 =============================================
 	err = pm.AddToPeerMap(peer1)
 	c.Assert(err, IsNil)
-	c.Assert(pm.lowest, Not(IsNil))
-	lowest = pm.lowest
-	c.Assert(lowest.peer, Not(IsNil))
-	c.Assert(lowest.peer, Equals, peer1)
+	c.Assert(pm.nextCol, Not(IsNil))
+	col0 = pm.nextCol
 
-	c.Assert(pm.lowest.byteVal, Equals, byte(1))
-	nextCell := pm.lowest.thisCol
-	c.Assert(nextCell.byteVal, Equals, byte(2))
-	nextCell = nextCell.thisCol
-	c.Assert(nextCell.byteVal, Equals, byte(3))
+	// column 0 checks - an empty cell
+	c.Assert(col0.peer, IsNil) // FAILS
+	c.Assert(col0.thisCol, IsNil)
+
+	// column 1a check -
+	col1a := col0.nextCol
+	c.Assert(col1a, Not(IsNil))
+	c.Assert(col1a.nextCol, IsNil)
+	c.Assert(col1a.thisCol, Not(IsNil))
+	c.Assert(col1a.peer, Not(IsNil))
+	c.Assert(col1a.peer, Equals, peer1)
+	c.Assert(col1a.peer.GetName(), Equals, "peer1")
+
+	// column 1b checks - another empty cell
+	col1b := col1a.thisCol
+	c.Assert(col1b.peer, IsNil)
+	c.Assert(col1b.thisCol, IsNil)
+
+	// column 2a checks - peer12 with peer123 on the nextCol chain
+	col2a = col1b.nextCol
+	c.Assert(col2a, Not(IsNil))
+	c.Assert(col2a.nextCol, IsNil)
+	c.Assert(col2a.peer, Not(IsNil))
+	c.Assert(col2a.peer.GetName(), Equals, "peer12")
+
+	// column 2b checks
+	col2b = col2a.thisCol
+	c.Assert(col2b, Not(IsNil))
+	c.Assert(col2b.nextCol, IsNil)
+	c.Assert(col2b.thisCol, IsNil)
+	c.Assert(col2b.peer, Not(IsNil))
+	c.Assert(col2b.peer.GetName(), Equals, "peer123")
+
+	c.Assert(col0.byteVal, Equals, byte(1))
+	c.Assert(col1a.byteVal, Equals, byte(0))
+	c.Assert(col1b.byteVal, Equals, byte(2))
+	c.Assert(col2a.byteVal, Equals, byte(0))
+	c.Assert(col2b.byteVal, Equals, byte(3))
+
+	// add 123, then 1, then 12 ----------------------------------
+
+	// XXX STUB XXX
+
 }
 
+// XXX THIS DOES NOT BELONG HERE =================================
 // XXX Something similar to this should be in nodeID/nodeID.go
 func (s *XLSuite) TestSameNodeID(c *C) {
 	peer := s.makeAPeer(c, "foo", 1, 2, 3, 4)
