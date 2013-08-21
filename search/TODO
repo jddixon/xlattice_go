@@ -1,9 +1,12 @@
 xlattice_go/search/TODO
 
-2013-08-18
-    * TestTopBottomMap is failing at two points, apparently because
-        of a bug in Peer.Equal(), probably because of fields added
-        to Peer struct.  Fix it.
+2013-08-21
+    * TestFind needs to be altered to insert peers in random order
+    * FIX: insertion algorithm where you add eg 4 and then 42 
+        - should result in nil -> 40 v 42
+        - actually gets 4 -> 42, which breaks the rule that says
+            if peer != nil then nextCol == nil
 
-    * AddToPeerMap's handling of the case where the byteVal 
-        matches the existing root.byteVal is wrong. 
+2013-08-20
+    * test behavior in case where duplicate nodeID is added to 
+        peer map

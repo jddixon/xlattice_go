@@ -2,6 +2,7 @@ package search
 
 import (
 	"fmt"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xn "github.com/jddixon/xlattice_go/node"
 )
 
@@ -121,7 +122,7 @@ func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 		// DEBUG
 		fmt.Printf("CALLING AddThisCol: adding %s as higher, curByte is %d\n",
 			peer.GetName(), curByte)
-		p.AddThisCol(id, 0, peer)
+		p.AddThisCol(id, depth, peer)      
 		// END
 	}
 
@@ -134,6 +135,10 @@ func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 // id2 and peer2 represent any pre-existing value.
 func (p *PeerMapCell) AddMatchingToDepth(depth int,
 	id, id2 []byte, peer, peer2 *xn.Peer) (err error) {
+
+    // XXX SHOULD NEVER SEE THIS, but do see it
+    fmt.Printf("ADD_MATCHING_TO_DEPTH, depth %d, peer %s\n",
+        depth, peer.GetName())
 
 	// The byte string id has matched the chain up to this point.
 	// We examine the next byte in id and the byte value for the next
@@ -206,8 +211,8 @@ func (p *PeerMapCell) AddThisCol(id []byte, depth int, peer *xn.Peer) (
 	err error) {
 
 	nextByte := id[depth]
-	if p.nextCol == nil {
-		p.nextCol = &PeerMapCell{nextByte, p, nil, nil, peer}
+	if p.thisCol == nil {
+		p.thisCol = &PeerMapCell{nextByte, p, nil, nil, peer}
 	} else {
 		curHigher := p.thisCol // current higher value
 		if nextByte < curHigher.byteVal {
@@ -222,35 +227,59 @@ func (p *PeerMapCell) AddThisCol(id []byte, depth int, peer *xn.Peer) (
 	return
 }
 
+// At any particular depth, a match is possible only if (a) peer for the
+// cell is not nil and (b) we have a byte-wise match
+
 func (m *PeerMap) FindPeer(id []byte) (peer *xn.Peer) {
 	mapCell := m.nextCol
-	for depth := 0; depth < len(id); depth++ {
-		// continue to check sibling
+    fmt.Printf("FindPeer for %d.%d.%d.%d\n", id[0], id[1], id[2], id[3])
 
+	for depth := 0; depth < len(id); depth++ {
 		myVal := id[depth]
-		if myVal < mapCell.byteVal {
-			return nil
-		} else if myVal == mapCell.byteVal {
+        fmt.Printf("    FindPeer: depth %d, val %d\n", depth, myVal)
+        if mapCell == nil {
+            fmt.Printf("    Internal error: nil mapCell at depth %d\n", depth)
+            return nil
+        }
+		if myVal > mapCell.byteVal {
+            for mapCell.thisCol != nil {
+                mapCell = mapCell.thisCol
+                if myVal == mapCell.byteVal {
+                    goto maybeEqual
+                } else if myVal > mapCell.byteVal {
+                    return nil
+                }
+            }
+            fmt.Printf("    depth %d, %d < %d returning NIL\n", 
+                    depth, myVal, mapCell.byteVal)
+		    return nil
+		}
+        maybeEqual:
+        if myVal == mapCell.byteVal {
 			if mapCell.nextCol == nil {
-				return mapCell.peer
+                myNodeID, err := xi.NewNodeID(id)
+                if err != nil {
+                    fmt.Printf("    FindPeer: NewNodeID returns %v", err)
+                    return nil
+                }
+                if mapCell.peer != nil {
+                    fmt.Printf("    peer is %s\n", mapCell.peer.GetName())
+                    if xi.SameNodeID(myNodeID, mapCell.peer.GetNodeID()) {
+                        fmt.Printf("    *MATCH* on %s\n", 
+                            mapCell.peer.GetName())
+                        return mapCell.peer
+                    }
+                }
 			} else {
-				// we have a sibling - check it
+                fmt.Printf("    RIGHT, so depth := %d\n", depth + 1)
 				mapCell = mapCell.nextCol
 				continue
 			}
+
 		} else {
-			// myVal > mapCell.byteVal
-			for mapCell = mapCell.thisCol; mapCell != nil; mapCell = mapCell.thisCol {
-				if myVal < mapCell.byteVal {
-					return
-				} else if myVal == mapCell.byteVal {
-					mapCell = mapCell.nextCol
-					break
-				} else {
-					continue // down the chain of higher values
-				}
-			}
-			continue // along the chain of matching values
+			// myVal < mapCell.byteVal
+            fmt.Printf("    myval %d > cell's %d\n", myVal, mapCell.byteVal)
+            return nil
 		}
 	}
 	return
