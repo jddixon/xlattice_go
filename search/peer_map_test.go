@@ -15,7 +15,7 @@ var _ = rnglib.MakeSimpleRNG
 
 const (
 	SHA1_LEN  = 20
-	VERBOSITY = 1
+	VERBOSITY = 0
 )
 
 func (s *XLSuite) makeTopAndBottom(c *C) (topPeer, bottomPeer *xn.Peer) {
@@ -73,7 +73,7 @@ func (s *XLSuite) TestPeerMapTools(c *C) {
 }
 func (s *XLSuite) TestTopBottomMap(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_PEER_MAP")
+		fmt.Println("TEST_TOP_BOTTOM_MAP")
 	}
 
 	var pm PeerMap
@@ -113,26 +113,37 @@ func (s *XLSuite) TestShallowMap(c *C) {
 	peer2 := s.makeAPeer(c, "peer2", 2)
 	peer3 := s.makeAPeer(c, "peer3", 3)
 
+	// ADD PEER 3 ---------------------------------------------------
 	err := pm.AddToPeerMap(peer3)
 	c.Assert(err, IsNil)
 	c.Assert(pm.nextCol, Not(IsNil))
-	lowest := pm.nextCol
-	c.Assert(lowest.peer, Not(IsNil))
-	c.Assert(lowest.peer, Equals, peer3)
+	cell3 := pm.nextCol
+	c.Assert(cell3.byteVal, Equals, byte(3))
+	c.Assert(cell3.peer, Not(IsNil))
+	c.Assert(cell3.peer.GetName(), Equals, peer3.GetName())
 
+	// INSERT PEER 2 ------------------------------------------------
 	err = pm.AddToPeerMap(peer2)
 	c.Assert(err, IsNil)
 	c.Assert(pm.nextCol, Not(IsNil))
-	lowest = pm.nextCol
-	c.Assert(lowest.peer, Not(IsNil))
-	c.Assert(lowest.peer, Equals, peer2)
+	cell2 := pm.nextCol
+	c.Assert(cell2.byteVal, Equals, byte(2)) // FAILS, is 3
+	c.Assert(cell2.thisCol.byteVal, Equals, byte(3))
+	c.Assert(cell2.peer, Not(IsNil))
+	c.Assert(cell2.peer.GetName(), Equals, peer2.GetName()) // FAILS
 
+	// DumpPeerMap(&pm, "dump of shallow map, peers 3 and 2")
+
+	// INSERT PEER 1 ------------------------------------------------
 	err = pm.AddToPeerMap(peer1)
 	c.Assert(err, IsNil)
 	c.Assert(pm.nextCol, Not(IsNil))
-	lowest = pm.nextCol
-	c.Assert(lowest.peer, Not(IsNil))
-	c.Assert(lowest.peer, Equals, peer1)
+	cell1 := pm.nextCol
+	c.Assert(cell1.byteVal, Equals, byte(1))
+	c.Assert(cell1.peer, Not(IsNil))
+	c.Assert(cell1.peer.GetName(), Equals, peer1.GetName())
+
+	// DumpPeerMap(&pm, "dump of shallow map, peers 3,2,1")
 
 	rootCell := pm.nextCol
 	c.Assert(rootCell.byteVal, Equals, byte(1))
@@ -169,7 +180,7 @@ func (s *XLSuite) TestDeeperMap(c *C) {
 	c.Assert(pm.nextCol, Not(IsNil))
 	col0 := pm.nextCol
 
-	DumpPeerMap(&pm, "after peer123 then peer12 added")
+	// DumpPeerMap(&pm, "after peer123 then peer12 added")
 
 	// column 0 check - expect an empty cell
 	c.Assert(col0.thisCol, IsNil)
@@ -202,10 +213,10 @@ func (s *XLSuite) TestDeeperMap(c *C) {
 	c.Assert(pm.nextCol, Not(IsNil))
 	col0 = pm.nextCol
 
-	DumpPeerMap(&pm, "after peer123, peer12, then peer1 added")
+	// DumpPeerMap(&pm, "after peer123, peer12, then peer1 added")
 
 	// column 0 checks - an empty cell
-	c.Assert(col0.peer, IsNil) // FAILS
+	c.Assert(col0.peer, IsNil)
 	c.Assert(col0.thisCol, IsNil)
 
 	// column 1a check -
@@ -269,13 +280,82 @@ func (s *XLSuite) findAPeer(c *C, pm *PeerMap, peer *xn.Peer) {
 	c.Assert(xi.SameNodeID(nodeID, nodeIDBack), Equals, true)
 
 }
-func (s *XLSuite) TestFindPeer(c *C) {
+func (s *XLSuite) TestFindFlatPeers(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("\nTEST_FIND_PEER")
+		fmt.Println("TEST_FIND_FLAT_PEERS")
 	}
 	var pm PeerMap
 	c.Assert(pm.nextCol, IsNil)
 
+	peer1 := s.makeAPeer(c, "peer1", 1)
+	peer2 := s.makeAPeer(c, "peer2", 2)
+	peer4 := s.makeAPeer(c, "peer4", 4)
+	peer5 := s.makeAPeer(c, "peer5", 5)
+	peer6 := s.makeAPeer(c, "peer6", 6)
+
+	// TODO: randomize order in which peers are added
+
+	// ADD 1 AND THEN 5 ---------------------------------------------
+	s.addAPeer(c, &pm, peer1)
+	s.addAPeer(c, &pm, peer5)
+
+	cell1 := pm.nextCol
+	c.Assert(cell1.pred, Equals, &pm.PeerMapCell)
+	c.Assert(cell1.nextCol, IsNil)
+
+	cell5 := cell1.thisCol
+	c.Assert(cell5, Not(IsNil)) // FAILS
+	c.Assert(cell5.byteVal, Equals, byte(5))
+	c.Assert(cell5.pred, Equals, cell1)
+	c.Assert(cell5.nextCol, IsNil)
+	c.Assert(cell5.thisCol, IsNil)
+
+	// INSERT 4 -----------------------------------------------------
+	s.addAPeer(c, &pm, peer4)
+
+	cell4 := cell1.thisCol
+	c.Assert(cell4.byteVal, Equals, byte(4))
+	c.Assert(cell4.pred, Equals, cell1)
+	c.Assert(cell4.nextCol, IsNil)
+	c.Assert(cell4.thisCol, Equals, cell5)
+	c.Assert(cell5.pred, Equals, cell4)
+
+	// ADD 6 --------------------------------------------------------
+	s.addAPeer(c, &pm, peer6)
+
+	cell6 := cell5.thisCol
+	c.Assert(cell6.byteVal, Equals, byte(6))
+	c.Assert(cell6.pred, Equals, cell5)
+	c.Assert(cell6.nextCol, IsNil)
+	c.Assert(cell6.thisCol, IsNil)
+
+	// INSERT 2 -----------------------------------------------------
+	s.addAPeer(c, &pm, peer2)
+
+	cell2 := cell1.thisCol
+	c.Assert(cell2.byteVal, Equals, byte(2))
+	c.Assert(cell2.pred, Equals, cell1)
+	c.Assert(cell2.nextCol, IsNil)
+	c.Assert(cell2.thisCol, Equals, cell4)
+	c.Assert(cell4.pred, Equals, cell2)
+
+	// DumpPeerMap(&pm, "after adding peer2")
+
+	// TODO: randomize order in which finding peers is tested
+	s.findAPeer(c, &pm, peer1)
+	s.findAPeer(c, &pm, peer2)
+	s.findAPeer(c, &pm, peer4)
+	s.findAPeer(c, &pm, peer5)
+	s.findAPeer(c, &pm, peer6)
+}
+func (s *XLSuite) TestFindPeer(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_FIND_PEER")
+	}
+	var pm PeerMap
+	c.Assert(pm.nextCol, IsNil)
+
+	peer0123 := s.makeAPeer(c, "peer0123", 0, 1, 2, 3)
 	peer1 := s.makeAPeer(c, "peer1", 1)
 	peer12 := s.makeAPeer(c, "peer12", 1, 2)
 	peer123 := s.makeAPeer(c, "peer123", 1, 2, 3)
@@ -291,7 +371,7 @@ func (s *XLSuite) TestFindPeer(c *C) {
 	s.addAPeer(c, &pm, peer123)
 	s.addAPeer(c, &pm, peer12)
 	s.addAPeer(c, &pm, peer1)
-	DumpPeerMap(&pm, "after adding peer1, peer12, peer123, before peer4")
+	//DumpPeerMap(&pm, "after adding peer1, peer12, peer123, before peer4")
 
 	// s.addAPeer(c, &pm, peer5)
 	// DumpPeerMap(&pm, "after adding peer5")
@@ -299,16 +379,21 @@ func (s *XLSuite) TestFindPeer(c *C) {
 	s.addAPeer(c, &pm, peer4)
 	s.addAPeer(c, &pm, peer42)
 	s.addAPeer(c, &pm, peer423)
-	DumpPeerMap(&pm, "after adding peer4, peer42, peer423")
+	// DumpPeerMap(&pm, "after adding peer4, peer42, peer423")
 
 	s.addAPeer(c, &pm, peer6)
-	DumpPeerMap(&pm, "after adding peer6")
+	// DumpPeerMap(&pm, "after adding peer6")
 	s.addAPeer(c, &pm, peer623)
-	DumpPeerMap(&pm, "after adding peer623")
+	//DumpPeerMap(&pm, "after adding peer623")
 	s.addAPeer(c, &pm, peer62)
-	DumpPeerMap(&pm, "after adding peer62")
+	//DumpPeerMap(&pm, "after adding peer62")
+
+	s.addAPeer(c, &pm, peer0123)
+	//DumpPeerMap(&pm, "after adding peer0123")
 
 	// TODO: randomize order in which finding peers is tested
+	s.findAPeer(c, &pm, peer0123) // XXX
+
 	s.findAPeer(c, &pm, peer1)
 	s.findAPeer(c, &pm, peer12)
 	s.findAPeer(c, &pm, peer123)
@@ -317,9 +402,9 @@ func (s *XLSuite) TestFindPeer(c *C) {
 	s.findAPeer(c, &pm, peer42)
 	s.findAPeer(c, &pm, peer423)
 
-	// s.findAPeer(c, &pm, peer6)
-	// s.findAPeer(c, &pm, peer62)
-	// s.findAPeer(c, &pm, peer623)
+	s.findAPeer(c, &pm, peer6)
+	s.findAPeer(c, &pm, peer62)
+	s.findAPeer(c, &pm, peer623)
 }
 
 // XXX THIS DOES NOT BELONG HERE =================================

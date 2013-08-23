@@ -48,21 +48,28 @@ func (m *PeerMap) AddToPeerMap(peer *xn.Peer) (err error) {
 func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error) {
 	idByte := id[depth]
 	// DEBUG
-	fmt.Printf("AddAtCell: peer %s, depth %d, idByte %d, p.byteVal %d\n",
-		peer.GetName(), depth, idByte, p.byteVal)
+	//fmt.Printf("AddAtCell: peer %s, depth %d, idByte %d, p.byteVal %d\n",
+	//	peer.GetName(), depth, idByte, p.byteVal)
 	// END
 	if idByte < p.byteVal {
 		// DEBUG
-		fmt.Printf("lower, adding %s as pred, idByte is %d\n",
-			peer.GetName(), idByte)
+		//fmt.Printf("lower, adding %s as pred, idByte is %d\n",
+		//	peer.GetName(), idByte)
 		// END
-		p.pred.nextCol = &PeerMapCell{
+		newCell := &PeerMapCell{
 			byteVal: idByte, pred: p.pred, thisCol: p, peer: peer}
+		if p.pred.thisCol == nil {
+			// pred must be map's base cell
+			p.pred.nextCol = newCell
+		} else {
+			p.pred.thisCol = newCell
+		}
+		p.pred = newCell
 
 	} else if idByte == p.byteVal {
 		// DEBUG
-		fmt.Printf("%s matches at depth %d, idByte is %d\n",
-			peer.GetName(), depth, idByte)
+		//fmt.Printf("%s matches at depth %d, idByte is %d\n",
+		//	peer.GetName(), depth, idByte)
 		// END
 
 		if p.nextCol == nil {
@@ -71,10 +78,6 @@ func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 				// XXX possible error ignored
 				p.thisCol.AddAtCell(depth, peer, id)
 			} else {
-				// DEBUG
-				fmt.Printf("idByte %d, depth %d, no nextCol, no thisCol\n",
-					idByte, depth)
-				// END
 
 				peer2 := p.peer
 				var id2 []byte
@@ -92,7 +95,6 @@ func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 					curCell.nextCol = nextCell
 					curCell = nextCell
 					depth++
-					fmt.Printf("depth := %d\n", depth)
 					nextByte = id[depth]
 					nextByte2 = id2[depth]
 				}
@@ -108,17 +110,13 @@ func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 					lastCell2.pred = curCell
 					lastCell2.thisCol = lastCell
 					lastCell.pred = lastCell2
-				} // GEEP
-				fmt.Printf("END OF CHAINLET, peers %s and %s\n",
-					peer.GetName(), peer2.GetName()) // GEEP
+				}
 			}
 		} else {
 			// we had a match and we have a nextCol
 			lastCell := p
 			curCell := p.nextCol
 			depth++
-			fmt.Printf("    match and not-nil nextCol; depth becomes %d\n",
-				depth)
 			// skip any cells with matching values
 			for idByte = id[depth]; idByte == curCell.byteVal; idByte = id[depth] {
 				if curCell.nextCol == nil {
@@ -138,20 +136,15 @@ func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 
 			if curCell.thisCol != nil {
 				// possible error ignored
-				fmt.Printf("AddAtCell recursing to thisCol at depth %d]n",
-					depth)
 				curCell.thisCol.AddAtCell(depth, peer, id)
 			} else {
-				fmt.Printf("AddAtCell depth %d: curCell.thisCol nil; idByte %d, curByte %d\n",
-					depth, idByte, curByte)
 				// nextCol may NOT be nil but thisCol is nil
-
 				newCell := &PeerMapCell{byteVal: idByte, peer: peer}
 
 				if idByte < curByte {
 					// splice newCell in
-					fmt.Printf("    LESS: splicing new cell in at depth %d\n",
-						depth)
+					//fmt.Printf("    LESS: splicing new cell in at depth %d\n",
+					//	depth)
 
 					lastCell.nextCol = newCell
 					newCell.pred = lastCell
@@ -175,15 +168,11 @@ func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 
 	} else { // idByte > p.byteVal
 		if p.thisCol == nil {
-			// DEBUG
-			fmt.Printf("CALLING AddThisCol: adding %s as higher, idByte is %d\n",
-				peer.GetName(), idByte)
 			p.AddThisCol(id, depth, peer)
 		} else {
 			// XXX possible error ignored
 			p.thisCol.AddAtCell(depth, peer, id)
 		}
-		// END
 	}
 
 	return
@@ -271,18 +260,25 @@ func (p *PeerMapCell) AddThisCol(id []byte, depth int, peer *xn.Peer) (
 	err error) {
 
 	nextByte := id[depth]
+	//fmt.Printf("AddThisCol depth %d, nextByte %d, peer %s\n",
+	//	depth, nextByte, peer.GetName())
+
 	if p.thisCol == nil {
-		p.thisCol = &PeerMapCell{nextByte, p, nil, nil, peer}
+		p.thisCol = &PeerMapCell{byteVal: nextByte, pred: p, peer: peer}
+
+		//// DEBUG
+		//if p.peer == nil {
+		//	fmt.Printf("    %s is sole cell down from <nil>\n", peer.GetName())
+		//} else {
+		//	fmt.Printf("    %s is sole cell down from %s\n",
+		//		peer.GetName(), p.peer.GetName())
+		//}
+		//// END
+
 	} else {
-		curHigher := p.thisCol // current higher value
-		if nextByte < curHigher.byteVal {
-			curHigher = &PeerMapCell{nextByte, p, nil, curHigher, peer}
-		} else if nextByte == curHigher.byteVal {
-			// WORKING HERE
-			curHigher.AddMatchingToDepth(0, id, nil, peer, nil)
-		} else { // nextByte > curHigher.byteVal
-			curHigher.AddThisCol(id, 0, peer)
-		}
+		// fmt.Println("    thisCol is NOT nil")
+		// XXX ignoring possible error
+		p.thisCol.AddAtCell(depth, peer, id)
 	}
 	return
 }
@@ -291,54 +287,54 @@ func (p *PeerMapCell) AddThisCol(id []byte, depth int, peer *xn.Peer) (
 // cell is not nil and (b) we have a byte-wise match
 
 func (m *PeerMap) FindPeer(id []byte) (peer *xn.Peer) {
-	mapCell := m.nextCol
-	fmt.Printf("FindPeer for %d.%d.%d.%d\n", id[0], id[1], id[2], id[3])
+	curCell := m.nextCol
+	// fmt.Printf("FindPeer for %d.%d.%d.%d\n", id[0], id[1], id[2], id[3])
 
 	for depth := 0; depth < len(id); depth++ {
 		myVal := id[depth]
-		fmt.Printf("    FindPeer: depth %d, val %d\n", depth, myVal)
-		if mapCell == nil {
-			fmt.Printf("    Internal error: nil mapCell at depth %d\n", depth)
+		// fmt.Printf("    FindPeer: depth %d, val %d\n", depth, myVal)
+		if curCell == nil {
+			fmt.Printf("    Internal error: nil curCell at depth %d\n", depth)
 			return nil
 		}
-		if myVal > mapCell.byteVal {
-			for mapCell.thisCol != nil {
-				mapCell = mapCell.thisCol
-				if myVal == mapCell.byteVal {
+		if myVal > curCell.byteVal {
+			for curCell.thisCol != nil {
+				curCell = curCell.thisCol
+				if myVal == curCell.byteVal {
 					goto maybeEqual
-				} else if myVal > mapCell.byteVal {
-					return nil
+				} else if myVal > curCell.byteVal {
+					continue
 				}
+				break
 			}
-			fmt.Printf("    depth %d, %d < %d returning NIL\n",
-				depth, myVal, mapCell.byteVal)
+			//fmt.Printf("    depth %d, %d < %d returning NIL\n",
+			//	depth, myVal, curCell.byteVal)
 			return nil
 		}
 	maybeEqual:
-		if myVal == mapCell.byteVal {
-			if mapCell.nextCol == nil {
+		if myVal == curCell.byteVal {
+			if curCell.nextCol == nil {
 				myNodeID, err := xi.NewNodeID(id)
 				if err != nil {
 					fmt.Printf("    FindPeer: NewNodeID returns %v", err)
 					return nil
 				}
-				if mapCell.peer != nil {
-					fmt.Printf("    peer is %s\n", mapCell.peer.GetName())
-					if xi.SameNodeID(myNodeID, mapCell.peer.GetNodeID()) {
-						fmt.Printf("    *MATCH* on %s\n",
-							mapCell.peer.GetName())
-						return mapCell.peer
+				if curCell.peer != nil {
+					// fmt.Printf("    peer is %s\n", curCell.peer.GetName())
+					if xi.SameNodeID(myNodeID, curCell.peer.GetNodeID()) {
+						// fmt.Printf("    *MATCH* on %s\n", curCell.peer.GetName())
+						return curCell.peer
 					}
 				}
 			} else {
-				fmt.Printf("    RIGHT, so depth := %d\n", depth+1)
-				mapCell = mapCell.nextCol
+				// fmt.Printf("    RIGHT, so depth := %d\n", depth+1)
+				curCell = curCell.nextCol
 				continue
 			}
 
 		} else {
-			// myVal < mapCell.byteVal
-			fmt.Printf("    myval %d > cell's %d\n", myVal, mapCell.byteVal)
+			// myVal < curCell.byteVal
+			//fmt.Printf("    myval %d > cell's %d\n", myVal, curCell.byteVal)
 			return nil
 		}
 	}

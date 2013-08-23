@@ -19,6 +19,7 @@ const (
 )
 
 func dumpRight(cell *PeerMapCell, indent string) {
+	firstCell := cell
 	ss := []string{indent}
 	var offset int
 	var lastCell *PeerMapCell
@@ -33,7 +34,7 @@ func dumpRight(cell *PeerMapCell, indent string) {
 	}
 	line := strings.Join(ss, "")
 	fmt.Printf("%s\n", line)
-	if lastCell.thisCol != nil {
+	if firstCell != lastCell && lastCell.thisCol != nil {
 		for i := 0; i < offset-1; i++ {
 			indent += SPACES
 		}
