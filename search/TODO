@@ -1,5 +1,9 @@
 xlattice_go/search/TODO
 
+2013-08-23
+    * Add peer5 to TestFindPeer
+    * Enable Finds on peer5, peer6*
+
 2013-08-21
     * TestFind needs to be altered to insert peers in random order
     * FIX: insertion algorithm where you add eg 4 and then 42 

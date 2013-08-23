@@ -138,7 +138,7 @@ func (s *XLSuite) TestShallowMap(c *C) {
 	c.Assert(rootCell.byteVal, Equals, byte(1))
 	c.Assert(rootCell.peer.GetName(), Equals, "peer1")
 	nextCell := rootCell.thisCol
-	c.Assert(nextCell, Not(IsNil)) // FAILS
+	c.Assert(nextCell, Not(IsNil))
 	c.Assert(nextCell.byteVal, Equals, byte(2))
 	nextCell = nextCell.thisCol
 	c.Assert(nextCell.byteVal, Equals, byte(3))
@@ -282,34 +282,44 @@ func (s *XLSuite) TestFindPeer(c *C) {
 	peer4 := s.makeAPeer(c, "peer4", 4)
 	peer42 := s.makeAPeer(c, "peer42", 4, 2)
 	peer423 := s.makeAPeer(c, "peer423", 4, 2, 3)
+	// peer5 := s.makeAPeer(c, "peer5", 5)
+	peer6 := s.makeAPeer(c, "peer6", 6)
+	peer62 := s.makeAPeer(c, "peer62", 6, 2)
+	peer623 := s.makeAPeer(c, "peer623", 6, 2, 3)
 
-	// XXX BUG: if this are added in reverse order (peer123, peer12, peer1)
-	// then tests succeed.  If they are added in ascending order (peer1,
-	// peer12, peer123) tests fail: specifically, peer12 and its
-	// preceding nil do not appear on dumps.
-	//
 	// TODO: randomize order in which peers are added
 	s.addAPeer(c, &pm, peer123)
 	s.addAPeer(c, &pm, peer12)
 	s.addAPeer(c, &pm, peer1)
-
 	DumpPeerMap(&pm, "after adding peer1, peer12, peer123, before peer4")
 
+	// s.addAPeer(c, &pm, peer5)
+	// DumpPeerMap(&pm, "after adding peer5")
+
 	s.addAPeer(c, &pm, peer4)
-	DumpPeerMap(&pm, "after adding peer4")
 	s.addAPeer(c, &pm, peer42)
-	DumpPeerMap(&pm, "after adding peer42")
 	s.addAPeer(c, &pm, peer423)
-	DumpPeerMap(&pm, "after adding peer423")
+	DumpPeerMap(&pm, "after adding peer4, peer42, peer423")
+
+	s.addAPeer(c, &pm, peer6)
+	DumpPeerMap(&pm, "after adding peer6")
+	s.addAPeer(c, &pm, peer623)
+	DumpPeerMap(&pm, "after adding peer623")
+	s.addAPeer(c, &pm, peer62)
+	DumpPeerMap(&pm, "after adding peer62")
 
 	// TODO: randomize order in which finding peers is tested
 	s.findAPeer(c, &pm, peer1)
 	s.findAPeer(c, &pm, peer12)
 	s.findAPeer(c, &pm, peer123)
 
+	s.findAPeer(c, &pm, peer4)
 	s.findAPeer(c, &pm, peer42)
 	s.findAPeer(c, &pm, peer423)
-	s.findAPeer(c, &pm, peer4) // FAILS, peer4 hanging off 0th cell
+
+	// s.findAPeer(c, &pm, peer6)
+	// s.findAPeer(c, &pm, peer62)
+	// s.findAPeer(c, &pm, peer623)
 }
 
 // XXX THIS DOES NOT BELONG HERE =================================

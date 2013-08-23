@@ -136,53 +136,40 @@ func (p *PeerMapCell) AddAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 
 			// nextCol is nil OR idByte doesn't match ----------------
 
-			if p.thisCol != nil {
+			if curCell.thisCol != nil {
 				// possible error ignored
 				fmt.Printf("AddAtCell recursing to thisCol at depth %d]n",
 					depth)
-				p.thisCol.AddAtCell(depth, peer, id)
+				curCell.thisCol.AddAtCell(depth, peer, id)
 			} else {
-				fmt.Printf("AddAtCell depth %d: thisCol nil; idByte %d, curByte %d\n",
+				fmt.Printf("AddAtCell depth %d: curCell.thisCol nil; idByte %d, curByte %d\n",
 					depth, idByte, curByte)
 				// nextCol may NOT be nil but thisCol is nil
 
 				newCell := &PeerMapCell{byteVal: idByte, peer: peer}
 
-				//////////////////////////////////////////////
-				// CREATE DUMMY CELL ONLY IF idByte < curByte
-				//////////////////////////////////////////////
+				if idByte < curByte {
+					// splice newCell in
+					fmt.Printf("    LESS: splicing new cell in at depth %d\n",
+						depth)
 
-				// create dummy cell and splice it in
-				fmt.Printf("    creating dummy cell at depth %d\n", depth)
-				if idByte >= curByte {
-					fmt.Printf("   *** this is an error ***\n")
-				}
-
-				dummyCell := &PeerMapCell{byteVal: curByte, pred: lastCell}
-				lastCell.thisCol = dummyCell
-				lastCell.nextCol = nil
-
-				if idByte < curCell.byteVal {
-					fmt.Printf("inserting\n")
-					dummyCell.nextCol = newCell
-					newCell.pred = dummyCell
+					lastCell.nextCol = newCell
+					newCell.pred = lastCell
+					newCell.nextCol = nil
 					newCell.thisCol = curCell
 					curCell.pred = newCell
-					fmt.Printf("%d -> dummy(%d) -> %d -> %d\n",
-						dummyCell.pred.byteVal,
-						dummyCell.byteVal,
-						newCell.byteVal, curCell.byteVal)
+
 				} else {
-					fmt.Printf("appending\n")
-					dummyCell.nextCol = curCell
-					curCell.pred = dummyCell
-					curCell.thisCol = newCell
-					newCell.pred = curCell
-					fmt.Printf("%d -> dummy(%d) -> %d -> %d\n",
-						dummyCell.pred.byteVal,
-						dummyCell.byteVal,
-						curCell.byteVal, newCell.byteVal)
-				} // GEEP
+					fmt.Printf("    GREATER: new cell off thisCol\n")
+					if curCell.thisCol == nil {
+						curCell.thisCol = newCell
+						newCell.pred = curCell
+					} else {
+						// XXX possible error ignored
+						curCell.thisCol.AddAtCell(depth, peer, id)
+					}
+
+				}
 			}
 		}
 
