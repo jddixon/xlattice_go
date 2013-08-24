@@ -391,6 +391,11 @@ func (s *XLSuite) TestFindPeer(c *C) {
 	s.addAPeer(c, &pm, peer0123)
 	//DumpPeerMap(&pm, "after adding peer0123")
 
+	// adding duplicates should have no effect
+	s.addAPeer(c, &pm, peer4)
+	s.addAPeer(c, &pm, peer42)
+	s.addAPeer(c, &pm, peer423)
+
 	// TODO: randomize order in which finding peers is tested
 	s.findAPeer(c, &pm, peer0123) // XXX
 
