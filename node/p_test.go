@@ -46,7 +46,7 @@ func (d *XLSuite) TestXLatticePkt(c *C) {
 
 	hash := digest.Sum(nil)
 
-	// XXX This does not adhere to the rules: it has no Op field;
+	// XXX This does not adhere to the rules: it has no Cmd field;
 	// since it has a payload it must be a Put, and so the id is
 	// also required and the Hash field should be a Sig instead, right?
 	var pkt = XLatticeMsg{

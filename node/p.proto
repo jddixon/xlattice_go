@@ -1,7 +1,7 @@
 package node;
 
 message XLatticeMsg {
-    enum Op {
+    enum Cmd {
         Hello       = 1;    // first msg, initiates comms cycle
         Bye         = 2;    // ends comms cycle
         KeepAlive   = 3;    // msgN, id, opt salt, opt sig
@@ -11,19 +11,19 @@ message XLatticeMsg {
         Put         = 7;    // above plus payload
         IHave       = 8;    // like KeepAlive plus payload = list of hashes
     }
-    optional Op     op          = 1;
-    optional uint64 msgN        = 2;    // Nth msg on this cnx, starting at 1
-    optional bytes  id          = 3;
-    optional bytes  salt        = 4;
-    optional bytes  sig         = 5;
-    optional uint64 yourMsgN	= 6;
-    optional bytes  yourID		= 7;
-    optional uint64 errCode     = 8;
-    optional string errDesc     = 9;
-    optional bytes  hash        = 10;
-    optional bytes  payload     = 11;
-    optional bytes  commsKey    = 12;   // hello
-    optional bytes  sigKey      = 13;   // hello
-    optional string myEnd       = 14;   // hello, optional, address:port
+    optional Cmd    Op          = 1;
+    optional uint64 MsgN        = 2;    // Nth msg on this cnx, starting at 1
+    optional bytes  ID          = 3;
+    optional bytes  Salt        = 4;
+    optional bytes  Sig         = 5;
+    optional uint64 YourMsgN	= 6;
+    optional bytes  YourID		= 7;
+    optional uint64 ErrCode     = 8;
+    optional string ErrDesc     = 9;
+    optional bytes  Hash        = 10;
+    optional bytes  Payload     = 11;
+    optional bytes  CommsKey    = 12;   // hello
+    optional bytes  SigKey      = 13;   // hello
+    optional string MyEnd       = 14;   // hello, optional, address:port
 }
 

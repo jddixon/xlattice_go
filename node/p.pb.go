@@ -13,20 +13,20 @@ var _ = proto.Marshal
 var _ = &json.SyntaxError{}
 var _ = math.Inf
 
-type XLatticeMsg_Op int32
+type XLatticeMsg_Cmd int32
 
 const (
-	XLatticeMsg_Hello     XLatticeMsg_Op = 1
-	XLatticeMsg_Bye       XLatticeMsg_Op = 2
-	XLatticeMsg_KeepAlive XLatticeMsg_Op = 3
-	XLatticeMsg_Ack       XLatticeMsg_Op = 4
-	XLatticeMsg_Error     XLatticeMsg_Op = 5
-	XLatticeMsg_Get       XLatticeMsg_Op = 6
-	XLatticeMsg_Put       XLatticeMsg_Op = 7
-	XLatticeMsg_IHave     XLatticeMsg_Op = 8
+	XLatticeMsg_Hello     XLatticeMsg_Cmd = 1
+	XLatticeMsg_Bye       XLatticeMsg_Cmd = 2
+	XLatticeMsg_KeepAlive XLatticeMsg_Cmd = 3
+	XLatticeMsg_Ack       XLatticeMsg_Cmd = 4
+	XLatticeMsg_Error     XLatticeMsg_Cmd = 5
+	XLatticeMsg_Get       XLatticeMsg_Cmd = 6
+	XLatticeMsg_Put       XLatticeMsg_Cmd = 7
+	XLatticeMsg_IHave     XLatticeMsg_Cmd = 8
 )
 
-var XLatticeMsg_Op_name = map[int32]string{
+var XLatticeMsg_Cmd_name = map[int32]string{
 	1: "Hello",
 	2: "Bye",
 	3: "KeepAlive",
@@ -36,7 +36,7 @@ var XLatticeMsg_Op_name = map[int32]string{
 	7: "Put",
 	8: "IHave",
 }
-var XLatticeMsg_Op_value = map[string]int32{
+var XLatticeMsg_Cmd_value = map[string]int32{
 	"Hello":     1,
 	"Bye":       2,
 	"KeepAlive": 3,
@@ -47,49 +47,49 @@ var XLatticeMsg_Op_value = map[string]int32{
 	"IHave":     8,
 }
 
-func (x XLatticeMsg_Op) Enum() *XLatticeMsg_Op {
-	p := new(XLatticeMsg_Op)
+func (x XLatticeMsg_Cmd) Enum() *XLatticeMsg_Cmd {
+	p := new(XLatticeMsg_Cmd)
 	*p = x
 	return p
 }
-func (x XLatticeMsg_Op) String() string {
-	return proto.EnumName(XLatticeMsg_Op_name, int32(x))
+func (x XLatticeMsg_Cmd) String() string {
+	return proto.EnumName(XLatticeMsg_Cmd_name, int32(x))
 }
-func (x XLatticeMsg_Op) MarshalJSON() ([]byte, error) {
+func (x XLatticeMsg_Cmd) MarshalJSON() ([]byte, error) {
 	return json.Marshal(x.String())
 }
-func (x *XLatticeMsg_Op) UnmarshalJSON(data []byte) error {
-	value, err := proto.UnmarshalJSONEnum(XLatticeMsg_Op_value, data, "XLatticeMsg_Op")
+func (x *XLatticeMsg_Cmd) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(XLatticeMsg_Cmd_value, data, "XLatticeMsg_Cmd")
 	if err != nil {
 		return err
 	}
-	*x = XLatticeMsg_Op(value)
+	*x = XLatticeMsg_Cmd(value)
 	return nil
 }
 
 type XLatticeMsg struct {
-	Op               *XLatticeMsg_Op `protobuf:"varint,1,opt,name=op,enum=node.XLatticeMsg_Op" json:"op,omitempty"`
-	MsgN             *uint64         `protobuf:"varint,2,opt,name=msgN" json:"msgN,omitempty"`
-	Id               []byte          `protobuf:"bytes,3,opt,name=id" json:"id,omitempty"`
-	Salt             []byte          `protobuf:"bytes,4,opt,name=salt" json:"salt,omitempty"`
-	Sig              []byte          `protobuf:"bytes,5,opt,name=sig" json:"sig,omitempty"`
-	YourMsgN         *uint64         `protobuf:"varint,6,opt,name=yourMsgN" json:"yourMsgN,omitempty"`
-	YourID           []byte          `protobuf:"bytes,7,opt,name=yourID" json:"yourID,omitempty"`
-	ErrCode          *uint64         `protobuf:"varint,8,opt,name=errCode" json:"errCode,omitempty"`
-	ErrDesc          *string         `protobuf:"bytes,9,opt,name=errDesc" json:"errDesc,omitempty"`
-	Hash             []byte          `protobuf:"bytes,10,opt,name=hash" json:"hash,omitempty"`
-	Payload          []byte          `protobuf:"bytes,11,opt,name=payload" json:"payload,omitempty"`
-	CommsKey         []byte          `protobuf:"bytes,12,opt,name=commsKey" json:"commsKey,omitempty"`
-	SigKey           []byte          `protobuf:"bytes,13,opt,name=sigKey" json:"sigKey,omitempty"`
-	MyEnd            *string         `protobuf:"bytes,14,opt,name=myEnd" json:"myEnd,omitempty"`
-	XXX_unrecognized []byte          `json:"-"`
+	Op               *XLatticeMsg_Cmd `protobuf:"varint,1,opt,enum=node.XLatticeMsg_Cmd" json:"Op,omitempty"`
+	MsgN             *uint64          `protobuf:"varint,2,opt" json:"MsgN,omitempty"`
+	ID               []byte           `protobuf:"bytes,3,opt" json:"ID,omitempty"`
+	Salt             []byte           `protobuf:"bytes,4,opt" json:"Salt,omitempty"`
+	Sig              []byte           `protobuf:"bytes,5,opt" json:"Sig,omitempty"`
+	YourMsgN         *uint64          `protobuf:"varint,6,opt" json:"YourMsgN,omitempty"`
+	YourID           []byte           `protobuf:"bytes,7,opt" json:"YourID,omitempty"`
+	ErrCode          *uint64          `protobuf:"varint,8,opt" json:"ErrCode,omitempty"`
+	ErrDesc          *string          `protobuf:"bytes,9,opt" json:"ErrDesc,omitempty"`
+	Hash             []byte           `protobuf:"bytes,10,opt" json:"Hash,omitempty"`
+	Payload          []byte           `protobuf:"bytes,11,opt" json:"Payload,omitempty"`
+	CommsKey         []byte           `protobuf:"bytes,12,opt" json:"CommsKey,omitempty"`
+	SigKey           []byte           `protobuf:"bytes,13,opt" json:"SigKey,omitempty"`
+	MyEnd            *string          `protobuf:"bytes,14,opt" json:"MyEnd,omitempty"`
+	XXX_unrecognized []byte           `json:"-"`
 }
 
 func (m *XLatticeMsg) Reset()         { *m = XLatticeMsg{} }
 func (m *XLatticeMsg) String() string { return proto.CompactTextString(m) }
 func (*XLatticeMsg) ProtoMessage()    {}
 
-func (m *XLatticeMsg) GetOp() XLatticeMsg_Op {
+func (m *XLatticeMsg) GetOp() XLatticeMsg_Cmd {
 	if m != nil && m.Op != nil {
 		return *m.Op
 	}
@@ -103,9 +103,9 @@ func (m *XLatticeMsg) GetMsgN() uint64 {
 	return 0
 }
 
-func (m *XLatticeMsg) GetId() []byte {
+func (m *XLatticeMsg) GetID() []byte {
 	if m != nil {
-		return m.Id
+		return m.ID
 	}
 	return nil
 }
@@ -188,5 +188,5 @@ func (m *XLatticeMsg) GetMyEnd() string {
 }
 
 func init() {
-	proto.RegisterEnum("node.XLatticeMsg_Op", XLatticeMsg_Op_name, XLatticeMsg_Op_value)
+	proto.RegisterEnum("node.XLatticeMsg_Cmd", XLatticeMsg_Cmd_name, XLatticeMsg_Cmd_value)
 }
