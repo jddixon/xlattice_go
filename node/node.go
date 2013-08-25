@@ -38,6 +38,7 @@ type Node struct {
 	peers       []Peer
 	connections []xt.ConnectionI // volatile
 	gateways    []Gateway
+	peerMap		*PeerMap
 	BaseNode    // listed last, but serialize first
 }
 
@@ -104,10 +105,14 @@ func New(name string, id *xi.NodeID, lfs string,
 			}
 		}
 	}
+	var pm PeerMap					// empty PeerMap
+	pmPtr := &pm
+
 	var peers []Peer // an empty slice
 	if p != nil {
 		count := len(p)
 		for i := 0; i < count; i++ {
+			err   = pmPtr.AddToPeerMap(&p[i])
 			peers = append(peers, p[i])
 		}
 	}
@@ -117,12 +122,13 @@ func New(name string, id *xi.NodeID, lfs string,
 	baseNode, err := NewBaseNode(name, id, commsPubKey, sigPubKey, overlays)
 	if err == nil {
 		p := Node{commsKey: commsKey,
-			sigKey:    sigKey,
-			endPoints: endPoints,
-			peers:     peers,
-			gateways:  nil,
-			lfs:       lfs,
-			BaseNode:  *baseNode}
+			sigKey:     sigKey,
+			endPoints:  endPoints,
+			peers:      peers,
+			gateways:   nil,
+			lfs:        lfs,
+			peerMap:	pmPtr,
+			BaseNode:   *baseNode}
 		return &p, nil
 	} else {
 		return nil, err
@@ -254,22 +260,25 @@ func (n *Node) GetAcceptor(x int) xt.AcceptorI {
 ////} // GEEP
 
 // PEERS ////////////////////////////////////////////////////////////
-func (n *Node) AddPeer(o *Peer) (ndx int, err error) {
+func (n *Node) AddPeer(peer *Peer) (ndx int, err error) {
 	ndx = -1
-	if o == nil {
+	if peer == nil {
 		err = errors.New("IllegalArgument: nil Peer")
 	} else {
 		if n.peers != nil {
 			for i := 0; i < len(n.peers); i++ {
-				if n.peers[i].Equal(o) {
+				if n.peers[i].Equal(peer) {
 					ndx = i
 					break
 				}
 			}
 		}
 		if ndx == -1 {
-			n.peers = append(n.peers, *o)
-			ndx = len(n.peers) - 1
+			err = n.peerMap.AddToPeerMap(peer)
+			if err == nil {
+				n.peers = append(n.peers, *peer)
+				ndx = len(n.peers) - 1
+			}
 		}
 	}
 	return
@@ -440,6 +449,8 @@ func Parse(s string) (node *Node, rest []string, err error) {
 	bn, rest, err := ParseBaseNode(s, "node")
 	if err == nil {
 		node = &Node{BaseNode: *bn}
+		var pm PeerMap
+		node.peerMap = &pm
 
 		line := nextLine(&rest)
 		parts := strings.Split(line, ": ")

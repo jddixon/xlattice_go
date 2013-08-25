@@ -165,13 +165,13 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	ep2 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
 	e := []xt.EndPointI{ep0, ep1, ep2}
 
-	node, err := New(name, id, "", nil, nil, nil, e, nil)
+	n, err := New(name, id, "", nil, nil, nil, e, nil)
 	c.Assert(err, Equals, nil)
-	c.Assert(node, Not(Equals), nil)
-	defer node.Close()
+	c.Assert(n, Not(Equals), nil)
+	defer n.Close()
 
-	c.Assert(node.SizeEndPoints(), Equals, len(e))
-	c.Assert(node.SizeOverlays(), Equals, 1)
+	c.Assert(n.SizeEndPoints(), Equals, len(e))
+	c.Assert(n.SizeOverlays(), Equals, 1)
 
 	// expect to find an acceptor for each endpoint
 	// XXX STUB XXX

@@ -5,7 +5,7 @@ import "strings"
 
 // Version number tracked in ../CHANGES
 func Version() (string, string) {
-	return "0.3.0", "2013-08-07"
+	return "0.3.1", "2013-08-24"
 }
 
 // a crude attempt at properties

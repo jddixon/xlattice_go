@@ -1,8 +1,7 @@
-package search
+package node
 
 import (
 	"fmt"
-	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 )
 
@@ -16,14 +15,14 @@ type PeerMapCell struct {
 	pred    *PeerMapCell // predecessor
 	nextCol *PeerMapCell // points to a cell with same val for this byte
 	thisCol *PeerMapCell // points to a cell with higher val for this col
-	peer    *xn.Peer
+	peer    *Peer
 }
 
 // Add a Peer to the map.  This should be idempotent: adding a Peer
 // that is already in the map should have no effect at all.  The cell map
 // allows us to efficiently return a reference to a Peer, given its nodeID.
 
-func (m *PeerMap) AddToPeerMap(peer *xn.Peer) (err error) {
+func (m *PeerMap) AddToPeerMap(peer *Peer) (err error) {
 	id := peer.GetNodeID().Value()
 	// don't make this check on the very first entry
 	if m.nextCol != nil && m.FindPeer(id) != nil {
@@ -35,7 +34,7 @@ func (m *PeerMap) AddToPeerMap(peer *xn.Peer) (err error) {
 	// DEBUG
 	zero := make([]byte, xi.SHA1_LEN)
 	zeroID, _ := xi.NewNodeID(zero)
-	m.peer, _ = xn.NewNewPeer("mapRoot", zeroID)
+	m.peer, _ = NewNewPeer("mapRoot", zeroID)
 	// END
 	
 	root := m.nextCol
@@ -53,7 +52,7 @@ func (m *PeerMap) AddToPeerMap(peer *xn.Peer) (err error) {
 // depth is that of cell, with the root cell at column 0, and also the
 // index into the id slice.
 
-func (p *PeerMapCell) addAtCell(depth int, peer *xn.Peer, id []byte) (err error) {
+func (p *PeerMapCell) addAtCell(depth int, peer *Peer, id []byte) (err error) {
 	idByte := id[depth]
 	// DEBUG
 	//fmt.Printf("addAtCell: peer %s, depth %d, idByte %d, p.byteVal %d\n",
@@ -191,7 +190,7 @@ func (p *PeerMapCell) addAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 // is the byte slice for its nodeID and peer is a reference to that.
 // id2 and peer2 represent any pre-existing value.
 //func (p *PeerMapCell) addMatchingToDepth(depth int,
-//	id, id2 []byte, peer, peer2 *xn.Peer) (err error) {
+//	id, id2 []byte, peer, peer2 *Peer) (err error) {
 //
 //	// XXX SHOULD NEVER SEE THIS, but do see it
 //	fmt.Printf("ADD_MATCHING_TO_DEPTH, depth %d, peer %s\n",
@@ -264,7 +263,7 @@ func (p *PeerMapCell) addAtCell(depth int, peer *xn.Peer, id []byte) (err error)
 //	return
 //} // GEEP
 
-func (p *PeerMapCell) addThisCol(id []byte, depth int, peer *xn.Peer) (
+func (p *PeerMapCell) addThisCol(id []byte, depth int, peer *Peer) (
 	err error) {
 
 	nextByte := id[depth]
@@ -294,7 +293,7 @@ func (p *PeerMapCell) addThisCol(id []byte, depth int, peer *xn.Peer) (
 // At any particular depth, a match is possible only if (a) peer for the
 // cell is not nil and (b) we have a byte-wise match
 
-func (m *PeerMap) FindPeer(id []byte) (peer *xn.Peer) {
+func (m *PeerMap) FindPeer(id []byte) (peer *Peer) {
 	curCell := m.nextCol
 	// fmt.Printf("FindPeer for %d.%d.%d.%d\n", id[0], id[1], id[2], id[3])
 

@@ -1,10 +1,9 @@
-package search
+package node
 
-// xlattice_go/search/dump_test.go
+// xlattice_go/node/dump_test.go
 
 import (
 	"fmt"
-	// xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"strings"
 )

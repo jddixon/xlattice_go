@@ -1,10 +1,9 @@
-package search
+package node
 
 // xlattice_go/search/peer_map_test.go
 
 import (
 	"fmt"
-	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
@@ -15,10 +14,9 @@ var _ = rnglib.MakeSimpleRNG
 
 const (
 	SHA1_LEN  = 20
-	VERBOSITY = 0
 )
 
-func (s *XLSuite) makeTopAndBottom(c *C) (topPeer, bottomPeer *xn.Peer) {
+func (s *XLSuite) makeTopAndBottom(c *C) (topPeer, bottomPeer *Peer) {
 	t := make([]byte, SHA1_LEN)
 	for i := 0; i < SHA1_LEN; i++ {
 		t[i] = byte(0xf)
@@ -27,7 +25,7 @@ func (s *XLSuite) makeTopAndBottom(c *C) (topPeer, bottomPeer *xn.Peer) {
 	c.Assert(err, IsNil)
 	c.Assert(top, Not(IsNil))
 
-	topPeer, err = xn.NewNewPeer("top", top)
+	topPeer, err = NewNewPeer("top", top)
 	c.Assert(err, IsNil)
 	c.Assert(topPeer, Not(IsNil))
 
@@ -35,13 +33,13 @@ func (s *XLSuite) makeTopAndBottom(c *C) (topPeer, bottomPeer *xn.Peer) {
 	c.Assert(err, IsNil)
 	c.Assert(bottom, Not(IsNil))
 
-	bottomPeer, err = xn.NewNewPeer("bottom", bottom)
+	bottomPeer, err = NewNewPeer("bottom", bottom)
 	c.Assert(err, IsNil)
 	c.Assert(bottomPeer, Not(IsNil))
 
 	return topPeer, bottomPeer
 }
-func (s *XLSuite) makeAPeer(c *C, name string, id ...int) (peer *xn.Peer) {
+func (s *XLSuite) makeAPeer(c *C, name string, id ...int) (peer *Peer) {
 	t := make([]byte, SHA1_LEN)
 	for i := 0; i < len(id); i++ {
 		t[i] = byte(id[i])
@@ -50,7 +48,7 @@ func (s *XLSuite) makeAPeer(c *C, name string, id ...int) (peer *xn.Peer) {
 	c.Assert(err, IsNil)
 	c.Assert(nodeID, Not(IsNil))
 
-	peer, err = xn.NewNewPeer(name, nodeID)
+	peer, err = NewNewPeer(name, nodeID)
 	c.Assert(err, IsNil)
 	c.Assert(peer, Not(IsNil))
 	return
@@ -260,12 +258,12 @@ func (s *XLSuite) TestDeeperMap(c *C) {
 
 }
 
-func (s *XLSuite) addAPeer(c *C, pm *PeerMap, peer *xn.Peer) {
+func (s *XLSuite) addAPeer(c *C, pm *PeerMap, peer *Peer) {
 	err := pm.AddToPeerMap(peer)
 	c.Assert(err, IsNil)
 	c.Assert(pm.nextCol, Not(IsNil))
 }
-func (s *XLSuite) findAPeer(c *C, pm *PeerMap, peer *xn.Peer) {
+func (s *XLSuite) findAPeer(c *C, pm *PeerMap, peer *Peer) {
 	nodeID := peer.GetNodeID()
 	d := nodeID.Value()
 	c.Assert(d, Not(IsNil))

@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.3.1
+    2013-08-24
+        * working search.FindPeer maps []byte id to Peer            SLOC 6081
 0.3.0
     2013-08-07
         * node.Parse with lfs, keys, endPoints, overlays, peers 

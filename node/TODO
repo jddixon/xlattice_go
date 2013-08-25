@@ -1,5 +1,22 @@
 xlattice_go/node/TODO
 
+2013-08-25
+    * complete stubbed sections in test_node.TestAutoCreateOverlays
+
+2013-08-24
+    * peer_map: strip debug statements and meaningless comments 
+        from code
+
+2013-08-23
+    * Add peer5 to TestFindPeer                                         # DONE
+    * Enable Finds on peer5, peer6*                                     # DONE
+
+    * Move TestSameNodeID into ../nodeID/nodeID_test.go
+
+    * peer_map: consider replacing the current approach, perhaps with 
+        one where we have an array of 2^N pointers at each level -
+        should be simpler to construct and much faster to search
+
 2013-08-19
     * "connection reset by peer" in localHost_test.go at lines
         115, 126 seen once
