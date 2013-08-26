@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
-	"unsafe"
+	xu "github.com/jddixon/xlattice_go/util"
 )
 
 // TAKE CARE: these in bytes; hex values are twice these
@@ -80,22 +80,9 @@ func SameNodeID(a, b *NodeID) (same bool) {
 		return false
 	}
 	aVal, bVal := a.Value(), b.Value()
-	if len(aVal) != len(bVal) {
-		return false
-	}
-	length := len(aVal)
 
-	var aInt, bInt int
-	sizeInt := int(unsafe.Sizeof(aInt))
+	return xu.SameBytes(aVal, bVal)
 
-	for i := 0; i < length; i += sizeInt {
-		aInt = *(*int)(unsafe.Pointer(&aVal[i]))
-		bInt = *(*int)(unsafe.Pointer(&bVal[i]))
-		if aInt != bInt {
-			return false
-		}
-	}
-	return true
 }
 func (n *NodeID) Equal(any interface{}) bool {
 	if any == n {
