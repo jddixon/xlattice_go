@@ -49,6 +49,7 @@ const (
 var (
 	MissingHello  = errors.New("expected a Hello msg")
 	NilConnection = errors.New("nil connection")
+	NilNode       = errors.New("nil node")
 )
 
 type MsgCarrier struct {

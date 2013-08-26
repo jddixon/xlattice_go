@@ -18,7 +18,11 @@ import (
 var _ = fmt.Print
 
 var (
-	NotASerializedNode = errors.New("not a serialized node")
+	ExpectedMsgOne		= errors.New("expected msg number to be 1")
+	NotExpectedCommsKey = errors.New("not peer's expected comms public key")
+	NotExpectedSigKey   = errors.New("not peer's expected sig public key")
+	NotAKnownPeer		= errors.New("not a known peer")
+	NotASerializedNode	= errors.New("not a serialized node")
 )
 
 /**
@@ -294,7 +298,10 @@ func (n *Node) GetPeer(x int) *Peer {
 	// XXX should return copy
 	return &n.peers[x]
 }
-
+func (n *Node) FindPeer(id []byte) *Peer{
+	// XXX should return copy
+    return n.peerMap.FindPeer(id)
+} 
 // CONNECTIONS //////////////////////////////////////////////////////
 func (n *Node) addConnection(c xt.ConnectionI) (ndx int, err error) {
 	if c == nil {

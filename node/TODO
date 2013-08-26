@@ -19,7 +19,7 @@ xlattice_go/node/TODO
 
 2013-08-19
     * "connection reset by peer" in localHost_test.go at lines
-        115, 126 seen once
+        115, 126 seen once (seen again 08-25)
     * arguably need stronger version of Peer.Equal(); it only
         confirms that NodeIDs are the same
 
