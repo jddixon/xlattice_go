@@ -16,8 +16,8 @@ message XLatticeMsg {
     optional bytes  ID          = 3;
     optional bytes  Salt        = 4;
     optional bytes  Sig         = 5;
-    optional uint64 YourMsgN	= 6;
-    optional bytes  YourID		= 7;
+    optional uint64 YourMsgN    = 6;
+    optional bytes  YourID      = 7;
     optional uint64 ErrCode     = 8;
     optional string ErrDesc     = 9;
     optional bytes  Hash        = 10;

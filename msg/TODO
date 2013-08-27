@@ -3,6 +3,9 @@ xlattice_go/msg/TODO
 2013-08-26
     * elaborate encoding_test.go to test all fields, with random
         data where possible
+    * in_q.go handleMsg() must update an appropriate field in
+        a data structure associated with the peer on receiving
+        a keep-alive
 
 2013-08-24
     * now having working PeerMap from ../search; extend in_q_test

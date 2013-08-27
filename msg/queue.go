@@ -3,8 +3,11 @@ package msg
 // xlattice_go/msg/queue.go
 
 import (
+	"code.google.com/p/goprotobuf/proto"
 	"errors"
 	"fmt"
+	xn "github.com/jddixon/xlattice_go/node"
+	xt "github.com/jddixon/xlattice_go/transport"
 	"sync"
 )
 
@@ -31,7 +34,11 @@ var _ = fmt.Print
 // number, making it possible to search the message queue and delete
 // the copy scheduled for retransmission.
 
-const MSG_BUF_LEN = 16 * 1024
+const (
+	MSG_BUF_LEN = 16 * 1024
+)
+
+var ONE = uint64(1)
 
 type MsgQueue struct {
 	first    *MsgCarrier
@@ -47,9 +54,11 @@ const (
 )
 
 var (
-	MissingHello  = errors.New("expected a Hello msg")
-	NilConnection = errors.New("nil connection")
-	NilNode       = errors.New("nil node")
+	MissingHello      = errors.New("expected a Hello msg")
+	NilConnection     = errors.New("nil connection")
+	NilNode           = errors.New("nil node")
+	UnexpectedMsgType = errors.New("unexpected message type")
+	WrongMsgNbr       = errors.New("wrong message number")
 )
 
 type MsgCarrier struct {
@@ -60,4 +69,48 @@ type MsgCarrier struct {
 	sendCount int // incremented when msg resent
 	maxSend   int
 	msg       *interface{}
+}
+
+type CnxHandler struct {
+	Cnx   *xt.TcpConnection
+	Peer  *xn.Peer
+	MsgN  uint64
+	State int
+}
+
+// Read the next message over the connection
+func (h *CnxHandler) readMsg() (m *xn.XLatticeMsg, err error) {
+	inBuf := make([]byte, MSG_BUF_LEN)
+	count, err := h.Cnx.Read(inBuf)
+	if err == nil && count > 0 {
+		inBuf = inBuf[:count]
+		// parse = deserialize, unmarshal the message
+		m, err = DecodePacket(inBuf)
+	}
+	return
+}
+
+// Write a message out over the connection
+func (h *CnxHandler) writeMsg(m *xn.XLatticeMsg) (err error) {
+	var count int
+	var data []byte
+	// serialize, marshal the message
+	data, err = EncodePacket(m)
+	if err != nil {
+		count, err = h.Cnx.Write(data)
+		// XXX handle cases where not all bytes written
+		_ = count
+	}
+	return
+} // GEEP
+
+func DecodePacket(data []byte) (*xn.XLatticeMsg, error) {
+	var m xn.XLatticeMsg
+	err := proto.Unmarshal(data, &m)
+	// XXX do some filtering, eg for nil op
+	return &m, err
+}
+
+func EncodePacket(msg *xn.XLatticeMsg) (data []byte, err error) {
+	return proto.Marshal(msg)
 }

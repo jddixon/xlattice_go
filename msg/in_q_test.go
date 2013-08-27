@@ -3,42 +3,20 @@ package msg
 // xlattice_go/msg/in_q_test.go
 
 import (
-	//	cr "crypto"
-	//	"crypto/rand"
-	//	"crypto/rsa"
-	//	"crypto/sha1"
 	"fmt"
 	"github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
-	"runtime"
-
-//	"strings"
-//	"time"
 )
+
+var _ = fmt.Print
 
 const (
 	VERBOSITY = 1
 	SHA1_LEN  = 20
 )
-
-var (
-	MY_MAX_PROC = 2 // No longer a const
-)
-
-// XXX DROP THIS RSN
-func (s *XLSuite) TestRuntime(c *C) {
-	if VERBOSITY > 0 {
-		fmt.Println("TEST_RUN_TIME")
-	}
-	MY_MAX_PROC = runtime.NumCPU() // XXX
-
-	was := runtime.GOMAXPROCS(MY_MAX_PROC)
-	fmt.Printf("GOMAXPROCS was %d, has been reset to %d\n", was, MY_MAX_PROC)
-	fmt.Printf("Number of CPUs: %d\n", runtime.NumCPU())
-}
 
 func (s *XLSuite) makeBadGuy(c *C) (acc xt.AcceptorI, badGuy *node.Node) {
 	rng := rnglib.MakeSimpleRNG()
