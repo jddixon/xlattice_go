@@ -53,9 +53,16 @@ func (h *InHandler) errorReply(e error) (err error) {
 	reply.ErrDesc = &s
 	h.writeMsg(reply) // ignore any write error
 	h.State = IN_CLOSED
+
+	// XXX This would be a very strong action, given that we may have multiple
+	// connections open to this peer.
+	// h.Peer.MarkDown()
+
 	return
 }
 func (h *InHandler) simpleAck(msgN uint64) (err error) {
+	h.Peer.StillAlive() // update time of last contact
+
 	var reply *XLatticeMsg
 	cmd := XLatticeMsg_Ack
 	h.MsgN = msgN + 1
@@ -170,10 +177,12 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 
 	if err == nil {
 		// Everything is good; so Ack, leaving cnx open.
+		peer.MarkUp() // we consider the peer live
 		err = h.simpleAck(msgN)
 	} else {
 		// Send the text of the error to the peer; the send itself
 		// may of course cause an error, but we will ignore that.
+		// The peer is NOT marked as up.
 		h.errorReply(err)
 	}
 	return

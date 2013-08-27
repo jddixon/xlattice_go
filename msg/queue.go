@@ -54,7 +54,7 @@ const (
 )
 
 var (
-	ExpectedMsgOne		= errors.New("expected msg number to be 1")
+	ExpectedMsgOne      = errors.New("expected msg number to be 1")
 	MissingHello        = errors.New("expected a Hello msg")
 	NilConnection       = errors.New("nil connection")
 	NilNode             = errors.New("nil node")
