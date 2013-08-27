@@ -13,7 +13,7 @@ var _ = fmt.Print
 var _ = rnglib.MakeSimpleRNG
 
 const (
-	SHA1_LEN  = 20
+	SHA1_LEN = 20
 )
 
 func (s *XLSuite) makeTopAndBottom(c *C) (topPeer, bottomPeer *Peer) {

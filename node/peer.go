@@ -9,6 +9,7 @@ import (
 	xt "github.com/jddixon/xlattice_go/transport"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
@@ -22,9 +23,9 @@ var (
 type Peer struct {
 	connectors []xt.ConnectorI // to reach the peer
 	timeout    int64           // ns from epoch
-	prev       int64           // last contact from this peer, ns from epoch
+	contacted  int64           // last contact from this peer, ns from epoch
 	ndx        int             // order in which added
-	down       bool            // set to true if considered unreachable
+	up         bool            // set to false if considered unreachable
 	mu         sync.Mutex
 	BaseNode
 }
@@ -150,5 +151,50 @@ func parsePeerFromStrings(ss []string) (peer *Peer, rest []string, err error) {
 		peer = &Peer{BaseNode: *bn}
 		rest, err = collectConnectors(peer, rest)
 	}
+	return
+}
+
+// LIVENESS /////////////////////////////////////////////////////////
+
+// Return the time (ns from the Epoch) of the last communication with
+// this peer.
+func (p *Peer) LastContact() int64 {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.contacted
+}
+
+// A communication with the peer has occurred: mark the time.
+func (p *Peer) StillAlive() {
+	t := time.Now().UnixNano()
+	p.mu.Lock()
+	p.contacted = t
+	p.mu.Unlock()
+}
+
+// Return whether the peer is considered reachable.
+func (p *Peer) IsUp() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.up
+}
+
+// Clear the peer's up flag.  It is no longer considered reachable.
+// Return the flag's previous state.
+func (p *Peer) MarkDown() (prevState bool) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	prevState = p.up
+	p.up = false
+	return
+}
+
+// Set the peer's up flag.  It is now considered reachable.  Return
+// the flag's previous state.
+func (p *Peer) MarkUp() (prevState bool) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	prevState = p.up
+	p.up = true
 	return
 }

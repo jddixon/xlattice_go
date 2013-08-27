@@ -36,13 +36,13 @@ func (m *PeerMap) AddToPeerMap(peer *Peer) (err error) {
 	zeroID, _ := xi.NewNodeID(zero)
 	m.peer, _ = NewNewPeer("mapRoot", zeroID)
 	// END
-	
+
 	root := m.nextCol
 	if root == nil {
 		m.nextCol = &PeerMapCell{
-			byteVal: byte0, 
-			pred: &m.PeerMapCell, 
-			peer: peer}
+			byteVal: byte0,
+			pred:    &m.PeerMapCell,
+			peer:    peer}
 	} else {
 		err = root.addAtCell(0, peer, id)
 	}

@@ -18,8 +18,8 @@ import (
 var _ = fmt.Print
 
 var (
-	NotAKnownPeer		= errors.New("not a known peer")
-	NotASerializedNode	= errors.New("not a serialized node")
+	NotAKnownPeer      = errors.New("not a known peer")
+	NotASerializedNode = errors.New("not a serialized node")
 )
 
 /**
@@ -39,7 +39,7 @@ type Node struct {
 	peers       []Peer
 	connections []xt.ConnectionI // volatile
 	gateways    []Gateway
-	peerMap		*PeerMap
+	peerMap     *PeerMap
 	BaseNode    // listed last, but serialize first
 }
 
@@ -106,14 +106,14 @@ func New(name string, id *xi.NodeID, lfs string,
 			}
 		}
 	}
-	var pm PeerMap					// empty PeerMap
+	var pm PeerMap // empty PeerMap
 	pmPtr := &pm
 
 	var peers []Peer // an empty slice
 	if p != nil {
 		count := len(p)
 		for i := 0; i < count; i++ {
-			err   = pmPtr.AddToPeerMap(&p[i])
+			err = pmPtr.AddToPeerMap(&p[i])
 			peers = append(peers, p[i])
 		}
 	}
@@ -123,13 +123,13 @@ func New(name string, id *xi.NodeID, lfs string,
 	baseNode, err := NewBaseNode(name, id, commsPubKey, sigPubKey, overlays)
 	if err == nil {
 		p := Node{commsKey: commsKey,
-			sigKey:     sigKey,
-			endPoints:  endPoints,
-			peers:      peers,
-			gateways:   nil,
-			lfs:        lfs,
-			peerMap:	pmPtr,
-			BaseNode:   *baseNode}
+			sigKey:    sigKey,
+			endPoints: endPoints,
+			peers:     peers,
+			gateways:  nil,
+			lfs:       lfs,
+			peerMap:   pmPtr,
+			BaseNode:  *baseNode}
 		return &p, nil
 	} else {
 		return nil, err
@@ -295,10 +295,11 @@ func (n *Node) GetPeer(x int) *Peer {
 	// XXX should return copy
 	return &n.peers[x]
 }
-func (n *Node) FindPeer(id []byte) *Peer{
+func (n *Node) FindPeer(id []byte) *Peer {
 	// XXX should return copy
-    return n.peerMap.FindPeer(id)
-} 
+	return n.peerMap.FindPeer(id)
+}
+
 // CONNECTIONS //////////////////////////////////////////////////////
 func (n *Node) addConnection(c xt.ConnectionI) (ndx int, err error) {
 	if c == nil {
