@@ -45,8 +45,8 @@ func NewInHandler(n *xn.Node, conn xt.ConnectionI) (h *InHandler, err error) {
 
 // Send the text of the error message to the peer and close the connection.
 func (h *InHandler) errorReply(e error) (err error) {
-	var reply *xn.XLatticeMsg
-	cmd := xn.XLatticeMsg_Error
+	var reply *XLatticeMsg
+	cmd := XLatticeMsg_Error
 	s := e.Error()
 	reply.Op = &cmd
 	reply.MsgN = &ONE
@@ -56,8 +56,8 @@ func (h *InHandler) errorReply(e error) (err error) {
 	return
 }
 func (h *InHandler) simpleAck(msgN uint64) (err error) {
-	var reply *xn.XLatticeMsg
-	cmd := xn.XLatticeMsg_Ack
+	var reply *XLatticeMsg
+	cmd := XLatticeMsg_Ack
 	h.MsgN = msgN + 1
 	reply.Op = &cmd
 	reply.MsgN = &h.MsgN
@@ -66,16 +66,16 @@ func (h *InHandler) simpleAck(msgN uint64) (err error) {
 	h.State = HELLO_RCVD
 	return err
 }
-func (h *InHandler) checkMsgNbrAndAck(m *xn.XLatticeMsg) (err error) {
+func (h *InHandler) checkMsgNbrAndAck(m *XLatticeMsg) (err error) {
 	msgN := m.GetMsgN()
 	if msgN == h.MsgN+1 {
 		err = h.simpleAck(msgN)
 	} else {
 		err = WrongMsgNbr
 		s := err.Error() // its serialization
-		var reply *xn.XLatticeMsg
+		var reply *XLatticeMsg
 		h.MsgN += 2 // from my point of view
-		cmd := xn.XLatticeMsg_Error
+		cmd := XLatticeMsg_Error
 		reply.Op = &cmd
 		reply.MsgN = &h.MsgN
 		reply.ErrDesc = &s
@@ -87,15 +87,15 @@ func (h *InHandler) checkMsgNbrAndAck(m *xn.XLatticeMsg) (err error) {
 }
 func (h *InHandler) handleInMsg() (err error) {
 	for err == nil {
-		var m *xn.XLatticeMsg
+		var m *XLatticeMsg
 		m, err = h.readMsg()
 		if err == nil {
 			cmd := m.GetOp()
 			switch cmd {
-			case xn.XLatticeMsg_Bye:
+			case XLatticeMsg_Bye:
 				err = h.checkMsgNbrAndAck(m)
 				h.State = IN_CLOSED
-			case xn.XLatticeMsg_KeepAlive:
+			case XLatticeMsg_KeepAlive:
 				// XXX Update last-time-spoken-to for peer
 				err = h.checkMsgNbrAndAck(m)
 			default:
@@ -112,7 +112,7 @@ func (h *InHandler) handleInMsg() (err error) {
 }
 func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	var (
-		m    *xn.XLatticeMsg
+		m    *XLatticeMsg
 		id   []byte
 		peer *xn.Peer
 	)
@@ -120,7 +120,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 
 	// message must be a Hello
 	if err == nil {
-		if m.GetOp() != xn.XLatticeMsg_Hello {
+		if m.GetOp() != XLatticeMsg_Hello {
 			err = MissingHello
 		}
 	}
@@ -149,13 +149,13 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	sk := m.GetSigKey()
 	var serCK, serSK []byte
 	if h.MsgN != 1 {
-		err = xn.ExpectedMsgOne
+		err = ExpectedMsgOne
 	}
 	if err == nil {
 		serCK, err = xc.RSAPubKeyToWire(peer.GetCommsPublicKey())
 		if err == nil {
 			if !xu.SameBytes(serCK, ck) {
-				err = xn.NotExpectedCommsKey
+				err = NotExpectedCommsKey
 			}
 		}
 	}
@@ -163,7 +163,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 		serSK, err = xc.RSAPubKeyToWire(peer.GetSigPublicKey())
 		if err == nil {
 			if !xu.SameBytes(serSK, sk) {
-				err = xn.NotExpectedSigKey
+				err = NotExpectedSigKey
 			}
 		}
 	}

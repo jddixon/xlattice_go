@@ -19,10 +19,10 @@ import (
 const SHA1_LEN = 40 // length of hex version
 const SHA3_LEN = 64
 
-// ....x....1....x....2....x....3....x....4
+//                 ....x....1....x....2....x....3....x....4
 const SHA1_NONE = "0000000000000000000000000000000000000000"
 
-// ....x....1....x....2....x....3....x....4....x....5....x....6....
+//                 ....x....1....x....2....x....3....x....4....x....5....x....6....
 const SHA3_NONE = "0000000000000000000000000000000000000000000000000000000000000000"
 
 const DEFAULT_BUFFER_SIZE = 256 * 256
@@ -113,7 +113,7 @@ func FileSHA3(path string) (hash string, err error) {
 		hash = hex.EncodeToString(digest2)
 	}
 	return
-} // GEEP
+} 
 
 func PathExists(fName string) bool {
 	if _, err := os.Stat(fName); os.IsNotExist(err) {
@@ -296,7 +296,7 @@ func (u *U256x256) PutData3(data []byte, key string) (length int64, hash string,
 		length = int64(count)
 	}
 	return
-} // GEEP
+} 
 
 // SHA1 CODE ========================================================
 
@@ -431,4 +431,4 @@ func (u *U256x256) PutData1(data []byte, key string) (
 		length = int64(count)
 	}
 	return
-} // GEEP
+}

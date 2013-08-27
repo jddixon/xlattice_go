@@ -37,9 +37,9 @@ func (s *XLSuite) TestEncoding(c *C) {
 	psk, err := xc.RSAPubKeyToWire(peer.GetSigPublicKey())
 	c.Assert(err, IsNil)
 
-	cmd := xn.XLatticeMsg_Hello
+	cmd := XLatticeMsg_Hello
 	one := uint64(1)
-	msg := &xn.XLatticeMsg{
+	msg := &XLatticeMsg{
 		Op:       &cmd,
 		MsgN:     &one,
 		ID:       pID,

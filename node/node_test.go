@@ -276,7 +276,7 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 		node.GetAcceptor(i).Close()
 	}
 	// XXX parse succeeds if we sleep 100ms, fails if we sleep 10ms
-	time.Sleep(60 * time.Millisecond)
+	time.Sleep(70 * time.Millisecond)
 
 	backAgain, rest, err := Parse(serialized)
 	c.Assert(err, IsNil)

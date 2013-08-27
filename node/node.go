@@ -18,9 +18,6 @@ import (
 var _ = fmt.Print
 
 var (
-	ExpectedMsgOne		= errors.New("expected msg number to be 1")
-	NotExpectedCommsKey = errors.New("not peer's expected comms public key")
-	NotExpectedSigKey   = errors.New("not peer's expected sig public key")
 	NotAKnownPeer		= errors.New("not a known peer")
 	NotASerializedNode	= errors.New("not a serialized node")
 )

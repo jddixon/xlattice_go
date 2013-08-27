@@ -1,7 +1,17 @@
 xlattice_go/node/TODO
 
+2013-08-26
+    * if lfs is being used, need to create a u256x256 file 
+        system lfs/U, lfs/U/in, and lfs/U/tmp, and need to either
+        default to SHA3-256 or introduce a usingSHA1 option
+    * msg/ will need to be brought back into node/ to avoid
+        circular imports OR an abstraction devised which 
+        imports both
+        - or possibly move proto stuff into msg/
+
 2013-08-25
-    * complete stubbed sections in test_node.TestAutoCreateOverlays
+    * complete the stubbed sections in 
+        test_node.TestAutoCreateOverlays
 
 2013-08-24
     * peer_map: strip debug statements and meaningless comments 

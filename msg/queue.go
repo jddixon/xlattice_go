@@ -54,11 +54,14 @@ const (
 )
 
 var (
-	MissingHello      = errors.New("expected a Hello msg")
-	NilConnection     = errors.New("nil connection")
-	NilNode           = errors.New("nil node")
-	UnexpectedMsgType = errors.New("unexpected message type")
-	WrongMsgNbr       = errors.New("wrong message number")
+	ExpectedMsgOne		= errors.New("expected msg number to be 1")
+	MissingHello        = errors.New("expected a Hello msg")
+	NilConnection       = errors.New("nil connection")
+	NilNode             = errors.New("nil node")
+	NotExpectedCommsKey = errors.New("not peer's expected comms public key")
+	NotExpectedSigKey   = errors.New("not peer's expected sig public key")
+	UnexpectedMsgType   = errors.New("unexpected message type")
+	WrongMsgNbr         = errors.New("wrong message number")
 )
 
 type MsgCarrier struct {
@@ -79,7 +82,7 @@ type CnxHandler struct {
 }
 
 // Read the next message over the connection
-func (h *CnxHandler) readMsg() (m *xn.XLatticeMsg, err error) {
+func (h *CnxHandler) readMsg() (m *XLatticeMsg, err error) {
 	inBuf := make([]byte, MSG_BUF_LEN)
 	count, err := h.Cnx.Read(inBuf)
 	if err == nil && count > 0 {
@@ -91,7 +94,7 @@ func (h *CnxHandler) readMsg() (m *xn.XLatticeMsg, err error) {
 }
 
 // Write a message out over the connection
-func (h *CnxHandler) writeMsg(m *xn.XLatticeMsg) (err error) {
+func (h *CnxHandler) writeMsg(m *XLatticeMsg) (err error) {
 	var count int
 	var data []byte
 	// serialize, marshal the message
@@ -104,13 +107,13 @@ func (h *CnxHandler) writeMsg(m *xn.XLatticeMsg) (err error) {
 	return
 } // GEEP
 
-func DecodePacket(data []byte) (*xn.XLatticeMsg, error) {
-	var m xn.XLatticeMsg
+func DecodePacket(data []byte) (*XLatticeMsg, error) {
+	var m XLatticeMsg
 	err := proto.Unmarshal(data, &m)
 	// XXX do some filtering, eg for nil op
 	return &m, err
 }
 
-func EncodePacket(msg *xn.XLatticeMsg) (data []byte, err error) {
+func EncodePacket(msg *XLatticeMsg) (data []byte, err error) {
 	return proto.Marshal(msg)
 }

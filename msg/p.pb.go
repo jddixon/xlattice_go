@@ -2,7 +2,7 @@
 // source: p.proto
 // DO NOT EDIT!
 
-package node
+package msg
 
 import proto "code.google.com/p/goprotobuf/proto"
 import json "encoding/json"
@@ -68,7 +68,7 @@ func (x *XLatticeMsg_Cmd) UnmarshalJSON(data []byte) error {
 }
 
 type XLatticeMsg struct {
-	Op               *XLatticeMsg_Cmd `protobuf:"varint,1,opt,enum=node.XLatticeMsg_Cmd" json:"Op,omitempty"`
+	Op               *XLatticeMsg_Cmd `protobuf:"varint,1,opt,enum=msg.XLatticeMsg_Cmd" json:"Op,omitempty"`
 	MsgN             *uint64          `protobuf:"varint,2,opt" json:"MsgN,omitempty"`
 	ID               []byte           `protobuf:"bytes,3,opt" json:"ID,omitempty"`
 	Salt             []byte           `protobuf:"bytes,4,opt" json:"Salt,omitempty"`
@@ -188,5 +188,5 @@ func (m *XLatticeMsg) GetMyEnd() string {
 }
 
 func init() {
-	proto.RegisterEnum("node.XLatticeMsg_Cmd", XLatticeMsg_Cmd_name, XLatticeMsg_Cmd_value)
+	proto.RegisterEnum("msg.XLatticeMsg_Cmd", XLatticeMsg_Cmd_name, XLatticeMsg_Cmd_value)
 }
