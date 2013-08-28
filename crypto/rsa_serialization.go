@@ -26,24 +26,23 @@ var (
 // Serialize an RSA public key to wire format
 func RSAPubKeyToWire(pubKey *rsa.PublicKey) ([]byte, error) {
 
-	// XXX STUB
-
-	return nil, nil
+	return x509.MarshalPKIXPublicKey(pubKey)
 }
 
 // Deserialize an RSA public key from wire format
-func RSAPubKeyFromWire(data []byte) (*rsa.PublicKey, error) {
-
-	// XXX STUB
-
-	return nil, nil
-} // FOO
+func RSAPubKeyFromWire(data []byte) (pub *rsa.PublicKey, err error) {
+	pk, err := x509.ParsePKIXPublicKey(data)
+	if err == nil {
+		pub = pk.(*rsa.PublicKey)
+	}
+	return
+}
 
 // Serialize an RSA private key to wire format
 func RSAPrivKeyToWire(pubKey *rsa.PrivateKey) ([]byte, error) {
 
 	// XXX STUB
-
+	panic("not implemented")
 	return nil, nil
 }
 
@@ -51,6 +50,7 @@ func RSAPrivKeyToWire(pubKey *rsa.PrivateKey) ([]byte, error) {
 func RSAPrivKeyFromWire(data []byte) (*rsa.PrivateKey, error) {
 
 	// XXX STUB
+	panic("not implemented")
 
 	return nil, nil
 } // FOO
