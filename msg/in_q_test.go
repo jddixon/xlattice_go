@@ -9,6 +9,7 @@ import (
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
+	"time"
 )
 
 var _ = fmt.Print
@@ -18,7 +19,7 @@ const (
 	SHA1_LEN  = 20
 )
 
-func (s *XLSuite) makeBadGuy(c *C) (acc xt.AcceptorI, badGuy *node.Node) {
+func (s *XLSuite) makeBadGuy(c *C) (badGuy *node.Node, acc xt.AcceptorI) {
 	rng := rnglib.MakeSimpleRNG()
 	id := make([]byte, SHA1_LEN)
 	rng.NextBytes(&id)
@@ -48,13 +49,16 @@ func (s *XLSuite) makeBadGuy(c *C) (acc xt.AcceptorI, badGuy *node.Node) {
 // XXX We should probably also require that msgN be 1.
 
 func (s *XLSuite) TestHelloHandler(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_HELLO_HANDLER")
+	}
 
-	const PEER_COUNT = 2
+	const TWO = 2
 
-	// Create a node and add a mock peer.  This is a cluster of PEER_COUNT.
-	nodes, accs := node.MockLocalHostCluster(PEER_COUNT)
+	// Create a node and add a mock peer.  This is a cluster of TWO.
+	nodes, accs := node.MockLocalHostCluster(TWO)
 	defer func() {
-		for i := 0; i < PEER_COUNT; i++ {
+		for i := 0; i < TWO; i++ {
 			if accs[i] != nil {
 				accs[i].Close()
 			}
@@ -63,33 +67,110 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	myNode, peerNode := nodes[0], nodes[1]
 	myAcc, peerAcc := accs[0], accs[1]
 
+	c.Assert(myAcc, Not(IsNil))
+	myAccEP := myAcc.GetEndPoint()
+	myCtor, err := xt.NewTcpConnector(myAccEP)
+	c.Assert(err, IsNil)
+
+	// myNode's server side
+
+	fmt.Println("STARTING SERVER")
+	go func() {
+		for {
+			cnx, err := myAcc.Accept()
+			c.Assert(err, IsNil)
+			fmt.Printf("CONNECTION\n")
+
+			go func() {
+				_, _ = NewInHandler(myNode, cnx)
+			}()
+		}
+
+	}()
+
 	// Create a second mock peer unknown to myNode.
 	badGuy, badAcc := s.makeBadGuy(c)
 	defer badAcc.Close()
+	badHello, err := MakeHelloMsg(badGuy)
+	c.Assert(err, IsNil)
+	c.Assert(badHello, Not(IsNil))
 
 	_, _, _, _, _ = badGuy, myNode, peerNode, myAcc, peerAcc
+
+	time.Sleep(100 * time.Millisecond)
 
 	// Unknown peer sends Hello.  Test node should just drop the
 	// connection.  It is an error if we receive a reply.
 
-	// initial state:   IN_START
-	// final state:     IN_CLOSED
-	// XXX STUB XXX
+	conn, err := myCtor.Connect(xt.ANY_TCP_END_POINT)
+	c.Assert(err, IsNil)
+	c.Assert(conn, Not(IsNil))
+	cnx := conn.(*xt.TcpConnection)
+
+	data, err := EncodePacket(badHello)
+	c.Assert(err, IsNil)
+	c.Assert(data, Not(IsNil))
+	fmt.Println("SENDING BADHELLO")
+	count, err := cnx.Write(data)
+	fmt.Println("BADHELLO SENT")
+
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, len(data))
+	time.Sleep(100 * time.Millisecond)
+
+	// XXX THIS TEST FAILS because of a deficiency in
+	// transport/tcp_connection.GetState() - it does not look at
+	// the state of the underlying connection
+	// c.Assert(cnx.GetState(), Equals, xt.DISCONNECTED)
 
 	// Known peer sends Hello with at least one of cKey or sKey wrong.
 	// We expect to receive an error msg and then the connection
 	// should be closed.
 
-	// initial state:   IN_START
-	// final state:     IN_CLOSED
 	// XXX STUB XXX
 
 	// Known peer sends Hello with all parameters correct.  We reply
 	// with an Ack and advance state to open.
 
-	// initial state:   IN_START
-	// final state:     IN_OPEN
+	peerHello, err := MakeHelloMsg(peerNode)
+	c.Assert(err, IsNil)
+	c.Assert(peerHello, Not(IsNil))
+
+	conn, err = myCtor.Connect(xt.ANY_TCP_END_POINT)
+	c.Assert(err, IsNil)
+	c.Assert(conn, Not(IsNil))
+	cnx = conn.(*xt.TcpConnection)
+
+	data, err = EncodePacket(peerHello)
+	c.Assert(err, IsNil)
+	c.Assert(data, Not(IsNil))
+	fmt.Println("SENDING PEERHELLO")
+	count, err = cnx.Write(data)
+	fmt.Println("PEER_HELLO SENT")
+
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, len(data))
+	time.Sleep(100 * time.Millisecond)
+
+	// WORKING HERE
+
+	fmt.Println("should be waiting for ack in reply to hello")
+
+	// XXX STUB XXX
+
+	// wait for ack
+	// XXX STUB XXX
+
+	// verify msg returned is an ack and has the correct parameters
+	// XXX STUB XXX
+
+	// send bye
+	// XXX STUB XXX
+
+	// wait for ack
 	// XXX STUB XXX
 
 	// Clean up: close the connection.
+	// XXX STUB XXX
+
 }

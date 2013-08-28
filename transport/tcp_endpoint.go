@@ -7,6 +7,14 @@ import (
 
 var _ = fmt.Print // DEBUG
 
+var (
+	ANY_TCP_END_POINT *TcpEndPoint
+)
+
+func init() {
+	ANY_TCP_END_POINT, _ = NewTcpEndPoint("127.0.0.1:0")
+}
+
 /**
  * An EndPoint is specified by a transport and an Address, including
  * the local part.  If the transport is TCP/IP, for example, the

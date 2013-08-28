@@ -58,7 +58,6 @@ func (s *XLSuite) handleMsg(cnx ConnectionI) error {
 }
 
 func (s *XLSuite) TestHashingServer(c *C) {
-	ANY_END_POINT, _ := NewTcpEndPoint("127.0.0.1:0")
 	SERVER_ADDR := "127.0.0.1:0"
 
 	// -- setup  -----------------------------------------------------
@@ -116,7 +115,7 @@ func (s *XLSuite) TestHashingServer(c *C) {
 			for j := 0; j < N; j++ {
 				// the client sends N messages, expecting an SHA1 back
 				var count int
-				cnx, err := ktors[i].Connect(ANY_END_POINT)
+				cnx, err := ktors[i].Connect(ANY_TCP_END_POINT)
 				c.Assert(err, Equals, nil)
 				tcpCnx := cnx.(*TcpConnection)
 				count, err = tcpCnx.Write(messages[i][j])

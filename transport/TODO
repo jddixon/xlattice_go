@@ -1,5 +1,16 @@
 xlattice_go/transport/TODO
 
+2013-08-27
+    * the pseudo-constant ANY_TCP_END_POINT is a really bad
+        idea; get rid of it
+        - allow TcpConnector.Connect() to take a nil arg
+            instead
+    * see tests in msg/ : closing a connection does not change
+        its state to DISCONNECTED!
+        - BUT this is at the other end of the connection, and
+            transport/tcp_connection.GetState() does not 
+            examine the state of the underlying connection
+
 2013-07-21
     * If a :0 endPoint is given to a TcpAcceptor, it should         // DONE
         be assigned a different port by the operating system.

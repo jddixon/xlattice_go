@@ -45,13 +45,13 @@ func NewInHandler(n *xn.Node, conn xt.ConnectionI) (h *InHandler, err error) {
 
 // Send the text of the error message to the peer and close the connection.
 func (h *InHandler) errorReply(e error) (err error) {
-	var reply *XLatticeMsg
+	var reply XLatticeMsg
 	cmd := XLatticeMsg_Error
 	s := e.Error()
 	reply.Op = &cmd
 	reply.MsgN = &ONE
 	reply.ErrDesc = &s
-	h.writeMsg(reply) // ignore any write error
+	h.writeMsg(&reply) // ignore any write error
 	h.State = IN_CLOSED
 
 	// XXX This would be a very strong action, given that we may have multiple
@@ -63,13 +63,13 @@ func (h *InHandler) errorReply(e error) (err error) {
 func (h *InHandler) simpleAck(msgN uint64) (err error) {
 	h.Peer.StillAlive() // update time of last contact
 
-	var reply *XLatticeMsg
+	var reply XLatticeMsg
 	cmd := XLatticeMsg_Ack
 	h.MsgN = msgN + 1
 	reply.Op = &cmd
 	reply.MsgN = &h.MsgN
-	reply.YourMsgN = &msgN  // XXX this field is pointless !
-	err = h.writeMsg(reply) // this may yield an error ...
+	reply.YourMsgN = &msgN   // XXX this field is pointless !
+	err = h.writeMsg(&reply) // this may yield an error ...
 	h.State = HELLO_RCVD
 	return err
 }
@@ -80,14 +80,14 @@ func (h *InHandler) checkMsgNbrAndAck(m *XLatticeMsg) (err error) {
 	} else {
 		err = WrongMsgNbr
 		s := err.Error() // its serialization
-		var reply *XLatticeMsg
+		var reply XLatticeMsg
 		h.MsgN += 2 // from my point of view
 		cmd := XLatticeMsg_Error
 		reply.Op = &cmd
 		reply.MsgN = &h.MsgN
 		reply.ErrDesc = &s
 		reply.YourMsgN = &msgN
-		h.writeMsg(reply)
+		h.writeMsg(&reply)
 		h.State = IN_CLOSED
 	}
 	return
@@ -128,6 +128,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	// message must be a Hello
 	if err == nil {
 		if m.GetOp() != XLatticeMsg_Hello {
+			fmt.Println("MISSING HELLO")
 			err = MissingHello
 		}
 	}
@@ -135,14 +136,18 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 		//  the message is a hello; is its NodeID that of a known peer?
 		id = m.GetID()
 		if peer = n.FindPeer(id); peer == nil {
+			fmt.Println("NOT A KNOWN PEER")
 			err = xn.NotAKnownPeer
 		} else {
+			fmt.Println("KNOWN PEER")
 			h.Peer = peer
 		}
 	}
 
-	// On any error up to here close the connection and delete the handler.
+	// On any error up to here silently close the connection and delete
+	// the handler.
 	if err != nil {
+		fmt.Println("ERROR, SO CLOSING CNX")
 		h.Cnx.Close()
 		h = nil
 		return
