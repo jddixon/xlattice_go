@@ -14,12 +14,15 @@ import (
 
 var _ = fmt.Print
 
-const (
-	VERBOSITY = 1
-	SHA1_LEN  = 20
+var (
+	TWO   uint64 = 2
+	THREE uint64 = 3
+	FOUR  uint64 = 4
+	FIVE  uint64 = 5
+	SIX   uint64 = 6
 )
 
-func (s *XLSuite) makeBadGuy(c *C) (badGuy *node.Node, acc xt.AcceptorI) {
+func (s *XLSuite) makeANode(c *C) (badGuy *node.Node, acc xt.AcceptorI) {
 	rng := rnglib.MakeSimpleRNG()
 	id := make([]byte, SHA1_LEN)
 	rng.NextBytes(&id)
@@ -39,33 +42,30 @@ func (s *XLSuite) makeBadGuy(c *C) (badGuy *node.Node, acc xt.AcceptorI) {
 	return
 }
 
-// HELLO --------------------------------------------------------------
 // If we receive a hello on a connection but do not know recognize the
 // nodeID we just drop the connection.  We only deal with known peers.
 // If either the crypto public key or sig public key is wrong, we send
 // an error message and close the connection.  If the nodeID, cKey, and
 // sKey are correct, we advance the handler's state to HELLO_RCVD
 
-// XXX We should probably also require that msgN be 1.
-
 func (s *XLSuite) TestHelloHandler(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_HELLO_HANDLER")
 	}
 
-	const TWO = 2
-
-	// Create a node and add a mock peer.  This is a cluster of TWO.
-	nodes, accs := node.MockLocalHostCluster(TWO)
+	// Create a node and add a mock peer.  This is a cluster of 2.
+	nodes, accs := node.MockLocalHostCluster(2)
 	defer func() {
-		for i := 0; i < TWO; i++ {
+		for i := 0; i < 2; i++ {
 			if accs[i] != nil {
 				accs[i].Close()
 			}
 		}
 	}()
 	myNode, peerNode := nodes[0], nodes[1]
+	meAsPeer := peerNode.GetPeer(0)
 	myAcc, peerAcc := accs[0], accs[1]
+	_ = peerAcc // never used
 
 	c.Assert(myAcc, Not(IsNil))
 	myAccEP := myAcc.GetEndPoint()
@@ -73,29 +73,137 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	c.Assert(err, IsNil)
 
 	// myNode's server side
-
-	fmt.Println("STARTING SERVER")
 	go func() {
 		for {
 			cnx, err := myAcc.Accept()
 			c.Assert(err, IsNil)
-			fmt.Printf("CONNECTION\n")
 
+			// each connection handled by a separate goroutine
 			go func() {
 				_, _ = NewInHandler(myNode, cnx)
 			}()
 		}
+	}()
 
+	// -- WELL-FORMED HELLO -----------------------------------------
+	// Known peer sends Hello with all parameters correct.  We reply
+	// with an Ack and advance state to open.
+
+	conn, err := myCtor.Connect(xt.ANY_TCP_END_POINT)
+	c.Assert(err, IsNil)
+	c.Assert(conn, Not(IsNil))
+	cnx2 := conn.(*xt.TcpConnection)
+	defer cnx2.Close()
+
+	oh := &OutHandler{CnxHandler{Cnx: cnx2, Peer: meAsPeer}}
+
+	// manually create and send a hello message -
+	peerHello, err := MakeHelloMsg(peerNode)
+	c.Assert(err, IsNil)
+	c.Assert(peerHello, Not(IsNil))
+
+	data, err := EncodePacket(peerHello)
+	c.Assert(err, IsNil)
+	c.Assert(data, Not(IsNil))
+	count, err := cnx2.Write(data)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, len(data))
+	oh.MsgN = ONE
+	// end manual hello -------------------------
+
+	time.Sleep(100 * time.Millisecond)
+
+	// wait for ack
+	ack, err := oh.readMsg()
+	c.Assert(err, IsNil)
+	c.Assert(ack, Not(IsNil))
+
+	// verify msg returned is an ack and has the correct parameters
+	c.Assert(ack.GetOp(), Equals, XLatticeMsg_Ack)
+	c.Assert(ack.GetMsgN(), Equals, TWO)
+	c.Assert(ack.GetYourMsgN(), Equals, ONE)
+
+	// -- KEEP-ALIVE ------------------------------------------------
+	cmd := XLatticeMsg_KeepAlive
+	keepAlive := &XLatticeMsg{
+		Op:   &cmd,
+		MsgN: &THREE,
+	}
+	data, err = EncodePacket(keepAlive)
+	c.Assert(err, IsNil)
+	c.Assert(data, Not(IsNil))
+	count, err = cnx2.Write(data)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, len(data))
+
+	// Wait for ack.  In a better world we time out if an ack is not
+	// received in some short period rather than blocking forever.
+	ack, err = oh.readMsg()
+	c.Assert(err, IsNil)
+	c.Assert(ack, Not(IsNil))
+
+	// verify msg returned is an ack and has the correct parameters
+	c.Assert(ack.GetOp(), Equals, XLatticeMsg_Ack)
+	c.Assert(ack.GetMsgN(), Equals, FOUR)
+	c.Assert(ack.GetYourMsgN(), Equals, THREE)
+
+	// -- BYE -------------------------------------------------------
+	cmd = XLatticeMsg_Bye
+	bye := &XLatticeMsg{
+		Op:   &cmd,
+		MsgN: &FIVE,
+	}
+	data, err = EncodePacket(bye)
+	c.Assert(err, IsNil)
+	c.Assert(data, Not(IsNil))
+	count, err = cnx2.Write(data)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, len(data))
+
+	// Wait for ack.  In a better world we time out if an ack is not
+	// received in some short period rather than blocking forever.
+	ack, err = oh.readMsg()
+	c.Assert(err, IsNil)
+	c.Assert(ack, Not(IsNil))
+
+	// verify msg returned is an ack and has the correct parameters
+	c.Assert(ack.GetOp(), Equals, XLatticeMsg_Ack)
+	c.Assert(ack.GetMsgN(), Equals, SIX)
+	c.Assert(ack.GetYourMsgN(), Equals, FIVE)
+
+	fmt.Println("bye acknowledged") // DEBUG
+}
+func (s *XLSuite) TestHelloFromStranger(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_HELLO_FROM_STRANGER")
+	}
+	myNode, myAcc := s.makeANode(c)
+	defer myAcc.Close()
+
+	c.Assert(myAcc, Not(IsNil))
+	myAccEP := myAcc.GetEndPoint()
+	myCtor, err := xt.NewTcpConnector(myAccEP)
+	c.Assert(err, IsNil)
+
+	// myNode's server side
+	go func() {
+		for {
+			cnx, err := myAcc.Accept()
+			c.Assert(err, IsNil)
+
+			// each connection handled by a separate goroutine
+			go func() {
+				_, _ = NewInHandler(myNode, cnx)
+			}()
+		}
 	}()
 
 	// Create a second mock peer unknown to myNode.
-	badGuy, badAcc := s.makeBadGuy(c)
+	badGuy, badAcc := s.makeANode(c)
 	defer badAcc.Close()
 	badHello, err := MakeHelloMsg(badGuy)
 	c.Assert(err, IsNil)
 	c.Assert(badHello, Not(IsNil))
-
-	_, _, _, _, _ = badGuy, myNode, peerNode, myAcc, peerAcc
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -106,71 +214,51 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(conn, Not(IsNil))
 	cnx := conn.(*xt.TcpConnection)
+	defer cnx.Close()
 
 	data, err := EncodePacket(badHello)
 	c.Assert(err, IsNil)
 	c.Assert(data, Not(IsNil))
-	fmt.Println("SENDING BADHELLO")
 	count, err := cnx.Write(data)
-	fmt.Println("BADHELLO SENT")
 
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, len(data))
+
+	fmt.Println("U")
+
 	time.Sleep(100 * time.Millisecond)
 
 	// XXX THIS TEST FAILS because of a deficiency in
 	// transport/tcp_connection.GetState() - it does not look at
 	// the state of the underlying connection
-	// c.Assert(cnx.GetState(), Equals, xt.DISCONNECTED)
+	// c.Assert(cnx.GetState(), Equals, xt.DISCONNECTED)	// GEEP
 
-	// Known peer sends Hello with at least one of cKey or sKey wrong.
-	// We expect to receive an error msg and then the connection
-	// should be closed.
-
-	// XXX STUB XXX
-
-	// Known peer sends Hello with all parameters correct.  We reply
-	// with an Ack and advance state to open.
-
-	peerHello, err := MakeHelloMsg(peerNode)
-	c.Assert(err, IsNil)
-	c.Assert(peerHello, Not(IsNil))
-
-	conn, err = myCtor.Connect(xt.ANY_TCP_END_POINT)
-	c.Assert(err, IsNil)
-	c.Assert(conn, Not(IsNil))
-	cnx = conn.(*xt.TcpConnection)
-
-	data, err = EncodePacket(peerHello)
-	c.Assert(err, IsNil)
-	c.Assert(data, Not(IsNil))
-	fmt.Println("SENDING PEERHELLO")
-	count, err = cnx.Write(data)
-	fmt.Println("PEER_HELLO SENT")
-
-	c.Assert(err, IsNil)
-	c.Assert(count, Equals, len(data))
-	time.Sleep(100 * time.Millisecond)
-
-	// WORKING HERE
-
-	fmt.Println("should be waiting for ack in reply to hello")
-
-	// XXX STUB XXX
-
-	// wait for ack
-	// XXX STUB XXX
-
-	// verify msg returned is an ack and has the correct parameters
-	// XXX STUB XXX
-
-	// send bye
-	// XXX STUB XXX
-
-	// wait for ack
-	// XXX STUB XXX
-
-	// Clean up: close the connection.
-	// XXX STUB XXX
-
+	fmt.Println("Z")
 }
+
+// -- ILL-FORMED HELLO ------------------------------------------
+// Known peer sends Hello with at least one of cKey or sKey wrong.
+// We expect to receive an error msg and then the connection
+// should be closed.
+
+// XXX STUB XXX
+
+// -- SECOND WELL-FORMED HELLO ----------------------------------
+// In this implementation, a second hello is an error and like all
+// errors will cause the peer to close the connection.
+// --------------------------------------------------------------
+
+// send well-formed hello
+// XXX STUB XXX
+
+// wait for and check ack
+// XXX STUB XXX
+
+// send second well-formed hello
+// XXX STUB XXX
+
+// wait for and check error message
+// XXX STUB XXX
+
+// clean up: close the connection
+// XXX STUB XXX				// GEEP

@@ -55,6 +55,7 @@ const (
 
 var (
 	ExpectedMsgOne      = errors.New("expected msg number to be 1")
+	MissingHandlerField = errors.New("missing CnxHandler field")
 	MissingHello        = errors.New("expected a Hello msg")
 	NilConnection       = errors.New("nil connection")
 	NilNode             = errors.New("nil node")
@@ -99,7 +100,7 @@ func (h *CnxHandler) writeMsg(m *XLatticeMsg) (err error) {
 	var data []byte
 	// serialize, marshal the message
 	data, err = EncodePacket(m)
-	if err != nil {
+	if err == nil {
 		count, err = h.Cnx.Write(data)
 		// XXX handle cases where not all bytes written
 		_ = count

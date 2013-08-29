@@ -136,10 +136,8 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 		//  the message is a hello; is its NodeID that of a known peer?
 		id = m.GetID()
 		if peer = n.FindPeer(id); peer == nil {
-			fmt.Println("NOT A KNOWN PEER")
 			err = xn.NotAKnownPeer
 		} else {
-			fmt.Println("KNOWN PEER")
 			h.Peer = peer
 		}
 	}
@@ -147,7 +145,6 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	// On any error up to here silently close the connection and delete
 	// the handler.
 	if err != nil {
-		fmt.Println("ERROR, SO CLOSING CNX")
 		h.Cnx.Close()
 		h = nil
 		return
@@ -157,9 +154,10 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	// MsgN must be 1
 	msgN := m.GetMsgN()
 	h.MsgN = msgN
-	ck := m.GetCommsKey()
-	sk := m.GetSigKey()
+	ck := m.GetCommsKey() // comms key as byte slice
+	sk := m.GetSigKey()   // sig key as byte slice
 	var serCK, serSK []byte
+
 	if h.MsgN != 1 {
 		err = ExpectedMsgOne
 	}
@@ -167,6 +165,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 		serCK, err = xc.RSAPubKeyToWire(peer.GetCommsPublicKey())
 		if err == nil {
 			if !xu.SameBytes(serCK, ck) {
+				fmt.Println("NOT SAME COMMS KEY")
 				err = NotExpectedCommsKey
 			}
 		}
@@ -175,6 +174,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 		serSK, err = xc.RSAPubKeyToWire(peer.GetSigPublicKey())
 		if err == nil {
 			if !xu.SameBytes(serSK, sk) {
+				fmt.Println("NOT SAME SIG KEY")
 				err = NotExpectedSigKey
 			}
 		}

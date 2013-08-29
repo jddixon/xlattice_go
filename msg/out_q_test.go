@@ -4,8 +4,8 @@ package msg
 
 import (
 	"fmt"
-	"github.com/jddixon/xlattice_go/node"
 	xc "github.com/jddixon/xlattice_go/crypto"
+	"github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xu "github.com/jddixon/xlattice_go/util"
@@ -32,11 +32,10 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	rng.NextBytes(&id)
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)
-	
+
 	name := rng.NextFileName(8)
 	mrX, err := node.NewNew(name, nodeID)
 	c.Assert(err, IsNil)
-	// these are strings
 	cPubKey := mrX.GetCommsPublicKey()
 	c.Assert(cPubKey, Not(IsNil))
 	sPubKey := mrX.GetSigPublicKey()
@@ -45,10 +44,10 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	// convert MrX's keys to wire form as byte slices
 	wcPubKey, err := xc.RSAPubKeyToWire(cPubKey)
 	c.Assert(err, IsNil)
-	c.Assert(len(wcPubKey) > 0, Equals, true)	// FAILS
+	c.Assert(len(wcPubKey) > 0, Equals, true)
 	wsPubKey, err := xc.RSAPubKeyToWire(sPubKey)
 	c.Assert(err, IsNil)
-	c.Assert(len(wsPubKey) > 0, Equals, true)	// expect this to fail too
+	c.Assert(len(wsPubKey) > 0, Equals, true)
 	c.Assert(wsPubKey, Not(IsNil))
 
 	hello, err := MakeHelloMsg(mrX)
@@ -59,8 +58,8 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	msPubKey := hello.GetSigKey()
 
 	c.Assert(len(mcPubKey), Equals, len(wcPubKey))
-	c.Assert(len(msPubKey), Equals, len(wsPubKey))
+	c.Assert(len(msPubKey), Equals, len(wsPubKey)) // FAILS 0, 294
 
-	c.Assert( xu.SameBytes(wcPubKey, mcPubKey), Equals, true)
-	c.Assert( xu.SameBytes(wsPubKey, msPubKey), Equals, true)
+	c.Assert(xu.SameBytes(wcPubKey, mcPubKey), Equals, true)
+	c.Assert(xu.SameBytes(wsPubKey, msPubKey), Equals, true)
 }
