@@ -295,6 +295,9 @@ func (p *PeerMapCell) addThisCol(id []byte, depth int, peer *Peer) (
 
 func (m *PeerMap) FindPeer(id []byte) (peer *Peer) {
 	curCell := m.nextCol
+	if curCell == nil { // no map
+		return nil
+	}
 	// fmt.Printf("FindPeer for %d.%d.%d.%d\n", id[0], id[1], id[2], id[3])
 
 	for depth := 0; depth < len(id); depth++ {

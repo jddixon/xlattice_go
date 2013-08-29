@@ -65,7 +65,6 @@ func (c *TcpConnection) Close() (err error) {
 	return c.conn.Close()
 }
 
-
 // XXX 2013-07-20: this returns the far end instead !
 func (c *TcpConnection) GetNearEnd() (ep EndPointI) {
 	ep, _ = NewTcpEndPoint(c.conn.LocalAddr().String())

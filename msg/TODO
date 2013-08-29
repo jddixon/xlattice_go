@@ -4,6 +4,8 @@ xlattice_go/msg/TODO
     * NodeID missing from Hello ?
     * Find and fix: something in in_q_test.go causes the test 
         failure count to go up without any error being reported 
+    * "Internal error: nil curCell at depth 0" is almost certainly      # FIXED
+        seach on empty peer_map
 
 2013-08-26
     * elaborate encoding_test.go to test all fields, with random

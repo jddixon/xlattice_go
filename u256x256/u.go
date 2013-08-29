@@ -113,7 +113,7 @@ func FileSHA3(path string) (hash string, err error) {
 		hash = hex.EncodeToString(digest2)
 	}
 	return
-} 
+}
 
 func PathExists(fName string) bool {
 	if _, err := os.Stat(fName); os.IsNotExist(err) {
@@ -296,7 +296,7 @@ func (u *U256x256) PutData3(data []byte, key string) (length int64, hash string,
 		length = int64(count)
 	}
 	return
-} 
+}
 
 // SHA1 CODE ========================================================
 

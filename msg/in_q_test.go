@@ -121,7 +121,7 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	// verify msg returned is an ack and has the correct parameters
 	c.Assert(ack.GetOp(), Equals, XLatticeMsg_Ack)
 	c.Assert(ack.GetMsgN(), Equals, TWO)
-	c.Assert(ack.GetYourMsgN(), Equals, ONE)
+	c.Assert(ack.GetYourMsgN(), Equals, ONE) // FOO
 
 	// -- KEEP-ALIVE ------------------------------------------------
 	cmd := XLatticeMsg_KeepAlive
@@ -171,7 +171,6 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	c.Assert(ack.GetMsgN(), Equals, SIX)
 	c.Assert(ack.GetYourMsgN(), Equals, FIVE)
 
-	fmt.Println("bye acknowledged") // DEBUG
 }
 func (s *XLSuite) TestHelloFromStranger(c *C) {
 	if VERBOSITY > 0 {
@@ -224,8 +223,6 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, len(data))
 
-	fmt.Println("U")
-
 	time.Sleep(100 * time.Millisecond)
 
 	// XXX THIS TEST FAILS because of a deficiency in
@@ -233,7 +230,6 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 	// the state of the underlying connection
 	// c.Assert(cnx.GetState(), Equals, xt.DISCONNECTED)	// GEEP
 
-	fmt.Println("Z")
 }
 
 // -- ILL-FORMED HELLO ------------------------------------------
@@ -248,17 +244,93 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 // errors will cause the peer to close the connection.
 // --------------------------------------------------------------
 
-// send well-formed hello
-// XXX STUB XXX
+func (s *XLSuite) TestSecondHello(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_SECOND_HELLO")
+	}
 
-// wait for and check ack
-// XXX STUB XXX
+	// Create a node and add a mock peer.  This is a cluster of 2.
+	nodes, accs := node.MockLocalHostCluster(2)
+	defer func() {
+		for i := 0; i < 2; i++ {
+			if accs[i] != nil {
+				accs[i].Close()
+			}
+		}
+	}()
+	serverNode, clientNode := nodes[0], nodes[1]
+	serverAsPeer := clientNode.GetPeer(0)
+	serverAcc := accs[0]
 
-// send second well-formed hello
-// XXX STUB XXX
+	c.Assert(serverAcc, Not(IsNil))
+	serverAccEP := serverAcc.GetEndPoint()
+	serverCtor, err := xt.NewTcpConnector(serverAccEP)
+	c.Assert(err, IsNil)
 
-// wait for and check error message
-// XXX STUB XXX
+	// serverNode's server side
+	go func() {
+		for {
+			cnx, err := serverAcc.Accept()
+			c.Assert(err, IsNil)
 
-// clean up: close the connection
-// XXX STUB XXX				// GEEP
+			// each connection handled by a separate goroutine
+			go func() {
+				_, _ = NewInHandler(serverNode, cnx)
+			}()
+		}
+	}()
+
+	// -- WELL-FORMED HELLO -----------------------------------------
+	// Known peer sends Hello with all parameters correct.  Server
+	// replies with an Ack and advance state to open.
+
+	conn, err := serverCtor.Connect(xt.ANY_TCP_END_POINT)
+	c.Assert(err, IsNil)
+	c.Assert(conn, Not(IsNil))
+	cnx2 := conn.(*xt.TcpConnection)
+	defer cnx2.Close()
+
+	oh := &OutHandler{CnxHandler{Cnx: cnx2, Peer: serverAsPeer}}
+
+	err = oh.SendHello(clientNode)
+	c.Assert(err, IsNil)
+
+	// wait for ack
+	ack, err := oh.readMsg()
+	c.Assert(err, IsNil) // XXX "EOF" instead
+	c.Assert(ack, Not(IsNil))
+
+	// verify msg returned is an ack and has the correct parameters
+	c.Assert(ack.GetOp(), Equals, XLatticeMsg_Ack)
+	c.Assert(ack.GetMsgN(), Equals, TWO)
+	c.Assert(ack.GetYourMsgN(), Equals, ONE) // FOO
+
+	// -- SECOND WELL-FORMED HELLO ----------------------------------
+
+	// manually create and send a hello message -
+	peerHello, err := MakeHelloMsg(clientNode)
+	c.Assert(err, IsNil)
+	c.Assert(peerHello, Not(IsNil))
+
+	data, err := EncodePacket(peerHello)
+	c.Assert(err, IsNil)
+	c.Assert(data, Not(IsNil))
+	count, err := cnx2.Write(data)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, len(data))
+	oh.MsgN = ONE
+	// end manual hello -------------------------
+
+	time.Sleep(100 * time.Millisecond)
+
+	// wait for error message
+	reply, err := oh.readMsg()
+	c.Assert(err, IsNil)
+	c.Assert(reply, Not(IsNil))
+
+	// verify msg returned is an reply and has the correct parameters
+	c.Assert(reply.GetOp(), Equals, XLatticeMsg_Error)
+	c.Assert(reply.GetMsgN(), Equals, FOUR) // XXX is ONE !
+	// c.Assert(reply.GetYourMsgN(), Equals, ONE)			// FOO
+
+}

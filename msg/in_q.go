@@ -49,7 +49,8 @@ func (h *InHandler) errorReply(e error) (err error) {
 	cmd := XLatticeMsg_Error
 	s := e.Error()
 	reply.Op = &cmd
-	reply.MsgN = &ONE
+	h.MsgN += 2
+	reply.MsgN = &h.MsgN
 	reply.ErrDesc = &s
 	h.writeMsg(&reply) // ignore any write error
 	h.State = IN_CLOSED
