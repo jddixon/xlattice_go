@@ -60,6 +60,7 @@ var (
 	NilConnection       = errors.New("nil connection")
 	NilNode             = errors.New("nil node")
 	NotExpectedCommsKey = errors.New("not peer's expected comms public key")
+	NotExpectedNodeID   = errors.New("not peer's expected NodeID")
 	NotExpectedSigKey   = errors.New("not peer's expected sig public key")
 	UnexpectedMsgType   = errors.New("unexpected message type")
 	WrongMsgNbr         = errors.New("wrong message number")

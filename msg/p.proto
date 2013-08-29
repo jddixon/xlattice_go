@@ -2,8 +2,8 @@ package msg;
 
 message XLatticeMsg {
     enum Cmd {
-        Hello       = 1;    // first msg, initiates comms cycle
-        Bye         = 2;    // ends comms cycle
+        Hello       = 1;    // msgN, id, ck, sk; initiates comms cycle
+        Bye         = 2;    // msgN; ends comms cycle
         KeepAlive   = 3;    // msgN, id, opt salt, opt sig
         Ack         = 4;    // above plus yourMsgN, yourID
         Error       = 5;    // above plus errCode, errDesc

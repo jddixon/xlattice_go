@@ -94,6 +94,7 @@ func (h *InHandler) checkMsgNbrAndAck(m *XLatticeMsg) (err error) {
 	return
 }
 func (h *InHandler) handleInMsg() (err error) {
+	defer h.Cnx.Close()
 	for err == nil {
 		var m *XLatticeMsg
 		m, err = h.readMsg()
@@ -105,15 +106,18 @@ func (h *InHandler) handleInMsg() (err error) {
 				h.State = IN_CLOSED
 			case XLatticeMsg_KeepAlive:
 				// XXX Update last-time-spoken-to for peer
+				h.Peer.LastContact()
 				err = h.checkMsgNbrAndAck(m)
 			default:
-				// DEBUG
-				fmt.Printf("handleInMsg: UNEXPECTED MESSAGE TYPE %v\n",
-					m)
-				// END
+				// XXX should log
+				//fmt.Printf("handleInMsg: UNEXPECTED MESSAGE TYPE %v\n", m.GetOp())
 				err = UnexpectedMsgType
 				h.errorReply(err) // ignore any errors from the call itself
 			}
+		} else {
+			// XXX could handle specific errors
+			fmt.Printf("    handleInMsg gets %v\n", err) // DEBUG; is EOF
+			break
 		}
 	}
 	return
@@ -163,10 +167,18 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 		err = ExpectedMsgOne
 	}
 	if err == nil {
+		id := m.GetID()
+		peerID := peer.GetNodeID().Value()
+		if !xu.SameBytes(id, peerID) {
+			fmt.Println("NOT SAME NODE ID") // XXX should log
+			err = NotExpectedNodeID
+		}
+	}
+	if err == nil {
 		serCK, err = xc.RSAPubKeyToWire(peer.GetCommsPublicKey())
 		if err == nil {
 			if !xu.SameBytes(serCK, ck) {
-				fmt.Println("NOT SAME COMMS KEY")
+				fmt.Println("NOT SAME COMMS KEY") // XXX should log
 				err = NotExpectedCommsKey
 			}
 		}
@@ -175,7 +187,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 		serSK, err = xc.RSAPubKeyToWire(peer.GetSigPublicKey())
 		if err == nil {
 			if !xu.SameBytes(serSK, sk) {
-				fmt.Println("NOT SAME SIG KEY")
+				fmt.Println("NOT SAME SIG KEY") // XXX should log
 				err = NotExpectedSigKey
 			}
 		}
@@ -183,7 +195,8 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 
 	if err == nil {
 		// Everything is good; so Ack, leaving cnx open.
-		peer.MarkUp() // we consider the peer live
+		h.Peer.MarkUp() // we consider the peer live
+		h.Peer.LastContact()
 		err = h.simpleAck(msgN)
 	} else {
 		// Send the text of the error to the peer; the send itself

@@ -53,6 +53,11 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	hello, err := MakeHelloMsg(mrX)
 	c.Assert(err, IsNil)
 	c.Assert(hello, Not(IsNil))
+
+	// check NodeID
+	idInMsg := hello.GetID() // a byte slice, not a NodeID
+	c.Assert(xu.SameBytes(id, idInMsg), Equals, true)
+
 	// these are byte slices
 	mcPubKey := hello.GetCommsKey()
 	msPubKey := hello.GetSigKey()

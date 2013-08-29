@@ -62,4 +62,6 @@ func (s *XLSuite) TestEncoding(c *C) {
 	for i := 0; i < len(wired); i++ {
 		c.Assert(wired[i], Equals, rewired[i])
 	}
+
+	fmt.Println("    end TestEncoding")
 }

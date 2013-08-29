@@ -171,6 +171,11 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	c.Assert(ack.GetMsgN(), Equals, SIX)
 	c.Assert(ack.GetYourMsgN(), Equals, FIVE)
 
+	if c.Failed() {
+		fmt.Println("    TestHelloHandler FAILED") // DEBUG
+	} else {
+		fmt.Println("    end TestHelloHandler") // DEBUG
+	}
 }
 func (s *XLSuite) TestHelloFromStranger(c *C) {
 	if VERBOSITY > 0 {
@@ -230,6 +235,11 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 	// the state of the underlying connection
 	// c.Assert(cnx.GetState(), Equals, xt.DISCONNECTED)	// GEEP
 
+	if c.Failed() {
+		fmt.Println("    TestHelloFromStranger FAILED") // DEBUG
+	} else {
+		fmt.Println("    end TestHelloFromStranger") // DEBUG
+	}
 }
 
 // -- ILL-FORMED HELLO ------------------------------------------
@@ -333,4 +343,9 @@ func (s *XLSuite) TestSecondHello(c *C) {
 	c.Assert(reply.GetMsgN(), Equals, FOUR) // XXX is ONE !
 	// c.Assert(reply.GetYourMsgN(), Equals, ONE)			// FOO
 
+	if c.Failed() {
+		fmt.Println("    TestSecondHello FAILED") // DEBUG
+	} else {
+		fmt.Println("    end TestSecondHello") // DEBUG
+	}
 }

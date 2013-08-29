@@ -1,9 +1,12 @@
 xlattice_go/msg/TODO
 
-2013-08-28
-    * NodeID missing from Hello ?
+2013-08-29
     * Find and fix: something in in_q_test.go causes the test 
         failure count to go up without any error being reported 
+        - test on c.Failed() at end of each test says none have failed
+    * add NodeID check to Hello handler                                 # DONE
+
+2013-08-28
     * "Internal error: nil curCell at depth 0" is almost certainly      # FIXED
         seach on empty peer_map
 
@@ -15,6 +18,6 @@ xlattice_go/msg/TODO
         a keep-alive
 
 2013-08-24
-    * now having working PeerMap from ../search; extend in_q_test
+    * now having working PeerMap from ../search; extend in_q_test       # DONE
         to use it
 
