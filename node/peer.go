@@ -2,7 +2,6 @@ package node
 
 import (
 	"crypto/rsa"
-	"errors"
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
@@ -10,10 +9,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-)
-
-var (
-	NotASerializedPeer = errors.New("not a serialized peer")
 )
 
 /**
@@ -58,7 +53,7 @@ func NewPeer(name string, id *xi.NodeID,
 // CONNECTORS ///////////////////////////////////////////////////////
 func (p *Peer) addConnector(c xt.ConnectorI) error {
 	if c == nil {
-		return errors.New("IllegalArgument: nil Connector")
+		return NilConnector
 	}
 	p.connectors = append(p.connectors, c)
 	return nil

@@ -14,3 +14,9 @@ func MakeSimpleRNG() *PRNG {
 	rng := NewSimpleRNG(t)
 	return rng
 }
+
+func MakeSystemRNG() *PRNG {
+	t := time.Now().Unix()
+	rng := NewSystemRNG(t)
+	return rng
+}

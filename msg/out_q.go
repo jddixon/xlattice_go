@@ -3,11 +3,10 @@ package msg
 // xlattice_go/msg/out_q.go
 
 import (
-	"errors"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"
-	//xt "github.com/jddixon/xlattice_go/transport"
+	"github.com/jddixon/xlattice_go/rnglib"
 )
 
 var _ = fmt.Print
@@ -25,28 +24,34 @@ const (
 	OUT_CLOSED
 )
 
-var (
-	CannotSendSecondHello = errors.New("can't send second hello")
-)
-
 type OutHandler struct {
 	CnxHandler
 }
 
 func MakeHelloMsg(n *xn.Node) (m *XLatticeMsg, err error) {
-	var ck, sk []byte
+	var ck, sk, salt, sig []byte
 	cmd := XLatticeMsg_Hello
+	id := n.GetNodeID().Value()
 	ck, err = xc.RSAPubKeyToWire(n.GetCommsPublicKey())
 	if err == nil {
 		sk, err = xc.RSAPubKeyToWire(n.GetSigPublicKey())
 	}
 	if err == nil {
+		sysRNG := rnglib.MakeSystemRNG()
+		salt = make([]byte, 8)
+		sysRNG.NextBytes(&salt)
+		chunks := [][]byte{id, ck, sk, salt}
+		sig, err = n.Sign(chunks)
+	}
+	if err == nil {
 		m = &XLatticeMsg{
 			Op:       &cmd,
 			MsgN:     &ONE,
-			ID:       n.GetNodeID().Value(),
+			ID:       id,
 			CommsKey: ck,
 			SigKey:   sk,
+			Salt:     salt,
+			Sig:      sig,
 		}
 	}
 	return

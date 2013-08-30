@@ -6,7 +6,6 @@ import (
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"
-	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
 
@@ -14,8 +13,6 @@ func (s *XLSuite) TestEncoding(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_ENCODING")
 	}
-	rng := rnglib.MakeSimpleRNG()
-
 	const K = 2
 	nodes, accs := xn.MockLocalHostCluster(K) // lazy way to get keys
 	defer func() {
@@ -25,10 +22,6 @@ func (s *XLSuite) TestEncoding(c *C) {
 			}
 		}
 	}()
-
-	_ = rng // WORKING HERE
-
-	// XXX NEED TO TEST EVERY FIELD
 
 	peer := nodes[0].GetPeer(0)
 	pID := peer.GetNodeID().Value()
@@ -63,5 +56,9 @@ func (s *XLSuite) TestEncoding(c *C) {
 		c.Assert(wired[i], Equals, rewired[i])
 	}
 
+	// DEBUG
+	fmt.Printf("    len ck %d bytes\n", len(msg.GetCommsKey()))
+	fmt.Printf("    len sk %d bytes\n", len(msg.GetSigKey()))
 	fmt.Println("    end TestEncoding")
+	// END
 }

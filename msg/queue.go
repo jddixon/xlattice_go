@@ -4,7 +4,6 @@ package msg
 
 import (
 	"code.google.com/p/goprotobuf/proto"
-	"errors"
 	"fmt"
 	xn "github.com/jddixon/xlattice_go/node"
 	xt "github.com/jddixon/xlattice_go/transport"
@@ -51,19 +50,6 @@ type MsgQueue struct {
 const (
 	WIRE_FORM uint64 = 2 * iota // set if message has been marshaled
 	FOO_FOO
-)
-
-var (
-	ExpectedMsgOne      = errors.New("expected msg number to be 1")
-	MissingHandlerField = errors.New("missing CnxHandler field")
-	MissingHello        = errors.New("expected a Hello msg")
-	NilConnection       = errors.New("nil connection")
-	NilNode             = errors.New("nil node")
-	NotExpectedCommsKey = errors.New("not peer's expected comms public key")
-	NotExpectedNodeID   = errors.New("not peer's expected NodeID")
-	NotExpectedSigKey   = errors.New("not peer's expected sig public key")
-	UnexpectedMsgType   = errors.New("unexpected message type")
-	WrongMsgNbr         = errors.New("wrong message number")
 )
 
 type MsgCarrier struct {

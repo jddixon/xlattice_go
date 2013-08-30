@@ -6,7 +6,6 @@ import (
 	"code.google.com/p/go.crypto/ssh"
 	"crypto/rsa"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -36,8 +35,7 @@ func NewBaseNode(name string, id *xi.NodeID,
 
 	// IDENTITY /////////////////////////////////////////////////////
 	if id == nil {
-		err := errors.New("IllegalArgument: nil NodeID")
-		return nil, err
+		return nil, NilNodeID
 	}
 	nodeID, err := (*id).Clone()
 	if err != nil {
@@ -81,7 +79,7 @@ func (p *BaseNode) GetSigPublicKey() *rsa.PublicKey {
 // OVERLAYS /////////////////////////////////////////////////////////
 //func (p *BaseNode) addOverlayI(o xo.OverlayI) error {
 //	if o == nil {
-//		return errors.New("IllegalArgument: nil OverlayI")
+//		return NilOverlay
 //	}
 //	p.overlays = append(p.overlays, o)
 //	return nil
@@ -89,7 +87,7 @@ func (p *BaseNode) GetSigPublicKey() *rsa.PublicKey {
 func (n *BaseNode) AddOverlay(o xo.OverlayI) (ndx int, err error) {
 	ndx = -1
 	if o == nil {
-		err = errors.New("IllegalArgument: nil Overlay")
+		err = NilOverlay
 	} else {
 		for i := 0; i < len(n.overlays); i++ {
 			if n.overlays[i].Equal(o) {
@@ -164,11 +162,6 @@ func (p *BaseNode) Strings() []string {
 }
 
 // DESERIALIZATION //////////////////////////////////////////////////
-
-var (
-	NotABaseNode      = errors.New("not a serialized BaseNode - missing bits")
-	NotExpectedOpener = errors.New("not expected BaseNode serialization opener")
-)
 
 // Return the next non-blank line in the slice of strings
 func nextLine(lines *[]string) string {

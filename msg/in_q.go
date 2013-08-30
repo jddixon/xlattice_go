@@ -3,7 +3,9 @@ package msg
 // xlattice_go/msg/in_q.go
 
 import (
-	// "code.google.com/p/goprotobuf/proto"
+	cr "crypto"
+	"crypto/rsa"
+	"crypto/sha1"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"
@@ -124,16 +126,16 @@ func (h *InHandler) handleInMsg() (err error) {
 }
 func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	var (
-		m    *XLatticeMsg
-		id   []byte
-		peer *xn.Peer
+		m                     *XLatticeMsg
+		msgN                  uint64
+		id, ck, sk, sig, salt []byte
+		peer                  *xn.Peer
 	)
 	m, err = h.readMsg()
 
 	// message must be a Hello
 	if err == nil {
 		if m.GetOp() != XLatticeMsg_Hello {
-			fmt.Println("MISSING HELLO")
 			err = MissingHello
 		}
 	}
@@ -157,17 +159,19 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	// message is a hello from a known peer -------------------------
 
 	// MsgN must be 1
-	msgN := m.GetMsgN()
+	msgN = m.GetMsgN()
 	h.MsgN = msgN
-	ck := m.GetCommsKey() // comms key as byte slice
-	sk := m.GetSigKey()   // sig key as byte slice
+	ck = m.GetCommsKey() // comms key as byte slice
+	sk = m.GetSigKey()   // sig key as byte slice
+	salt = m.GetSalt()
+	sig = m.GetSig() // digital signature
+
 	var serCK, serSK []byte
 
 	if h.MsgN != 1 {
 		err = ExpectedMsgOne
 	}
 	if err == nil {
-		id := m.GetID()
 		peerID := peer.GetNodeID().Value()
 		if !xu.SameBytes(id, peerID) {
 			fmt.Println("NOT SAME NODE ID") // XXX should log
@@ -192,7 +196,16 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 			}
 		}
 	}
-
+	if err == nil {
+		sigPubKey := peer.GetSigPublicKey()
+		d := sha1.New()
+		d.Write(id)
+		d.Write(ck)
+		d.Write(sk)
+		d.Write(salt)
+		hash := d.Sum(nil)
+		err = rsa.VerifyPKCS1v15(sigPubKey, cr.SHA1, hash, sig)
+	}
 	if err == nil {
 		// Everything is good; so Ack, leaving cnx open.
 		h.Peer.MarkUp() // we consider the peer live

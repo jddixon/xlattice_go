@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
-	"errors"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -16,11 +15,6 @@ import (
 )
 
 var _ = fmt.Print
-
-var (
-	NotAKnownPeer      = errors.New("not a known peer")
-	NotASerializedNode = errors.New("not a serialized node")
-)
 
 /**
  * A Node is uniquely identified by a NodeID and can satisfy an
@@ -202,7 +196,7 @@ func (n *Node) getSigner() *signer {
 
 func (n *Node) AddEndPoint(e xt.EndPointI) (ndx int, err error) {
 	if e == nil {
-		return -1, errors.New("IllegalArgument: nil EndPoint")
+		return -1, NilEndPoint
 	}
 	return addEndPoint(e, &n.endPoints, &n.acceptors, &n.overlays)
 }
@@ -235,7 +229,7 @@ func (n *Node) GetAcceptor(x int) xt.AcceptorI {
 //func (n *Node) AddOverlay(o xo.OverlayI) (ndx int, err error) {
 //	ndx = -1
 //	if o == nil {
-//		err = errors.New("IllegalArgument: nil Overlay")
+//		err = NilOverlay
 //	} else {
 //		for i := 0; i < len(n.overlays); i++ {
 //			if n.overlays[i].Equal(o) {
@@ -264,7 +258,7 @@ func (n *Node) GetAcceptor(x int) xt.AcceptorI {
 func (n *Node) AddPeer(peer *Peer) (ndx int, err error) {
 	ndx = -1
 	if peer == nil {
-		err = errors.New("IllegalArgument: nil Peer")
+		err = NilPeer
 	} else {
 		if n.peers != nil {
 			for i := 0; i < len(n.peers); i++ {
@@ -303,7 +297,7 @@ func (n *Node) FindPeer(id []byte) *Peer {
 // CONNECTIONS //////////////////////////////////////////////////////
 func (n *Node) addConnection(c xt.ConnectionI) (ndx int, err error) {
 	if c == nil {
-		return -1, errors.New("IllegalArgument: nil ConnectionI")
+		return -1, NilConnection
 	}
 	n.connections = append(n.connections, c)
 	ndx = len(n.connections) - 1
@@ -566,6 +560,20 @@ func Parse(s string) (node *Node, rest []string, err error) {
 
 // DIG SIGNER ///////////////////////////////////////////////////////
 
+func (n *Node) Sign(chunks [][]byte) (sig []byte, err error) {
+	if chunks == nil {
+		err = NothingToSign
+	} else {
+		s := newSigner(n.sigKey)
+		for i := 0; i < len(chunks); i++ {
+			s.digest.Write(chunks[i])
+		}
+		h := s.digest.Sum(nil)
+		sig, err = rsa.SignPKCS1v15(rand.Reader, s.key, crypto.SHA1, h)
+	}
+	return
+}
+
 type signer struct {
 	key    *rsa.PrivateKey
 	digest hash.Hash
@@ -577,6 +585,11 @@ func newSigner(key *rsa.PrivateKey) *signer {
 	ds := signer{key: key, digest: h}
 	return &ds
 }
+
+///////////////////////////////////////////////////
+// XXX This stuff needs to be cleaned up or dropped
+///////////////////////////////////////////////////
+
 func (s *signer) Algorithm() string {
 	return "SHA1+RSA" // XXX NOT THE PROPER NAME
 }

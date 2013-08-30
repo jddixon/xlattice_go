@@ -1,5 +1,17 @@
 xlattice_go/node/TODO
 
+2013-08-30
+    * Consolidate all error messages into errors.go
+
+    * Need a Node.Sign(chunks [][]byte) ([]byte, error) for 
+        signing hello messages
+        - this needs to be thread-safe
+        - it must not expose the RSA private key
+
+2013-08-29
+    * The Peer 'up' field should be a field of bit flags
+        (declare as int but only use 32 bits)
+
 2013-08-26
     * if lfs is being used, need to create a u256x256 file 
         system lfs/U, lfs/U/in, and lfs/U/tmp, and need to either
