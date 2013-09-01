@@ -57,8 +57,8 @@ func (s *XLSuite) TestEncoding(c *C) {
 	}
 
 	// DEBUG
-	fmt.Printf("    len ck %d bytes\n", len(msg.GetCommsKey()))
-	fmt.Printf("    len sk %d bytes\n", len(msg.GetSigKey()))
-	fmt.Println("    end TestEncoding")
+	//fmt.Printf("    len ck %d bytes\n", len(msg.GetCommsKey()))	// 294
+	//fmt.Printf("    len sk %d bytes\n", len(msg.GetSigKey()))		// 294
+	//fmt.Println("    end TestEncoding")
 	// END
 }

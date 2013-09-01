@@ -25,6 +25,9 @@ const (
 )
 
 type OutHandler struct {
+	Node    *xn.Node
+	PeerNdx int    // which one of the node's peers this handles
+	MsgN    uint64 // message number, always odd
 	CnxHandler
 }
 
@@ -68,7 +71,7 @@ func (oh *OutHandler) SendBye() (err error) {
 	err = oh.writeMsg(bye)
 	return
 }
-func (oh *OutHandler) SendHello(n *xn.Node) (err error) {
+func (oh *OutHandler) SendHello() (err error) {
 	var hello *XLatticeMsg
 	if oh.Cnx == nil || oh.Peer == nil {
 		err = MissingHandlerField
@@ -79,11 +82,17 @@ func (oh *OutHandler) SendHello(n *xn.Node) (err error) {
 		}
 	}
 	if err == nil {
-		hello, err = MakeHelloMsg(n)
+		hello, err = MakeHelloMsg(oh.Node)
 	}
 	if err == nil {
 		oh.MsgN = uint64(1)
 		err = oh.writeMsg(hello)
 	}
+	return
+}
+
+func NewOutHandler(n *xn.Node, k int, stopCh, stoppedCh chan (bool)) (err error) {
+
+	// XXX STUB XXX
 	return
 }

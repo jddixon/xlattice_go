@@ -95,7 +95,9 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	cnx2 := conn.(*xt.TcpConnection)
 	defer cnx2.Close()
 
-	oh := &OutHandler{CnxHandler{Cnx: cnx2, Peer: meAsPeer}}
+	oh := &OutHandler{
+		Node:       peerNode,
+		CnxHandler: CnxHandler{Cnx: cnx2, Peer: meAsPeer}}
 
 	// manually create and send a hello message -
 	peerHello, err := MakeHelloMsg(peerNode)
@@ -300,9 +302,10 @@ func (s *XLSuite) TestSecondHello(c *C) {
 	cnx2 := conn.(*xt.TcpConnection)
 	defer cnx2.Close()
 
-	oh := &OutHandler{CnxHandler{Cnx: cnx2, Peer: serverAsPeer}}
+	oh := &OutHandler{Node: clientNode,
+		CnxHandler: CnxHandler{Cnx: cnx2, Peer: serverAsPeer}}
 
-	err = oh.SendHello(clientNode)
+	err = oh.SendHello()
 	c.Assert(err, IsNil)
 
 	// wait for ack

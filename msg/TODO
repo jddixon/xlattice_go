@@ -4,7 +4,9 @@ xlattice_go/msg/TODO
     * Find and fix: something in in_q_test.go causes the test 
         failure count to go up without any error being reported 
         - test on c.Failed() at end of each test says none have failed
-        - usually claims 3 failures, sometimes 2
+        - usually claims 3 failures, sometimes 1 or 2
+        - assume this caused by goroutines still running when tests
+            end
 
 2013-08-29
     * add NodeID check to Hello handler                                 # DONE
@@ -15,25 +17,17 @@ xlattice_go/msg/TODO
             * this may cause problems as it is currently not 
                 constrained to be unique
                 - could require that it be a fully qualified domain name
-    * Add Salt and Sig fields to the HelloMsg.
+
+    * Add Salt and Sig fields to the HelloMsg.                          # DONE
         - Salt is 8 bytes of secure random bits from srng, a            # DONE
             SystemRNG instance
+
         - Sig is an RSA+SHA1 digital signature over id, commsPubKey,
             sigPubKey, Salt, and MyEnd in that order, where the MyEnd
             is optional
+            * XXX actually MyEnd is not included
         - If a Hello has a bad digital signature we send a BadSig
             error message and close the connection.
-
-2013-08-28
-    * "Internal error: nil curCell at depth 0" is almost certainly      # FIXED
-        seach on empty peer_map
-
-2013-08-26
-    * in_q.go handleMsg() must update an appropriate field in           # DONE
-        a data structure associated with the peer on receiving
-        a keep-alive
-
-2013-08-24
-    * now having working PeerMap from ../search; extend in_q_test       # DONE
-        to use it
-
+            * XXX actually returning whatever error rsa.VerifyPKCS1v15
+                returns
+                - so BadSig is unused
