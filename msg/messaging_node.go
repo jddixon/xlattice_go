@@ -77,7 +77,9 @@ func (mn *MessagingNode) Start() (err error) {
 		stoppedCh[i] = make(chan bool) // replies that it has done so
 	}
 
-	for i := 0; i < mn.K; i++ { // all K peers
+	// Open client-style connections to all K peers, sending keep-alives
+	// to each until we get a signal to stop or an error occurs.
+	for i := 0; i < mn.K; i++ {
 		var cnx *xt.TcpConnection
 		peer := mn.Node.GetPeer(i)
 		if peer == nil {
@@ -96,21 +98,34 @@ func (mn *MessagingNode) Start() (err error) {
 				Node:       &mn.Node,
 				CnxHandler: CnxHandler{Cnx: cnx, Peer: peer}}
 			go func(k int) {
-				defer cnx.Close()
-				fErr := ohs[k].SendHello()
-				// XXX WAIT FOR ACK OR TIME OUT
+				defer ohs[k].Cnx.Close()
+				var fErr error
+				errCh := make(chan error, 1)
+
+				// hello initiates conversation ---------------------
+				go func() { errCh <- ohs[k].SendHello() }()
+				select {
+				case <-time.After(time.Second):
+					// handle timeout
+				case fErr = <-errCh:
+					// XXX WAIT FOR ACK OR TIME OUT
+				}
 				if fErr == nil {
+					// keepalive/ack loop until stop received -------
 					for {
 						select {
 						case <-stopCh[k]:
+							ohs[k].Cnx.Close()
 							break
-						default:
-							time.Sleep(time.Second) // KEEP_ALIVE_INTERVAL
+						case <-time.After(time.Second):
+							// KEEP_ALIVE_INTERVAL
 						}
 						// SEND KEEP ALIVE
 						// WAIT FOR ACK
 					}
-					// SEND BYE
+					// out of loop: send Bye if possible
+					// XXX STUB XXX
+
 					// WAIT FOR ACK BUT ON A TIMEOUT
 					stoppedCh[k] <- true
 				}
