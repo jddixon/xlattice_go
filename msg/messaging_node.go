@@ -10,16 +10,17 @@ import (
 )
 
 type MessagingNode struct {
-	Acc    *xt.TcpAcceptor
-	K      int
-	KillCh chan (bool)
+	Acc       *xt.TcpAcceptor
+	K         int
+	StopCh    chan (bool)
+	StoppedCh chan bool
 	xn.Node
 }
 
 // Create a messaging node around a live node which has a list of peers
 // and an open acceptor.
 
-func NewMessagingNode(n *xn.Node, killCh chan (bool)) (
+func NewMessagingNode(n *xn.Node, stopCh, stoppedCh chan bool) (
 	mn *MessagingNode, err error) {
 
 	var k int
@@ -35,15 +36,16 @@ func NewMessagingNode(n *xn.Node, killCh chan (bool)) (
 	if err == nil && tcpAcc == nil {
 		err = AcceptorNotLive
 	}
-	if err == nil && killCh == nil {
+	if err == nil && stopCh == nil {
 		err = NilControlCh
 	}
 	if err == nil {
 		mn = &MessagingNode{
-			Acc:    tcpAcc,
-			K:      k,
-			KillCh: killCh,
-			Node:   *n,
+			Acc:       tcpAcc,
+			K:         k,
+			StopCh:    stopCh,
+			StoppedCh: stoppedCh,
+			Node:      *n,
 		}
 	}
 	return
@@ -61,7 +63,7 @@ func (mn *MessagingNode) Start() (err error) {
 				break
 			}
 			go func() {
-				NewInHandler(&mn.Node, conn)
+				NewInHandler(&mn.Node, conn, mn.StopCh, mn.StoppedCh)
 			}()
 		}
 	}()

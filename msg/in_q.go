@@ -11,6 +11,7 @@ import (
 	xn "github.com/jddixon/xlattice_go/node"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
+	"strings"
 )
 
 var _ = fmt.Print
@@ -24,12 +25,15 @@ const (
 )
 
 type InHandler struct {
+	StopCh, StoppedCh chan bool
 	CnxHandler
 }
 
 // Given an open new connection, process a hello message for this node,
 // returning a handler for the connection if that succeeds.
-func NewInHandler(n *xn.Node, conn xt.ConnectionI) (h *InHandler, err error) {
+func NewInHandler(n *xn.Node, conn xt.ConnectionI,
+	stopCh, stoppedCh chan bool) (h *InHandler, err error) {
+
 	if n == nil {
 		return nil, NilNode
 	}
@@ -37,7 +41,10 @@ func NewInHandler(n *xn.Node, conn xt.ConnectionI) (h *InHandler, err error) {
 		return nil, NilConnection
 	}
 	cnx := conn.(*xt.TcpConnection)
-	h = &InHandler{CnxHandler{Cnx: cnx, State: IN_START}}
+	h = &InHandler{
+		StopCh:     stopCh,
+		StoppedCh:  stoppedCh,
+		CnxHandler: CnxHandler{Cnx: cnx, State: IN_START}}
 	err = h.handleHello(n)
 	if err == nil {
 		err = h.handleInMsg()
@@ -97,6 +104,11 @@ func (h *InHandler) checkMsgNbrAndAck(m *XLatticeMsg) (err error) {
 }
 func (h *InHandler) handleInMsg() (err error) {
 	defer h.Cnx.Close()
+	go func() {
+		<-h.StopCh
+		h.Cnx.Close()
+		h.StoppedCh <- true
+	}()
 	for err == nil {
 		var m *XLatticeMsg
 		m, err = h.readMsg()
@@ -117,9 +129,15 @@ func (h *InHandler) handleInMsg() (err error) {
 				h.errorReply(err) // ignore any errors from the call itself
 			}
 		} else {
-			// XXX could handle specific errors
-			fmt.Printf("    handleInMsg gets %v\n", err) // DEBUG; is EOF
 			break
+		}
+	}
+	if err != nil {
+		text := err.Error()
+		if strings.HasSuffix(text, "use of closed network connection") {
+			err = nil
+		} else {
+			fmt.Printf("    handleInMsg gets %v\n", err) // DEBUG
 		}
 	}
 	return

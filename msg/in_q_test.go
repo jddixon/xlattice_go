@@ -73,6 +73,9 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	c.Assert(err, IsNil)
 
 	// myNode's server side
+	stopCh := make(chan bool, 1) // has buffer so won't block
+	stoppedCh := make(chan bool, 1)
+
 	go func() {
 		for {
 			cnx, err := myAcc.Accept()
@@ -80,7 +83,7 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 
 			// each connection handled by a separate goroutine
 			go func() {
-				_, _ = NewInHandler(myNode, cnx)
+				_, _ = NewInHandler(myNode, cnx, stopCh, stoppedCh)
 			}()
 		}
 	}()
@@ -125,7 +128,7 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	c.Assert(ack.GetMsgN(), Equals, TWO)
 	c.Assert(ack.GetYourMsgN(), Equals, ONE) // FOO
 
-	// -- KEEP-ALIVE ------------------------------------------------
+	// -- KEEPALIVE -------------------------------------------------
 	cmd := XLatticeMsg_KeepAlive
 	keepAlive := &XLatticeMsg{
 		Op:   &cmd,
@@ -173,10 +176,19 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	c.Assert(ack.GetMsgN(), Equals, SIX)
 	c.Assert(ack.GetYourMsgN(), Equals, FIVE)
 
+	// -- STOP THE SERVER -------------------------------------------
+	stopCh <- true
+	select {
+	case <-stoppedCh:
+		fmt.Println("    got stopped signal") // DEBUG
+	case <-time.After(100 * time.Millisecond):
+		fmt.Println("    stop timed out") // DEBUG
+	}
+	// -- DEBUGGING TEST FRAMEWORK ----------------------------------
 	if c.Failed() {
 		fmt.Println("    TestHelloHandler FAILED") // DEBUG
 	} else {
-		fmt.Println("    end TestHelloHandler") // DEBUG
+		fmt.Println("    end TestHelloHandler: no failures") // DEBUG
 	}
 }
 func (s *XLSuite) TestHelloFromStranger(c *C) {
@@ -192,6 +204,8 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 	c.Assert(err, IsNil)
 
 	// myNode's server side
+	stopCh := make(chan bool, 1)
+	stoppedCh := make(chan bool, 1)
 	go func() {
 		for {
 			cnx, err := myAcc.Accept()
@@ -199,7 +213,7 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 
 			// each connection handled by a separate goroutine
 			go func() {
-				_, _ = NewInHandler(myNode, cnx)
+				_, _ = NewInHandler(myNode, cnx, stopCh, stoppedCh)
 			}()
 		}
 	}()
@@ -237,10 +251,20 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 	// the state of the underlying connection
 	// c.Assert(cnx.GetState(), Equals, xt.DISCONNECTED)	// GEEP
 
+	// -- STOP THE SERVER -------------------------------------------
+	stopCh <- true
+	select {
+	case <-stoppedCh:
+		fmt.Println("    got stopped signal") // DEBUG
+	case <-time.After(100 * time.Millisecond):
+		fmt.Println("    stop timed out") // DEBUG
+	}
+
+	// -- DEBUGGING TEST FRAMEWORK ----------------------------------
 	if c.Failed() {
 		fmt.Println("    TestHelloFromStranger FAILED") // DEBUG
 	} else {
-		fmt.Println("    end TestHelloFromStranger") // DEBUG
+		fmt.Println("    end TestHelloFromStranger: no failures") // DEBUG
 	}
 }
 
@@ -260,7 +284,6 @@ func (s *XLSuite) TestSecondHello(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_SECOND_HELLO")
 	}
-
 	// Create a node and add a mock peer.  This is a cluster of 2.
 	nodes, accs := node.MockLocalHostCluster(2)
 	defer func() {
@@ -280,6 +303,8 @@ func (s *XLSuite) TestSecondHello(c *C) {
 	c.Assert(err, IsNil)
 
 	// serverNode's server side
+	stopCh := make(chan bool, 1)
+	stoppedCh := make(chan bool, 1)
 	go func() {
 		for {
 			cnx, err := serverAcc.Accept()
@@ -287,7 +312,7 @@ func (s *XLSuite) TestSecondHello(c *C) {
 
 			// each connection handled by a separate goroutine
 			go func() {
-				_, _ = NewInHandler(serverNode, cnx)
+				_, _ = NewInHandler(serverNode, cnx, stopCh, stoppedCh)
 			}()
 		}
 	}()
@@ -346,9 +371,19 @@ func (s *XLSuite) TestSecondHello(c *C) {
 	c.Assert(reply.GetMsgN(), Equals, FOUR) // XXX is ONE !
 	// c.Assert(reply.GetYourMsgN(), Equals, ONE)			// FOO
 
+	// -- STOP THE SERVER -------------------------------------------
+	stopCh <- true
+	select {
+	case <-stoppedCh:
+		fmt.Println("    got stopped signal") // DEBUG
+	case <-time.After(100 * time.Millisecond):
+		fmt.Println("    stop timed out") // DEBUG
+	}
+
+	// -- DEBUGGING TEST FRAMEWORK ----------------------------------
 	if c.Failed() {
 		fmt.Println("    TestSecondHello FAILED") // DEBUG
 	} else {
-		fmt.Println("    end TestSecondHello") // DEBUG
+		fmt.Println("    end TestSecondHello: no failures") // DEBUG
 	}
 }
