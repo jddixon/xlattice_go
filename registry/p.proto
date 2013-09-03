@@ -1,0 +1,32 @@
+package registry;
+
+message XLRegMsg {
+    enum Cmd {
+        Hello       = 1;    // msgN, (one-shot)KeyIV, salt`; init comms cycle
+        HelloReply  = 2;    // msgN, (session) KeyIV2, salt2
+        Join        = 3;    // msgN, id, ck, sk, myEnd*
+        IHave       = 4;    // payload = list of hashes
+        Get         = 6;    // msgN, hash=id
+        Bye         = 2;    // msgN; ends comms cycle
+        Ack         = 4;    // msgN
+        Error       = 5;    // above plus errCode, errDesc
+    }
+    optional Cmd    Op          = 1;
+    optional uint64 MsgN        = 2;    // Nth msg on this cnx, starting at 1
+    optional bytes  KeyIV       = 3;
+    optional bytes  Salt        = 4;
+
+    optional bytes  ID          = 5;    // 20 or 32 byte nodeID
+    optional bytes  CommsKey    = 6;   // hello
+    optional bytes  SigKey      = 7;   // hello
+    optional string MyEnd       = 8;   // hello, optional, address:port
+   
+    optional bytes  ClusterID   = 9;
+    optional bytes  Payload     = 10;
+    optional string ErrDesc     = 11;
+
+    optional uint64 YourMsgN    = 12;
+    optional bytes  YourID      = 13;
+    optional bytes  Sig         = 14;
+}
+
