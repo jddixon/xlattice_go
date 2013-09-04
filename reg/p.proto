@@ -1,0 +1,34 @@
+package reg;
+
+message XLRegMsg {
+    enum Tag {
+        // Response to Hello is silent close OR reply OR error.
+        Hello       = 1;    // (one-shot)KeyIV, salt`; init comms cycle
+        HelloReply  = 2;    // (session) KeyIV2, salt, salt2
+
+        // Response to Join is member list OR error
+        Join        = 3;    // MySpecs
+        Members     = 4;    // clusterID, tokens
+        Error       = 5;    // errDesc
+    }
+    message Token {
+	    optional uint64 Attrs       = 1;    // bit field
+	    optional bytes  ID          = 2;    // 20 or 32 byte nodeID
+        optional bytes  CommsKey    = 3;
+        optional bytes  SigKey      = 4;
+        repeated string MyEnd       = 5;    // overlay, endPoint
+	    optional bytes  DigSig      = 6;    // over fields 1 - 5
+	}
+
+    optional Tag    Op          = 1;
+    optional bytes  AesIV       = 2;
+    optional bytes  AesKey      = 3;
+    optional bytes  Salt1       = 4;
+    optional bytes  Salt2       = 5;
+    optional Token  MySpecs     = 6;
+    optional bytes  ClusterID   = 7;
+    repeated Token  Tokens      = 8;
+
+    optional string ErrDesc     = 9;
+}
+

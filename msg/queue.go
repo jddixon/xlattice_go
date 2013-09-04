@@ -48,7 +48,7 @@ type MsgQueue struct {
 
 // a field of 64 bit flags
 const (
-	WIRE_FORM uint64 = 2 * iota // set if message has been marshaled
+	WIRE_FORM uint64 = 1 << iota // set if message has been marshaled
 	FOO_FOO
 )
 

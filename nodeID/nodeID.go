@@ -21,7 +21,7 @@ var (
 	NilNodeID    = errors.New("nil byte array for nodeID")
 )
 
-func NewNodeID(id []byte) (q *NodeID, err error) {
+func New(id []byte) (q *NodeID, err error) {
 	if id == nil {
 		err = NilNodeID
 	} else {
@@ -38,6 +38,11 @@ func NewNodeID(id []byte) (q *NodeID, err error) {
 		}
 	}
 	return
+}
+
+// XXX CONSIDER ME DEPRECATED
+func NewNodeID(id []byte) (q *NodeID, err error) {
+	return New(id)
 }
 
 // func NewNodeIDFromString(id string) *NodeID {
