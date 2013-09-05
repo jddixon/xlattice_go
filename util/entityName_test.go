@@ -1,4 +1,4 @@
-package xlattice_go
+package util
 
 import (
 	"github.com/jddixon/xlattice_go/rnglib"
@@ -22,7 +22,7 @@ func (s *XLSuite) TestGoodNames(c *C) {
 	var count int = 3 + rng.Intn(16)
 	for i := 0; i < count; i++ {
 		s := s.noDotsOrDashes(rng)
-		c.Assert(validEntityName(s), Equals, nil)
+		c.Assert(ValidEntityName(s), IsNil)
 	}
 }
 func (s *XLSuite) TestBadNames(c *C) {
@@ -41,7 +41,7 @@ func (s *XLSuite) TestBadNames(c *C) {
 		case 2: // error: contains dash
 			s = s[0:offset] + "-" + s[offset+1:]
 		}
-		c.Assert(validEntityName(s), Not(Equals), nil)
-		c.Assert(validEntityName(s), Equals, INVALID_NAME())
+		c.Assert(ValidEntityName(s), Not(IsNil))
+		c.Assert(ValidEntityName(s), Equals, INVALID_NAME())
 	}
 }
