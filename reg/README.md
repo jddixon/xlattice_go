@@ -7,8 +7,8 @@ one hand we have independent nodes which may cooperate as a cluster,
 a collection of peers that communicate with one another over links
 dedicated to this purpose.  On the other hand we have a single server
 which is identified by its nodeID (a 20- or 32-byte value).  The 
-server has a well-known address, a tcp/ip port in an address region,
-an overlay, shared by the nodes wishing to form a cluster.  It also
+server has a well-known address, a tcp/ip port in an address region
+(an overlay), shared by the nodes wishing to form a cluster.  It also
 has a well-known RSA public key.
 
 Clients join a cluster by sending a Hello message to the server to agree

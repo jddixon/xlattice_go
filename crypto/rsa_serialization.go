@@ -39,21 +39,15 @@ func RSAPubKeyFromWire(data []byte) (pub *rsa.PublicKey, err error) {
 }
 
 // Serialize an RSA private key to wire format
-func RSAPrivKeyToWire(pubKey *rsa.PrivateKey) ([]byte, error) {
-
-	// XXX STUB
-	panic("not implemented")
-	return nil, nil
+func RSAPrivateKeyToWire(privKey *rsa.PrivateKey) (data []byte, err error) {
+	data = x509.MarshalPKCS1PrivateKey(privKey)
+	return
 }
 
 // Deserialize an RSA private key from wire format
-func RSAPrivKeyFromWire(data []byte) (*rsa.PrivateKey, error) {
-
-	// XXX STUB
-	panic("not implemented")
-
-	return nil, nil
-} // FOO
+func RSAPrivateKeyFromWire(data []byte) (key *rsa.PrivateKey, err error) {
+	return x509.ParsePKCS1PrivateKey(data)
+}
 
 // CONVERSION TO AND FROM DISK FORMAT ///////////////////////////////
 
@@ -78,7 +72,7 @@ func RSAPubKeyFromDisk(data []byte) (*rsa.PublicKey, error) {
 }
 
 // Serialize an RSA private key to disk format
-func RSAPrivKeyToDisk(privKey *rsa.PrivateKey) (data []byte, err error) {
+func RSAPrivateKeyToDisk(privKey *rsa.PrivateKey) (data []byte, err error) {
 	if privKey == nil {
 		err = NilData
 	} else {
@@ -94,7 +88,7 @@ func RSAPrivKeyToDisk(privKey *rsa.PrivateKey) (data []byte, err error) {
 }
 
 // Deserialize an RSA private key from disk format
-func RSAPrivKeyFromDisk(data []byte) (key *rsa.PrivateKey, err error) {
+func RSAPrivateKeyFromDisk(data []byte) (key *rsa.PrivateKey, err error) {
 	if data == nil {
 		err = NilData
 	} else {

@@ -17,7 +17,7 @@ func SameBytes(a, b []byte) bool {
 	length := len(a)
 	sizeInt := int(unsafe.Sizeof(aInt))
 	var i int
-	for i := 0; i < length; i += sizeInt {
+	for i := 0; i < length-sizeInt; i += sizeInt {
 		aInt = *(*int)(unsafe.Pointer(&a[i]))
 		bInt = *(*int)(unsafe.Pointer(&b[i]))
 		if aInt != bInt {

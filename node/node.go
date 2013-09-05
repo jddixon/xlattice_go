@@ -393,10 +393,10 @@ func (n *Node) Strings() []string {
 	}
 	addStringlet(&ss, fmt.Sprintf("    lfs: %s", n.lfs))
 
-	cPriv, _ := xc.RSAPrivKeyToDisk(n.commsKey)
+	cPriv, _ := xc.RSAPrivateKeyToDisk(n.commsKey)
 	addStringlet(&ss, "    commsKey: "+string(cPriv))
 
-	sPriv, _ := xc.RSAPrivKeyToDisk(n.sigKey)
+	sPriv, _ := xc.RSAPrivateKeyToDisk(n.sigKey)
 	addStringlet(&ss, "    sigKey: "+string(sPriv))
 
 	addStringlet(&ss, "    endPoints {")
@@ -440,7 +440,7 @@ func collectKey(rest *[]string) (key *rsa.PrivateKey, err error) {
 	}
 	if err == nil {
 		text := strings.Join(ss, "\n")
-		key, err = xc.RSAPrivKeyFromDisk([]byte(text))
+		key, err = xc.RSAPrivateKeyFromDisk([]byte(text))
 	}
 	return
 }
