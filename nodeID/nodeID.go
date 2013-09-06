@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	xr "github.com/jddixon/xlattice_go/rnglib"
 	xu "github.com/jddixon/xlattice_go/util"
 )
 
@@ -22,10 +23,13 @@ var (
 )
 
 func New(id []byte) (q *NodeID, err error) {
+	q = new(NodeID)
 	if id == nil {
-		err = NilNodeID
+		id = make([]byte, SHA3_LEN)
+		rng := xr.MakeSystemRNG()
+		rng.NextBytes(&id)
+		q._nodeID = id
 	} else {
-		q = new(NodeID)
 		// deep copy the slice
 		size := len(id)
 		myID := make([]byte, size)
@@ -33,9 +37,9 @@ func New(id []byte) (q *NodeID, err error) {
 			myID[i] = id[i]
 		}
 		q._nodeID = myID
-		if !IsValidID(id) {
-			err = BadNodeIDLen
-		}
+	}
+	if !IsValidID(id) {
+		err = BadNodeIDLen
 	}
 	return
 }
