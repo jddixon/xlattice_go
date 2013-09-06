@@ -1,11 +1,28 @@
 xlattice_go/registry/TODO
 
+2013-09-06
+    * lfs should be validated in node.Node
+        - specifically, if it doesn't exist, we should create it
+    * default value for reg TESTING can be 
+        - name:     testReg
+        - lfs:      ./myReg/
+        - acc port: 0           // ie, obtain dynamically
+    * default values otherwise
+        - name:     xlReg
+        - lfs:      /var/app/xlReg
+        - acc port: 44444
+
+    * reg.New should set name, id, lfs, ckPriv, skPriv, leave o, 
+        e, p as nil
+    * create acceptor using AddEndPoint, fetch value with GetAcceptor(0)
+
+2013-09-05
+    * NewReg should create secret keys, store them in data structure    # DONE
+        with limited (package) access, pass them to node.New()
+
 2013-09-04
     * complete crypto_test 
     * repackage so that the same approach can be used in other
         modules
-        - presumably this moves to ../crypto/
+        - presumably most of this moves to ../crypto/
     
-    * add function to Node to OAEP encrypt using the node's
-        private comms key
-        - is there any safe way to do this??
