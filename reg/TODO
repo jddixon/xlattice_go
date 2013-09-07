@@ -14,7 +14,9 @@ xlattice_go/registry/TODO
 
     * reg.New should set name, id, lfs, ckPriv, skPriv, leave o, 
         e, p as nil
-    * create acceptor using AddEndPoint, fetch value with GetAcceptor(0)
+
+    * cluster members can and must be viewable as Peers, and so
+        can use node/PeerMap to index members
 
 2013-09-05
     * NewReg should create secret keys, store them in data structure    # DONE

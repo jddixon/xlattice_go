@@ -82,8 +82,8 @@ func New(name, lfs string, id *xi.NodeID,
 			Acc:          acc.(*xt.TcpAcceptor),
 			StopCh:       stopCh,
 			StoppedCh:    stoppedCh,
-			privCommsKey: cKey,
-			privSigKey:   sKey,
+			privCommsKey: cKey, // redundant, but provide visibility
+			privSigKey:   sKey, //    in this package
 			Node:         *n,
 		}
 	}

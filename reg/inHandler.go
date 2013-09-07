@@ -25,21 +25,29 @@ var _ = fmt.Print
 const (
 	IN_START = iota
 	HELLO_RCVD
-	REPLY_SENT
-	DETAILS_RCVD
-	PEER_INFO_SENT
+	USER_DETAILS_RCVD
+	CLUSTER_REQUEST_RCVD
+	JOIN_RCVD
+	GETTING
+	BYE_RCVD
 	IN_CLOSED
 )
 
 type InHandler struct {
-	iv1, aes1, iv2, aes2 []byte
+	iv1, aes1, iv2, aes2, salt1, salt2 []byte
+	clusterName                        string
+	clusterID                          []byte
+	clusterSize                        int
+	version                            uint32 // protocol version used in session
+	known                              uint64 // a bit vector:
+	state                              int
 	CnxHandler
 }
 
 // Given an open new connection, process a hello message for this node,
 // returning a handler for the connection if that succeeds.  The hello
-// consists of an AES Key+IV and a salt which we require to be eight
-// bytes long.
+// consists of an AES Key+IV, a salt, and a requested protocol version.
+// The salt must be at least eight bytes long.
 
 func NewInHandler(n *xn.Node, conn xt.ConnectionI) (h *InHandler, err error) {
 

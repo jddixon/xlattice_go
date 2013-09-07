@@ -3,11 +3,6 @@ xlattice_go/node/TODO
 2013-08-30
     * Consolidate all error messages into errors.go
 
-    * Need a Node.Sign(chunks [][]byte) ([]byte, error) for 
-        signing hello messages
-        - this needs to be thread-safe
-        - it must not expose the RSA private key
-
 2013-08-29
     * The Peer 'up' field should be a field of bit flags
         (declare as int but only use 32 bits)

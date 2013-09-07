@@ -16,26 +16,50 @@ var _ = math.Inf
 type XLRegMsg_Tag int32
 
 const (
-	XLRegMsg_Hello      XLRegMsg_Tag = 1
-	XLRegMsg_HelloReply XLRegMsg_Tag = 2
-	XLRegMsg_Join       XLRegMsg_Tag = 3
-	XLRegMsg_Members    XLRegMsg_Tag = 4
-	XLRegMsg_Error      XLRegMsg_Tag = 5
+	XLRegMsg_Hello       XLRegMsg_Tag = 1
+	XLRegMsg_HelloReply  XLRegMsg_Tag = 2
+	XLRegMsg_User        XLRegMsg_Tag = 3
+	XLRegMsg_UserOK      XLRegMsg_Tag = 4
+	XLRegMsg_Create      XLRegMsg_Tag = 5
+	XLRegMsg_CreateReply XLRegMsg_Tag = 6
+	XLRegMsg_Join        XLRegMsg_Tag = 7
+	XLRegMsg_JoinReply   XLRegMsg_Tag = 8
+	XLRegMsg_Get         XLRegMsg_Tag = 9
+	XLRegMsg_Members     XLRegMsg_Tag = 10
+	XLRegMsg_Bye         XLRegMsg_Tag = 13
+	XLRegMsg_Ack         XLRegMsg_Tag = 14
+	XLRegMsg_Error       XLRegMsg_Tag = 15
 )
 
 var XLRegMsg_Tag_name = map[int32]string{
-	1: "Hello",
-	2: "HelloReply",
-	3: "Join",
-	4: "Members",
-	5: "Error",
+	1:  "Hello",
+	2:  "HelloReply",
+	3:  "User",
+	4:  "UserOK",
+	5:  "Create",
+	6:  "CreateReply",
+	7:  "Join",
+	8:  "JoinReply",
+	9:  "Get",
+	10: "Members",
+	13: "Bye",
+	14: "Ack",
+	15: "Error",
 }
 var XLRegMsg_Tag_value = map[string]int32{
-	"Hello":      1,
-	"HelloReply": 2,
-	"Join":       3,
-	"Members":    4,
-	"Error":      5,
+	"Hello":       1,
+	"HelloReply":  2,
+	"User":        3,
+	"UserOK":      4,
+	"Create":      5,
+	"CreateReply": 6,
+	"Join":        7,
+	"JoinReply":   8,
+	"Get":         9,
+	"Members":     10,
+	"Bye":         13,
+	"Ack":         14,
+	"Error":       15,
 }
 
 func (x XLRegMsg_Tag) Enum() *XLRegMsg_Tag {
@@ -64,10 +88,14 @@ type XLRegMsg struct {
 	AesKey           []byte            `protobuf:"bytes,3,opt" json:"AesKey,omitempty"`
 	Salt1            []byte            `protobuf:"bytes,4,opt" json:"Salt1,omitempty"`
 	Salt2            []byte            `protobuf:"bytes,5,opt" json:"Salt2,omitempty"`
-	MySpecs          *XLRegMsg_Token   `protobuf:"bytes,6,opt" json:"MySpecs,omitempty"`
-	ClusterID        []byte            `protobuf:"bytes,7,opt" json:"ClusterID,omitempty"`
-	Tokens           []*XLRegMsg_Token `protobuf:"bytes,8,rep" json:"Tokens,omitempty"`
-	ErrDesc          *string           `protobuf:"bytes,9,opt" json:"ErrDesc,omitempty"`
+	Version          *uint32           `protobuf:"varint,6,opt" json:"Version,omitempty"`
+	Size             *uint32           `protobuf:"varint,7,opt" json:"Size,omitempty"`
+	MySpecs          *XLRegMsg_Token   `protobuf:"bytes,8,opt" json:"MySpecs,omitempty"`
+	ClusterID        []byte            `protobuf:"bytes,9,opt" json:"ClusterID,omitempty"`
+	ClusterName      *string           `protobuf:"bytes,10,opt" json:"ClusterName,omitempty"`
+	Which            *uint64           `protobuf:"varint,11,opt" json:"Which,omitempty"`
+	Tokens           []*XLRegMsg_Token `protobuf:"bytes,12,rep" json:"Tokens,omitempty"`
+	ErrDesc          *string           `protobuf:"bytes,15,opt" json:"ErrDesc,omitempty"`
 	XXX_unrecognized []byte            `json:"-"`
 }
 
@@ -110,6 +138,20 @@ func (m *XLRegMsg) GetSalt2() []byte {
 	return nil
 }
 
+func (m *XLRegMsg) GetVersion() uint32 {
+	if m != nil && m.Version != nil {
+		return *m.Version
+	}
+	return 0
+}
+
+func (m *XLRegMsg) GetSize() uint32 {
+	if m != nil && m.Size != nil {
+		return *m.Size
+	}
+	return 0
+}
+
 func (m *XLRegMsg) GetMySpecs() *XLRegMsg_Token {
 	if m != nil {
 		return m.MySpecs
@@ -122,6 +164,20 @@ func (m *XLRegMsg) GetClusterID() []byte {
 		return m.ClusterID
 	}
 	return nil
+}
+
+func (m *XLRegMsg) GetClusterName() string {
+	if m != nil && m.ClusterName != nil {
+		return *m.ClusterName
+	}
+	return ""
+}
+
+func (m *XLRegMsg) GetWhich() uint64 {
+	if m != nil && m.Which != nil {
+		return *m.Which
+	}
+	return 0
 }
 
 func (m *XLRegMsg) GetTokens() []*XLRegMsg_Token {

@@ -2,14 +2,38 @@ package reg;
 
 message XLRegMsg {
     enum Tag {
-        // Response to Hello is silent close OR reply OR error.
-        Hello       = 1;    // (one-shot)KeyIV, salt`; init comms cycle
-        HelloReply  = 2;    // (session) KeyIV2, salt, salt2
+        // This message is RSA-encrypted using the server's public key.
+        Hello       = 1;    // (one-shot)KeyIV, salt, version; init comms cycle
+       
+        // Response to Hello is silent close OR error OR reply. 
+        
+        // The server's reply is encrypted using the client's IV + key
+        // and PKCS7-padded
+        HelloReply  = 2;    // (session) KeyIV2, salt, salt2, version2
 
-        // Response to Join is member list OR error
-        Join        = 3;    // MySpecs
-        Members     = 4;    // clusterID, tokens
-        Error       = 5;    // errDesc
+        // All other messages are encrypted using the server-provided
+        // session key and PKCS7-padded.
+    
+        User        = 3;    // userName, token OR userID, salt2; + digSig
+        UserOK      = 4;    // userName, userID, attrs
+
+        Create      = 5;    // clusterName (must be unique), size <= 64
+        CreateReply = 6;    // clusterID, optional size -OR- error
+
+        // Response to Join is clusterID + size -OR- error
+        Join        = 7;    // clusterName or ID
+        JoinReply   = 8;    // clusterID, size
+
+        Get         = 9;    // clusterID, which = bit vector; -1 = all
+        // Response to Get is a list of known members -OR- error
+        Members     = 10;    // clusterID, which, tokens
+
+        // Orderly close
+        Bye         = 13;    // from client
+        Ack         = 14;    // from server; followed by close
+        
+        Error       = 15;    // errDesc; from server, followed by close
+        
     }
     message Token {
 	    optional uint64 Attrs       = 1;    // bit field
@@ -23,12 +47,16 @@ message XLRegMsg {
     optional Tag    Op          = 1;
     optional bytes  AesIV       = 2;
     optional bytes  AesKey      = 3;
-    optional bytes  Salt1       = 4;
-    optional bytes  Salt2       = 5;
-    optional Token  MySpecs     = 6;
-    optional bytes  ClusterID   = 7;
-    repeated Token  Tokens      = 8;
+    optional bytes  Salt1       = 4;        // error if len < 8
+    optional bytes  Salt2       = 5;        // error if len < 8
+    optional uint32 Version     = 6;        // little-endian, so stored D.C.B.A
+    optional uint32 Size        = 7;
+    optional Token  MySpecs     = 8;
+    optional bytes  ClusterID   = 9;        
+    optional string ClusterName = 10; 
+    optional uint64 Which       = 11;
+    repeated Token  Tokens      = 12;       // specs for members
 
-    optional string ErrDesc     = 9;
+    optional string ErrDesc     = 15;
 }
 
