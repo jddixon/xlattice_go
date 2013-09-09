@@ -31,21 +31,23 @@ type RegNode struct {
 	xn.Node
 }
 
-// options normally set from the command line
+// options normally set from the command line or derived from those
 type RegOptions struct {
-	Lfs     string
-	Address string
-	Port    int
-	Testing bool
-	Verbose bool
+	Name		string
+	Lfs			string
+	Address		string
+	Port		int
+	EndPoint	xt.EndPointI
+	Testing		bool
+	Verbose		bool
 }
 
 // Create a registry node.
 
 func New(name, lfs string, id *xi.NodeID,
 	cKey, sKey *rsa.PrivateKey,
-	overlay *xo.OverlayI, endPoint xt.EndPointI,
-) (rn *RegNode, err error) {
+	overlay *xo.OverlayI, 
+	endPoint xt.EndPointI) (rn *RegNode, err error) {
 
 	var acc xt.AcceptorI
 	var n *xn.Node
@@ -64,6 +66,9 @@ func New(name, lfs string, id *xi.NodeID,
 	}
 	if err == nil && sKey == nil {
 		sKey, err = rsa.GenerateKey(rand.Reader, 2048)
+	}
+	if err == nil && endPoint == nil {
+		endPoint, err = xt.NewTcpEndPoint("127.0.0.1:44444")
 	}
 	if err == nil {
 		endPoints := []xt.EndPointI{endPoint}
