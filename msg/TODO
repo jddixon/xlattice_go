@@ -1,5 +1,8 @@
 xlattice_go/msg/TODO
 
+2013-09-11
+    * xu.SameBytes() replaced by DeepEquals in tests                    # DONE
+
 2013-08-30
     * Find and fix: something in in_q_test.go causes the test 
         failure count to go up without any error being reported 
@@ -9,7 +12,7 @@ xlattice_go/msg/TODO
             end
 
 2013-08-29
-    * add NodeID check to Hello handler                                 # DONE
+    * add NodeID check to Hello handler                                 # DONE 
     * node/BaseNode has 'name' field, but this is not defined in
         p.proto.
         - should it be?

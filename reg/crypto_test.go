@@ -16,7 +16,6 @@ import (
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	xu "github.com/jddixon/xlattice_go/util"
 	. "launchpad.net/gocheck"
 )
 
@@ -129,25 +128,25 @@ func (s *XLSuite) TestPKCS7Padding(c *C) {
 	c.Assert(err, IsNil)
 	unpaddedSeven, err := StripPKCS7Padding(paddedSeven, aes.BlockSize)
 	c.Assert(err, IsNil)
-	c.Assert(xu.SameBytes(seven, unpaddedSeven), Equals, true)
+	c.Assert(seven, DeepEquals, unpaddedSeven)
 
 	paddedFifteen, err := AddPKCS7Padding(fifteen, aes.BlockSize)
 	c.Assert(err, IsNil)
 	unpaddedFifteen, err := StripPKCS7Padding(paddedFifteen, aes.BlockSize)
 	c.Assert(err, IsNil)
-	c.Assert(xu.SameBytes(fifteen, unpaddedFifteen), Equals, true)
+	c.Assert(fifteen, DeepEquals, unpaddedFifteen)
 
 	paddedSixteen, err := AddPKCS7Padding(sixteen, aes.BlockSize)
 	c.Assert(err, IsNil)
 	unpaddedSixteen, err := StripPKCS7Padding(paddedSixteen, aes.BlockSize)
 	c.Assert(err, IsNil)
-	c.Assert(xu.SameBytes(sixteen, unpaddedSixteen), Equals, true)
+	c.Assert(sixteen, DeepEquals, unpaddedSixteen)
 
 	paddedSeventeen, err := AddPKCS7Padding(seventeen, aes.BlockSize)
 	c.Assert(err, IsNil)
 	unpaddedSeventeen, err := StripPKCS7Padding(paddedSeventeen, aes.BlockSize)
 	c.Assert(err, IsNil)
-	c.Assert(xu.SameBytes(seventeen, unpaddedSeventeen), Equals, true)
+	c.Assert(seventeen, DeepEquals, unpaddedSeventeen)
 }
 
 // END MOVE THIS TO crypto/ =========================================
@@ -211,7 +210,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	c.Assert(plaintext, Not(IsNil))
 
 	// verify that iv1, key1, and salt1 are the same
-	c.Assert(xu.SameBytes(data, plaintext), Equals, true)
+	c.Assert(data, DeepEquals, plaintext)
 
 	// -- HELLO REPLY -----------------------------------------------
 	// On the server side:
@@ -262,7 +261,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	plaintext = make([]byte, nBlocks*aes.BlockSize)
 	aesDecrypter1b.CryptBlocks(plaintext, ciphertext) // dest <- src
 
-	c.Assert(xu.SameBytes(plaintext, reply), Equals, true)
+	c.Assert(plaintext, DeepEquals, reply)
 
 	// -- JOIN ------------------------------------------------------
 	// On the client side:

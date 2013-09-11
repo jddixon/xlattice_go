@@ -1,0 +1,6 @@
+xlattice_go/db/TODO
+
+2013-09-11
+    * xu.SameBytes() replaced by DeepEquals in tests                    # DONE
+        - this is not always appropriate!
+

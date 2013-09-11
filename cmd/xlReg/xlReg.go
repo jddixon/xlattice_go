@@ -28,7 +28,7 @@ var (
 	justShow = flag.Bool("j", false, "display option settings and exit")
 	lfs      = flag.String("lfs", DEFAULT_LFS, "path to work directory")
 	name     = flag.String("n", DEFAULT_NAME, "registry name")
-	port     = flag.Int("p", DEFAULT_PORT, "listening port")
+	port     = flag.Int("p", DEFAULT_PORT, "registry listening port")
 	testing  = flag.Bool("T", false, "test run")
 	verbose  = flag.Bool("v", false, "be talkative")
 )

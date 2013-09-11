@@ -1,8 +1,5 @@
 xlattice_go/registry/TODO
 
-2013-09-10
-    *
-
 2013-09-06
     * lfs should be validated in node.Node
         - specifically, if it doesn't exist, we should create it
@@ -20,10 +17,6 @@ xlattice_go/registry/TODO
 
     * cluster members can and must be viewable as Peers, and so
         can use node/PeerMap to index members
-
-2013-09-05
-    * NewReg should create secret keys, store them in data structure    # DONE
-        with limited (package) access, pass them to node.New()
 
 2013-09-04
     * complete crypto_test 

@@ -67,7 +67,10 @@ func (s *XLSuite) TestMmap(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(boolz[0], Equals, true)
 
-	// this succeeds, so the mapping from disk succeeded
+	// This succeeds, so the mapping from disk succeeded.
+	// Actually the DeepEquals test FAILS because of trivial type
+	// differences; SameBytes() handles this correctly.
+	// c.Assert(inCore[0:BLOCK_SIZE], DeepEquals, data)
 	c.Assert(xu.SameBytes(inCore[0:BLOCK_SIZE], data), Equals, true)
 
 	const (
@@ -97,7 +100,7 @@ func (s *XLSuite) TestMmap(c *C) {
 
 	data2, err := ioutil.ReadFile(pathToFile)
 	c.Assert(err, IsNil)
-	c.Assert(xu.SameBytes(data[:BLOCK_SIZE], data2[:BLOCK_SIZE]), Equals, true)
+	c.Assert(data[:BLOCK_SIZE], DeepEquals, data2[:BLOCK_SIZE])
 
 	// this succeeds, but shouldn't
 	c.Assert(data2[BLOCK_SIZE-1], Equals, lastByte)
