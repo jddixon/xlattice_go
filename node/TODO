@@ -1,20 +1,15 @@
 xlattice_go/node/TODO
 
+2013-09-11
+    * lfs should be validated in node.Node                              * DONE
+        - specifically, if it doesn't exist, we should create it        * DONE
+
 2013-08-30
-    * Consolidate all error messages into errors.go
+    * Consolidate all error messages into errors.go                     * DONE
 
 2013-08-29
     * The Peer 'up' field should be a field of bit flags
         (declare as int but only use 32 bits)
-
-2013-08-26
-    * if lfs is being used, need to create a u256x256 file 
-        system lfs/U, lfs/U/in, and lfs/U/tmp, and need to either
-        default to SHA3-256 or introduce a usingSHA1 option
-    * msg/ will need to be brought back into node/ to avoid
-        circular imports OR an abstraction devised which 
-        imports both
-        - or possibly move proto stuff into msg/
 
 2013-08-25
     * complete the stubbed sections in 
@@ -25,10 +20,7 @@ xlattice_go/node/TODO
         from code
 
 2013-08-23
-    * Add peer5 to TestFindPeer                                         # DONE
-    * Enable Finds on peer5, peer6*                                     # DONE
-
-    * Move TestSameNodeID into ../nodeID/nodeID_test.go
+    * Move TestSameNodeID into ../nodeID/nodeID_test.go                 * DONE
 
     * peer_map: consider replacing the current approach, perhaps with 
         one where we have an array of 2^N pointers at each level -
@@ -36,12 +28,12 @@ xlattice_go/node/TODO
 
 2013-08-19
     * "connection reset by peer" in localHost_test.go at lines
-        115, 126 seen once (seen again 08-25)
+        115, 126 seen once (seen again 08-25) (and again 09-11)
     * arguably need stronger version of Peer.Equal(); it only
         confirms that NodeIDs are the same
 
 2013-08-16
-    * Add a method to locate a node's peer by its nodeID
+    * Add a method to locate a node's peer by its nodeID                * DONE
         - This should be a fast nodeID -> peer index map; if
             we are using a fixed peer index then we will never
             be able to delete peers, so the data must be kept
@@ -80,7 +72,7 @@ xlattice_go/node/TODO
         _ Reran 8 detached, 1 failed with 'address already in use'
             in serialization/deserialization test
 
-    * If possible, modify tests to cope with these problems.  This  # DONE!
+    * If possible, modify tests to cope with these problems.  This  * DONE!
         probably means wait-and-retry on both 'address already
         in use' and 'connection reset by peer'.  In the first case
         we already wait 50 ms after closing acceptors; we could
@@ -127,7 +119,7 @@ xlattice_go/node/TODO
 
 2013-08-02
     * lfs is a path; it must be filtered accordingly
-    * need peer.Parse() which converts a slice of strings back      # DONE
+    * need peer.Parse() which converts a slice of strings back      * DONE
         into a Peer object
         - first version of parser can be quite strict
         - eventually should be syntactically liberal when

@@ -128,5 +128,26 @@ func (s *XLSuite) TestComparator(c *C) {
 	result, err = id1a.Compare(id1b) // id1a > id1b
 	c.Assert(1, Equals, result)
 	c.Assert(err, IsNil)
+}
 
+func (s *XLSuite) makeANodeID(c *C, rng *rnglib.PRNG) (id *NodeID) {
+	var length int
+	if rng.NextBoolean() {
+		length = SHA1_LEN
+	} else {
+		length = SHA3_LEN
+	}
+	data := make([]byte, length)
+	rng.NextBytes(&data)
+	id, err := New(data)
+	c.Assert(err, IsNil)
+	return id
+}
+func (s *XLSuite) TestSameNodeID(c *C) {
+	rng := rnglib.MakeSimpleRNG()
+	id1 := s.makeANodeID(c, rng)
+	c.Assert(SameNodeID(id1, id1), Equals, true)
+
+	id2 := s.makeANodeID(c, rng)
+	c.Assert(SameNodeID(id1, id2), Equals, false)
 }

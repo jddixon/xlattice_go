@@ -409,14 +409,3 @@ func (s *XLSuite) TestFindPeer(c *C) {
 	s.findAPeer(c, &pm, peer62)
 	s.findAPeer(c, &pm, peer623)
 }
-
-// XXX THIS DOES NOT BELONG HERE =================================
-// XXX Something similar to this should be in nodeID/nodeID.go
-func (s *XLSuite) TestSameNodeID(c *C) {
-	peer := s.makeAPeer(c, "foo", 1, 2, 3, 4)
-	id := peer.GetNodeID()
-	c.Assert(xi.SameNodeID(id, id), Equals, true)
-	peer2 := s.makeAPeer(c, "foo", 1, 2, 3, 4, 5)
-	id2 := peer2.GetNodeID()
-	c.Assert(xi.SameNodeID(id, id2), Equals, false)
-}

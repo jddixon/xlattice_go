@@ -1,8 +1,6 @@
 xlattice_go/registry/TODO
 
 2013-09-06
-    * lfs should be validated in node.Node
-        - specifically, if it doesn't exist, we should create it
     * default value for reg TESTING can be 
         - name:     testReg
         - lfs:      ./myReg/
