@@ -118,6 +118,7 @@ func New(name string, id *xi.NodeID, lfs string,
 	if err == nil {
 		p := Node{commsKey: commsKey,
 			sigKey:    sigKey,
+			acceptors: acceptors,
 			endPoints: endPoints,
 			peers:     peers,
 			gateways:  nil,
@@ -222,7 +223,8 @@ func (n *Node) SizeAcceptors() int {
 }
 
 func (n *Node) GetAcceptor(x int) xt.AcceptorI {
-	return n.acceptors[x]
+	result := n.acceptors[x]
+	return result
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////

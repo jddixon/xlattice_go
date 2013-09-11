@@ -8,12 +8,12 @@ import (
 
 const (
 	NAME_STARTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
-	NAME_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
+	NAME_CHARS    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
 )
 
 var (
 	namePat = "^[" + NAME_STARTERS + "]" + "[" + NAME_CHARS + "]*$"
-	nameRE = regexp.MustCompile(namePat)
+	nameRE  = regexp.MustCompile(namePat)
 )
 
 func ValidEntityName(name string) (err error) {

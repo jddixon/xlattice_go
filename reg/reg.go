@@ -26,27 +26,27 @@ type RegNode struct {
 	Acc          *xt.TcpAcceptor
 	StopCh       chan bool
 	StoppedCh    chan bool
-	privCommsKey *rsa.PrivateKey
-	privSigKey   *rsa.PrivateKey
+	privCommsKey *rsa.PrivateKey // duplicated here to provide
+	privSigKey   *rsa.PrivateKey // visibility in this package
 	xn.Node
 }
 
 // options normally set from the command line or derived from those
 type RegOptions struct {
-	Name		string
-	Lfs			string
-	Address		string
-	Port		int
-	EndPoint	xt.EndPointI
-	Testing		bool
-	Verbose		bool
+	Name     string
+	Lfs      string
+	Address  string
+	Port     int
+	EndPoint xt.EndPointI
+	Testing  bool
+	Verbose  bool
 }
 
 // Create a registry node.
 
 func New(name, lfs string, id *xi.NodeID,
 	cKey, sKey *rsa.PrivateKey,
-	overlay *xo.OverlayI, 
+	overlay *xo.OverlayI,
 	endPoint xt.EndPointI) (rn *RegNode, err error) {
 
 	var acc xt.AcceptorI

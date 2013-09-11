@@ -19,15 +19,15 @@ const (
 	DEFAULT_ADDR = "127.0.0.1"
 	DEFAULT_NAME = "xlReg"
 	DEFAULT_LFS  = "/var/XLReg"
-	DEFAULT_PORT = 55555
+	DEFAULT_PORT = 44444 // for the registry, not clients
 )
 
 var (
 	// these need to be referenced as pointers
-	address  = flag.String("p", DEFAULT_ADDR, "registry IP address")
+	address  = flag.String("a", DEFAULT_ADDR, "registry IP address")
 	justShow = flag.Bool("j", false, "display option settings and exit")
 	lfs      = flag.String("lfs", DEFAULT_LFS, "path to work directory")
-	name     = flag.String("p", DEFAULT_NAME, "registry name")
+	name     = flag.String("n", DEFAULT_NAME, "registry name")
 	port     = flag.Int("p", DEFAULT_PORT, "listening port")
 	testing  = flag.Bool("T", false, "test run")
 	verbose  = flag.Bool("v", false, "be talkative")
@@ -49,11 +49,14 @@ func main() {
 			*lfs = path.Join("tmp", *lfs)
 		}
 	}
-	addrAndPort := fmt.Sprintf("%s:%d", *address, port)
-	endPoint, err := xt.NewTcpEndPoint( addrAndPort )
-	if err != nil { 
+	addrAndPort := fmt.Sprintf("%s:%d", *address, *port)
+	// DEBUG
+	fmt.Printf("XLReg.Main: addrAndPort is %s\n", addrAndPort)
+	// END
+	endPoint, err := xt.NewTcpEndPoint(addrAndPort)
+	if err != nil {
 		fmt.Printf("not a valid endPoint: %s\n", addrAndPort)
-		// XXX STUB XXX 
+		// XXX STUB XXX
 	}
 
 	// SANITY CHECKS ////////////////////////////////////////////////
@@ -61,7 +64,7 @@ func main() {
 	// DISPLAY FLAGS ////////////////////////////////////////////////
 	if *verbose || *justShow {
 		fmt.Printf("address                = %v\n", *address)
-		fmt.Printf("endPoint               = %v\n", *endPoint)
+		fmt.Printf("endPoint               = %v\n", endPoint)
 		fmt.Printf("justShow               = %v\n", *justShow)
 		fmt.Printf("lfs                    = %s\n", *lfs)
 		fmt.Printf("name                   = %s\n", *name)
@@ -92,9 +95,9 @@ func setup(opt *reg.RegOptions) (r *reg.RegNode, err error) {
 
 	// XXX STUB XXX
 
-	r, err = reg.New(opt.Name, opt.Lfs, 
-		nil, nil, nil, // opt.Id, opt.CKey, opt.SKey, 
-		nil, 
+	r, err = reg.New(opt.Name, opt.Lfs,
+		nil, nil, nil, // opt.Id, opt.CKey, opt.SKey,
+		nil,
 		opt.EndPoint)
 
 	return r, err
