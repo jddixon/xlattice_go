@@ -37,7 +37,7 @@ type RegOptions struct {
 	Lfs      string
 	Address  string
 	Port     int
-	EndPoint xt.EndPointI
+	EndPoint xt.EndPointI // derived from Address, Port
 	Testing  bool
 	Verbose  bool
 }

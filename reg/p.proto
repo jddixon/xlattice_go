@@ -14,14 +14,14 @@ message XLRegMsg {
         // All other messages are encrypted using the server-provided
         // session key and PKCS7-padded.
     
-        User        = 3;    // userName, token OR userID, salt2; + digSig
-        UserOK      = 4;    // userName, userID, attrs
+        Client      = 3;    // clientName, token OR clientID
+        ClientOK    = 4;    // clientID, attrs
 
         Create      = 5;    // clusterName (must be unique), size <= 64
         CreateReply = 6;    // clusterID, optional size -OR- error
 
         // Response to Join is clusterID + size -OR- error
-        Join        = 7;    // clusterName or ID
+        Join        = 7;    // clusterName or clusterID
         JoinReply   = 8;    // clusterID, size
 
         Get         = 9;    // clusterID, which = bit vector; -1 = all
@@ -51,12 +51,15 @@ message XLRegMsg {
     optional bytes  Salt2       = 5;        // error if len < 8
     optional uint32 Version     = 6;        // little-endian, so stored D.C.B.A
     optional uint32 Size        = 7;
-    optional Token  MySpecs     = 8;
-    optional bytes  ClusterID   = 9;        
-    optional string ClusterName = 10; 
-    optional uint64 Which       = 11;
-    repeated Token  Tokens      = 12;       // specs for members
+    optional string ClientName  = 8;
+    optional string ClientID    = 9;
+    optional Token  ClientSpecs = 10;
+    optional bytes  ClusterID   = 11;       
+    optional string ClusterName = 12; 
+    optional uint64 Which       = 13;
+    repeated Token  Tokens      = 14;       // specs for members
+    optional bytes  DigSig      = 15;
 
-    optional string ErrDesc     = 15;
+    optional string ErrDesc     = 19;
 }
 

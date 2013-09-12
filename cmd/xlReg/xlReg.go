@@ -18,7 +18,7 @@ func Usage() {
 const (
 	DEFAULT_ADDR = "127.0.0.1"
 	DEFAULT_NAME = "xlReg"
-	DEFAULT_LFS  = "/var/XLReg"
+	DEFAULT_LFS  = "/var/app/xlReg"
 	DEFAULT_PORT = 44444 // for the registry, not clients
 )
 
@@ -43,10 +43,16 @@ func main() {
 
 	// FIXUPS ///////////////////////////////////////////////////////
 	if *testing {
+		if *name == DEFAULT_NAME || *name == "" {
+			*name = "testReg"
+		}
 		if *lfs == DEFAULT_LFS || *lfs == "" {
-			*lfs = "./tmp"
+			*lfs = "./myReg"
 		} else {
 			*lfs = path.Join("tmp", *lfs)
+		}
+		if *port == DEFAULT_PORT || *port == 0 {
+			*port = 33333
 		}
 	}
 	addrAndPort := fmt.Sprintf("%s:%d", *address, *port)

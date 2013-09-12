@@ -2,15 +2,15 @@ xlattice_go/registry/TODO
 
 2013-09-06
     * default value for reg TESTING can be 
-        - name:     testReg
-        - lfs:      ./myReg/
-        - acc port: 0           // ie, obtain dynamically
+        - name:     testXLReg                                           * DONE
+        - lfs:      ./myReg/                                            * DONE
+        - acc port: 33333                                               * DONE
     * default values otherwise
-        - name:     xlReg
-        - lfs:      /var/app/xlReg
-        - acc port: 44444
+        - name:     xlReg                                               * DONE
+        - lfs:      /var/app/xlReg                                      * DONE
+        - acc port: 44444                                               * DONE
 
-    * reg.New should set name, id, lfs, ckPriv, skPriv, leave o, 
+    * reg.New should set name, id, lfs, ckPriv, skPriv, leave o,        * DONE
         e, p as nil
 
     * cluster members can and must be viewable as Peers, and so
