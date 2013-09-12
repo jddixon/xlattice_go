@@ -43,23 +43,26 @@ message XLRegMsg {
         repeated string MyEnd       = 5;    // overlay, endPoint
 	    optional bytes  DigSig      = 6;    // over fields 1 - 5
 	}
-
     optional Tag    Op          = 1;
     optional bytes  AesIV       = 2;
     optional bytes  AesKey      = 3;
     optional bytes  Salt1       = 4;        // error if len < 8
     optional bytes  Salt2       = 5;        // error if len < 8
     optional uint32 Version     = 6;        // little-endian, so stored D.C.B.A
-    optional uint32 Size        = 7;
+    
     optional string ClientName  = 8;
-    optional string ClientID    = 9;
-    optional Token  ClientSpecs = 10;
-    optional bytes  ClusterID   = 11;       
-    optional string ClusterName = 12; 
-    optional uint64 Which       = 13;
-    repeated Token  Tokens      = 14;       // specs for members
-    optional bytes  DigSig      = 15;
+    optional bytes  ClientID    = 9;
+    optional uint64 Attrs       = 10;
+    optional Token  ClientSpecs = 11;
 
-    optional string ErrDesc     = 19;
+    optional bytes  ClusterID   = 13;       
+    optional string ClusterName = 14; 
+    optional uint32 ClusterSize = 15; 
+
+    optional uint64 Which       = 17;
+    repeated Token  Tokens      = 18;       // specs for members
+    optional bytes  DigSig      = 19;
+
+    optional string ErrDesc     = 23;
 }
 

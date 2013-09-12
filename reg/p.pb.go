@@ -89,16 +89,17 @@ type XLRegMsg struct {
 	Salt1            []byte            `protobuf:"bytes,4,opt" json:"Salt1,omitempty"`
 	Salt2            []byte            `protobuf:"bytes,5,opt" json:"Salt2,omitempty"`
 	Version          *uint32           `protobuf:"varint,6,opt" json:"Version,omitempty"`
-	Size             *uint32           `protobuf:"varint,7,opt" json:"Size,omitempty"`
 	ClientName       *string           `protobuf:"bytes,8,opt" json:"ClientName,omitempty"`
-	ClientID         *string           `protobuf:"bytes,9,opt" json:"ClientID,omitempty"`
-	ClientSpecs      *XLRegMsg_Token   `protobuf:"bytes,10,opt" json:"ClientSpecs,omitempty"`
-	ClusterID        []byte            `protobuf:"bytes,11,opt" json:"ClusterID,omitempty"`
-	ClusterName      *string           `protobuf:"bytes,12,opt" json:"ClusterName,omitempty"`
-	Which            *uint64           `protobuf:"varint,13,opt" json:"Which,omitempty"`
-	Tokens           []*XLRegMsg_Token `protobuf:"bytes,14,rep" json:"Tokens,omitempty"`
-	DigSig           []byte            `protobuf:"bytes,15,opt" json:"DigSig,omitempty"`
-	ErrDesc          *string           `protobuf:"bytes,19,opt" json:"ErrDesc,omitempty"`
+	ClientID         []byte            `protobuf:"bytes,9,opt" json:"ClientID,omitempty"`
+	Attrs            *uint64           `protobuf:"varint,10,opt" json:"Attrs,omitempty"`
+	ClientSpecs      *XLRegMsg_Token   `protobuf:"bytes,11,opt" json:"ClientSpecs,omitempty"`
+	ClusterID        []byte            `protobuf:"bytes,13,opt" json:"ClusterID,omitempty"`
+	ClusterName      *string           `protobuf:"bytes,14,opt" json:"ClusterName,omitempty"`
+	ClusterSize      *uint32           `protobuf:"varint,15,opt" json:"ClusterSize,omitempty"`
+	Which            *uint64           `protobuf:"varint,17,opt" json:"Which,omitempty"`
+	Tokens           []*XLRegMsg_Token `protobuf:"bytes,18,rep" json:"Tokens,omitempty"`
+	DigSig           []byte            `protobuf:"bytes,19,opt" json:"DigSig,omitempty"`
+	ErrDesc          *string           `protobuf:"bytes,23,opt" json:"ErrDesc,omitempty"`
 	XXX_unrecognized []byte            `json:"-"`
 }
 
@@ -148,13 +149,6 @@ func (m *XLRegMsg) GetVersion() uint32 {
 	return 0
 }
 
-func (m *XLRegMsg) GetSize() uint32 {
-	if m != nil && m.Size != nil {
-		return *m.Size
-	}
-	return 0
-}
-
 func (m *XLRegMsg) GetClientName() string {
 	if m != nil && m.ClientName != nil {
 		return *m.ClientName
@@ -162,11 +156,18 @@ func (m *XLRegMsg) GetClientName() string {
 	return ""
 }
 
-func (m *XLRegMsg) GetClientID() string {
-	if m != nil && m.ClientID != nil {
-		return *m.ClientID
+func (m *XLRegMsg) GetClientID() []byte {
+	if m != nil {
+		return m.ClientID
 	}
-	return ""
+	return nil
+}
+
+func (m *XLRegMsg) GetAttrs() uint64 {
+	if m != nil && m.Attrs != nil {
+		return *m.Attrs
+	}
+	return 0
 }
 
 func (m *XLRegMsg) GetClientSpecs() *XLRegMsg_Token {
@@ -188,6 +189,13 @@ func (m *XLRegMsg) GetClusterName() string {
 		return *m.ClusterName
 	}
 	return ""
+}
+
+func (m *XLRegMsg) GetClusterSize() uint32 {
+	if m != nil && m.ClusterSize != nil {
+		return *m.ClusterSize
+	}
+	return 0
 }
 
 func (m *XLRegMsg) GetWhich() uint64 {

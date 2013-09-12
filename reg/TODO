@@ -1,5 +1,10 @@
 xlattice_go/registry/TODO
 
+2013-09-11
+    * test EncodePadEncrypt
+    * write and test DecryptUnpadDecode
+    * use in crypto_test
+
 2013-09-06
     * default value for reg TESTING can be 
         - name:     testXLReg                                           * DONE

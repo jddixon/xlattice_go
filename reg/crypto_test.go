@@ -9,8 +9,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
-
-	"errors"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"
@@ -21,78 +19,6 @@ import (
 
 // TODO: MOVE THIS TO crypto/ =======================================
 
-// PKCS7 padding (RFC 5652) pads a message out to a whole multiple
-// of the block size, with the value of each byte being the number
-// of bytes of padding.  If the data passed is nil, the function
-// returns a full block of padding.
-
-func PKCS7Padding(data []byte, blockSize int) (padding []byte) {
-	var length int
-	if data == nil {
-		length = 0
-	} else {
-		length = len(data)
-	}
-	// we want from 1 to blockSize bytes of padding
-	nBlocks := (length + blockSize - 1) / blockSize
-	rem := nBlocks*blockSize - length
-	if rem == 0 {
-		rem = blockSize
-	}
-	padding = make([]byte, rem)
-	for i := 0; i < rem; i++ {
-		padding[i] = byte(rem)
-	}
-	return
-}
-
-var (
-	ImpossibleBlockSize   = errors.New("impossible block size")
-	IncorrectPKCS7Padding = errors.New("incorrectly padded data")
-	NilData               = errors.New("nil data argument")
-)
-
-func AddPKCS7Padding(data []byte, blockSize int) (out []byte, err error) {
-	if blockSize <= 1 {
-		err = ImpossibleBlockSize
-	} else {
-		padding := PKCS7Padding(data, blockSize)
-		if data == nil {
-			out = padding
-		} else {
-			out = append(data, padding...)
-		}
-	}
-	return
-}
-
-// The data passed is presumed to have PKCS7 padding.  If possible, return
-// a copy of the data without the padding.  Return an error if the padding
-// is incorrect.
-
-func StripPKCS7Padding(data []byte, blockSize int) (out []byte, err error) {
-	if blockSize <= 1 {
-		err = ImpossibleBlockSize
-	} else if data == nil {
-		err = NilData
-	}
-	if err == nil {
-		lenData := len(data)
-		if lenData < blockSize {
-			err = IncorrectPKCS7Padding
-		} else {
-			// examine the very last byte: it must be padding and must
-			// contain the number of padding bytes added
-			lenPadding := int(data[lenData-1])
-			if lenPadding < 1 || lenData < lenPadding {
-				err = IncorrectPKCS7Padding
-			} else {
-				out = data[:lenData-lenPadding]
-			}
-		}
-	}
-	return
-}
 func (s *XLSuite) TestPKCS7Padding(c *C) {
 	rng := xr.MakeSimpleRNG()
 	seven := make([]byte, 7)
@@ -292,7 +218,45 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	_ = salt2 // WE DON'T USE THIS YET
 
-	// == CLIENT ====================================================
+	// AES HANDLING FOR ALL FURTHER MESSAGES ========================
+
+	// -- CLIENT-SIDE AES SETUP -----------------
+	// encrypt the client msg using engineC = iv2, key2
+
+	engineC, err := aes.NewCipher(key2)
+	c.Assert(err, IsNil)
+	c.Assert(engineC, Not(IsNil))
+
+	encrypterC := cipher.NewCBCEncrypter(engineC, iv2)
+	c.Assert(err, IsNil)
+	c.Assert(encrypterC, Not(IsNil))
+
+	decrypterC := cipher.NewCBCDecrypter(engineC, iv2)
+	c.Assert(err, IsNil)
+	c.Assert(decrypterC, Not(IsNil))
+
+	// we require that the message size be a multiple of the block size
+	c.Assert(encrypterC.BlockSize(), Equals, aes.BlockSize)
+	c.Assert(decrypterC.BlockSize(), Equals, aes.BlockSize)
+
+	// -- SERVER-SIDE AES SETUP -----------------
+	engineS, err := aes.NewCipher(key2)
+	c.Assert(err, IsNil)
+	c.Assert(engineS, Not(IsNil))
+
+	encrypterS := cipher.NewCBCEncrypter(engineS, iv2)
+	c.Assert(err, IsNil)
+	c.Assert(encrypterS, Not(IsNil))
+
+	decrypterS := cipher.NewCBCDecrypter(engineS, iv2)
+	c.Assert(err, IsNil)
+	c.Assert(decrypterS, Not(IsNil))
+
+	// we require that the message size be a multiple of the block size
+	c.Assert(encrypterS.BlockSize(), Equals, aes.BlockSize)
+	c.Assert(decrypterS.BlockSize(), Equals, aes.BlockSize)
+
+	// == CLIENT MSG ================================================
 	// On the client side:
 
 	// create and marshal client name, specs, salt2, digsig over that
@@ -320,64 +284,15 @@ func (s *XLSuite) TestCrytpo(c *C) {
 		ClientName:  &clientName,
 		ClientSpecs: token,
 	}
-	// -- CLIENT-SIDE AES SETUP -----------------
-	// encrypt the client msg using engine2a = iv2, key2
 
-	engine2a, err := aes.NewCipher(key2)
+	ciphertext, err = EncodePadEncrypt(&clientMsg, encrypterC)
 	c.Assert(err, IsNil)
-	c.Assert(engine2a, Not(IsNil))
-
-	aesEncrypter2a := cipher.NewCBCEncrypter(engine2a, iv2)
-	c.Assert(err, IsNil)
-	c.Assert(aesEncrypter2a, Not(IsNil))
-
-	// we require that the message size be a multiple of the block size
-	c.Assert(aesEncrypter2a.BlockSize(), Equals, aes.BlockSize)
-
-	// -- BEGIN encode, pad, and encrypt --------
-	cData, err := EncodePacket(&clientMsg)
-	c.Assert(err, IsNil)
-	c.Assert(cData, Not(IsNil))
-
-	paddedCData, err := AddPKCS7Padding(cData, aes.BlockSize)
-	c.Assert(err, IsNil)
-	c.Assert(paddedCData, Not(IsNil))
-
-	msgLen = len(paddedCData)
-	nBlocks = (msgLen + aes.BlockSize - 2) / aes.BlockSize
-	c.Assert(msgLen, Equals, nBlocks*aes.BlockSize)
-
-	ciphertext = make([]byte, nBlocks*aes.BlockSize)
-	aesEncrypter2a.CryptBlocks(ciphertext, paddedCData) // dest <- src
 
 	// On the server side: ------------------------------------------
-
-	// -- SERVER-SIDE AES SETUP -----------------
-	engine2b, err := aes.NewCipher(key2)
+	clientMsg2, err := DecryptUnpadDecode(ciphertext, decrypterS)
 	c.Assert(err, IsNil)
-	c.Assert(engine2b, Not(IsNil))
 
-	aesDecrypter2b := cipher.NewCBCDecrypter(engine2b, iv2)
-	c.Assert(err, IsNil)
-	c.Assert(aesDecrypter2b, Not(IsNil))
-
-	// we require that the message size be a multiple of the block size
-	c.Assert(aesDecrypter2b.BlockSize(), Equals, aes.BlockSize)
-
-	// -- BEGIN decrypt, unpad, and decode ------
-
-	// decrypt the join using engine2b = iv2, key2
-	plaintext = make([]byte, nBlocks*aes.BlockSize)
-	aesDecrypter2b.CryptBlocks(plaintext, ciphertext) // dest <- src
-
-	unpaddedCData, err := StripPKCS7Padding(plaintext, aes.BlockSize)
-	c.Assert(err, IsNil)
-	c.Assert(unpaddedCData, DeepEquals, cData)
-
-	clientMsg2, err := DecodePacket(unpaddedCData)
-	c.Assert(err, IsNil)
-	c.Assert(clientMsg2, Not(IsNil))
-	// -- END decrypt, unpad, and decode --------
+	c.Assert(clientMsg2.GetOp(), Equals, XLRegMsg_Client)
 
 	// verify that id, ck, sk, myEnd* survive the trip unchanged
 
@@ -399,26 +314,136 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	c.Assert(skBytes2, DeepEquals, skBytes)
 	c.Assert(myEnd2, DeepEquals, myEnd)
 
-	// OK TO HERE ///
-
 	// == CLIENT OK =================================================
 	// on the server side:
 
+	clientID := s.makeAnID(c, rng)
+	attrsBack := uint64(479)
+
+	op = XLRegMsg_ClientOK
+	clientOKMsg := XLRegMsg{
+		Op:       &op,
+		ClientID: clientID,
+		Attrs:    &attrsBack,
+	}
+	ciphertext, err = EncodePadEncrypt(&clientOKMsg, encrypterS)
+	c.Assert(err, IsNil)
+
+	// on the client side -------------------------------------------
+	clientOK2, err := DecryptUnpadDecode(ciphertext, decrypterC)
+	c.Assert(err, IsNil)
+
+	c.Assert(clientOK2.GetOp(), Equals, XLRegMsg_ClientOK)
+	clientID2 := clientOK2.GetClientID()
+	c.Assert(clientID2, DeepEquals, clientID)
+	attrsBack2 := clientOK2.GetAttrs()
+	c.Assert(attrsBack2, Equals, attrsBack)
+
 	// == CREATE ====================================================
+	// on the client side:
+	clusterName := rng.NextFileName(8)
+	clusterSize := uint32(2 + rng.Intn(60))
+
+	op = XLRegMsg_Create
+	createMsg := XLRegMsg{
+		Op:          &op,
+		ClusterName: &clusterName,
+		ClusterSize: &clusterSize,
+	}
+	ciphertext, err = EncodePadEncrypt(&createMsg, encrypterC)
+	c.Assert(err, IsNil)
+
+	// on the server side -------------------------------------------
+	createMsg2, err := DecryptUnpadDecode(ciphertext, decrypterS)
+	c.Assert(err, IsNil)
+
+	c.Assert(createMsg2.GetOp(), Equals, XLRegMsg_Create)
+	clusterName2 := createMsg2.GetClusterName()
+	c.Assert(clusterName2, Equals, clusterName)
+	clusterSize2 := createMsg2.GetClusterSize()
+	c.Assert(clusterSize2, Equals, clusterSize)
+
+	// == CREATE REPLY ==============================================
+	// on the server side:
+	clusterID := s.makeAnID(c, rng)
+	sizeBack := uint32(2 + rng.Intn(60))
+
+	op = XLRegMsg_CreateReply
+	createReplyMsg := XLRegMsg{
+		Op:          &op,
+		ClusterID:   clusterID,
+		ClusterSize: &sizeBack,
+	}
+	ciphertext, err = EncodePadEncrypt(&createReplyMsg, encrypterS)
+	c.Assert(err, IsNil)
+
+	// on the client side -------------------------------------------
+	createReply2, err := DecryptUnpadDecode(ciphertext, decrypterC)
+	c.Assert(err, IsNil)
+
+	c.Assert(createReply2.GetOp(), Equals, XLRegMsg_CreateReply)
+	clusterID2 := createReply2.GetClusterID()
+	c.Assert(clusterID2, DeepEquals, clusterID)
+	sizeBack2 := createReply2.GetClusterSize()
+	c.Assert(sizeBack2, Equals, sizeBack)
 
 	// == JOIN ======================================================
 	// On the client side:
+	op = XLRegMsg_Join
+	joinMsg := XLRegMsg{
+		Op:        &op,
+		ClusterID: clusterID,
+	}
+	ciphertext, err = EncodePadEncrypt(&joinMsg, encrypterC)
+	c.Assert(err, IsNil)
+
+	// on the server side -------------------------------------------
+	join2, err := DecryptUnpadDecode(ciphertext, decrypterS)
+	c.Assert(err, IsNil)
+
+	c.Assert(join2.GetOp(), Equals, XLRegMsg_Join)
+	clusterID2 = join2.GetClusterID()
+	c.Assert(clusterID2, DeepEquals, clusterID) // GEEP
+
+	// == JOIN REPLY ================================================
+	// on the server side:
+	op = XLRegMsg_JoinReply
+	joinReplyMsg := XLRegMsg{
+		Op:          &op,
+		ClusterID:   clusterID,
+		ClusterSize: &clusterSize,
+	}
+	ciphertext, err = EncodePadEncrypt(&joinReplyMsg, encrypterS)
+	c.Assert(err, IsNil)
+
+	// on the client side -------------------------------------------
+	joinReply2, err := DecryptUnpadDecode(ciphertext, decrypterC)
+	c.Assert(err, IsNil)
+
+	c.Assert(joinReply2.GetOp(), Equals, XLRegMsg_JoinReply)
+	clusterID2 = joinReply2.GetClusterID()
+	c.Assert(clusterID2, DeepEquals, clusterID)
+	sizeBack = joinReply2.GetClusterSize()
+	c.Assert(sizeBack, Equals, clusterSize)
+
+	// == GET =======================================================
+	// On the client side:
+
+	// on the server side -------------------------------------------
+
 	// == MEMBERS ===================================================
 	// On the server side:
+
+	// on the client side -------------------------------------------
 
 	// create and marshal a set of 3=5 tokens each containing attrs,
 	// nodeID, clusterID
 	// XXX STUB XXX
 
-	// encrypt the join using engine2a = iv2, key2
+	// encrypt the join using engineC = iv2, key2
 	// XXX STUB XXX
 
-	// decrypt the join using engine2b = iv2, key2
+	// decrypt the join using engineS = iv2, key2
 	// XXX STUB XXX
 
 	// verify that id, ck, sk, myEnd* survive the trip unchanged
@@ -426,19 +451,31 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	// == MEMBER LIST  ==============================================
 
-	// LOOP ANOTHER N TIMES WITH BLOCKS OF RANDOM DATA -----------
-	for i := 0; i < 8; i++ {
-		// create block of data
-		// XXX STUB XXX
-
-		// encrypt it with engine2a (iv2, key2)
-		// XXX STUB XXX
-
-		// decrypt with engine2b (iv2, key2)
-		// XXX STUB XXX
-
-		// verify same data
-		// XXX STUB XXX
-
+	// == BYE =======================================================
+	// On the client side:
+	op = XLRegMsg_Bye
+	byeMsg := XLRegMsg{
+		Op: &op,
 	}
+	ciphertext, err = EncodePadEncrypt(&byeMsg, encrypterC)
+	c.Assert(err, IsNil)
+
+	// on the server side -------------------------------------------
+	bye2, err := DecryptUnpadDecode(ciphertext, decrypterS)
+	c.Assert(err, IsNil)
+	c.Assert(bye2.GetOp(), Equals, XLRegMsg_Bye)
+
+	// == ACK =======================================================
+	// on the server side:
+	op = XLRegMsg_Ack
+	ackMsg := XLRegMsg{
+		Op: &op,
+	}
+	ciphertext, err = EncodePadEncrypt(&ackMsg, encrypterS)
+	c.Assert(err, IsNil)
+
+	// on the client side -------------------------------------------
+	ack2, err := DecryptUnpadDecode(ciphertext, decrypterC)
+	c.Assert(err, IsNil)
+	c.Assert(ack2.GetOp(), Equals, XLRegMsg_Ack)
 }
