@@ -12,3 +12,8 @@ func Test(t *testing.T) { TestingT(t) }
 type XLSuite struct{}
 
 var _ = Suite(&XLSuite{})
+
+const (
+	SHA1_LEN = 20
+	SHA3_LEN = 32
+)

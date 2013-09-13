@@ -1,9 +1,28 @@
-xlattice_go/registry/TODO
+xlattice_go/reg/TODO
+
+2013-09-12
+    * move logic for Hello and HelloReply into reg/helloAndReply.go
+    * write benchmarks for these
+    * move PKCS7 stuff from reg/crypto.go into ../crypto/pkcs7.go;
+        also move tests to ../crypto
+    * move reg/hello.go and tests with suitable mods into ../crypto/
+    * EncodePadEncrypt, DecryptUnpadDecode into packets.go
+    * build and thoroughly test ../cmd/xlReg
+    * this stays on main branch
+    * deploy on test:44444 as service
+
+    * on regBeta branch figure out how to persist the registry in 
+        such a way this it easily loads itself from disk after a 
+        crash or reboot
+    * when this is stable, merge back into main branch
+        - and deploy on test:44444
+    * document
+    * deploy on salinas:44444
 
 2013-09-11
-    * test EncodePadEncrypt
-    * write and test DecryptUnpadDecode
-    * use in crypto_test
+    * test EncodePadEncrypt                                             * DONE
+    * write and test DecryptUnpadDecode                                 * DONE
+    * use in crypto_test                                                * DONE
 
 2013-09-06
     * default value for reg TESTING can be 
