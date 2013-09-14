@@ -1,12 +1,22 @@
 xlattice_go/reg/TODO
 
-2013-09-12
+2013-09-13
+    * ClientMsg does NOT include digsig, so server cannot verify
+        that the client knows skPriv
+
     * move logic for Hello and HelloReply into reg/helloAndReply.go
     * write benchmarks for these
-    * move PKCS7 stuff from reg/crypto.go into ../crypto/pkcs7.go;
-        also move tests to ../crypto
     * move reg/hello.go and tests with suitable mods into ../crypto/
-    * EncodePadEncrypt, DecryptUnpadDecode into packets.go
+
+    * split off pkcs7 stuff into separate files (pkcs7*.go)             * DONE
+    * move them to ../crypto                                            * DONE
+    * remember to move error messages into ../crypto/errors.go          * DONE
+
+    * longer term xlReg needs to be distributed, using Paxos for
+        consensus
+
+2013-09-12
+    * EncodePadEncrypt, DecryptUnpadDecode into packets.go              * DONE
     * build and thoroughly test ../cmd/xlReg
     * this stays on main branch
     * deploy on test:44444 as service

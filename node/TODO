@@ -1,5 +1,10 @@
 xlattice_go/node/TODO
 
+2013-09-12
+    * BaseNodeMap as in bn_map.go should replace PeerMap and
+        peer_map.go; this needs further checking
+        - attempt to do straight replacment in node.go failed
+
 2013-09-11
     * lfs should be validated in node.Node                              * DONE
         - specifically, if it doesn't exist, we should create it        * DONE

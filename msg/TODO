@@ -1,5 +1,10 @@
 xlattice_go/msg/TODO
 
+2013-09-12
+    * modify code so that participating nodes use xlReg on test:44444
+        to join
+    * HelloMsg in protocol is replaced by helloAndReply
+
 2013-09-11
     * xu.SameBytes() replaced by DeepEquals in tests                    # DONE
 

@@ -25,12 +25,12 @@ const (
 )
 
 type RegCluster struct {
-	name          string // must be unique
-	id            []byte // must be unique
-	size          int    // a maximum > 1
-	members       []*ClusterMember
-	membersByName map[string]*ClusterMember
-	membersByID   *xn.BaseNodeMap
+	Name          string // must be unique
+	ID            []byte // must be unique
+	Size          int    // a maximum > 1
+	Members       []*ClusterMember
+	MembersByName map[string]*ClusterMember
+	MembersByID   *xn.BaseNodeMap
 }
 
 func NewRegCluster(name string, id *xi.NodeID, size int) (
@@ -44,10 +44,10 @@ func NewRegCluster(name string, id *xi.NodeID, size int) (
 	} else {
 		var bnm xn.BaseNodeMap // empty map
 		rc = &RegCluster{
-			name:        name,
-			id:          id.Value(),
-			size:        size,
-			membersByID: &bnm,
+			Name:        name,
+			ID:          id.Value(),
+			Size:        size,
+			MembersByID: &bnm,
 		}
 	}
 	return
@@ -56,15 +56,15 @@ func NewRegCluster(name string, id *xi.NodeID, size int) (
 func (rc *RegCluster) AddToCluster(name string, id *xi.NodeID,
 	commsPubKey, sigPubKey *rsa.PublicKey, attrs uint64) (err error) {
 
-	if _, ok := rc.membersByName[name]; ok {
+	if _, ok := rc.MembersByName[name]; ok {
 		// XXX surely something more complicated is called for!
 		return
 	}
 	member, err := NewClusterMember(name, id, commsPubKey, sigPubKey, attrs)
 	if err == nil {
-		rc.membersByName[name] = member
+		rc.MembersByName[name] = member
 
-		// XXX add to membersByID
+		// XXX add to MembersByID
 
 	}
 	return

@@ -4,8 +4,10 @@ package reg
 
 import (
 	"code.google.com/p/goprotobuf/proto"
+	"crypto/aes"
+	"crypto/cipher"
 	"fmt"
-	// xn "github.com/jddixon/xlattice_go/node"
+	xc "github.com/jddixon/xlattice_go/crypto"
 	xt "github.com/jddixon/xlattice_go/transport"
 	// "sync"
 )
@@ -56,4 +58,32 @@ func DecodePacket(data []byte) (*XLRegMsg, error) {
 
 func EncodePacket(msg *XLRegMsg) (data []byte, err error) {
 	return proto.Marshal(msg)
+}
+
+func EncodePadEncrypt(msg *XLRegMsg, engine cipher.BlockMode) (ciphertext []byte, err error) {
+	var paddedData []byte
+
+	cData, err := EncodePacket(msg)
+	if err == nil {
+		paddedData, err = xc.AddPKCS7Padding(cData, aes.BlockSize)
+	}
+	if err == nil {
+		msgLen := len(paddedData)
+		nBlocks := (msgLen + aes.BlockSize - 2) / aes.BlockSize
+		ciphertext = make([]byte, nBlocks*aes.BlockSize)
+		engine.CryptBlocks(ciphertext, paddedData) // dest <- src
+	}
+	return
+}
+
+func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegMsg, err error) {
+
+	plaintext := make([]byte, len(ciphertext))
+	engine.CryptBlocks(plaintext, ciphertext) // dest <- src
+
+	unpaddedCData, err := xc.StripPKCS7Padding(plaintext, aes.BlockSize)
+	if err == nil {
+		msg, err = DecodePacket(unpaddedCData)
+	}
+	return
 }
