@@ -1,9 +1,8 @@
-package reg
+package crypto
+
+// xlattice_go/crypto/pkcs7.go
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"errors"
 )
 
 // TODO: MOVE THIS TO crypto/ =======================================
@@ -32,12 +31,6 @@ func PKCS7Padding(data []byte, blockSize int) (padding []byte) {
 	}
 	return
 }
-
-var (
-	ImpossibleBlockSize   = errors.New("impossible block size")
-	IncorrectPKCS7Padding = errors.New("incorrectly padded data")
-	NilData               = errors.New("nil data argument")
-)
 
 func AddPKCS7Padding(data []byte, blockSize int) (out []byte, err error) {
 	if blockSize <= 1 {
@@ -81,30 +74,30 @@ func StripPKCS7Padding(data []byte, blockSize int) (out []byte, err error) {
 	return
 }
 
-func EncodePadEncrypt(msg *XLRegMsg, engine cipher.BlockMode) (ciphertext []byte, err error) {
-	var paddedData []byte
-
-	cData, err := EncodePacket(msg)
-	if err == nil {
-		paddedData, err = AddPKCS7Padding(cData, aes.BlockSize)
-	}
-	if err == nil {
-		msgLen := len(paddedData)
-		nBlocks := (msgLen + aes.BlockSize - 2) / aes.BlockSize
-		ciphertext = make([]byte, nBlocks*aes.BlockSize)
-		engine.CryptBlocks(ciphertext, paddedData) // dest <- src
-	}
-	return
-}
-
-func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegMsg, err error) {
-
-	plaintext := make([]byte, len(ciphertext))
-	engine.CryptBlocks(plaintext, ciphertext) // dest <- src
-
-	unpaddedCData, err := StripPKCS7Padding(plaintext, aes.BlockSize)
-	if err == nil {
-		msg, err = DecodePacket(unpaddedCData)
-	}
-	return
-}
+//func EncodePadEncrypt(msg *XLRegMsg, engine cipher.BlockMode) (ciphertext []byte, err error) {
+//	var paddedData []byte
+//
+//	cData, err := EncodePacket(msg)
+//	if err == nil {
+//		paddedData, err = AddPKCS7Padding(cData, aes.BlockSize)
+//	}
+//	if err == nil {
+//		msgLen := len(paddedData)
+//		nBlocks := (msgLen + aes.BlockSize - 2) / aes.BlockSize
+//		ciphertext = make([]byte, nBlocks*aes.BlockSize)
+//		engine.CryptBlocks(ciphertext, paddedData) // dest <- src
+//	}
+//	return
+//}
+//
+//func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegMsg, err error) {
+//
+//	plaintext := make([]byte, len(ciphertext))
+//	engine.CryptBlocks(plaintext, ciphertext) // dest <- src
+//
+//	unpaddedCData, err := StripPKCS7Padding(plaintext, aes.BlockSize)
+//	if err == nil {
+//		msg, err = DecodePacket(unpaddedCData)
+//	}
+//	return
+//}

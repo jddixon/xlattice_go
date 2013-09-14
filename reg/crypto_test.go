@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/msg/crypto_test.go
+// xlattice_go/reg/crypto_test.go
 
 import (
 	"bytes"
@@ -16,66 +16,6 @@ import (
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
-
-// TODO: MOVE THIS TO crypto/ =======================================
-
-func (s *XLSuite) TestPKCS7Padding(c *C) {
-	rng := xr.MakeSimpleRNG()
-	seven := make([]byte, 7)
-	rng.NextBytes(&seven)
-
-	fifteen := make([]byte, 15)
-	rng.NextBytes(&fifteen)
-
-	sixteen := make([]byte, 16)
-	rng.NextBytes(&sixteen)
-
-	seventeen := make([]byte, 17)
-	rng.NextBytes(&seventeen)
-
-	padding := PKCS7Padding(seven, aes.BlockSize)
-	c.Assert(len(padding), Equals, aes.BlockSize-7)
-	c.Assert(padding[0], Equals, byte(aes.BlockSize-7))
-
-	padding = PKCS7Padding(fifteen, aes.BlockSize)
-	c.Assert(len(padding), Equals, aes.BlockSize-15)
-	c.Assert(padding[0], Equals, byte(aes.BlockSize-15))
-
-	padding = PKCS7Padding(sixteen, aes.BlockSize)
-	c.Assert(len(padding), Equals, aes.BlockSize)
-	c.Assert(padding[0], Equals, byte(16))
-
-	padding = PKCS7Padding(seventeen, aes.BlockSize)
-	expectedLen := 2*aes.BlockSize - 17
-	c.Assert(len(padding), Equals, expectedLen)
-	c.Assert(padding[0], Equals, byte(expectedLen))
-
-	paddedSeven, err := AddPKCS7Padding(seven, aes.BlockSize)
-	c.Assert(err, IsNil)
-	unpaddedSeven, err := StripPKCS7Padding(paddedSeven, aes.BlockSize)
-	c.Assert(err, IsNil)
-	c.Assert(seven, DeepEquals, unpaddedSeven)
-
-	paddedFifteen, err := AddPKCS7Padding(fifteen, aes.BlockSize)
-	c.Assert(err, IsNil)
-	unpaddedFifteen, err := StripPKCS7Padding(paddedFifteen, aes.BlockSize)
-	c.Assert(err, IsNil)
-	c.Assert(fifteen, DeepEquals, unpaddedFifteen)
-
-	paddedSixteen, err := AddPKCS7Padding(sixteen, aes.BlockSize)
-	c.Assert(err, IsNil)
-	unpaddedSixteen, err := StripPKCS7Padding(paddedSixteen, aes.BlockSize)
-	c.Assert(err, IsNil)
-	c.Assert(sixteen, DeepEquals, unpaddedSixteen)
-
-	paddedSeventeen, err := AddPKCS7Padding(seventeen, aes.BlockSize)
-	c.Assert(err, IsNil)
-	unpaddedSeventeen, err := StripPKCS7Padding(paddedSeventeen, aes.BlockSize)
-	c.Assert(err, IsNil)
-	c.Assert(seventeen, DeepEquals, unpaddedSeventeen)
-}
-
-// END MOVE THIS TO crypto/ =========================================
 
 func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {
 	id = make([]byte, SHA3_LEN)
@@ -137,7 +77,9 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	// On the client side:
 	//     create and marshal a hello message containing AES iv1, key1, salt1.
 	// There is no reason at all to use protobufs for this purpose.
-	// Just encrypt iv1 + key1 + salt1
+	// Just encrypt iv1 + key1 + salt1 + version1, where version1 is the
+	// version proposed for communications.
+
 	sha := sha1.New()
 	data := salty[:3*aes.BlockSize+8+4] // contains iv1,key1,salt1,version1
 	c.Assert(len(data), Equals, 60)
@@ -169,13 +111,14 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	key2 := reply[aes.BlockSize : 3*aes.BlockSize]
 	salt2 := reply[3*aes.BlockSize]
 
+	// add the original salt, and then vBytes, representing version2
 	reply = append(reply, salt1...)
 	reply = append(reply, vBytes...)
 
 	// We need padding because the message is not an integer multiple
 	// of the block size.
 
-	paddedReply, err := AddPKCS7Padding(reply, aes.BlockSize)
+	paddedReply, err := xc.AddPKCS7Padding(reply, aes.BlockSize)
 	c.Assert(err, IsNil)
 	c.Assert(paddedReply, Not(IsNil))
 
@@ -212,7 +155,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	aesDecrypter1b.CryptBlocks(plaintext, ciphertext) // dest <- src
 
 	c.Assert(plaintext, DeepEquals, paddedReply)
-	unpaddedReply, err := StripPKCS7Padding(paddedReply, aes.BlockSize)
+	unpaddedReply, err := xc.StripPKCS7Padding(paddedReply, aes.BlockSize)
 	c.Assert(err, IsNil)
 	c.Assert(unpaddedReply, DeepEquals, reply)
 
@@ -440,16 +383,15 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	// nodeID, clusterID
 	// XXX STUB XXX
 
-	// encrypt the join using engineC = iv2, key2
+	// encrypt the msg using engineC = iv2, key2
 	// XXX STUB XXX
 
-	// decrypt the join using engineS = iv2, key2
+	// decrypt the msg using engineS = iv2, key2
 	// XXX STUB XXX
 
-	// verify that id, ck, sk, myEnd* survive the trip unchanged
+	// verify that the various tokens (id, ck, sk, myEnd*) survive the 
+	// trip unchanged
 	// XXX STUB XXX
-
-	// == MEMBER LIST  ==============================================
 
 	// == BYE =======================================================
 	// On the client side:

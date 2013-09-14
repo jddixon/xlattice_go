@@ -3,22 +3,10 @@ package crypto
 // xlattice_go/crypto/rsa_serialization.go
 
 import (
-	// "bytes"
 	"crypto/rsa"
 	"crypto/x509"
-	"errors"
-	//"encoding/binary"
 	"code.google.com/p/go.crypto/ssh"
 	"encoding/pem"
-	//"math/big"
-)
-
-var (
-	NilData                 = errors.New("Nil data")
-	NotAnRSAPrivateKey      = errors.New("Not an RSA private key")
-	NotAnRSAPublicKey       = errors.New("Not an RSA public key")
-	PemEncodeDecodeFailure  = errors.New("Pem encode/decode failure")
-	X509ParseOrMarshalError = errors.New("X509 parse/marshal error")
 )
 
 // CONVERSION TO AND FROM WIRE FORMAT ///////////////////////////////
