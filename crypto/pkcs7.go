@@ -2,8 +2,7 @@ package crypto
 
 // xlattice_go/crypto/pkcs7.go
 
-import (
-)
+import ()
 
 // TODO: MOVE THIS TO crypto/ =======================================
 

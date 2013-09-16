@@ -1,7 +1,7 @@
 xlattice_go/reg/TODO
 
 2013-09-13
-    * ClientMsg does NOT include digsig, so server cannot verify
+    * FIX: ClientMsg does NOT include digsig, so server cannot verify
         that the client knows skPriv
 
     * move logic for Hello and HelloReply into reg/helloAndReply.go

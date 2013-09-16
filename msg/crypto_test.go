@@ -79,9 +79,9 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	// == HELLO =====================================================
 	// On the client side:
-	
+
 	// Create and marshal a hello containing AES iv1, key1, salt1, version1.
-	// 
+	//
 	// There is no reason at all to use protobufs for this purpose.
 	// Just encrypt iv1 + key1 + salt1 + version1
 	sha := sha1.New()
@@ -119,7 +119,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	reply = append(reply, salt1...)
 	reply = append(reply, vBytes...)
 
-	// We need padding because the message is not or may not be an 
+	// We need padding because the message is not or may not be an
 	// integer multiple of the block size.
 
 	paddedReply, err := xc.AddPKCS7Padding(reply, aes.BlockSize)
@@ -393,7 +393,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	//// decrypt the msg using engineS = iv2, key2
 	//// XXX STUB XXX
 
-	//// verify that the various tokens (id, ck, sk, myEnd*) survive the 
+	//// verify that the various tokens (id, ck, sk, myEnd*) survive the
 	//// trip unchanged
 	//// XXX STUB XXX
 

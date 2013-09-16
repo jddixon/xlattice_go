@@ -51,26 +51,25 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	ck := node.GetCommsPublicKey()
 
-	// XXX ADDING 4 BYTE VERSION NUMBER
+	version1 := uint32(rng.Int31n(255 * 255)) // in effect an unsigned short
+	vBytes := make([]byte, 4)
+	vBytes[0] = byte(version1)
+	c.Assert(vBytes[0], Equals, byte(0xff&version1)) // XXX trivial
+	vBytes[1] = byte(version1 >> 8)
+	c.Assert(vBytes[1], Equals, byte(0xff&(version1>>8))) // XXX trivial
 
 	// Generate 16-byte AES IV, 32-byte AES key, and 8-byte salt
 	// and 4-byte version number for the Hello and another 20 bytes as salt
 	// for the OAEP encrypt. For testing purposes these need not be crypto
 	// grade.
 
-	salty := make([]byte, 3*aes.BlockSize+8+4+SHA1_LEN)
+	salty := make([]byte, 3*aes.BlockSize+8+SHA1_LEN)
 	rng.NextBytes(&salty)
 
 	iv1 := salty[:aes.BlockSize]
 	key1 := salty[aes.BlockSize : 3*aes.BlockSize]
 	salt1 := salty[3*aes.BlockSize : 3*aes.BlockSize+8]
-	vBytes := salty[3*aes.BlockSize+8 : 3*aes.BlockSize+12]
-	version1 := uint32(
-		(0xff & vBytes[3] << 24) | (0xff & vBytes[2] << 16) |
-			(0xff & vBytes[1] << 8) | (0xff & vBytes[0]))
-	_ = version1 // DEBUG
-	oaep1 := salty[3*aes.BlockSize+12:]
-
+	oaep1 := salty[3*aes.BlockSize+8:]
 	oaepSalt := bytes.NewBuffer(oaep1)
 
 	// == HELLO =====================================================
@@ -81,7 +80,8 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	// version proposed for communications.
 
 	sha := sha1.New()
-	data := salty[:3*aes.BlockSize+8+4] // contains iv1,key1,salt1,version1
+	data := salty[:3*aes.BlockSize+8] // contains iv1,key1,salt1
+	data = append(data, vBytes...)    // ... plus preferred protocol version
 	c.Assert(len(data), Equals, 60)
 
 	ciphertext, err := rsa.EncryptOAEP(sha, oaepSalt, ck, data, nil)
@@ -96,6 +96,14 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	// verify that iv1, key1, salt1, version1 are the same
 	c.Assert(data, DeepEquals, plaintext)
+	iv1s := data[0:aes.BlockSize]
+	key1s := data[aes.BlockSize : 3*aes.BlockSize]
+	salt1s := data[3*aes.BlockSize : 3*aes.BlockSize+8]
+	vBytes1s := data[3*aes.BlockSize+8:]
+	c.Assert(iv1s, DeepEquals, iv1)
+	c.Assert(key1s, DeepEquals, key1)
+	c.Assert(salt1s, DeepEquals, salt1)
+	c.Assert(vBytes1s, DeepEquals, vBytes)
 
 	// == HELLO REPLY ===============================================
 	// On the server side:
@@ -109,7 +117,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	iv2 := reply[:aes.BlockSize]
 	key2 := reply[aes.BlockSize : 3*aes.BlockSize]
-	salt2 := reply[3*aes.BlockSize]
+	salt2 := reply[3*aes.BlockSize : 3*aes.BlockSize+8]
 
 	// add the original salt, and then vBytes, representing version2
 	reply = append(reply, salt1...)
@@ -158,8 +166,23 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	unpaddedReply, err := xc.StripPKCS7Padding(paddedReply, aes.BlockSize)
 	c.Assert(err, IsNil)
 	c.Assert(unpaddedReply, DeepEquals, reply)
+	_ = salt2 // we don't explicitly use this
 
-	_ = salt2 // WE DON'T USE THIS YET
+	iv2c := unpaddedReply[:aes.BlockSize]
+	key2c := unpaddedReply[aes.BlockSize : 3*aes.BlockSize]
+	salt2c := unpaddedReply[3*aes.BlockSize : 3*aes.BlockSize+8]
+	salt1c := unpaddedReply[3*aes.BlockSize+8 : 3*aes.BlockSize+16]
+	vBytes2c := unpaddedReply[3*aes.BlockSize+16 : 3*aes.BlockSize+20]
+	c.Assert(iv2c, DeepEquals, iv2)
+	c.Assert(key2c, DeepEquals, key2)
+	c.Assert(salt2c, DeepEquals, salt2)
+	c.Assert(salt1c, DeepEquals, salt1)
+	c.Assert(vBytes2c, DeepEquals, vBytes)
+	version2c := uint32(vBytes2c[0]) |
+		(uint32(vBytes2c[1]) << 8) |
+		(uint32(vBytes2c[2]) << 16) |
+		(uint32(vBytes2c[3]) << 24)
+	c.Assert(version2c, Equals, version1)
 
 	// AES HANDLING FOR ALL FURTHER MESSAGES ========================
 
@@ -389,7 +412,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	// decrypt the msg using engineS = iv2, key2
 	// XXX STUB XXX
 
-	// verify that the various tokens (id, ck, sk, myEnd*) survive the 
+	// verify that the various tokens (id, ck, sk, myEnd*) survive the
 	// trip unchanged
 	// XXX STUB XXX
 
