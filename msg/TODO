@@ -1,5 +1,8 @@
 xlattice_go/msg/TODO
 
+2013-09-16
+    * need benchmarks for helloAndReply functions
+
 2013-09-12
     * modify code so that participating nodes use xlReg on test:44444
         to join

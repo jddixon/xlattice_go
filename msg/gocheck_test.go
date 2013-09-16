@@ -15,6 +15,4 @@ var _ = Suite(&XLSuite{})
 
 const (
 	VERBOSITY = 1
-	SHA1_LEN  = 20
-	SHA3_LEN  = 32
 )

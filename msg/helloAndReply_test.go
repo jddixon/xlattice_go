@@ -1,6 +1,6 @@
-package reg
+package msg
 
-// xlattice_go/reg/helloAndReply_test.go
+// xlattice_go/msg/helloAndReply_test.go
 
 import (
 	"crypto/aes"
@@ -10,7 +10,8 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-// // DO NOT DELETE THESE - at least not yet
+// THESE DUPLICATE FUNCTIONS IN crypto_test.go: /////////////////////
+//
 // func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {
 // 	id = make([]byte, SHA3_LEN)
 // 	rng.NextBytes(&id)
@@ -28,7 +29,7 @@ import (
 // 	c.Assert(err, IsNil)
 // 	c.Assert(key, Not(IsNil))
 // 	return key
-// } // FOO
+// } // END DUPLICATE CODE //////////////////////////////////////////
 
 func (s *XLSuite) TestHelloAndReply(c *C) {
 	if VERBOSITY > 0 {

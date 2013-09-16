@@ -1,6 +1,6 @@
-package reg
+package msg
 
-// xlattice_go/reg/helloAndReply.go
+// xlattice_go/msg/helloAndReply.go
 
 import (
 	"bytes"
@@ -10,6 +10,11 @@ import (
 	"crypto/sha1"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xr "github.com/jddixon/xlattice_go/rnglib"
+)
+
+const (
+	SHA1_LEN = 20	
+	SHA3_LEN = 32
 )
 
 // Create an AES IV and key and an 8-byte salt, then encrypt these and
