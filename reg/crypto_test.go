@@ -6,35 +6,15 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"
-	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {
-	id = make([]byte, SHA3_LEN)
-	rng.NextBytes(&id)
-	return
-}
-func (s *XLSuite) makeANodeID(c *C, rng *xr.PRNG) (nodeID *xi.NodeID) {
-	id := s.makeAnID(c, rng)
-	nodeID, err := xi.New(id)
-	c.Assert(err, IsNil)
-	c.Assert(nodeID, Not(IsNil))
-	return
-}
-func (s *XLSuite) makeAnRSAKey(c *C) (key *rsa.PrivateKey) {
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	c.Assert(err, IsNil)
-	c.Assert(key, Not(IsNil))
-	return key
-}
 func (s *XLSuite) TestCrytpo(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_CRYPTO")

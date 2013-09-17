@@ -1,9 +1,13 @@
 package main
 
+// xlattice_go/cmd/xlReg/xlReg.co
+
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"github.com/jddixon/xlattice_go/reg"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"os"
 	"path"
@@ -23,8 +27,15 @@ const (
 )
 
 var (
+	// these are here for testing
+	regData	*reg.RegData
+	regNode	*reg.RegNode
+)
+
+var (
 	// these need to be referenced as pointers
 	address  = flag.String("a", DEFAULT_ADDR, "registry IP address")
+	hexID	 = flag.String("i", "", "hex reg ID")
 	justShow = flag.Bool("j", false, "display option settings and exit")
 	lfs      = flag.String("lfs", DEFAULT_LFS, "path to work directory")
 	name     = flag.String("n", DEFAULT_NAME, "registry name")
@@ -38,10 +49,28 @@ func init() {
 }
 
 func main() {
+	var err error
+	var id *xi.NodeID
+
 	flag.Usage = Usage
 	flag.Parse()
 
 	// FIXUPS ///////////////////////////////////////////////////////
+
+	if *hexID == "" {
+		id,_ = xi.New(nil)
+		*hexID = hex.EncodeToString(id.Value())
+	} else {
+		var data[]byte
+		data, err = hex.DecodeString(*hexID)
+		if err == nil {
+			id, err = xi.New(data)
+		}
+	}
+	if err != nil {
+		fmt.Println("error processing NodeID: %s\n", err.Error())
+		os.Exit(-1)
+	}
 	if *testing {
 		if *name == DEFAULT_NAME || *name == "" {
 			*name = "testReg"
@@ -69,20 +98,22 @@ func main() {
 
 	// DISPLAY FLAGS ////////////////////////////////////////////////
 	if *verbose || *justShow {
-		fmt.Printf("address                = %v\n", *address)
-		fmt.Printf("endPoint               = %v\n", endPoint)
-		fmt.Printf("justShow               = %v\n", *justShow)
-		fmt.Printf("lfs                    = %s\n", *lfs)
-		fmt.Printf("name                   = %s\n", *name)
-		fmt.Printf("port                   = %d\n", *port)
-		fmt.Printf("testing                = %v\n", *testing)
-		fmt.Printf("verbose                = %v\n", *verbose)
+		fmt.Printf("address      = %v\n", *address)
+		fmt.Printf("endPoint     = %v\n", endPoint)
+		fmt.Printf("hexID        = %v\n", *hexID)
+		fmt.Printf("justShow     = %v\n", *justShow)
+		fmt.Printf("lfs          = %s\n", *lfs)
+		fmt.Printf("name         = %s\n", *name)
+		fmt.Printf("port         = %d\n", *port)
+		fmt.Printf("testing      = %v\n", *testing)
+		fmt.Printf("verbose      = %v\n", *verbose)
 	}
 	if *justShow {
 		return
 	}
 	// SET UP OPTIONS ///////////////////////////////////////////////
 	var opt reg.RegOptions
+	opt.ID = id
 	opt.Lfs = *lfs
 	opt.Port = *port
 	opt.Testing = *testing
@@ -101,9 +132,9 @@ func setup(opt *reg.RegOptions) (r *reg.RegNode, err error) {
 
 	// XXX STUB XXX
 
-	r, err = reg.New(opt.Name, opt.Lfs,
-		nil, nil, nil, // opt.Id, opt.CKey, opt.SKey,
-		nil,
+	r, err = reg.New(opt.Name, opt.ID, opt.Lfs,
+		nil, nil, // opt.CKey, opt.SKey,
+		nil,		// overlays
 		opt.EndPoint)
 
 	return r, err

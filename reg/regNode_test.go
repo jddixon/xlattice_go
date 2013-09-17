@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/msg/reg_test.go
+// xlattice_go/msg/regNode_test.go
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) TestRegData(c *C) {
+func (s *XLSuite) TestRegNode(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_REG_DATA")
+		fmt.Println("TEST_REG_NODE")
 	}
 }
