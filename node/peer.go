@@ -79,9 +79,25 @@ func (p *Peer) GetConnector(n int) xt.ConnectorI {
 }
 
 // EQUAL ////////////////////////////////////////////////////////////
-// func (p *Peer) Equal(any interface{}) bool {
-//     XXX Uses BaseNode.Equal()
-// }
+func (p *Peer) Equal(any interface{}) bool {
+	if any == p {
+		return true
+	}
+	if any == nil {
+		return false
+	}
+	switch v := any.(type) {
+	case *Peer:
+		_ = v
+	default:
+		return false
+	}
+	other := any.(*Peer) // type assertion
+
+	// XXX THIS IS A VERY INCOMPLETE IMPLEMENTATION
+
+	return p.BaseNode.Equal(&other.BaseNode)
+}
 
 func (p *Peer) Strings() []string {
 	ss := []string{"peer {"}
@@ -141,7 +157,7 @@ func ParsePeer(s string) (peer *Peer, rest []string, err error) {
 	return
 }
 func parsePeerFromStrings(ss []string) (peer *Peer, rest []string, err error) {
-	bn, rest, err := parseBNFromStrings(ss, "peer")
+	bn, rest, err := ParseBNFromStrings(ss, "peer")
 	if err == nil {
 		peer = &Peer{BaseNode: *bn}
 		rest, err = collectConnectors(peer, rest)

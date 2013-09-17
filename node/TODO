@@ -1,5 +1,14 @@
 xlattice_go/node/TODO
 
+2013-09-17
+    * Peer.Equal() needs to be fleshed out
+    * BaseNode.Equal() also needs to be fleshed out
+
+    * Implement Peer.Equal                                              * DONE
+        - and test                                                      * DONE
+    * FIX: BaseNode.Equal() is buggy                                    * DONE
+    * FIX: tests have not shown BaseNode.Equal failing                  * FIXED
+
 2013-09-16
     * BaseNode.Equal() was wrong and needs to be fixed further 
 

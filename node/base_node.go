@@ -121,7 +121,7 @@ func (p *BaseNode) Equal(any interface{}) bool {
 		return false
 	}
 	switch v := any.(type) {
-	case BaseNode:
+	case *BaseNode:
 		_ = v
 	default:
 		return false
@@ -160,11 +160,14 @@ func (p *BaseNode) Strings() []string {
 	addStringlet(&s, fmt.Sprintf("}"))
 	return s
 }
+func (p *BaseNode) String() string {
+	return strings.Join(p.Strings(), "\n")
+}
 
 // DESERIALIZATION //////////////////////////////////////////////////
 
-// Return the next non-blank line in the slice of strings.  This line
-// and any preceding blank lines are removed from the slice.
+// Return the next non-blank line in the slice of strings, trimmed.
+// This line and any preceding blank lines are removed from the slice.
 func NextNBLine(lines *[]string) string {
 	if lines != nil {
 		for len(*lines) > 0 {
@@ -183,12 +186,12 @@ func NextNBLine(lines *[]string) string {
 
 func ParseBaseNode(data, whichType string) (bn *BaseNode, rest []string, err error) {
 	ss := strings.Split(data, "\n") // yields a slice of strings
-	return parseBNFromStrings(ss, whichType)
+	return ParseBNFromStrings(ss, whichType)
 }
 
 // Version of the above which consumes a slice of strings.  XXX Copies the
 // slice unnecessarily.
-func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []string, err error) {
+func ParseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []string, err error) {
 	var (
 		name        string
 		nodeID      *xi.NodeID
