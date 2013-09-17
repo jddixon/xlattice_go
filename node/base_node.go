@@ -126,7 +126,7 @@ func (p *BaseNode) Equal(any interface{}) bool {
 	default:
 		return false
 	}
-	other := any.(Peer) // type assertion
+	other := any.(*BaseNode) // type assertion
 
 	// THINK ABOUT publicKey.equals(any.publicKey)
 
@@ -163,8 +163,9 @@ func (p *BaseNode) Strings() []string {
 
 // DESERIALIZATION //////////////////////////////////////////////////
 
-// Return the next non-blank line in the slice of strings
-func nextLine(lines *[]string) string {
+// Return the next non-blank line in the slice of strings.  This line
+// and any preceding blank lines are removed from the slice.
+func NextNBLine(lines *[]string) string {
 	if lines != nil {
 		for len(*lines) > 0 {
 			s := strings.TrimSpace((*lines)[0])
@@ -195,13 +196,13 @@ func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []str
 		sigPubKey   *rsa.PublicKey
 		overlays    []xo.OverlayI
 	)
-	s := nextLine(&ss)
+	s := NextNBLine(&ss)
 	opener := fmt.Sprintf("%s {", whichType) // "peer {" or "node {"
 	if s != opener {
 		err = NotExpectedOpener
 	}
 	if err == nil {
-		s := nextLine(&ss)
+		s := NextNBLine(&ss)
 		if strings.HasPrefix(s, "name: ") {
 			name = s[6:]
 		} else {
@@ -209,7 +210,7 @@ func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []str
 		}
 	}
 	if err == nil {
-		s = nextLine(&ss)
+		s = NextNBLine(&ss)
 		if strings.HasPrefix(s, "nodeID: ") {
 			var val []byte
 			val, err = hex.DecodeString(s[8:])
@@ -221,7 +222,7 @@ func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []str
 		}
 	}
 	if err == nil {
-		s = nextLine(&ss)
+		s = NextNBLine(&ss)
 		if strings.HasPrefix(s, "commsPubKey: ") {
 			// XXX we do not verify that the next line is empty
 			ckSSH := []byte(s[13:] + "\n")
@@ -231,7 +232,7 @@ func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []str
 		}
 	}
 	if err == nil {
-		s = nextLine(&ss)
+		s = NextNBLine(&ss)
 		if strings.HasPrefix(s, "sigPubKey: ") {
 			skSSH := []byte(s[11:] + "\n")
 			sigPubKey, err = xc.RSAPubKeyFromDisk(skSSH)
@@ -240,10 +241,10 @@ func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []str
 		}
 	}
 	if err == nil {
-		s = nextLine(&ss)
+		s = NextNBLine(&ss)
 		if s == "overlays {" {
 			for {
-				s = nextLine(&ss)
+				s = NextNBLine(&ss)
 				if s == "" { // end of strings
 					err = NotABaseNode
 					break
@@ -263,7 +264,7 @@ func parseBNFromStrings(ss []string, whichType string) (bn *BaseNode, rest []str
 		}
 	}
 	if err == nil {
-		s = nextLine(&ss)
+		s = NextNBLine(&ss)
 		if s != "}" {
 			err = NotABaseNode
 		}

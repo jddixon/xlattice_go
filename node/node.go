@@ -468,7 +468,7 @@ func Parse(s string) (node *Node, rest []string, err error) {
 		var pm PeerMap
 		node.peerMap = &pm
 
-		line := nextLine(&rest)
+		line := NextNBLine(&rest)
 		parts := strings.Split(line, ": ")
 		if parts[0] == "lfs" {
 			node.lfs = strings.TrimSpace(parts[1])
@@ -480,7 +480,7 @@ func Parse(s string) (node *Node, rest []string, err error) {
 		var commsKey, sigKey *rsa.PrivateKey
 		if err == nil {
 			// move some of this into collectKey() !
-			line = nextLine(&rest)
+			line = NextNBLine(&rest)
 			parts = strings.Split(line, ": ")
 			if parts[0] == "commsKey" && parts[1] == "-----BEGIN -----" {
 				commsKey, err = collectKey(&rest)
@@ -493,7 +493,7 @@ func Parse(s string) (node *Node, rest []string, err error) {
 
 		if err == nil {
 			// move some of this into collectKey() !
-			line = nextLine(&rest)
+			line = NextNBLine(&rest)
 			parts = strings.Split(line, ": ")
 			if parts[0] == "sigKey" && parts[1] == "-----BEGIN -----" {
 				sigKey, err = collectKey(&rest)
@@ -506,10 +506,10 @@ func Parse(s string) (node *Node, rest []string, err error) {
 
 		// endPoints
 		if err == nil {
-			line = nextLine(&rest)
+			line = NextNBLine(&rest)
 			if line == "endPoints {" {
 				for {
-					line = nextLine(&rest)
+					line = NextNBLine(&rest)
 					if line == "}" {
 						// prepend := []string{line}
 						// rest = append(prepend, rest...)
@@ -534,7 +534,7 @@ func Parse(s string) (node *Node, rest []string, err error) {
 
 		// peers
 		if err == nil {
-			line = nextLine(&rest)
+			line = NextNBLine(&rest)
 			if line == "peers {" {
 				for {
 					line = strings.TrimSpace(rest[0])
@@ -556,7 +556,7 @@ func Parse(s string) (node *Node, rest []string, err error) {
 				fmt.Printf("    EXPECTED 'peers {', GOT: '%s'\n", line)
 				err = NotASerializedNode
 			}
-			line = nextLine(&rest) // discard the ZZZ }
+			line = NextNBLine(&rest) // discard the ZZZ }
 
 		}
 		// gateways, but not yet
@@ -564,7 +564,7 @@ func Parse(s string) (node *Node, rest []string, err error) {
 		// expect closing brace for node {
 		// XXX we need an expect(&rest)
 
-		line = nextLine(&rest)
+		line = NextNBLine(&rest)
 		if line != "}" {
 			fmt.Printf("extra text at end of node declaration: '%s'\n", line)
 		}

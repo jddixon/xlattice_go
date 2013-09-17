@@ -104,10 +104,10 @@ func (p *Peer) String() string {
 
 func collectConnectors(peer *Peer, ss []string) (rest []string, err error) {
 	rest = ss
-	line := nextLine(&rest)
+	line := NextNBLine(&rest)
 	if line == "connectors {" {
 		for {
-			line = nextLine(&rest)
+			line = NextNBLine(&rest)
 			if line == "}" {
 				break
 			}
@@ -121,7 +121,7 @@ func collectConnectors(peer *Peer, ss []string) (rest []string, err error) {
 				return
 			}
 		}
-		line = nextLine(&rest)
+		line = NextNBLine(&rest)
 		if line != "}" {
 			err = NotASerializedPeer
 		}
