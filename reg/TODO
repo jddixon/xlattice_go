@@ -2,16 +2,17 @@ xlattice_go/reg/TODO
 
 2013-09-16
     * add abstraction Registry with components regNode and regData
-    * regData serialization includes at least two separate files, one 
-        for clusters and one for members
-    * clusterMember serializes baseNode + Attrs in that order
+    * regData serialization includes at least two separate files, 
+        one for clusters and one for members
+
+    * clusterMember serializes baseNode + Attrs in that order           * DONE
         - serialize to LFS/.xlattice/members.cfg
             * append-only; members are never actually deleted, but
                 perhaps marked as such
-        - need Strings(), String(), Parse()
+        - need Strings(), String(), Parse()                             * DONE
             * this contradicts the append-only requirement
 
-    * cluster serialization includes a list of members by logical index
+    * cluster serialization includes a list of members by NodeID
         - this is used to recreate byName and byID indexes on load
         - serialize to LFS/.xlattice/clusters.cfg
             * append-only; members are never actually deleted, but

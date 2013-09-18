@@ -19,14 +19,14 @@ import (
 
 type RegOptions struct {
 	Name     string
-	ID		 *xi.NodeID
+	ID       *xi.NodeID
 	Lfs      string
 	Address  string
 	Port     int
-	EndPoint xt.EndPointI	// derived from Address, Port
+	EndPoint xt.EndPointI // derived from Address, Port
 	Testing  bool
 	Verbose  bool
-} 
+}
 
 type RegNode struct {
 	Acc          xt.AcceptorI
@@ -51,8 +51,8 @@ func New(name string, id *xi.NodeID, lfs string,
 		name = "xlReg"
 	}
 	if id == nil {
-		id, _ = xi.New(nil)	// uses expensive SystemRNG to create a random ID
-	} 
+		id, _ = xi.New(nil) // uses expensive SystemRNG to create a random ID
+	}
 	if lfs == "" {
 		lfs = "/var/app/xlReg"
 	}

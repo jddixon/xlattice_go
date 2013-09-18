@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/jddixon/xlattice_go/reg"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	"github.com/jddixon/xlattice_go/reg"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"os"
 	"path"
@@ -28,14 +28,14 @@ const (
 
 var (
 	// these are here for testing
-	regData	*reg.RegData
-	regNode	*reg.RegNode
+	regData *reg.RegData
+	regNode *reg.RegNode
 )
 
 var (
 	// these need to be referenced as pointers
 	address  = flag.String("a", DEFAULT_ADDR, "registry IP address")
-	hexID	 = flag.String("i", "", "hex reg ID")
+	hexID    = flag.String("i", "", "hex reg ID")
 	justShow = flag.Bool("j", false, "display option settings and exit")
 	lfs      = flag.String("lfs", DEFAULT_LFS, "path to work directory")
 	name     = flag.String("n", DEFAULT_NAME, "registry name")
@@ -58,10 +58,10 @@ func main() {
 	// FIXUPS ///////////////////////////////////////////////////////
 
 	if *hexID == "" {
-		id,_ = xi.New(nil)
+		id, _ = xi.New(nil)
 		*hexID = hex.EncodeToString(id.Value())
 	} else {
-		var data[]byte
+		var data []byte
 		data, err = hex.DecodeString(*hexID)
 		if err == nil {
 			id, err = xi.New(data)
@@ -134,7 +134,7 @@ func setup(opt *reg.RegOptions) (r *reg.RegNode, err error) {
 
 	r, err = reg.New(opt.Name, opt.ID, opt.Lfs,
 		nil, nil, // opt.CKey, opt.SKey,
-		nil,		// overlays
+		nil, // overlays
 		opt.EndPoint)
 
 	return r, err

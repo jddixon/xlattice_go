@@ -42,8 +42,9 @@ func NewClusterMember(name string, id *xi.NodeID,
 }
 
 // EQUAL ////////////////////////////////////////////////////////////
+
 func (cm *ClusterMember) Equal(any interface{}) bool {
-	
+
 	if any == cm {
 		return true
 	}
@@ -51,7 +52,7 @@ func (cm *ClusterMember) Equal(any interface{}) bool {
 		return false
 	}
 	switch v := any.(type) {
-	case *ClusterMember: 
+	case *ClusterMember:
 		_ = v
 	default:
 		return false
@@ -66,13 +67,14 @@ func (cm *ClusterMember) Equal(any interface{}) bool {
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////
+
 func (cm *ClusterMember) Strings() (ss []string) {
 	ss = []string{"clusterMember {"}
 	bns := cm.BaseNode.Strings()
 	for i := 0; i < len(bns); i++ {
-		ss = append(ss, "    " + bns[i])
+		ss = append(ss, "    "+bns[i])
 	}
-	ss = append(ss,  fmt.Sprintf("    attrs: 0x%016x", cm.attrs))
+	ss = append(ss, fmt.Sprintf("    attrs: 0x%016x", cm.attrs))
 	ss = append(ss, "}")
 	return
 }
@@ -80,9 +82,9 @@ func (cm *ClusterMember) Strings() (ss []string) {
 func (cm *ClusterMember) String() string {
 	return strings.Join(cm.Strings(), "\n")
 }
-func collectAttrs(cm *ClusterMember, ss []string)(rest []string, err error) {
+func collectAttrs(cm *ClusterMember, ss []string) (rest []string, err error) {
 	rest = ss
-	line := xn.NextNBLine(&rest)	// trims
+	line := xn.NextNBLine(&rest) // trims
 	// attrs line looks like "attrs: 0xHHHH..." where H is a hex digit
 	if strings.HasPrefix(line, "attrs: 0x") {
 		var val []byte
@@ -94,12 +96,12 @@ func collectAttrs(cm *ClusterMember, ss []string)(rest []string, err error) {
 				err = WrongNumberOfBytesInAttrs
 			} else {
 				for i := 0; i < 8; i++ {
-					// assume little-endian ; but printf has put 
+					// assume little-endian ; but printf has put
 					// high order bytes first - ie, it's big-endian
-					attrs |= uint64(val[i]) << uint(8 * (7 - i)) 
+					attrs |= uint64(val[i]) << uint(8*(7-i))
 				}
 				cm.attrs = attrs
-			}		
+			}
 		}
 	} else {
 		err = BadAttrsLine
@@ -134,4 +136,3 @@ func ParseClusterMemberFromStrings(ss []string) (
 	}
 	return
 }
-

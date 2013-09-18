@@ -43,20 +43,20 @@ func (s *XLSuite) makeAnRSAKey(c *C) (key *rsa.PrivateKey) {
 	return key
 }
 
-// Using functions must check to ensure members have unique names 
+// Using functions must check to ensure members have unique names
 
 func (s *XLSuite) makeAClusterMember(c *C, rng *xr.PRNG) *ClusterMember {
 	attrs := uint64(rng.Int63())
 	bn, err := xn.NewBaseNode(
-		rng.NextFileName(8), 
+		rng.NextFileName(8),
 		s.makeANodeID(c, rng),
 		&s.makeAnRSAKey(c).PublicKey,
-		&s.makeAnRSAKey(c).PublicKey, 
-		nil)							// overlays
+		&s.makeAnRSAKey(c).PublicKey,
+		nil) // overlays
 	c.Assert(err, IsNil)
-	return &ClusterMember {
-		attrs:		attrs,
-		BaseNode:	*bn,
+	return &ClusterMember{
+		attrs:    attrs,
+		BaseNode: *bn,
 	}
 }
 
@@ -65,11 +65,15 @@ func (s *XLSuite) makeAClusterMember(c *C, rng *xr.PRNG) *ClusterMember {
 
 func (s *XLSuite) makeACluster(c *C, rng *xr.PRNG, size int) (rc *RegCluster) {
 
-	c.Assert(1 < size && size <= 64, Equals, true)	
+	var err error
+	c.Assert(1 < size && size <= 64, Equals, true)
 
-	rc.Name = rng.NextFileName(8)		// no guarantee of uniqueness
-	rc.ID	= s.makeAnID(c, rng)
-	rc.Size = size
+	attrs := uint64(rng.Int63())
+	name := rng.NextFileName(8) // no guarantee of uniqueness
+	id := s.makeANodeID(c, rng)
+
+	rc, err = NewRegCluster(attrs, name, id, size)
+	c.Assert(err, IsNil)
 
 	for count := 0; count < size; count++ {
 		cm := s.makeAClusterMember(c, rng)
@@ -78,8 +82,8 @@ func (s *XLSuite) makeACluster(c *C, rng *xr.PRNG, size int) (rc *RegCluster) {
 				// name is in use, so try again
 				cm = s.makeAClusterMember(c, rng)
 			} else {
-				rc.MembersByName[cm.GetName()] = cm
-				// XXX STUB: assign MembersByID too
+				err = rc.AddMember(cm)
+				c.Assert(err, IsNil)
 				break
 			}
 		}

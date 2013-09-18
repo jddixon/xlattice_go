@@ -24,7 +24,7 @@ func (s *XLSuite) TestCMSerialization(c *C) {
 	rng := xr.MakeSimpleRNG()
 
 	// Generate a random cluster member
-	cm := s.makeAClusterMember(c, rng)	
+	cm := s.makeAClusterMember(c, rng)
 
 	// Serialize it
 	serialized := cm.String()

@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	SHA1_LEN = 20	
+	SHA1_LEN = 20
 	SHA3_LEN = 32
 )
 

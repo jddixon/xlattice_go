@@ -11,7 +11,6 @@ import (
 
 var _ = fmt.Print
 
-
 type RegData struct {
 	clusters []*RegCluster
 	members  []*ClusterMember
