@@ -1,6 +1,6 @@
 package node
 
-// xlattice_go/search/bn_map_test.go
+// xlattice_go/node/bni_map_test.go
 
 import (
 	"fmt"
@@ -49,7 +49,7 @@ func (s *XLSuite) makeABaseNode(c *C, name string, id ...int) (baseNode *BaseNod
 	c.Assert(baseNode, Not(IsNil))
 	return
 }
-func (s *XLSuite) TestBaseNodeMapTools(c *C) {
+func (s *XLSuite) TestBNIMapTools(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_BASE_NODE_MAP_TOOLS")
 	}
@@ -70,11 +70,11 @@ func (s *XLSuite) TestTopBottomBNMap(c *C) {
 		fmt.Println("TEST_TOP_BOTTOM_MAP")
 	}
 
-	var pm BaseNodeMap
+	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
 	topBaseNode, bottomBaseNode := s.makeTopAndBottomBN(c)
-	err := pm.AddToBaseNodeMap(topBaseNode)
+	err := pm.AddToBNIMap(topBaseNode)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 	lowest := pm.NextCol
@@ -90,7 +90,7 @@ func (s *XLSuite) TestTopBottomBNMap(c *C) {
 
 	// We expect that bottomBaseNode will become the lowest with its
 	// higher field pointing at topBaseNode.
-	err = pm.AddToBaseNodeMap(bottomBaseNode)
+	err = pm.AddToBNIMap(bottomBaseNode)
 	c.Assert(err, IsNil)
 	lowest = pm.NextCol
 	// c.Assert(bottomBaseNode.Equal(lowest.CellNode), Equals, true)   // FAILS
@@ -100,7 +100,7 @@ func (s *XLSuite) TestShallowBNMap(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_SHALLOW_MAP")
 	}
-	var pm BaseNodeMap
+	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
 	baseNode1 := s.makeABaseNode(c, "baseNode1", 1)
@@ -108,7 +108,7 @@ func (s *XLSuite) TestShallowBNMap(c *C) {
 	baseNode3 := s.makeABaseNode(c, "baseNode3", 3)
 
 	// ADD BASE_NODE 3 ---------------------------------------------------
-	err := pm.AddToBaseNodeMap(baseNode3)
+	err := pm.AddToBNIMap(baseNode3)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 	cell3 := pm.NextCol
@@ -117,7 +117,7 @@ func (s *XLSuite) TestShallowBNMap(c *C) {
 	c.Assert(cell3.CellNode.GetName(), Equals, baseNode3.GetName())
 
 	// INSERT BASE_NODE 2 ------------------------------------------------
-	err = pm.AddToBaseNodeMap(baseNode2)
+	err = pm.AddToBNIMap(baseNode2)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 	cell2 := pm.NextCol
@@ -126,10 +126,10 @@ func (s *XLSuite) TestShallowBNMap(c *C) {
 	c.Assert(cell2.CellNode, Not(IsNil))
 	c.Assert(cell2.CellNode.GetName(), Equals, baseNode2.GetName()) // FAILS
 
-	// DumpBaseNodeMap(&pm, "dump of shallow map, baseNodes 3 and 2")
+	// DumpBNIMap(&pm, "dump of shallow map, baseNodes 3 and 2")
 
 	// INSERT BASE_NODE 1 ------------------------------------------------
-	err = pm.AddToBaseNodeMap(baseNode1)
+	err = pm.AddToBNIMap(baseNode1)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 	cell1 := pm.NextCol
@@ -137,7 +137,7 @@ func (s *XLSuite) TestShallowBNMap(c *C) {
 	c.Assert(cell1.CellNode, Not(IsNil))
 	c.Assert(cell1.CellNode.GetName(), Equals, baseNode1.GetName())
 
-	// DumpBaseNodeMap(&pm, "dump of shallow map, baseNodes 3,2,1")
+	// DumpBNIMap(&pm, "dump of shallow map, baseNodes 3,2,1")
 
 	rootCell := pm.NextCol
 	c.Assert(rootCell.ByteVal, Equals, byte(1))
@@ -153,7 +153,7 @@ func (s *XLSuite) TestDeeperBNMap(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_DEEPER_MAP")
 	}
-	var pm BaseNodeMap
+	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
 	baseNode1 := s.makeABaseNode(c, "baseNode1", 1)
@@ -161,7 +161,7 @@ func (s *XLSuite) TestDeeperBNMap(c *C) {
 	baseNode123 := s.makeABaseNode(c, "baseNode123", 1, 2, 3)
 
 	// add baseNode123 ================================================
-	err := pm.AddToBaseNodeMap(baseNode123)
+	err := pm.AddToBNIMap(baseNode123)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 	lowest := pm.NextCol
@@ -169,12 +169,12 @@ func (s *XLSuite) TestDeeperBNMap(c *C) {
 	c.Assert(lowest.CellNode, Equals, baseNode123)
 
 	// now add baseNode12 ============================================
-	err = pm.AddToBaseNodeMap(baseNode12)
+	err = pm.AddToBNIMap(baseNode12)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 	col0 := pm.NextCol
 
-	// DumpBaseNodeMap(&pm, "after baseNode123 then baseNode12 added")
+	// DumpBNIMap(&pm, "after baseNode123 then baseNode12 added")
 
 	// column 0 check - expect an empty cell
 	c.Assert(col0.ThisCol, IsNil)
@@ -202,12 +202,12 @@ func (s *XLSuite) TestDeeperBNMap(c *C) {
 	c.Assert(col2b.CellNode.GetName(), Equals, "baseNode123")
 
 	// now add baseNode1 =============================================
-	err = pm.AddToBaseNodeMap(baseNode1)
+	err = pm.AddToBNIMap(baseNode1)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 	col0 = pm.NextCol
 
-	// DumpBaseNodeMap(&pm, "after baseNode123, baseNode12, then baseNode1 added")
+	// DumpBNIMap(&pm, "after baseNode123, baseNode12, then baseNode1 added")
 
 	// column 0 checks - an empty cell
 	c.Assert(col0.CellNode, IsNil)
@@ -254,12 +254,12 @@ func (s *XLSuite) TestDeeperBNMap(c *C) {
 
 }
 
-func (s *XLSuite) addABaseNode(c *C, pm *BaseNodeMap, baseNode *BaseNode) {
-	err := pm.AddToBaseNodeMap(baseNode)
+func (s *XLSuite) addABaseNode(c *C, pm *BNIMap, baseNode *BaseNode) {
+	err := pm.AddToBNIMap(baseNode)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 }
-func (s *XLSuite) findABaseNode(c *C, pm *BaseNodeMap, baseNode *BaseNode) {
+func (s *XLSuite) findABaseNode(c *C, pm *BNIMap, baseNode *BaseNode) {
 	nodeID := baseNode.GetNodeID()
 	d := nodeID.Value()
 	c.Assert(d, Not(IsNil))
@@ -278,7 +278,7 @@ func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_FIND_FLAT_BASE_NODES")
 	}
-	var pm BaseNodeMap
+	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
 	baseNode1 := s.makeABaseNode(c, "baseNode1", 1)
@@ -294,7 +294,7 @@ func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 	s.addABaseNode(c, &pm, baseNode5)
 
 	cell1 := pm.NextCol
-	c.Assert(cell1.Pred, Equals, &pm.BaseNodeMapCell)
+	c.Assert(cell1.Pred, Equals, &pm.BNIMapCell)
 	c.Assert(cell1.NextCol, IsNil)
 
 	cell5 := cell1.ThisCol
@@ -333,7 +333,7 @@ func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 	c.Assert(cell2.ThisCol, Equals, cell4)
 	c.Assert(cell4.Pred, Equals, cell2)
 
-	// DumpBaseNodeMap(&pm, "after adding baseNode2")
+	// DumpBNIMap(&pm, "after adding baseNode2")
 
 	// TODO: randomize order in which finding baseNodes is tested
 	s.findABaseNode(c, &pm, baseNode1)
@@ -346,7 +346,7 @@ func (s *XLSuite) TestFindBaseNode(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_FIND_BASE_NODE")
 	}
-	var pm BaseNodeMap
+	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
 	baseNode0123 := s.makeABaseNode(c, "baseNode0123", 0, 1, 2, 3)
@@ -365,25 +365,25 @@ func (s *XLSuite) TestFindBaseNode(c *C) {
 	s.addABaseNode(c, &pm, baseNode123)
 	s.addABaseNode(c, &pm, baseNode12)
 	s.addABaseNode(c, &pm, baseNode1)
-	//DumpBaseNodeMap(&pm, "after adding baseNode1, baseNode12, baseNode123, before baseNode4")
+	//DumpBNIMap(&pm, "after adding baseNode1, baseNode12, baseNode123, before baseNode4")
 
 	// s.addABaseNode(c, &pm, baseNode5)
-	// DumpBaseNodeMap(&pm, "after adding baseNode5")
+	// DumpBNIMap(&pm, "after adding baseNode5")
 
 	s.addABaseNode(c, &pm, baseNode4)
 	s.addABaseNode(c, &pm, baseNode42)
 	s.addABaseNode(c, &pm, baseNode423)
-	// DumpBaseNodeMap(&pm, "after adding baseNode4, baseNode42, baseNode423")
+	// DumpBNIMap(&pm, "after adding baseNode4, baseNode42, baseNode423")
 
 	s.addABaseNode(c, &pm, baseNode6)
-	// DumpBaseNodeMap(&pm, "after adding baseNode6")
+	// DumpBNIMap(&pm, "after adding baseNode6")
 	s.addABaseNode(c, &pm, baseNode623)
-	//DumpBaseNodeMap(&pm, "after adding baseNode623")
+	//DumpBNIMap(&pm, "after adding baseNode623")
 	s.addABaseNode(c, &pm, baseNode62)
-	//DumpBaseNodeMap(&pm, "after adding baseNode62")
+	//DumpBNIMap(&pm, "after adding baseNode62")
 
 	s.addABaseNode(c, &pm, baseNode0123)
-	//DumpBaseNodeMap(&pm, "after adding baseNode0123")
+	//DumpBNIMap(&pm, "after adding baseNode0123")
 
 	// adding duplicates should have no effect
 	s.addABaseNode(c, &pm, baseNode4)

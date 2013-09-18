@@ -1,5 +1,7 @@
 package node
 
+// xlattice_go/node/bni_map.go
+
 import (
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -7,30 +9,28 @@ import (
 
 var _ = fmt.Print
 
-///////////////////////
-// PROBABLY JUST A HACK
-///////////////////////
-
 // This was PeerMap until I recognized that we were only using BaseNode
 // attributes.  So I crudely renamed Peer to BaseNode, peer to baseNode,
 // and so forth throughout.  It does pass its tests.
 
-type BaseNodeMap struct {
-	BaseNodeMapCell
+// 2013-09-18 Replaced BaseNodes with BaseNodeIs aka BNIs.
+
+type BNIMap struct {
+	BNIMapCell
 }
-type BaseNodeMapCell struct {
+type BNIMapCell struct {
 	ByteVal  byte
-	Pred     *BaseNodeMapCell // predecessor
-	NextCol  *BaseNodeMapCell // points to a cell with same val for this byte
-	ThisCol  *BaseNodeMapCell // points to a cell with higher val for this col
-	CellNode *BaseNode
+	Pred     *BNIMapCell // predecessor
+	NextCol  *BNIMapCell // points to a cell with same val for this byte
+	ThisCol  *BNIMapCell // points to a cell with higher val for this col
+	CellNode BaseNodeI
 }
 
-// Add a BaseNode to the map.  This should be idempotent: adding a BaseNode
+// Add a BaseNodeI to the map.  This should be idempotent: adding a BaseNodeI
 // that is already in the map should have no effect at all.  The cell map
 // allows us to efficiently return a reference to a BaseNode, given its nodeID.
 
-func (m *BaseNodeMap) AddToBaseNodeMap(baseNode *BaseNode) (err error) {
+func (m *BNIMap) AddToBNIMap(baseNode BaseNodeI) (err error) {
 	id := baseNode.GetNodeID().Value()
 	// don't make this check on the very first entry
 	if m.NextCol != nil && m.FindBaseNode(id) != nil {
@@ -47,9 +47,9 @@ func (m *BaseNodeMap) AddToBaseNodeMap(baseNode *BaseNode) (err error) {
 
 	root := m.NextCol
 	if root == nil {
-		m.NextCol = &BaseNodeMapCell{
+		m.NextCol = &BNIMapCell{
 			ByteVal:  byte0,
-			Pred:     &m.BaseNodeMapCell,
+			Pred:     &m.BNIMapCell,
 			CellNode: baseNode}
 	} else {
 		err = root.addAtCell(0, baseNode, id)
@@ -60,7 +60,9 @@ func (m *BaseNodeMap) AddToBaseNodeMap(baseNode *BaseNode) (err error) {
 // depth is that of cell, with the root cell at column 0, and also the
 // index into the id slice.
 
-func (p *BaseNodeMapCell) addAtCell(depth int, baseNode *BaseNode, id []byte) (err error) {
+func (p *BNIMapCell) addAtCell(depth int, baseNode BaseNodeI, id []byte) (
+	err error) {
+
 	idByte := id[depth]
 	// DEBUG
 	//fmt.Printf("addAtCell: baseNode %s, depth %d, idByte %d, p.ByteVal %d\n",
@@ -71,7 +73,7 @@ func (p *BaseNodeMapCell) addAtCell(depth int, baseNode *BaseNode, id []byte) (e
 		//fmt.Printf("lower, adding %s as pred, idByte is %d\n",
 		//	CellNode.GetName(), idByte)
 		// END
-		newCell := &BaseNodeMapCell{
+		newCell := &BNIMapCell{
 			ByteVal: idByte, Pred: p.Pred, ThisCol: p, CellNode: baseNode}
 		if p.Pred.ThisCol == nil {
 			// pred must be map's base cell
@@ -106,15 +108,15 @@ func (p *BaseNodeMapCell) addAtCell(depth int, baseNode *BaseNode, id []byte) (e
 				nextByte2 := id2[depth]
 				curCell := p
 				for nextByte == nextByte2 {
-					nextCell := &BaseNodeMapCell{ByteVal: nextByte, Pred: curCell}
+					nextCell := &BNIMapCell{ByteVal: nextByte, Pred: curCell}
 					curCell.NextCol = nextCell
 					curCell = nextCell
 					depth++
 					nextByte = id[depth]
 					nextByte2 = id2[depth]
 				}
-				lastCell := &BaseNodeMapCell{ByteVal: nextByte, CellNode: baseNode}
-				lastCell2 := &BaseNodeMapCell{ByteVal: nextByte2, CellNode: baseNode2}
+				lastCell := &BNIMapCell{ByteVal: nextByte, CellNode: baseNode}
+				lastCell2 := &BNIMapCell{ByteVal: nextByte2, CellNode: baseNode2}
 				if nextByte < nextByte2 {
 					curCell.NextCol = lastCell
 					lastCell.Pred = curCell
@@ -154,7 +156,7 @@ func (p *BaseNodeMapCell) addAtCell(depth int, baseNode *BaseNode, id []byte) (e
 				curCell.ThisCol.addAtCell(depth, baseNode, id)
 			} else {
 				// NextCol may NOT be nil but ThisCol is nil
-				newCell := &BaseNodeMapCell{ByteVal: idByte, CellNode: baseNode}
+				newCell := &BNIMapCell{ByteVal: idByte, CellNode: baseNode}
 
 				if idByte < curByte {
 					// splice newCell in
@@ -193,7 +195,7 @@ func (p *BaseNodeMapCell) addAtCell(depth int, baseNode *BaseNode, id []byte) (e
 	return
 }
 
-func (p *BaseNodeMapCell) addThisCol(id []byte, depth int, baseNode *BaseNode) (
+func (p *BNIMapCell) addThisCol(id []byte, depth int, baseNode BaseNodeI) (
 	err error) {
 
 	nextByte := id[depth]
@@ -201,7 +203,7 @@ func (p *BaseNodeMapCell) addThisCol(id []byte, depth int, baseNode *BaseNode) (
 	//	depth, nextByte, CellNode.GetName())
 
 	if p.ThisCol == nil {
-		p.ThisCol = &BaseNodeMapCell{ByteVal: nextByte, Pred: p, CellNode: baseNode}
+		p.ThisCol = &BNIMapCell{ByteVal: nextByte, Pred: p, CellNode: baseNode}
 
 		//// DEBUG
 		//if p.CellNode == nil {
@@ -223,7 +225,7 @@ func (p *BaseNodeMapCell) addThisCol(id []byte, depth int, baseNode *BaseNode) (
 // At any particular depth, a match is possible only if (a) baseNode for the
 // cell is not nil and (b) we have a byte-wise match
 
-func (m *BaseNodeMap) FindBaseNode(id []byte) (baseNode *BaseNode) {
+func (m *BNIMap) FindBaseNode(id []byte) (baseNode BaseNodeI) {
 	curCell := m.NextCol
 	if curCell == nil { // no map
 		return nil
