@@ -27,10 +27,10 @@ type RegCluster struct {
 	Attrs         uint64 // a field of bit flags
 	Name          string // must be unique
 	ID            []byte // must be unique
-	MaxSize       int    // a maximum > 1
+	MaxSize       int    // a maximum; must be > 1
 	Members       []*ClusterMember
 	MembersByName map[string]*ClusterMember
-	MembersByID   *xn.BaseNodeMap
+	MembersByID   *xn.BNIMap
 }
 
 func NewRegCluster(attrs uint64, name string, id *xi.NodeID, maxSize int) (
@@ -43,7 +43,7 @@ func NewRegCluster(attrs uint64, name string, id *xi.NodeID, maxSize int) (
 	if maxSize < 2 {
 		err = ClusterMustHaveTwo
 	} else {
-		var bnm xn.BaseNodeMap // empty map
+		var bnm xn.BNIMap // empty map
 		rc = &RegCluster{
 			Attrs:         attrs,
 			Name:          name,
@@ -63,32 +63,27 @@ func (rc *RegCluster) Size() int {
 func (rc *RegCluster) AddToCluster(name string, id *xi.NodeID,
 	commsPubKey, sigPubKey *rsa.PublicKey, attrs uint64) (err error) {
 
-	if _, ok := rc.MembersByName[name]; ok {
-		// XXX surely something more complicated is called for!
-		return
-	}
 	member, err := NewClusterMember(name, id, commsPubKey, sigPubKey, attrs)
 	if err == nil {
-		rc.MembersByName[name] = member
-
-		// XXX add to MembersByID
-
+		err = rc.AddMember(member)
 	}
 	return
 }
 
 func (rc *RegCluster) AddMember(member *ClusterMember) (err error) {
 
+	// verify no existing member has the same name
 	name := member.GetName()
 	if _, ok := rc.MembersByName[name]; ok {
 		// XXX surely something more complicated is called for!
 		return
 	}
-	// no existing member has the same name
+	// XXX CHECK FOR ENTRY IN BNIMap
+	// XXX STUB 
+
 	rc.MembersByName[name] = member
 	rc.Members = append(rc.Members, member)
-
-	// XXX ADD TO MembersByID
+	err = rc.MembersByID.AddToBNIMap(member)
 
 	return
 }
@@ -175,13 +170,6 @@ func (rc *RegCluster) Strings() (ss []string) {
 	ss = append(ss, "    }")
 	ss = append(ss, "}")
 
-	// DEBUG
-	fmt.Println("SERIALIZED CLUSTER: ==================================")
-	for i := 0; i < len(ss); i++ {
-		fmt.Printf("%s\n", ss[i])
-	}
-	fmt.Println("END SERIALIZED CLUSTER: ==============================")
-	// END
 	return
 }
 

@@ -1,5 +1,11 @@
 xlattice_go/reg/TODO
 
+2013-09-18
+    * RegCluster.AddToCluster() and AddMember() should be combined      * DONE
+        - first should call the second                                  * DONE
+    * handling of attempts to add entries with the same name is poor
+    * fix the two failures in TestTopBottomBNMap                        * DONE
+
 2013-09-16
     * add abstraction Registry with components regNode and regData
     * regData serialization includes at least two separate files, 
@@ -17,7 +23,7 @@ xlattice_go/reg/TODO
         - serialize to LFS/.xlattice/clusters.cfg
             * append-only; members are never actually deleted, but
                 perhaps marked as such
-        - need Strings(), String(), Parse()
+        - need Strings(), String(), Parse()                             * DONE
             * this contradicts the append-only requirement
   
     * later add utility to compress configuration files, dropping 
@@ -46,9 +52,6 @@ xlattice_go/reg/TODO
         - and deploy on test:44444
     * document
     * deploy on salinas:44444
-2013-09-06
-    * cluster members can and must be viewable as Peers, and so
-        can use node/PeerMap to index members
 2013-09-04
     * complete crypto_test                                              * DONE
     * repackage so that the same approach can be used in other

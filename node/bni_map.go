@@ -33,7 +33,7 @@ type BNIMapCell struct {
 func (m *BNIMap) AddToBNIMap(baseNode BaseNodeI) (err error) {
 	id := baseNode.GetNodeID().Value()
 	// don't make this check on the very first entry
-	if m.NextCol != nil && m.FindBaseNode(id) != nil {
+	if m.NextCol != nil && m.FindBNI(id) != nil {
 		// it's already present, so ignore
 		return
 	}
@@ -225,16 +225,16 @@ func (p *BNIMapCell) addThisCol(id []byte, depth int, baseNode BaseNodeI) (
 // At any particular depth, a match is possible only if (a) baseNode for the
 // cell is not nil and (b) we have a byte-wise match
 
-func (m *BNIMap) FindBaseNode(id []byte) (baseNode BaseNodeI) {
+func (m *BNIMap) FindBNI(id []byte) (baseNode BaseNodeI) {
 	curCell := m.NextCol
 	if curCell == nil { // no map
+		fmt.Println("FindBNI: no map!")			// DEBUG
 		return nil
 	}
-	// fmt.Printf("FindBaseNode for %d.%d.%d.%d\n", id[0], id[1], id[2], id[3])
 
 	for depth := 0; depth < len(id); depth++ {
 		myVal := id[depth]
-		// fmt.Printf("    FindBaseNode: depth %d, val %d\n", depth, myVal)
+		// fmt.Printf("    FindBNI: depth %d, val %d\n", depth, myVal)
 		if curCell == nil {
 			fmt.Printf("    Internal error: nil curCell at depth %d\n", depth)
 			return nil
@@ -258,7 +258,7 @@ func (m *BNIMap) FindBaseNode(id []byte) (baseNode BaseNodeI) {
 			if curCell.NextCol == nil {
 				myNodeID, err := xi.NewNodeID(id)
 				if err != nil {
-					fmt.Printf("    FindBaseNode: NewNodeID returns %v", err)
+					fmt.Printf("    FindBNI: NewNodeID returns %v", err)
 					return nil
 				}
 				if curCell.CellNode != nil {

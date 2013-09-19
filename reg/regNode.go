@@ -3,7 +3,7 @@ package reg
 // xlattice_go/reg/regNode.go
 
 // We collect functions and structures relating to the operation
-// of the registry as a server here.
+// of the registry as a communicating server here.
 
 import (
 	"crypto/rsa"
@@ -30,14 +30,14 @@ type RegOptions struct {
 
 type RegNode struct {
 	Acc          xt.AcceptorI
-	StopCh       chan bool
-	StoppedCh    chan bool
+	StopCh       chan bool		 // volatile, so not serialized
+	StoppedCh    chan bool		 // -ditto-
 	privCommsKey *rsa.PrivateKey // duplicate to allow simple
 	privSigKey   *rsa.PrivateKey // access in this package
 	xn.Node                      // name, id, ck, sk, etc, etc
 }
 
-func New(name string, id *xi.NodeID, lfs string,
+func NewRegNode(name string, id *xi.NodeID, lfs string,
 	commsKey, sigKey *rsa.PrivateKey,
 	overlay xo.OverlayI, endPoint xt.EndPointI) (
 	q *RegNode, err error) {

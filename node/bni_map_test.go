@@ -263,7 +263,7 @@ func (s *XLSuite) findABaseNode(c *C, pm *BNIMap, baseNode *BaseNode) {
 	nodeID := baseNode.GetNodeID()
 	d := nodeID.Value()
 	c.Assert(d, Not(IsNil))
-	p := pm.FindBaseNode(d)
+	p := pm.FindBNI(d)
 	// DEBUG
 	if p == nil {
 		fmt.Printf("can't find a match for %d.%d.%d.%d\n", d[0], d[1], d[2], d[3])
@@ -342,7 +342,7 @@ func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 	s.findABaseNode(c, &pm, baseNode5)
 	s.findABaseNode(c, &pm, baseNode6)
 }
-func (s *XLSuite) TestFindBaseNode(c *C) {
+func (s *XLSuite) TestFindBNI(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_FIND_BASE_NODE")
 	}
