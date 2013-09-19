@@ -1,5 +1,9 @@
 xlattice_go/reg/TODO
 
+2013-09-19
+    * first NextNBLine check in Peer.collectConnectors should be
+        peek !
+
 2013-09-18
     * RegCluster.AddToCluster() and AddMember() should be combined      * DONE
         - first should call the second                                  * DONE

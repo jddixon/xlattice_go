@@ -61,9 +61,11 @@ func (rc *RegCluster) Size() int {
 }
 
 func (rc *RegCluster) AddToCluster(name string, id *xi.NodeID,
-	commsPubKey, sigPubKey *rsa.PublicKey, attrs uint64) (err error) {
+	commsPubKey, sigPubKey *rsa.PublicKey, attrs uint64, myEnds []string) (
+	err error) {
 
-	member, err := NewClusterMember(name, id, commsPubKey, sigPubKey, attrs)
+	member, err := NewClusterMember(
+		name, id, commsPubKey, sigPubKey, attrs, myEnds)
 	if err == nil {
 		err = rc.AddMember(member)
 	}

@@ -12,6 +12,7 @@ import (
 	xn "github.com/jddixon/xlattice_go/node" // XXX BIGGEST CHANGE
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
+	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 )
 
@@ -32,8 +33,13 @@ func (s *XLSuite) makeClusterMemberGivenID(c *C, rng *xr.PRNG, name string,
 	ck := s.makePubKey(c)
 	sk := s.makePubKey(c)
 	attrs := uint64(rng.Int63())
+	port := 1024 + rng.Intn(256*256-1024)
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
+	myEnd, err := xt.NewTcpEndPoint(addr)
+	c.Assert(err, IsNil)
+	myEnds := []string{myEnd.String()}
 
-	member, err = NewClusterMember(name, nodeID, ck, sk, attrs)
+	member, err = NewClusterMember(name, nodeID, ck, sk, attrs, myEnds)
 	c.Assert(err, IsNil)
 	return
 }

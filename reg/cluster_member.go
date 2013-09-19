@@ -25,18 +25,23 @@ const (
 
 type ClusterMember struct {
 	attrs       uint64
-	xn.BaseNode // name and ID must be unique
+	myEnds      []string // serialized EndPointI
+	xn.BaseNode          // name and ID must be unique
 }
 
 func NewClusterMember(name string, id *xi.NodeID,
-	commsPubKey, sigPubKey *rsa.PublicKey, attrs uint64) (
+	commsPubKey, sigPubKey *rsa.PublicKey, attrs uint64, myEnds []string) (
 	member *ClusterMember, err error) {
 
 	// all attrs bits are zero by default
 
 	base, err := xn.NewBaseNode(name, id, commsPubKey, sigPubKey, nil)
 	if err == nil {
-		member = &ClusterMember{attrs: attrs, BaseNode: *base}
+		member = &ClusterMember{
+			attrs:    attrs,
+			myEnds:   myEnds,
+			BaseNode: *base,
+		}
 	}
 	return
 }
@@ -60,10 +65,26 @@ func (cm *ClusterMember) Equal(any interface{}) bool {
 	other := any.(*ClusterMember) // type assertion
 	if cm.attrs != other.attrs {
 		return false
-	} else {
-		// WARNING: panics without the ampersand !
-		return cm.BaseNode.Equal(&other.BaseNode)
 	}
+	if cm.myEnds == nil {
+		if other.myEnds != nil {
+			return false
+		}
+	} else {
+		if other.myEnds == nil {
+			return false
+		}
+		if len(cm.myEnds) != len(other.myEnds) {
+			return false
+		}
+		for i := 0; i < len(cm.myEnds); i++ {
+			if cm.myEnds[i] != other.myEnds[i] {
+				return false
+			}
+		}
+	}
+	// WARNING: panics without the ampersand !
+	return cm.BaseNode.Equal(&other.BaseNode)
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////
@@ -75,6 +96,11 @@ func (cm *ClusterMember) Strings() (ss []string) {
 		ss = append(ss, "    "+bns[i])
 	}
 	ss = append(ss, fmt.Sprintf("    attrs: 0x%016x", cm.attrs))
+	ss = append(ss, "    endPoints {")
+	for i := 0; i < len(cm.myEnds); i++ {
+		ss = append(ss, "        "+cm.myEnds[i])
+	}
+	ss = append(ss, "    }")
 	ss = append(ss, "}")
 	return
 }
@@ -106,24 +132,35 @@ func collectAttrs(cm *ClusterMember, ss []string) (rest []string, err error) {
 	} else {
 		err = BadAttrsLine
 	}
-	if err == nil {
-		// expect and consume a closing brace
+	return
+}
+func collectMyEnds(cm *ClusterMember, ss []string) (rest []string, err error) {
+	rest = ss
+	line := xn.NextNBLine(&rest)
+	if line == "endPoints {" {
+		for {
+			line = strings.TrimSpace(rest[0]) // peek
+			if line == "}" {
+				break
+			}
+			line = xn.NextNBLine(&rest)
+			// XXX NO CHECK THAT THIS IS A VALID ENDPOINT
+			cm.myEnds = append(cm.myEnds, line)
+		}
 		line = xn.NextNBLine(&rest)
 		if line != "}" {
 			err = MissingClosingBrace
 		}
+	} else {
+		err = MissingEndPointsSection
 	}
 	return
 }
 func ParseClusterMember(s string) (
 	cm *ClusterMember, rest []string, err error) {
 
-	bn, rest, err := xn.ParseBaseNode(s, "clusterMember")
-	if err == nil {
-		cm = &ClusterMember{BaseNode: *bn}
-		rest, err = collectAttrs(cm, rest)
-	}
-	return
+	ss := strings.Split(s, "\n")
+	return ParseClusterMemberFromStrings(ss)
 }
 
 func ParseClusterMemberFromStrings(ss []string) (
@@ -133,6 +170,16 @@ func ParseClusterMemberFromStrings(ss []string) (
 	if err == nil {
 		cm = &ClusterMember{BaseNode: *bn}
 		rest, err = collectAttrs(cm, rest)
+		if err == nil {
+			rest, err = collectMyEnds(cm, rest)
+		}
+		if err == nil {
+			// expect and consume a closing brace
+			line := xn.NextNBLine(&rest)
+			if line != "}" {
+				err = MissingClosingBrace
+			}
+		}
 	}
 	return
 }
