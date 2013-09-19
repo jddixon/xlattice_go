@@ -30,8 +30,8 @@ type RegOptions struct {
 
 type RegNode struct {
 	Acc          xt.AcceptorI
-	StopCh       chan bool		 // volatile, so not serialized
-	StoppedCh    chan bool		 // -ditto-
+	StopCh       chan bool       // volatile, so not serialized
+	StoppedCh    chan bool       // -ditto-
 	privCommsKey *rsa.PrivateKey // duplicate to allow simple
 	privSigKey   *rsa.PrivateKey // access in this package
 	xn.Node                      // name, id, ck, sk, etc, etc

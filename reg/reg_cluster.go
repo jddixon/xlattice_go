@@ -79,7 +79,7 @@ func (rc *RegCluster) AddMember(member *ClusterMember) (err error) {
 		return
 	}
 	// XXX CHECK FOR ENTRY IN BNIMap
-	// XXX STUB 
+	// XXX STUB
 
 	rc.MembersByName[name] = member
 	rc.Members = append(rc.Members, member)

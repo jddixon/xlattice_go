@@ -14,11 +14,11 @@ var _ = fmt.Print
 
 type Registry struct {
 	// the extended XLattice node, so files, communications, and keys
-	Node			*RegNode	
+	Node *RegNode
 
 	// registry data
-	Clusters		[]*RegCluster
-	ClustersByName	map[string]*RegCluster
-	ClustersByID	*xn.BNIMap
-	MembersByID		*xn.BNIMap
+	Clusters       []*RegCluster
+	ClustersByName map[string]*RegCluster
+	ClustersByID   *xn.BNIMap
+	MembersByID    *xn.BNIMap
 }

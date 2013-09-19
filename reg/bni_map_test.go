@@ -17,8 +17,8 @@ import (
 
 var _ = fmt.Print
 
-func (s *XLSuite) makePubKey(c *C) (*rsa.PublicKey) {
-	key, err := rsa.GenerateKey(rand.Reader, 512)	// 512 because cheaper
+func (s *XLSuite) makePubKey(c *C) *rsa.PublicKey {
+	key, err := rsa.GenerateKey(rand.Reader, 512) // 512 because cheaper
 	c.Assert(err, IsNil)
 	return &key.PublicKey
 }
@@ -29,11 +29,11 @@ func (s *XLSuite) makeClusterMemberGivenID(c *C, rng *xr.PRNG, name string,
 	nodeID, err := xi.New(id)
 	c.Assert(err, IsNil)
 
-	ck		:= s.makePubKey(c)
-	sk		:= s.makePubKey(c)
-	attrs	:= uint64(rng.Int63())
+	ck := s.makePubKey(c)
+	sk := s.makePubKey(c)
+	attrs := uint64(rng.Int63())
 
-	member,err = NewClusterMember(name, nodeID, ck, sk, attrs)
+	member, err = NewClusterMember(name, nodeID, ck, sk, attrs)
 	c.Assert(err, IsNil)
 	return
 }

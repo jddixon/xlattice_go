@@ -208,20 +208,20 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	// create and marshal client name, specs, salt2, digsig over that
 	clientName := rng.NextFileName(8)
 
-	// create and marshal a token containing attrs, id, ck, sk, myEnd*
+	// create and marshal a token containing attrs, id, ck, sk, myEnds*
 	attrs := uint64(947)
 	ckBytes, err := xc.RSAPrivateKeyToWire(ckPriv)
 	c.Assert(err, IsNil)
 	skBytes, err := xc.RSAPrivateKeyToWire(skPriv)
 	c.Assert(err, IsNil)
 
-	myEnd := []string{"127.0.0.1:4321"}
+	myEnds := []string{"127.0.0.1:4321"}
 	token := &XLRegMsg_Token{
 		Attrs:    &attrs,
 		ID:       nodeID.Value(),
 		CommsKey: ckBytes,
 		SigKey:   skBytes,
-		MyEnd:    myEnd,
+		MyEnds:   myEnds,
 	}
 
 	op := XLRegMsg_Client
@@ -240,7 +240,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	c.Assert(clientMsg2.GetOp(), Equals, XLRegMsg_Client)
 
-	// verify that id, ck, sk, myEnd* survive the trip unchanged
+	// verify that id, ck, sk, myEnds* survive the trip unchanged
 
 	name2 := clientMsg2.GetClientName()
 	c.Assert(name2, Equals, clientName)
@@ -252,13 +252,13 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	id2 := clientSpecs2.GetID()
 	ckBytes2 := clientSpecs2.GetCommsKey()
 	skBytes2 := clientSpecs2.GetSigKey()
-	myEnd2 := clientSpecs2.GetMyEnd() // a string array
+	myEnds2 := clientSpecs2.GetMyEnds() // a string array
 
 	c.Assert(attrs2, Equals, attrs)
 	c.Assert(id2, DeepEquals, nodeID.Value())
 	c.Assert(ckBytes2, DeepEquals, ckBytes)
 	c.Assert(skBytes2, DeepEquals, skBytes)
-	c.Assert(myEnd2, DeepEquals, myEnd)
+	c.Assert(myEnds2, DeepEquals, myEnds)
 
 	// == CLIENT OK =================================================
 	// on the server side:
@@ -392,7 +392,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	// decrypt the msg using engineS = iv2, key2
 	// XXX STUB XXX
 
-	// verify that the various tokens (id, ck, sk, myEnd*) survive the
+	// verify that the various tokens (id, ck, sk, myEnds*) survive the
 	// trip unchanged
 	// XXX STUB XXX
 

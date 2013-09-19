@@ -40,7 +40,9 @@ message XLRegMsg {
 	    optional bytes  ID          = 2;    // 20 or 32 byte nodeID
         optional bytes  CommsKey    = 3;
         optional bytes  SigKey      = 4;
-        repeated string MyEnd       = 5;    // overlay, endPoint
+        // by convention, MyEnds[0] for inter-cluster comms, 
+        // MyEnds[1] for cluster-client comms 
+        repeated string MyEnds      = 5;    // overlay, endPoint
 	    optional bytes  DigSig      = 6;    // over fields 1 - 5
 	}
     optional Tag    Op          = 1;

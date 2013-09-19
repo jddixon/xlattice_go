@@ -17,10 +17,10 @@ import (
 var _ = fmt.Print
 
 type MockServer struct {
-	stopCh		chan bool
-	stoppedCh	chan bool
+	stopCh      chan bool
+	stoppedCh   chan bool
 	clusterName string
-	clusterID	*xi.NodeID
+	clusterID   *xi.NodeID
 
 	RegNode
 }
@@ -40,27 +40,27 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID) (
 	id, err := xi.New(idBuf)
 	if err == nil {
 		// XXX cheap keys, not meant for any serious use
-		ckPriv, err = rsa.GenerateKey(rand.Reader, 512)		
+		ckPriv, err = rsa.GenerateKey(rand.Reader, 512)
 		if err == nil {
-			skPriv, err = rsa.GenerateKey(rand.Reader, 512)	
+			skPriv, err = rsa.GenerateKey(rand.Reader, 512)
 		}
 	}
 	if err == nil {
 		ep, err = xt.NewTcpEndPoint("127.0.0.1:0")
-	}		
-	if err == nil {	
-		rn, err = NewRegNode( name, id, lfs, ckPriv, skPriv, nil, ep )
-	} 
+	}
 	if err == nil {
-		ms =  &MockServer{
-			stopCh:			make(chan bool, 1),
-			stoppedCh:		make(chan bool, 1),
-			clusterName:	clusterName,
-			clusterID:		clusterID,
-			RegNode:		*rn,
+		rn, err = NewRegNode(name, id, lfs, ckPriv, skPriv, nil, ep)
+	}
+	if err == nil {
+		ms = &MockServer{
+			stopCh:      make(chan bool, 1),
+			stoppedCh:   make(chan bool, 1),
+			clusterName: clusterName,
+			clusterID:   clusterID,
+			RegNode:     *rn,
 		}
 	}
-	return 
+	return
 }
 
 func (ms *MockServer) Run() {

@@ -231,7 +231,7 @@ type XLRegMsg_Token struct {
 	ID               []byte   `protobuf:"bytes,2,opt" json:"ID,omitempty"`
 	CommsKey         []byte   `protobuf:"bytes,3,opt" json:"CommsKey,omitempty"`
 	SigKey           []byte   `protobuf:"bytes,4,opt" json:"SigKey,omitempty"`
-	MyEnd            []string `protobuf:"bytes,5,rep" json:"MyEnd,omitempty"`
+	MyEnds           []string `protobuf:"bytes,5,rep" json:"MyEnds,omitempty"`
 	DigSig           []byte   `protobuf:"bytes,6,opt" json:"DigSig,omitempty"`
 	XXX_unrecognized []byte   `json:"-"`
 }
@@ -268,9 +268,9 @@ func (m *XLRegMsg_Token) GetSigKey() []byte {
 	return nil
 }
 
-func (m *XLRegMsg_Token) GetMyEnd() []string {
+func (m *XLRegMsg_Token) GetMyEnds() []string {
 	if m != nil {
-		return m.MyEnd
+		return m.MyEnds
 	}
 	return nil
 }

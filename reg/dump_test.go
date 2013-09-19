@@ -14,7 +14,7 @@ var _ = xi.SHA1_LEN
 
 const (
 	SPACES   = "          "
-	NIL_MAP = "<nil>     "
+	NIL_MAP  = "<nil>     "
 	SP_COUNT = len(SPACES)
 )
 
@@ -47,7 +47,7 @@ func dumpDown(cell *xn.BNIMapCell, indent string) {
 	}
 }
 func DumpBNIMap(pm *xn.BNIMap, where string) {
-	fmt.Printf( "BEGIN MAP DUMP %s --------\n", where)
+	fmt.Printf("BEGIN MAP DUMP %s --------\n", where)
 	dumpDown(pm.NextCol, "")
 	fmt.Println("END MAP MAP -------------------------------")
 }
