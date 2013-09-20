@@ -1,5 +1,9 @@
 xlattice_go/node/TODO
 
+2013-09-19
+    * first NextNBLine check in Peer.collectConnectors should be
+        peek !
+
 2013-09-18
     * peer_map.go and test should be replaced by bni_map and test
     * FIX bn_map test byte(0xf) should be byte(0xff) 

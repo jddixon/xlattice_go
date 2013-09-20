@@ -228,7 +228,7 @@ func (p *BNIMapCell) addThisCol(id []byte, depth int, baseNode BaseNodeI) (
 func (m *BNIMap) FindBNI(id []byte) (baseNode BaseNodeI) {
 	curCell := m.NextCol
 	if curCell == nil { // no map
-		fmt.Println("FindBNI: no map!")			// DEBUG
+		fmt.Println("FindBNI: no map!") // DEBUG
 		return nil
 	}
 

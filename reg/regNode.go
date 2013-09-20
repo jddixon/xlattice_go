@@ -7,6 +7,7 @@ package reg
 
 import (
 	"crypto/rsa"
+	"fmt"
 	xm "github.com/jddixon/xlattice_go/msg"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -14,6 +15,8 @@ import (
 	// xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 )
+
+var _ = fmt.Print
 
 // options normally set from the command line or derived from those
 
@@ -62,7 +65,7 @@ func NewRegNode(name string, id *xi.NodeID, lfs string,
 	if endPoint == nil {
 		endPoint, err = xt.NewTcpEndPoint("127.0.0.1:44444")
 	}
-	if err != nil {
+	if err == nil {
 		e = []xt.EndPointI{endPoint}
 		myNode, err = xn.New(name, id, lfs, commsKey, sigKey, o, e, nil)
 	}

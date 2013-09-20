@@ -227,9 +227,13 @@ func (n *Node) SizeAcceptors() int {
 	return len(n.acceptors)
 }
 
-func (n *Node) GetAcceptor(x int) xt.AcceptorI {
-	result := n.acceptors[x]
-	return result
+// Return the Nth acceptor, should it exist, or nil.
+
+func (n *Node) GetAcceptor(x int) (acc xt.AcceptorI) {
+	if x >= 0 && x < len(n.acceptors) {
+		acc = n.acceptors[x]
+	}
+	return
 }
 
 // OVERLAYS /////////////////////////////////////////////////////////
