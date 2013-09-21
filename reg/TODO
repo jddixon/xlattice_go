@@ -1,42 +1,22 @@
 xlattice_go/reg/TODO
 
-2013-09-19
-    * first NextNBLine check in Peer.collectConnectors should be
-        peek !
+2013-09-20
+    * modify in_buffer:readData() to handle partial reads correctly
+    * modify in_buffer:writeData() to handle partial writes correctly,
+        looping on count until all bytes have gone
+    * several tests could obviously benefit from parallelizing: 
+        they run one CPU at 100% while the others are more or less idle
+        - look at cluster_member_test
+        - also reg_cluster_test 
 
 2013-09-18
-    * RegCluster.AddToCluster() and AddMember() should be combined      * DONE
-        - first should call the second                                  * DONE
-    * handling of attempts to add entries with the same name is poor
-    * fix the two failures in TestTopBottomBNMap                        * DONE
+    * RegCluster.AddMember(): improve handling of attempts to add 
+        entries with the same name 
 
 2013-09-16
-    * add abstraction Registry with components regNode and regData
-    * regData serialization includes at least two separate files, 
-        one for clusters and one for members
-
-    * clusterMember serializes baseNode + Attrs in that order           * DONE
-        - serialize to LFS/.xlattice/members.cfg
-            * append-only; members are never actually deleted, but
-                perhaps marked as such
-        - need Strings(), String(), Parse()                             * DONE
-            * this contradicts the append-only requirement
-
-    * cluster serialization includes a list of members by NodeID
-        - this is used to recreate byName and byID indexes on load
-        - serialize to LFS/.xlattice/clusters.cfg
-            * append-only; members are never actually deleted, but
-                perhaps marked as such
-        - need Strings(), String(), Parse()                             * DONE
-            * this contradicts the append-only requirement
-  
-    * later add utility to compress configuration files, dropping 
-        deleted clusters and members
-
     * regNode serialization follows practice in ../node: we first
         serialize BaseNode, then rest of Node, then fields of 
         RegNode
-        - serialize to LFS/.xlattice/regNode.cfg
         - need Strings(), String(), Parse()
 
 2013-09-13

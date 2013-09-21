@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	//xc "github.com/jddixon/xlattice_go/crypto"
-	//xn "github.com/jddixon/xlattice_go/node"
+	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
@@ -17,24 +17,9 @@ import (
 var _ = fmt.Print
 
 type MockClient struct {
-	serverName string
-	serverID   *xi.NodeID
-	serverAcc  xt.AcceptorI
-
-	clusterName string
-	clusterID   *xi.NodeID
-	size        int
-
-	// run information
-	doneCh chan bool
-	err    error
-
-	// information on other cluster members
-	others []*ClusterMember
-
-	// information on this cluster member
-	acc *xt.AcceptorI
-	RegNode
+	Err      error   // run information
+	Client   *Client // the real client
+	*xn.Node         // dummy node providing keys, etc
 }
 
 // A Mock Client for use in testing.  Given contact information for a
@@ -43,26 +28,19 @@ type MockClient struct {
 // on the entire membership.
 
 func NewMockClient(
-	serverName string, serverID *xi.NodeID, serverAcc xt.AcceptorI,
-	clusterName string, clusterID *xi.NodeID, size int) (
+	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
+	clusterName string, clusterID *xi.NodeID, size int, endPointCount int) (
 	mc *MockClient, err error) {
 
-	// sanity checks on parameter list
-	if serverName == "" || serverID == nil || serverAcc == nil {
-		err = MissingServerInfo
-	} else if clusterName == "" || clusterID == nil {
-		err = MissingClusterNameOrID
-	} else if size < 2 {
-		err = ClusterMustHaveTwo
-	}
-
-	if err != nil {
+	if endPointCount < 1 {
+		err = ClientMustHaveEndPoint
 		return
 	}
 
 	var ckPriv, skPriv *rsa.PrivateKey
-	var rn *RegNode
-	var ep *xt.TcpEndPoint
+	var cn *xn.Node
+	var ep []xt.EndPointI
+	var client *Client
 
 	rng := xr.MakeSimpleRNG()
 	name := rng.NextFileName(16)
@@ -78,18 +56,28 @@ func NewMockClient(
 		}
 	}
 	if err == nil {
-		ep, err = xt.NewTcpEndPoint("127.0.0.1:0")
+		for i := 0; i < endPointCount; i++ {
+			var endPoint xt.EndPointI
+			endPoint, err = xt.NewTcpEndPoint("127.0.0.1:0")
+			if err != nil {
+				break
+			}
+			ep = append(ep, endPoint)
+		}
 	}
 	if err == nil {
-		rn, err = NewRegNode(name, id, lfs, ckPriv, skPriv, nil, ep)
+		cn, err = xn.New(name, id, lfs, ckPriv, skPriv, nil, ep, nil)
 	}
 	if err == nil {
+		client, err = NewClient(serverName, serverID, serverEnd,
+			&ckPriv.PublicKey,
+			clusterName, clusterID, size, ep, cn)
+	}
+	if err == nil {
+		// THIS IS WRONG: We create a Client first
 		mc = &MockClient{
-			doneCh:      make(chan bool, 1),
-			clusterName: clusterName,
-			clusterID:   clusterID,
-			size:        size,
-			RegNode:     *rn,
+			Client: client,
+			Node:   cn,
 		}
 	}
 	return
@@ -100,11 +88,9 @@ func NewMockClient(
 
 func (mc *MockClient) Run() (err error) {
 
+	fmt.Println("mock starting real client")
 	go func() {
-
-		// XXX STUB XXX
-
-		mc.doneCh <- true
+		mc.Client.Run()
 	}()
 	return
 }

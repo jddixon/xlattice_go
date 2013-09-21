@@ -19,16 +19,26 @@ const (
 )
 
 type CnxHandler struct {
-	State int // as yet unused
+	State int
 	Cnx   *xt.TcpConnection
+}
+
+// Read data from the connection.  XXX This will not handle partial
+// reads correctly
+func (h *CnxHandler) readData() (data []byte, err error) {
+	data = make([]byte, MSG_BUF_LEN)
+	count, err := h.Cnx.Read(data)
+	if err == nil && count > 0 {
+		data = data[:count]
+		return
+	}
+	return nil, err
 }
 
 // Read the next message over the connection
 func (h *CnxHandler) readMsg() (m *XLRegMsg, err error) {
-	inBuf := make([]byte, MSG_BUF_LEN)
-	count, err := h.Cnx.Read(inBuf)
-	if err == nil && count > 0 {
-		inBuf = inBuf[:count]
+	inBuf, err := h.readData()
+	if err == nil && inBuf != nil {
 		// parse = deserialize, unmarshal the message
 		m, err = DecodePacket(inBuf)
 	}
@@ -37,18 +47,21 @@ func (h *CnxHandler) readMsg() (m *XLRegMsg, err error) {
 
 // Write a message out over the connection
 func (h *CnxHandler) writeMsg(m *XLRegMsg) (err error) {
-	var count int
 	var data []byte
 	// serialize, marshal the message
 	data, err = EncodePacket(m)
 	if err == nil {
-		count, err = h.Cnx.Write(data)
-		// XXX handle cases where not all bytes written
-		_ = count
+		err = h.writeData(data)
 	}
 	return
 }
 
+func (h *CnxHandler) writeData(data []byte) (err error) {
+	count, err := h.Cnx.Write(data)
+	// XXX handle cases where not all bytes written
+	_ = count
+	return
+}
 func DecodePacket(data []byte) (*XLRegMsg, error) {
 	var m XLRegMsg
 	err := proto.Unmarshal(data, &m)

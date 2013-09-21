@@ -27,22 +27,19 @@ func (s *XLSuite) TestMockServer(c *C) {
 	ms, err := NewMockServer(clusterName, clusterID, K)
 	c.Assert(err, IsNil)
 	c.Assert(ms, Not(IsNil))
-	c.Assert(ms.acc, Not(IsNil))
 
-	c.Assert(&ms.RegNode.privCommsKey.PublicKey,
-		DeepEquals, ms.GetCommsPublicKey())
+	c.Assert(&ms.RegNode.ckPriv.PublicKey, DeepEquals, ms.GetCommsPublicKey())
 
 	serverName := ms.GetName()
 	serverID := ms.GetNodeID()
-	serverAcc := ms.acc
-
-	_, _, _ = serverName, serverID, serverAcc
+	serverEnd := ms.GetEndPoint(0)
+	c.Assert(serverEnd, Not(IsNil))
 
 	// creake K clients ---------------------------------------------
 	mc := make([]*MockClient, K)
 	for i := 0; i < K; i++ {
-		mc[i], err = NewMockClient(serverName, serverID, serverAcc,
-			clusterName, clusterID, K)
+		mc[i], err = NewMockClient(serverName, serverID, serverEnd,
+			clusterName, clusterID, K, 1) // 1 is endPoint count
 		c.Assert(err, IsNil)
 		c.Assert(mc[i], Not(IsNil))
 	}
@@ -58,7 +55,8 @@ func (s *XLSuite) TestMockServer(c *C) {
 
 	// wait until all clients are done ------------------------------
 	for i := 0; i < K; i++ {
-		<-mc[i].doneCh
+		<-mc[i].Client.doneCh
+		fmt.Printf("mock client %d says that it's done\n", i)
 	}
 
 	// stop the server by closing its acceptor ----------------------

@@ -50,8 +50,13 @@ func NewTcpConnector(farEnd EndPointI) (*TcpConnector, error) {
  */
 
 func (c *TcpConnector) Connect(nearEnd EndPointI) (ConnectionI, error) {
-	// XXX CHECK TYPE
-	tcpNearEnd := nearEnd.(*TcpEndPoint)
+	var tcpNearEnd *TcpEndPoint
+	if nearEnd == nil {
+		tcpNearEnd = ANY_TCP_END_POINT
+	} else {
+		// XXX CHECK TYPE
+		tcpNearEnd = nearEnd.(*TcpEndPoint)
+	}
 	tcpConn, err := net.DialTCP("tcp", tcpNearEnd.GetTcpAddr(),
 		c.farEnd.GetTcpAddr())
 	if err == nil {

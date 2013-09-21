@@ -6,6 +6,7 @@ import (
 
 var (
 	BadAttrsLine              = errors.New("badly formed attrs line")
+	ClientMustHaveEndPoint    = errors.New("client must have at least one endPoint")
 	ClusterMustHaveTwo        = errors.New("cluster must have at least two members")
 	IllFormedCluster          = errors.New("ill-formed cluster serialization")
 	MissingClosingBrace       = errors.New("missing closing brace")

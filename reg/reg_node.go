@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/reg/regNode.go
+// xlattice_go/reg/reg_node.go
 
 // We collect functions and structures relating to the operation
 // of the registry as a communicating server here.
@@ -32,12 +32,12 @@ type RegOptions struct {
 }
 
 type RegNode struct {
-	Acc          xt.AcceptorI
-	StopCh       chan bool       // volatile, so not serialized
-	StoppedCh    chan bool       // -ditto-
-	privCommsKey *rsa.PrivateKey // duplicate to allow simple
-	privSigKey   *rsa.PrivateKey // access in this package
-	xn.Node                      // name, id, ck, sk, etc, etc
+	Acc       xt.AcceptorI
+	StopCh    chan bool       // volatile, so not serialized
+	StoppedCh chan bool       // -ditto-
+	ckPriv    *rsa.PrivateKey // duplicate to allow simple
+	skPriv    *rsa.PrivateKey // access in this package
+	xn.Node                   // name, id, ck, sk, etc, etc
 }
 
 func NewRegNode(name string, id *xi.NodeID, lfs string,
@@ -80,12 +80,12 @@ func NewRegNode(name string, id *xi.NodeID, lfs string,
 		stoppedCh := make(chan bool, 1)
 
 		q = &RegNode{
-			Acc:          acc,
-			StopCh:       stopCh,
-			StoppedCh:    stoppedCh,
-			privCommsKey: commsKey,
-			privSigKey:   sigKey,
-			Node:         *myNode,
+			Acc:       acc,
+			StopCh:    stopCh,
+			StoppedCh: stoppedCh,
+			ckPriv:    commsKey,
+			skPriv:    sigKey,
+			Node:      *myNode,
 		}
 	}
 	return

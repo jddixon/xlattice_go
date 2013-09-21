@@ -17,7 +17,7 @@ import (
 var _ = fmt.Print
 
 type MockServer struct {
-	acc         xt.AcceptorI // a convenience
+	acc         xt.AcceptorI
 	clusterName string
 	clusterID   *xi.NodeID
 	size        int
@@ -77,45 +77,30 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 	return
 }
 
-func (ms *MockServer) ClientHandler(cnx xt.ConnectionI) (err error) {
-	// hello and reply set up the AES iv and key
-
-	// Expect ClientMsg
-
-	// Answer with ClientOK or error
-
-	// Expect CreateMsg
-
-	// Answer with CreateReply
-
-	// Expect JoinMsg
-
-	// Answer with JoinReply
-
-	// Expect Get
-
-	// Answer with Members
-
-	// Repeat Get/Members or Expect Bye
-
-	// Send Ack and close connection
-
-	return
-}
-
 // Start the mock server running in a separate goroutine.  As each
 // client connects its connection is passed to a  handler running in
 // a separate goroutine.
 
 func (ms *MockServer) Run() (err error) {
 
-	// XXX STUB XXX
-
+	go func() {
+		for {
+			cnx, err := ms.acc.Accept()
+			if err != nil {
+				break
+			}
+			go func() {
+				// *inHandler, err
+				_, _ = NewInHandler(&ms.RegNode, cnx)
+			}()
+		}
+	}()
 	return
 }
 
 func (ms *MockServer) Close() {
-	if ms.acc != nil {
-		ms.acc.Close()
+	acc := ms.GetAcceptor(0)
+	if acc != nil {
+		acc.Close()
 	}
 }

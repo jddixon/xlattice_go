@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/msg/regNode_test.go
+// xlattice_go/msg/reg_node_test.go
 
 import (
 	"fmt"
