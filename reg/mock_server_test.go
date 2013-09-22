@@ -56,7 +56,6 @@ func (s *XLSuite) TestMockServer(c *C) {
 	// wait until all clients are done ------------------------------
 	for i := 0; i < K; i++ {
 		<-mc[i].Client.doneCh
-		fmt.Printf("mock client %d says that it's done\n", i)
 	}
 
 	// stop the server by closing its acceptor ----------------------

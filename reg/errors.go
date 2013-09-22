@@ -14,5 +14,7 @@ var (
 	MissingEndPointsSection   = errors.New("missing endPoints section")
 	MissingMembersList        = errors.New("missing members list")
 	MissingServerInfo         = errors.New("missing server info")
+	NilRegistry               = errors.New("nil registry argument")
+	UnexpectedMsgType         = errors.New("unexpected message type")
 	WrongNumberOfBytesInAttrs = errors.New("wrong number of bytes in attrs")
 )

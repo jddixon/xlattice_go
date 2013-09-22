@@ -6,8 +6,12 @@ package reg
 // and manage the cluster data managed by the registry.
 
 import (
+	"crypto/rsa"
 	"fmt"
 	xn "github.com/jddixon/xlattice_go/node"
+	xi "github.com/jddixon/xlattice_go/nodeID"
+	xo "github.com/jddixon/xlattice_go/overlay"
+	xt "github.com/jddixon/xlattice_go/transport"
 )
 
 var _ = fmt.Print
@@ -20,5 +24,23 @@ type Registry struct {
 	MembersByID    *xn.BNIMap
 
 	// the extended XLattice node, so files, communications, and keys
-	Node *RegNode
+	RegNode
+}
+
+func NewRegistry(clusters []*RegCluster, name string, id *xi.NodeID,
+	lfs string, ckPriv, skPriv *rsa.PrivateKey,
+	overlay xo.OverlayI, endPoint xt.EndPointI) (reg *Registry, err error) {
+
+	rn, err := NewRegNode(name, id, lfs, ckPriv, skPriv, overlay, endPoint)
+	if err == nil {
+		reg = &Registry{
+			Clusters:       clusters,
+			ClustersByName: make(map[string]*RegCluster),
+			RegNode:        *rn,
+		}
+		if clusters != nil {
+			// XXX need to populate the indexes here
+		}
+	}
+	return
 }

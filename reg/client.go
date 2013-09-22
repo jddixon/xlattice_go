@@ -3,8 +3,11 @@ package reg
 // xlattice_go/reg/client.go
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rsa"
 	"fmt"
+	xc "github.com/jddixon/xlattice_go/crypto"
 	xm "github.com/jddixon/xlattice_go/msg"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -34,14 +37,20 @@ type Client struct {
 	size        int
 
 	// run information
-	doneCh       chan bool
-	err          error
-	h            *CnxHandler
+	doneCh chan bool
+	err    error
+	h      *CnxHandler
+
+	proposedAttrs, decidedAttrs uint64
+
 	iv1, key1    []byte // one-shot
 	version1     uint32 // proposed by client
 	iv2, key2    []byte // session
 	version2     uint32 // decreed by server
 	salt1, salt2 []byte // not currently used
+	engineC      cipher.Block
+	encrypterC   cipher.BlockMode
+	decrypterC   cipher.BlockMode
 
 	// information on other cluster members
 	others []*ClusterMember
@@ -106,6 +115,7 @@ func (mc *Client) Run() (err error) {
 			ciphertext2, iv2, key2, salt2         []byte
 			version1, version2                    uint32
 		)
+		// Set up connection to server. -----------------------------
 		ctor, err := xt.NewTcpConnector(mc.serverEnd)
 		if err == nil {
 			var conn xt.ConnectionI
@@ -114,6 +124,7 @@ func (mc *Client) Run() (err error) {
 				cnx = conn.(*xt.TcpConnection)
 			}
 		}
+		// Send HELLO -----------------------------------------------
 		if err == nil {
 			mc.h.Cnx = cnx
 			ciphertext1, iv1, key1, salt1,
@@ -122,6 +133,7 @@ func (mc *Client) Run() (err error) {
 		if err == nil {
 			err = mc.h.writeData(ciphertext1)
 		}
+		// Process HELLO REPLY --------------------------------------
 		if err == nil {
 			ciphertext2, err = mc.h.readData()
 		}
@@ -130,18 +142,59 @@ func (mc *Client) Run() (err error) {
 				err = xm.ClientDecodeHelloReply(ciphertext2, iv1, key1)
 			_ = salt1c // XXX
 		}
+		// Set up AES engine ----------------------------------------
 		if err == nil {
 			mc.salt1 = salt1
 			mc.iv2 = iv2
 			mc.key2 = key2
 			mc.salt2 = salt2
 			mc.version2 = version2
+			mc.engineC, err = aes.NewCipher(key2)
+			if err == nil {
+				mc.encrypterC = cipher.NewCBCEncrypter(mc.engineC, iv2)
+				mc.decrypterC = cipher.NewCBCDecrypter(mc.engineC, iv2)
+			}
 		}
+		// Send CLIENT MSG ------------------------------------------
+		if err == nil {
+			var ckBytes, skBytes, ciphertext []byte
+			var myEnds []string
+			// XXX attrs not dealt with
+			ckBytes, err = xc.RSAPubKeyToWire(mc.GetCommsPublicKey())
+			if err == nil {
+				skBytes, err = xc.RSAPubKeyToWire(mc.GetSigPublicKey())
+				if err == nil {
+					for i := 0; i < len(mc.endPoints); i++ {
+						myEnds = append(myEnds, mc.endPoints[i].String())
+					}
+					token := &XLRegMsg_Token{
+						Attrs:    &mc.proposedAttrs,
+						ID:       mc.GetNodeID().Value(),
+						CommsKey: ckBytes,
+						SigKey:   skBytes,
+						MyEnds:   myEnds,
+					}
+
+					op := XLRegMsg_Client
+					clientName := mc.GetName()
+					clientMsg := XLRegMsg{
+						Op:          &op,
+						ClientName:  &clientName,
+						ClientSpecs: token,
+					}
+					ciphertext, err = EncodePadEncrypt(&clientMsg, mc.encrypterC)
+					err = mc.h.writeData(ciphertext)
+				}
+			}
+		}
+		// Process CLIENT_OK ----------------------------------------
+
+		// END OF RUN -----------------------------------------------
 		if cnx != nil {
 			cnx.Close()
 		}
 
-		fmt.Println("HELLO REPLY DONE")
+		fmt.Println("CLIENT RUN COMPLETE")
 
 		mc.err = err
 		mc.doneCh <- true

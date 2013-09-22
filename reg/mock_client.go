@@ -88,7 +88,6 @@ func NewMockClient(
 
 func (mc *MockClient) Run() (err error) {
 
-	fmt.Println("mock starting real client")
 	go func() {
 		mc.Client.Run()
 	}()

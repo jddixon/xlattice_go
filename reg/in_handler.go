@@ -3,8 +3,12 @@ package reg
 // xlattice_go/reg/in_handler.go
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"fmt"
+	xc "github.com/jddixon/xlattice_go/crypto"
 	"github.com/jddixon/xlattice_go/msg"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
 )
 
@@ -23,7 +27,12 @@ const (
 )
 
 type InHandler struct {
-	iv1, aes1, iv2, aes2, salt1, salt2 []byte
+	iv1, key1, iv2, key2, salt1, salt2 []byte
+	engineS                            cipher.Block
+	encrypterS                         cipher.BlockMode
+	decrypterS                         cipher.BlockMode
+	reg                                *Registry
+	thisMember                         *ClusterMember
 	clusterName                        string
 	clusterID                          []byte
 	clusterSize                        int
@@ -38,48 +47,68 @@ type InHandler struct {
 // consists of an AES Key+IV, a salt, and a requested protocol version.
 // The salt must be at least eight bytes long.
 
-func NewInHandler(rn *RegNode, conn xt.ConnectionI) (h *InHandler, err error) {
+func NewInHandler(reg *Registry, conn xt.ConnectionI) (
+	h *InHandler, err error) {
 
+	if reg == nil {
+		return nil, NilRegistry
+	}
+	rn := &reg.RegNode
 	if rn == nil {
-		return nil, msg.NilNode
+		err = msg.NilNode
+	} else if conn == nil {
+		err = msg.NilConnection
+	} else {
+		cnx := conn.(*xt.TcpConnection)
+		h = &InHandler{
+			CnxHandler: CnxHandler{
+				Cnx:   cnx,
+				State: IN_START,
+			},
+		}
 	}
-	if conn == nil {
-		return nil, msg.NilConnection
-	}
-	cnx := conn.(*xt.TcpConnection)
-	h = &InHandler{
-		CnxHandler: CnxHandler{
-			Cnx:   cnx,
-			State: IN_START,
-		},
-	}
-	err = h.handleHello(rn) // sends hello reply unless error
+	return
+}
+
+func (h *InHandler) SetUpSessionKey() (err error) {
+	h.engineS, err = aes.NewCipher(h.key2)
 	if err == nil {
-		err = h.handleJoin() // sends peer tokens unless error
+		h.encrypterS = cipher.NewCBCEncrypter(h.engineS, h.iv2)
+		h.decrypterS = cipher.NewCBCDecrypter(h.engineS, h.iv2)
+	}
+	return
+}
+func (h *InHandler) Run() (err error) {
+
+	defer func() {
+		if h.Cnx != nil {
+			h.Cnx.Close()
+		}
+	}()
+
+	err = h.handleHello() // this adds iv2, key2 to handler
+	if err == nil {
+		err = h.SetUpSessionKey()
+	}
+	if err == nil {
+		err = h.handleClientMsg()
 	}
 
-	// OUTLINE:
-	// hello and reply set up the AES iv and key
+	// Expect CreateMsg ---------------------------------------------
 
-	// Expect ClientMsg
+	// Answer with CreateReply ----------------------------
 
-	// Answer with ClientOK or error
+	// Expect JoinMsg -----------------------------------------------
 
-	// Expect CreateMsg
+	// Answer with JoinReply ------------------------------
 
-	// Answer with CreateReply
+	// Expect Get ---------------------------------------------------
 
-	// Expect JoinMsg
+	// Answer with Members --------------------------------
 
-	// Answer with JoinReply
+	// Repeat Get/Members or Expect Bye -----------------------------
 
-	// Expect Get
-
-	// Answer with Members
-
-	// Repeat Get/Members or Expect Bye
-
-	// Send Ack and close connection
+	// Send Ack -------------------------------------------
 
 	return
 }
@@ -118,11 +147,12 @@ func (h *InHandler) errorReply(e error) (err error) {
 // session iv+key and returns them to the client encrypted with the
 // one-time key+iv.
 
-func (h *InHandler) handleHello(rn *RegNode) (err error) {
+func (h *InHandler) handleHello() (err error) {
 	var (
 		ciphertext, iv1, key1, salt1 []byte
 		version1                     uint32
 	)
+	rn := &h.reg.RegNode
 	ciphertext, err = h.readData()
 	if err == nil {
 		iv1, key1, salt1, version1, err = msg.ServerDecodeHello(ciphertext, rn.ckPriv)
@@ -136,9 +166,9 @@ func (h *InHandler) handleHello(rn *RegNode) (err error) {
 		}
 		if err == nil {
 			h.iv1 = iv1
-			h.aes1 = key1
+			h.key1 = key1
 			h.iv2 = iv2
-			h.aes2 = key2
+			h.key2 = key2
 			h.salt1 = salt1
 			h.salt2 = salt2
 			h.version = version2
@@ -154,9 +184,55 @@ func (h *InHandler) handleHello(rn *RegNode) (err error) {
 	}
 	return
 }
+func (h *InHandler) handleClientMsg() (err error) {
+	// BEGIN HANDLE CLIENT
+	var (
+		clientMsg *XLRegMsg
+	)
+
+	var ciphertext []byte
+	ciphertext, err = h.readData()
+	if err != nil {
+		return
+	}
+	clientMsg, err = DecryptUnpadDecode(ciphertext, h.decrypterS)
+	if err != nil {
+		return
+	}
+	if clientMsg.GetOp() != XLRegMsg_Client {
+		err = UnexpectedMsgType
+		return
+	}
+
+	name := clientMsg.GetClientName()
+	clientSpecs := clientMsg.GetClientSpecs()
+	attrs := clientSpecs.GetAttrs()
+	id, err := xi.New(clientSpecs.GetID())
+	ck, err := xc.RSAPubKeyFromWire(clientSpecs.GetCommsKey())
+	if err != nil {
+		return
+	}
+	sk, err := xc.RSAPubKeyFromWire(clientSpecs.GetSigKey())
+	if err != nil {
+		return
+	}
+	myEnds := clientSpecs.GetMyEnds() // a string array
+	cm, err := NewClusterMember(name, id, ck, sk, attrs, myEnds)
+	if err != nil {
+		return
+	}
+	h.thisMember = cm
+
+	// Answer with ClientOK or error ----------------------
+
+	// XXX STUB
+
+	// END HANDLE CLIENT
+
+	return
+}
 
 func (h *InHandler) handleJoin() (err error) {
-	defer h.Cnx.Close()
 	//	go func() {
 	//		<-h.StopCh
 	//		h.Cnx.Close()

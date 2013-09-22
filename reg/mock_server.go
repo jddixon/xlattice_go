@@ -21,7 +21,7 @@ type MockServer struct {
 	clusterName string
 	clusterID   *xi.NodeID
 	size        int
-	RegNode
+	Registry
 }
 
 // A Mock Server is primarily intended for use in testing.  It contains
@@ -45,6 +45,7 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 	var ckPriv, skPriv *rsa.PrivateKey
 	var rn *RegNode
 	var ep *xt.TcpEndPoint
+	var reg *Registry
 
 	rng := xr.MakeSimpleRNG()
 	name := rng.NextFileName(16)
@@ -63,15 +64,17 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 		ep, err = xt.NewTcpEndPoint("127.0.0.1:0")
 	}
 	if err == nil {
-		rn, err = NewRegNode(name, id, lfs, ckPriv, skPriv, nil, ep)
+		// a registry with no clusters
+		reg, err = NewRegistry(nil, name, id, lfs, ckPriv, skPriv, nil, ep)
 	}
 	if err == nil {
+		rn = &reg.RegNode
 		ms = &MockServer{
 			acc:         rn.GetAcceptor(0),
 			clusterName: clusterName,
 			clusterID:   clusterID,
 			size:        size,
-			RegNode:     *rn,
+			Registry:    *reg,
 		}
 	}
 	return
@@ -90,8 +93,13 @@ func (ms *MockServer) Run() (err error) {
 				break
 			}
 			go func() {
-				// *inHandler, err
-				_, _ = NewInHandler(&ms.RegNode, cnx)
+				var (
+					h *InHandler
+				)
+				h, err = NewInHandler(&ms.Registry, cnx)
+				if err == nil {
+					err = h.Run()
+				}
 			}()
 		}
 	}()
