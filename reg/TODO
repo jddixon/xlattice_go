@@ -1,5 +1,10 @@
 xlattice_go/reg/TODO
 
+2013-09-24
+    * modify functions in msg_handlers.go so that they are no longer
+        instance functions but look like
+            func doClientMsg(h *InHandler)
+
 2013-09-20
     * modify in_buffer:readData() to handle partial reads correctly
     * modify in_buffer:writeData() to handle partial writes correctly,

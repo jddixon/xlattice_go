@@ -18,7 +18,7 @@ var _ = fmt.Print
 const (
 	HELLO_RCVD = iota
 	CLIENT_DETAILS_RCVD
-	CLUSTER_REQUEST_RCVD
+	CREATE_REQUEST_RCVD
 	JOIN_RCVD
 	BYE_RCVD
 	IN_CLOSED
@@ -132,21 +132,6 @@ func (h *InHandler) Run() (err error) {
 
 		// XXX STUB
 	}
-	// Expect CreateMsg ---------------------------------------------
-
-	// Answer with CreateReply ----------------------------
-
-	// Expect JoinMsg -----------------------------------------------
-
-	// Answer with JoinReply ------------------------------
-
-	// Expect Get ---------------------------------------------------
-
-	// Answer with Members --------------------------------
-
-	// Repeat Get/Members or Expect Bye -----------------------------
-
-	// Send Ack -------------------------------------------
 
 	return
 }
