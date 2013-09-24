@@ -6,9 +6,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
-	xc "github.com/jddixon/xlattice_go/crypto"
+	// xc "github.com/jddixon/xlattice_go/crypto"
 	"github.com/jddixon/xlattice_go/msg"
-	xi "github.com/jddixon/xlattice_go/nodeID"
+	// xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
 )
 
@@ -16,14 +16,17 @@ var _ = fmt.Print
 
 // States through which the input cnx may pass
 const (
-	IN_START = iota
-	HELLO_RCVD
+	HELLO_RCVD = iota
 	CLIENT_DETAILS_RCVD
 	CLUSTER_REQUEST_RCVD
 	JOIN_RCVD
-	GETTING
 	BYE_RCVD
 	IN_CLOSED
+)
+
+const (
+	IN_STATE_COUNT    = 5
+	MSG_HANDLER_COUNT = 5
 )
 
 type InHandler struct {
@@ -38,7 +41,12 @@ type InHandler struct {
 	clusterSize                        int
 	version                            uint32 // protocol version used in session
 	known                              uint64 // a bit vector:
-	state                              int
+	entryState                         int
+	exitState                          int
+	msgIn                              *XLRegMsg
+	msgOut                             *XLRegMsg
+	msgHandlers                        [][]interface{}
+	errOut                             error
 	CnxHandler
 }
 
@@ -62,11 +70,14 @@ func NewInHandler(reg *Registry, conn xt.ConnectionI) (
 		cnx := conn.(*xt.TcpConnection)
 		h = &InHandler{
 			CnxHandler: CnxHandler{
-				Cnx:   cnx,
-				State: IN_START,
+				Cnx: cnx,
 			},
 		}
 	}
+	h.msgHandlers = make([][]interface{}, IN_STATE_COUNT, MSG_HANDLER_COUNT)
+	// XXX INCOMPLETE INITIALIZATION
+	h.msgHandlers[0] = []interface{}{
+		h.doClientMsg, h.badCombo, h.badCombo, h.badCombo, h.badCombo}
 	return
 }
 
@@ -87,13 +98,40 @@ func (h *InHandler) Run() (err error) {
 	}()
 
 	err = h.handleHello() // this adds iv2, key2 to handler
-	if err == nil {
-		err = h.SetUpSessionKey()
+	if err != nil {
+		return
 	}
-	if err == nil {
-		err = h.handleClientMsg()
+	err = h.SetUpSessionKey()
+	if err != nil {
+		return
 	}
+	for {
+		// convert raw data off the wire into an XLRegMsg object
+		var ciphertext []byte
+		ciphertext, err = h.readData()
+		if err != nil {
+			return
+		}
+		// receive, decode the client request
+		h.msgIn, err = DecryptUnpadDecode(ciphertext, h.decrypterS)
+		if err != nil {
+			return
+		}
+		// SUPERFLUOUS: this is now handled through the table
+		if h.msgIn.GetOp() != XLRegMsg_Client {
+			err = UnexpectedMsgType
+			return
+		}
 
+		h.msgHandlers[h.entryState][0].(func())()
+		if h.errOut != nil {
+			return
+		}
+
+		// encode, pad, and encrypt the XLRegMsg object, then put it on the wire
+
+		// XXX STUB
+	}
 	// Expect CreateMsg ---------------------------------------------
 
 	// Answer with CreateReply ----------------------------
@@ -113,34 +151,9 @@ func (h *InHandler) Run() (err error) {
 	return
 }
 
-// Send the text of the error message to the peer and close the connection.
-func (h *InHandler) errorReply(e error) (err error) {
-	var reply XLRegMsg
-	cmd := XLRegMsg_Error
-	s := e.Error()
-	reply.Op = &cmd
-	reply.ErrDesc = &s
-	h.writeMsg(&reply) // ignore any write error
-	h.State = IN_CLOSED
-
-	// XXX This would be a very strong action, given that we may have multiple
-	// connections open to this peer.
-	// h.Peer.MarkDown()
-
-	return
-}
-
-// func (h *InHandler) simpleAck(msgN uint64) (err error) {
-//
-// 	var reply XLRegMsg
-// 	cmd := XLRegMsg_Ack
-// 	reply.Op = &cmd
-// 	err = h.writeMsg(&reply) // this may yield an error ...
-// 	h.State = HELLO_RCVD
-// 	return err
-// } //
-//
-//}
+/////////////////////////////////////////////////////////////////////
+// RSA-BASED MESSAGE PAIR
+/////////////////////////////////////////////////////////////////////
 
 // The client has sent the server a one-time AES key+iv encrypted with
 // the server's RSA comms public key.  The server creates the real
@@ -155,7 +168,8 @@ func (h *InHandler) handleHello() (err error) {
 	rn := &h.reg.RegNode
 	ciphertext, err = h.readData()
 	if err == nil {
-		iv1, key1, salt1, version1, err = msg.ServerDecodeHello(ciphertext, rn.ckPriv)
+		iv1, key1, salt1, version1,
+			err = msg.ServerDecodeHello(ciphertext, rn.ckPriv)
 	}
 	if err == nil {
 		version2 := version1 // accept whatever version they propose
@@ -183,91 +197,4 @@ func (h *InHandler) handleHello() (err error) {
 		return
 	}
 	return
-}
-func (h *InHandler) handleClientMsg() (err error) {
-	// BEGIN HANDLE CLIENT
-	var (
-		clientMsg *XLRegMsg
-	)
-
-	var ciphertext []byte
-	ciphertext, err = h.readData()
-	if err != nil {
-		return
-	}
-	clientMsg, err = DecryptUnpadDecode(ciphertext, h.decrypterS)
-	if err != nil {
-		return
-	}
-	if clientMsg.GetOp() != XLRegMsg_Client {
-		err = UnexpectedMsgType
-		return
-	}
-
-	name := clientMsg.GetClientName()
-	clientSpecs := clientMsg.GetClientSpecs()
-	attrs := clientSpecs.GetAttrs()
-	id, err := xi.New(clientSpecs.GetID())
-	ck, err := xc.RSAPubKeyFromWire(clientSpecs.GetCommsKey())
-	if err != nil {
-		return
-	}
-	sk, err := xc.RSAPubKeyFromWire(clientSpecs.GetSigKey())
-	if err != nil {
-		return
-	}
-	myEnds := clientSpecs.GetMyEnds() // a string array
-	cm, err := NewClusterMember(name, id, ck, sk, attrs, myEnds)
-	if err != nil {
-		return
-	}
-	h.thisMember = cm
-
-	// Answer with ClientOK or error ----------------------
-
-	// XXX STUB
-
-	// END HANDLE CLIENT
-
-	return
-}
-
-func (h *InHandler) handleJoin() (err error) {
-	//	go func() {
-	//		<-h.StopCh
-	//		h.Cnx.Close()
-	//		h.StoppedCh <- true
-	//	}()
-	//	for err == nil {
-	//		var m *XLRegMsg
-	//		m, err = h.readMsg()
-	//		if err == nil {
-	//			cmd := m.GetOp()
-	//			switch cmd {
-	//			case XLRegMsg_Bye:
-	//				err = h.checkMsgNbrAndAck(m)
-	//				h.State = IN_CLOSED
-	//			case XLRegMsg_KeepAlive:
-	//				// XXX Update last-time-spoken-to for peer
-	//				h.Peer.LastContact()
-	//				err = h.checkMsgNbrAndAck(m)
-	//			default:
-	//				// XXX should log
-	//				//fmt.Printf("handleJoin: UNEXPECTED MESSAGE TYPE %v\n", m.GetOp())
-	//				err = msg.UnexpectedMsgType
-	//				h.errorReply(err) // ignore any errors from the call itself
-	//			}
-	//		} else {
-	//			break
-	//		}
-	//	}
-	//	if err != nil {
-	//		text := err.Error()
-	//		if strings.HasSuffix(text, "use of closed network connection") {
-	//			err = nil
-	//		} else {
-	//			fmt.Printf("    handleJoin gets %v\n", err) // DEBUG
-	//		}
-	//	}
-	return // GEEP
 }

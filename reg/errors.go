@@ -9,6 +9,7 @@ var (
 	ClientMustHaveEndPoint    = errors.New("client must have at least one endPoint")
 	ClusterMustHaveTwo        = errors.New("cluster must have at least two members")
 	IllFormedCluster          = errors.New("ill-formed cluster serialization")
+	InvalidMsgInForState      = errors.New("invalid msg type for current state")
 	MissingClosingBrace       = errors.New("missing closing brace")
 	MissingClusterNameOrID    = errors.New("missing cluster name or ID")
 	MissingEndPointsSection   = errors.New("missing endPoints section")

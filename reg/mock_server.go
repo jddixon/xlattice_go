@@ -80,16 +80,17 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 	return
 }
 
-// Start the mock server running in a separate goroutine.  As each
-// client connects its connection is passed to a  handler running in
-// a separate goroutine.
+// Start the mock server running in a separate goroutine.
 
 func (ms *MockServer) Run() (err error) {
 
 	go func() {
 		for {
+			// As each client connects its connection is passed to a
+			// handler running in a separate goroutine.
 			cnx, err := ms.acc.Accept()
 			if err != nil {
+				// Any I/O error shuts down the server.
 				break
 			}
 			go func() {
@@ -100,6 +101,7 @@ func (ms *MockServer) Run() (err error) {
 				if err == nil {
 					err = h.Run()
 				}
+				// XXX notice the error has no effect
 			}()
 		}
 	}()
