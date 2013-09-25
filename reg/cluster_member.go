@@ -9,6 +9,7 @@ import (
 	"crypto/rsa"
 	"encoding/hex"
 	"fmt"
+	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"strings"
@@ -46,6 +47,26 @@ func NewClusterMember(name string, id *xi.NodeID,
 	return
 }
 
+// Return the XLRegMsg_Token corresponding to this cluster member.
+func (cm *ClusterMember) Token() (token *XLRegMsg_Token, err error) {
+
+	var ckBytes, skBytes []byte
+	
+	ckBytes, err = xc.RSAPubKeyToWire(cm.GetCommsPublicKey())
+	if err == nil {
+		skBytes, err = xc.RSAPubKeyToWire(cm.GetSigPublicKey())
+		if err == nil {
+			token = &XLRegMsg_Token{
+				Attrs:    &cm.attrs,
+				ID:       cm.GetNodeID().Value(),
+				CommsKey: ckBytes,
+				SigKey:   skBytes,
+				MyEnds:   cm.myEnds,
+			} 
+		}
+	}
+	return
+}
 // EQUAL ////////////////////////////////////////////////////////////
 
 func (cm *ClusterMember) Equal(any interface{}) bool {

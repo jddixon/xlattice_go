@@ -1,14 +1,18 @@
 xlattice_go/reg/TODO
 
 2013-09-24
-    * modify functions in msg_handlers.go so that they are no longer
+    * modify functions in msg_handlers.go so that they are no longer    * DONE
         instance functions but look like
             func doClientMsg(h *InHandler)
 
+    * packets.go readDate should handle partial reads, looping on count 
+        until all bytes have been received
+    * packets.go writeDate should handle partial writes, looping on count 
+        until all bytes have gone
+
+    * need to add conventional logging 
+
 2013-09-20
-    * modify in_buffer:readData() to handle partial reads correctly
-    * modify in_buffer:writeData() to handle partial writes correctly,
-        looping on count until all bytes have gone
     * several tests could obviously benefit from parallelizing: 
         they run one CPU at 100% while the others are more or less idle
         - look at cluster_member_test

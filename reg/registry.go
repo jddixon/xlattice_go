@@ -40,7 +40,36 @@ func NewRegistry(clusters []*RegCluster, name string, id *xi.NodeID,
 		}
 		if clusters != nil {
 			// XXX need to populate the indexes here
+		} 
+	}
+	return
+}
+
+// XXX MembersByID is not being updated!  This is the redundant and so
+// possibly inconsistent index of members of registry clusters
+
+func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
+
+	if cluster == nil {
+		err = NilCluster
+	} else {
+		name := cluster.Name
+		id   := cluster.ID		// []byte 
+	
+		if _, ok := reg.ClustersByName[name]; ok {
+			err = NameAlreadyInUse
+		} else if reg.ClustersByID.FindBNI(id) != nil {
+			err = IDAlreadyInUse
 		}
+		if err == nil {
+			index = len(reg.Clusters)
+			reg.Clusters = append(reg.Clusters, cluster)
+			reg.ClustersByName[name] = cluster
+			err = reg.ClustersByID.AddToBNIMap(cluster)
+		}
+	} 
+	if err != nil {
+		index = -1
 	}
 	return
 }

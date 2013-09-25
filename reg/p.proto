@@ -29,10 +29,10 @@ message XLRegMsg {
         Members     = 10;    // clusterID, which, tokens
 
         // Orderly close
-        Bye         = 13;    // from client
-        Ack         = 14;    // from server; followed by close
+        Bye         = 11;    // from client
+        Ack         = 12;    // from server; followed by close
         
-        Error       = 15;    // errDesc; from server, followed by close
+        Error       = 13;    // errDesc; from server, followed by close
         
     }
     message Token {

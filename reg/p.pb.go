@@ -26,9 +26,9 @@ const (
 	XLRegMsg_JoinReply   XLRegMsg_Tag = 8
 	XLRegMsg_Get         XLRegMsg_Tag = 9
 	XLRegMsg_Members     XLRegMsg_Tag = 10
-	XLRegMsg_Bye         XLRegMsg_Tag = 13
-	XLRegMsg_Ack         XLRegMsg_Tag = 14
-	XLRegMsg_Error       XLRegMsg_Tag = 15
+	XLRegMsg_Bye         XLRegMsg_Tag = 11
+	XLRegMsg_Ack         XLRegMsg_Tag = 12
+	XLRegMsg_Error       XLRegMsg_Tag = 13
 )
 
 var XLRegMsg_Tag_name = map[int32]string{
@@ -42,9 +42,9 @@ var XLRegMsg_Tag_name = map[int32]string{
 	8:  "JoinReply",
 	9:  "Get",
 	10: "Members",
-	13: "Bye",
-	14: "Ack",
-	15: "Error",
+	11: "Bye",
+	12: "Ack",
+	13: "Error",
 }
 var XLRegMsg_Tag_value = map[string]int32{
 	"Hello":       1,
@@ -57,9 +57,9 @@ var XLRegMsg_Tag_value = map[string]int32{
 	"JoinReply":   8,
 	"Get":         9,
 	"Members":     10,
-	"Bye":         13,
-	"Ack":         14,
-	"Error":       15,
+	"Bye":         11,
+	"Ack":         12,
+	"Error":       13,
 }
 
 func (x XLRegMsg_Tag) Enum() *XLRegMsg_Tag {

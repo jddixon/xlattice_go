@@ -11,6 +11,7 @@ import (
 	"fmt"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	xo "github.com/jddixon/xlattice_go/overlay"
 	xu "github.com/jddixon/xlattice_go/util"
 	"strconv"
 	"strings"
@@ -283,5 +284,37 @@ func ParseRegClusterFromStrings(ss []string) (
 		}
 	}
 
+	return
+}
+
+// BaseNodeI INTERFACE //////////////////////////////////////////////
+
+func (rc *RegCluster) GetName() string {
+	return rc.Name
+}
+func (rc *RegCluster) GetNodeID() (id *xi.NodeID) {
+	id, _ = xi.New(rc.ID)
+	return
+}
+
+// Dummy functions to make this compliant with the interface
+
+func (rc *RegCluster) AddOverlay(o xo.OverlayI) (ndx int, err error) {
+	return
+}
+func (rc *RegCluster) SizeOverlays() (size int) {
+	return
+}
+func (rc *RegCluster) GetOverlay(n int) (o xo.OverlayI) {
+	return
+}
+
+func (rc *RegCluster) GetCommsPublicKey() (ck *rsa.PublicKey ) {
+	return
+}
+func (rc *RegCluster) GetSSHCommsPublicKey() (s string) {
+	return
+}
+func (rc *RegCluster) GetSigPublicKey() (sk *rsa.PublicKey) {
 	return
 }

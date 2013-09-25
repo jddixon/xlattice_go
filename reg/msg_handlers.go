@@ -3,13 +3,10 @@ package reg
 // xlattice_go/reg/msg_handlers.go
 
 import (
-	//"crypto/aes"
-	//"crypto/cipher"
+	"crypto/rsa"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
-	//"github.com/jddixon/xlattice_go/msg"
 	xi "github.com/jddixon/xlattice_go/nodeID"
-	//xt "github.com/jddixon/xlattice_go/transport"
 )
 
 var _ = fmt.Print
@@ -20,71 +17,73 @@ var _ = fmt.Print
 /////////////////////////////////////////////////////////////////////
 // AES-BASED MESSAGE PAIRS
 // All of these functions have the same signature, so that they can
-// be invoked through a table.
+// be invoked through a dispatch table.
 /////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////
-// PENDING CHANGE: ALL OF THESE SHOULD TAKE *InHandler AS AN ARGUMENT
-// so that the dispatch table doesn't have to be rebuilt over and over
-// again.
-/////////////////////////////////////////////////////////////////////
-
-func (h *InHandler) badCombo() {
-	h.errOut = InvalidMsgInForState
+// Dispatch table entry where a client message received is inappropriate
+// the the state of the connection.  For example, if we haven't yet
+// received information about the client, we should not be receiving a
+// Join or Get message.
+func badCombo(h *InHandler) {
+	h.errOut = RcvdInvalidMsgForState
 }
 
-// Handle the client message which opens the session by identifying
-// the caller.
+// Handle the message which gives us information about the client and
+// so associates this connection with a specific user.
 
-func (h *InHandler) doClientMsg() {
+func  doClientMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
 	}()
 	// Examine incoming message -------------------------------------
-
+	var (
+		name	string
+		attrs	uint64
+		nodeID	*xi.NodeID
+		ck,sk	*rsa.PublicKey
+		myEnds	[]string
+		cm		*ClusterMember
+	)
 	// XXX We should accept EITHER clientName + token OR clientID
 	// This implementation does neither!
 
 	clientMsg := h.msgIn
-	name := clientMsg.GetClientName()
+	name = clientMsg.GetClientName()
 	clientSpecs := clientMsg.GetClientSpecs()
-	attrs := clientSpecs.GetAttrs()
-	nodeID, err := xi.New(clientSpecs.GetID())
+	attrs = clientSpecs.GetAttrs()
+	nodeID, err = xi.New(clientSpecs.GetID())
 	if err != nil {
-		// XXX In this approach to error handling, any error returned
-		// should cause an error message to ge sent to the client and
-		// h.exitState to be set to IN_CLOSED after the error message
-		// has been sent.
-		return
+		ck, err = xc.RSAPubKeyFromWire(clientSpecs.GetCommsKey())
+		if err == nil {
+			sk, err = xc.RSAPubKeyFromWire(clientSpecs.GetSigKey())
+			if err == nil {
+				myEnds = clientSpecs.GetMyEnds() // a string array
+			}
+		}
 	}
-	ck, err := xc.RSAPubKeyFromWire(clientSpecs.GetCommsKey())
-	if err != nil {
-		return
-	}
-	sk, err := xc.RSAPubKeyFromWire(clientSpecs.GetSigKey())
-	if err != nil {
-		return
-	}
-	myEnds := clientSpecs.GetMyEnds() // a string array
-
 	// Take appropriate action --------------------------------------
-	cm, err := NewClusterMember(name, nodeID, ck, sk, attrs, myEnds)
-	if err != nil {
-		return
+	if err == nil {
+		// The appropriate action is to hang a token for this client off 
+		// the InHandler.
+		cm, err = NewClusterMember(name, nodeID, ck, sk, attrs, myEnds)
+		if err == nil {
+			h.thisMember = cm
+		}
 	}
-	h.thisMember = cm
-
-	// Prepare reply to client --------------------------------------
-	// We simply accept the client's proposed attrs and ID.
-	op := XLRegMsg_ClientOK
-	h.msgOut = &XLRegMsg{
-		Op:       &op,
-		ClientID: nodeID.Value(),
-		Attrs:    &attrs, // in production, review and limit
+	if err == nil {
+		// Prepare reply to client --------------------------------------
+		// In this implementation We simply accept the client's proposed 
+		// attrs and ID.
+		op := XLRegMsg_ClientOK
+		h.msgOut = &XLRegMsg{
+			Op:       &op,
+			ClientID: nodeID.Value(),
+			Attrs:    &attrs, // in production, review and limit
+		}
+		// Set exit state -----------------------------------------------
+		h.exitState = CLIENT_DETAILS_RCVD
 	}
-	// Set exit state -----------------------------------------------
-	h.exitState = CLIENT_DETAILS_RCVD
 }
 
 // CREATE AND CREATE_REPLY ==========================================
@@ -92,44 +91,59 @@ func (h *InHandler) doClientMsg() {
 // Handle the Create message which associates a unique name with a
 // cluster and specifies its proposed size.  The server replies with the
 // cluster ID and its server-assigned size.
+//
+// XXX This implementation does not handle cluster attrs.
 
-func (h *InHandler) doCreateMsg() {
+func  doCreateMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
 	}()
 	// Examine incoming message -------------------------------------
+	var clusterID *xi.NodeID
+	var index int
+
 	createMsg := h.msgIn
 	clusterName := createMsg.GetClusterName()
 	clusterSize := createMsg.GetClusterSize()
 
 	// Take appropriate action --------------------------------------
 
-	// XXX STUB ? error if name already in use
+	// Determine whether the cluster exists.  If it does, we will just
+	// use its existing properties.
 
-	if clusterSize < 2 {
-		clusterSize = 2
-	} else if clusterSize > 64 {
-		clusterSize = 64
+	cluster, exists := h.reg.ClustersByName[clusterName]
+	if exists {
+		clusterSize = uint32(cluster.MaxSize)
+		clusterID,_ = xi.New(cluster.ID)
+	} else {
+		attrs := uint64(0)
+		if clusterSize < 2 {
+			clusterSize = 2
+		} else if clusterSize > 64 {
+			clusterSize = 64
+		}
+		// Assign a quasi-random cluster ID
+		clusterID, _ := xi.New(nil)
+		cluster, err = NewRegCluster(
+			attrs, clusterName, clusterID, int(clusterSize))
+		if err == nil {
+			index, err = h.reg.AddCluster(cluster)
+		}
 	}
+	_ = index		// INDEX IS NOT BEING USED
 
-	_, _, _ = createMsg, clusterName, clusterSize
-
-	// Assign a quasi-random cluster ID
-	nID, _ := xi.New(nil)
-
-	// XXX STUB: add cluster to registry; both name and ID must be
-	// unique
-
-	// Prepare reply to client --------------------------------------
-	op := XLRegMsg_CreateReply
-	h.msgOut = &XLRegMsg{
-		Op:          &op,
-		ClusterID:   nID.Value(),
-		ClusterSize: &clusterSize,
+	if err == nil {
+		// Prepare reply to client --------------------------------------
+		op := XLRegMsg_CreateReply
+		h.msgOut = &XLRegMsg{
+			Op:          &op,
+			ClusterID:   clusterID.Value(),
+			ClusterSize: &clusterSize,
+		}
+		// Set exit state -----------------------------------------------
+		h.exitState = CREATE_REQUEST_RCVD
 	}
-	// Set exit state -----------------------------------------------
-	h.exitState = CREATE_REQUEST_RCVD
 }
 
 // JOIN AND JOIN_REPLY ==============================================
@@ -138,7 +152,7 @@ func (h *InHandler) doCreateMsg() {
 // name or using the clusterID.  Return the cluster ID and its size.
 //
 
-func (h *InHandler) doJoinMsg() {
+func  doJoinMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
@@ -153,25 +167,38 @@ func (h *InHandler) doJoinMsg() {
 
 	// Take appropriate action --------------------------------------
 
-	// XXX Accept either cluster name or id.  If it's just the name,
+	// Accept either cluster name or id.  If it's just the name,
 	// attempt to retrieve the ID; it's an error if it does not exist
 	// in the registry.  . In either case use the ID to retrieve the size.
 
-	// XXX STUB
+	clusterName = joinMsg.GetClusterName()	// will be "" if absent
+	clusterID   = joinMsg.GetClusterID()	// will be nil if absent
 
-	_, _, _ = joinMsg, clusterName, clusterID
-
-	// Prepare reply to client --------------------------------------
-	// XXX If the cluster cannot be found, we will return an error
-	// instead.
-	op := XLRegMsg_JoinReply
-	h.msgOut = &XLRegMsg{
-		Op:          &op,
-		ClusterID:   clusterID,
-		ClusterSize: &clusterSize,
-	}
-	// Set exit state -----------------------------------------------
-	h.exitState = JOIN_RCVD
+	if clusterID == nil {
+		if clusterName == "" {
+			err = MissingClusterNameOrID
+		} else {
+			cluster, ok := h.reg.ClustersByName[clusterName]
+			if ok {
+				clusterID = cluster.ID
+			} else {
+				err = CantFindClusterByName
+			}
+		}
+	} 
+	if err == nil {
+		// Prepare reply to client ----------------------------------
+		// XXX If the cluster cannot be found, we will return an error
+		// instead.
+		op := XLRegMsg_JoinReply
+		h.msgOut = &XLRegMsg{
+			Op:          &op,
+			ClusterID:   clusterID,
+			ClusterSize: &clusterSize,
+		}
+		// Set exit state -------------------------------------------
+		h.exitState = JOIN_RCVD
+	} 
 }
 
 // GET AND MEMBERS ==================================================
@@ -186,7 +213,7 @@ func (h *InHandler) doJoinMsg() {
 // server returns a bit vector specifying which member tokens are being
 // returned.
 
-func (h *InHandler) doGetMsg() {
+func  doGetMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
@@ -194,34 +221,51 @@ func (h *InHandler) doGetMsg() {
 	// Examine incoming message -------------------------------------
 	getMsg := h.msgIn
 	clusterID := getMsg.GetClusterID()
-	whichIn := getMsg.GetWhich()
+	whichIn := getMsg.GetWhich()	// a uint64
 
 	// Take appropriate action --------------------------------------
-
-	var tokens []*XLRegMsg
+	var tokens []*XLRegMsg_Token
 	var whichOut uint64
 
-	_, _, _ = clusterID, whichIn, tokens
-
-	// XXX STUB: collect these, setting bits in whichOut
-
-	// Prepare reply to client --------------------------------------
-	// XXX If the cluster cannot be found, we will return an error
-	// instead.
-	op := XLRegMsg_Members
-	h.msgOut = &XLRegMsg{
-		Op:        &op,
-		ClusterID: clusterID,
-		Which:     &whichOut,
-		//Tokens:
+	cluster := h.reg.ClustersByID.FindBNI(clusterID).(*RegCluster)
+	if cluster == nil {
+		err = CantFindClusterByID
+	} else {
+		size := uint(len(cluster.Members))	// actual size, not MaxSize
+		if size > 64 {						// yes, should be impossible
+			size = 64
+		}
+		for i := uint(0); i < size; i++ {
+			bit := uint64(1) << i
+			if bit & whichIn != 0 {			// they want this one
+				whichOut |= bit
+				member := cluster.Members[i]
+				token, err := member.Token()
+				if err == nil {
+					tokens = append(tokens, token)
+				} else {
+					break
+				}
+			}
+		}
 	}
-	// Set exit state -----------------------------------------------
-	h.exitState = JOIN_RCVD // this is intentional !
+	if err == nil {
+		// Prepare reply to client --------------------------------------
+		op := XLRegMsg_Members
+		h.msgOut = &XLRegMsg{
+			Op:			&op,
+			ClusterID:	clusterID,
+			Which:		&whichOut,
+			Tokens:		tokens,
+		}
+		// Set exit state -----------------------------------------------
+		h.exitState = JOIN_RCVD // this is intentional !
+	}
 }
 
 // BYE AND ACK ======================================================
 
-func (h *InHandler) doByeMsg() {
+func  doByeMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
@@ -230,6 +274,7 @@ func (h *InHandler) doByeMsg() {
 	//ByeMsg := h.msgIn
 
 	// Take appropriate action --------------------------------------
+	// nothing to do
 
 	// Prepare reply to client --------------------------------------
 	op := XLRegMsg_Ack
@@ -239,72 +284,3 @@ func (h *InHandler) doByeMsg() {
 	// Set exit state -----------------------------------------------
 	h.exitState = BYE_RCVD
 }
-
-// THIS IS OLD CODE, but should convert easily to new pattern:
-
-// Send the text of the error message to the peer and close the connection.
-func (h *InHandler) errorReply(e error) (err error) {
-	var reply XLRegMsg
-	cmd := XLRegMsg_Error
-	s := e.Error()
-	reply.Op = &cmd
-	reply.ErrDesc = &s
-	h.writeMsg(&reply) // ignore any write error
-	h.State = IN_CLOSED
-
-	// XXX This would be a very strong action, given that we may have multiple
-	// connections open to this peer.
-	// h.Peer.MarkDown()
-
-	return
-}
-
-// func (h *InHandler) simpleAck(msgN uint64) (err error) {
-//
-// 	var reply XLRegMsg
-// 	cmd := XLRegMsg_Ack
-// 	reply.Op = &cmd
-// 	err = h.writeMsg(&reply) // this may yield an error ...
-// 	h.State = HELLO_RCVD
-// 	return err
-// } //
-//
-//} GEEP
-
-// func (h *InHandler) doJoinMsg() (err error) {
-//	go func() {
-//		<-h.StopCh
-//		h.Cnx.Close()
-//		h.StoppedCh <- true
-//	}()
-//	for err == nil {
-//		var m *XLRegMsg
-//		m, err = h.readMsg()
-//		if err == nil {
-//			cmd := m.GetOp()
-//			switch cmd {
-//			case XLRegMsg_Bye:
-//				err = h.checkMsgNbrAndAck(m)
-//				h.State = IN_CLOSED
-//			case XLRegMsg_KeepAlive:
-//				// XXX Update last-time-spoken-to for peer
-//				h.Peer.LastContact()
-//				err = h.checkMsgNbrAndAck(m)
-//			default:
-//				// XXX should log
-//				//fmt.Printf("doJoinMsg: UNEXPECTED MESSAGE TYPE %v\n", m.GetOp())
-//				err = msg.UnexpectedMsgType
-//				h.errorReply(err) // ignore any errors from the call itself
-//			}
-//		} else {
-//			break
-//		}
-//	}
-//	if err != nil {
-//		text := err.Error()
-//		if strings.HasSuffix(text, "use of closed network connection") {
-//			err = nil
-//		} else {
-//			fmt.Printf("    doJoinMsg gets %v\n", err) // DEBUG
-//		}
-//	} // GEEP

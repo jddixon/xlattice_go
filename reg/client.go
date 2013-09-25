@@ -173,7 +173,7 @@ func (mc *Client) Run() (err error) {
 						CommsKey: ckBytes,
 						SigKey:   skBytes,
 						MyEnds:   myEnds,
-					}
+					} // GEEP
 
 					op := XLRegMsg_Client
 					clientName := mc.GetName()
