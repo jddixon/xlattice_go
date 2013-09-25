@@ -55,9 +55,9 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 	id, err := xi.New(idBuf)
 	if err == nil {
 		// XXX cheap keys, not meant for any serious use
-		ckPriv, err = rsa.GenerateKey(rand.Reader, 512)
+		ckPriv, err = rsa.GenerateKey(rand.Reader, 1024)
 		if err == nil {
-			skPriv, err = rsa.GenerateKey(rand.Reader, 512)
+			skPriv, err = rsa.GenerateKey(rand.Reader, 1024)
 		}
 	}
 	if err == nil {

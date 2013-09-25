@@ -26,55 +26,57 @@ const (
 	BYE_RCVD
 
 	// When we reach this state, the connection must be closed.
-	IN_CLOSED			
+	IN_CLOSED
 )
 
 const (
 	// the number of valid states upon receiving a message from a client
-	IN_STATE_COUNT		= BYE_RCVD + 1 
+	IN_STATE_COUNT = BYE_RCVD + 1
 
 	// the tags that InHandler will accept from a client
-	MIN_TAG				= 0
-	MAX_TAG				= 4
-	
-	MSG_HANDLER_COUNT	= MAX_TAG + 1
+	MIN_TAG = 0
+	MAX_TAG = 4
+
+	MSG_HANDLER_COUNT = MAX_TAG + 1
 )
 
 var (
 	msgHandlers [][]interface{}
 )
+
 func init() {
 	// msgHandlers = make([][]interface{}, BYE_RCVD, MSG_HANDLER_COUNT)
-	
+
 	msgHandlers = [][]interface{}{
 		// client messages permitted in HELLO_RCVD state
-		{doClientMsg, badCombo,    badCombo,  badCombo, doByeMsg},
+		{doClientMsg, badCombo, badCombo, badCombo, doByeMsg},
 		// messages permitted in CLIENT_DETAILS_RCVD
-		{badCombo,    doCreateMsg, doJoinMsg, badCombo, doByeMsg},
+		{badCombo, doCreateMsg, doJoinMsg, badCombo, doByeMsg},
 		// messages permitted in CREATE_REQUEST_RCVD
-		{badCombo,    badCombo,    doJoinMsg, badCombo, doByeMsg},
+		{badCombo, badCombo, doJoinMsg, badCombo, doByeMsg},
 		// messages permitted in JOIN_RCVD
-		{badCombo,    badCombo,    badCombo,  doGetMsg, doByeMsg},
+		{badCombo, badCombo, badCombo, doGetMsg, doByeMsg},
 	}
 
 }
+
 type InHandler struct {
 	iv1, key1, iv2, key2, salt1, salt2 []byte
-	engineS            cipher.Block
-	encrypterS         cipher.BlockMode
-	decrypterS         cipher.BlockMode
-	reg                *Registry
-	thisMember         *ClusterMember
-	clusterName        string
-	clusterID          []byte
-	clusterSize        int
-	version            uint32 // protocol version used in session
-	known              uint64 // a bit vector:
-	entryState         int
-	exitState          int
-	msgIn              *XLRegMsg
-	msgOut             *XLRegMsg
-	errOut             error
+	engineS                            cipher.Block
+	encrypterS                         cipher.BlockMode
+	decrypterS                         cipher.BlockMode
+	reg                                *Registry
+	thisMember                         *ClusterMember
+	clusterName                        string
+	clusterID                          []byte
+	clusterSize                        int
+	version                            uint32 // protocol version used in session
+	known                              uint64 // a bit vector:
+	entryState                         int
+	exitState                          int
+	msgIn                              *XLRegMsg
+	msgOut                             *XLRegMsg
+	errOut                             error
 	CnxHandler
 }
 
@@ -95,6 +97,7 @@ func NewInHandler(reg *Registry, conn xt.ConnectionI) (
 	} else {
 		cnx := conn.(*xt.TcpConnection)
 		h = &InHandler{
+			reg: reg,
 			CnxHandler: CnxHandler{
 				Cnx: cnx,
 			},
@@ -115,12 +118,12 @@ func SetUpSessionKey(h *InHandler) (err error) {
 // Convert a protobuf op into a zero-based tag for use in the InHandler's
 // dispatch table.
 func op2tag(op XLRegMsg_Tag) int {
-	return int(op - XLRegMsg_Client) / 2
+	return int(op-XLRegMsg_Client) / 2
 }
 
-// Given a handler associating an open new connection with a registry, 
+// Given a handler associating an open new connection with a registry,
 // process a hello message for this node, which creates a session.
-// The hello message contains an AES Key+IV, a salt, and a requested 
+// The hello message contains an AES Key+IV, a salt, and a requested
 // protocol version. The salt must be at least eight bytes long.
 
 func (h *InHandler) Run() (err error) {
@@ -132,7 +135,7 @@ func (h *InHandler) Run() (err error) {
 	}()
 
 	// This adds an AES iv2 and key2 to the handler.
-	err = handleHello(h) 
+	err = handleHello(h)
 	if err != nil {
 		return
 	}
@@ -142,6 +145,9 @@ func (h *InHandler) Run() (err error) {
 		return
 	}
 	for {
+		var (
+			tag int
+		)
 		// REQUEST --------------------------------------------------
 		//   receive the raw data off the wire
 		var ciphertext []byte
@@ -153,16 +159,9 @@ func (h *InHandler) Run() (err error) {
 		if err != nil {
 			return
 		}
-		op := h.msgIn.GetOp() 
-	
-		// XXX THIS SHOULD BE A RANGE CHECK.  Unfortunately the 
-		// valid ops are currently 3, 5, 7, 9, 13, 15 
-		if op != XLRegMsg_Client {
-			err = UnexpectedMsgType
-			return
-		}
-		tag := op2tag(op)
-		
+		op := h.msgIn.GetOp()
+		tag = op2tag(op)
+
 		// CRUDE CHECK
 		if tag != 0 {
 			fmt.Printf("InHandler.Run(): tag is %d\n", tag)
@@ -177,32 +176,42 @@ func (h *InHandler) Run() (err error) {
 		// sent to the client.
 		if h.errOut != nil {
 			op := XLRegMsg_Error
-			s  := h.errOut.Error()
+			s := h.errOut.Error()
 			h.msgOut = &XLRegMsg{
-				Op:			&op,
-				ErrDesc:	&s,
+				Op:      &op,
+				ErrDesc: &s,
 			}
-			h.errOut = nil			// reduce potential for confusion
-			h.exitState = IN_CLOSED	// there is no recovery from errors
+			h.errOut = nil          // reduce potential for confusion
+			h.exitState = IN_CLOSED // there is no recovery from errors
 		}
 
-		// encode, pad, and encrypt the XLRegMsg object 
+		// encode, pad, and encrypt the XLRegMsg object
 		if h.msgOut != nil {
-			ciphertext, err = EncodePadEncrypt(h.msgOut, h.encrypterS)	
+			ciphertext, err = EncodePadEncrypt(h.msgOut, h.encrypterS)
 
 			// XXX log any error
+			if err != nil {
+				fmt.Printf("InHandler.Run: EncodePadEncrypt returns %v\n", err)
+			}
 
 			// put the ciphertext on the wire
 			if err == nil {
 				err = h.writeData(ciphertext)
 
 				// XXX log any error
+				if err != nil {
+					fmt.Printf("InHandler.Run: writeData returns %v\n", err)
+				}
 			}
+
 		}
+		// DEBUG
+		fmt.Printf("InHandler states: %d --> %d\n", h.entryState, h.exitState)
+		// END
 		h.entryState = h.exitState
 		if h.exitState == IN_CLOSED {
 			break
-		} 
+		}
 	}
 
 	return
@@ -249,6 +258,9 @@ func handleHello(h *InHandler) (err error) {
 	// On any error silently close the connection and delete the handler,
 	// an exciting thing to do.
 	if err != nil {
+		// DEBUG
+		fmt.Printf("handleHello closing cnx, error was %v\n", err)
+		// END
 		h.Cnx.Close()
 		h = nil
 	}

@@ -58,7 +58,7 @@ type Client struct {
 	// Information on this cluster member.  By convention endPoints[0]
 	// is used for member-member communications and [1] for comms with
 	// cluster clients, should they exist.
-
+	clientID  []byte // XXX or *xi.NodeID
 	endPoints []xt.EndPointI
 	xn.BaseNodeI
 }
@@ -114,6 +114,8 @@ func (mc *Client) Run() (err error) {
 			ciphertext1, iv1, key1, salt1, salt1c []byte
 			ciphertext2, iv2, key2, salt2         []byte
 			version1, version2                    uint32
+			request, response                     *XLRegMsg
+			op                                    XLRegMsg_Tag
 		)
 		// Set up connection to server. -----------------------------
 		ctor, err := xt.NewTcpConnector(mc.serverEnd)
@@ -132,17 +134,27 @@ func (mc *Client) Run() (err error) {
 		}
 		if err == nil {
 			err = mc.h.writeData(ciphertext1)
+			// DEBUG
+			if err != nil {
+				fmt.Printf("Client.Run(): err after write is %v\n", err)
+			}
+			// END
 		}
 		// Process HELLO REPLY --------------------------------------
 		if err == nil {
 			ciphertext2, err = mc.h.readData()
+			// DEBUG
+			if err != nil {
+				fmt.Printf("Client.Run(): err after read is %v\n", err)
+			}
+			// END
 		}
 		if err == nil {
 			iv2, key2, salt2, salt1c, version2,
 				err = xm.ClientDecodeHelloReply(ciphertext2, iv1, key1)
 			_ = salt1c // XXX
 		}
-		// Set up AES engine ----------------------------------------
+		// Set up AES engines ---------------------------------------
 		if err == nil {
 			mc.salt1 = salt1
 			mc.iv2 = iv2
@@ -154,10 +166,13 @@ func (mc *Client) Run() (err error) {
 				mc.encrypterC = cipher.NewCBCEncrypter(mc.engineC, iv2)
 				mc.decrypterC = cipher.NewCBCDecrypter(mc.engineC, iv2)
 			}
+			// DEBUG
+			fmt.Println("AES engines set up")
+			// END
 		}
-		// Send CLIENT MSG ------------------------------------------
+		// Send CLIENT MSG ==========================================
 		if err == nil {
-			var ckBytes, skBytes, ciphertext []byte
+			var ckBytes, skBytes []byte
 			var myEnds []string
 			// XXX attrs not dealt with
 			ckBytes, err = xc.RSAPubKeyToWire(mc.GetCommsPublicKey())
@@ -173,31 +188,105 @@ func (mc *Client) Run() (err error) {
 						CommsKey: ckBytes,
 						SigKey:   skBytes,
 						MyEnds:   myEnds,
-					} // GEEP
+					}
 
-					op := XLRegMsg_Client
+					op = XLRegMsg_Client
 					clientName := mc.GetName()
-					clientMsg := XLRegMsg{
+					request = &XLRegMsg{
 						Op:          &op,
 						ClientName:  &clientName,
 						ClientSpecs: token,
 					}
-					ciphertext, err = EncodePadEncrypt(&clientMsg, mc.encrypterC)
-					err = mc.h.writeData(ciphertext)
+					// SHOULD CHECK FOR TIMEOUT
+					err = mc.writeMsg(request)
+					// DEBUG
+					fmt.Println("ClientMsg sent")
+					// END
 				}
 			}
 		}
 		// Process CLIENT_OK ----------------------------------------
+		if err == nil {
+			// SHOULD CHECK FOR TIMEOUT
+			response, err = mc.readMsg()
+			if err == nil {
+				mc.clientID = response.GetClientID()
+				mc.decidedAttrs = response.GetAttrs()
+				// DEBUG
+				fmt.Println("client has received ClientOK")
+				// END
+			}
+		}
+		// Send CREATE MSG ==========================================
 
-		// END OF RUN -----------------------------------------------
+		// Process CREATE REPLY -------------------------------------
+
+		// Send JOIN MSG ============================================
+
+		// Process JOIN REPLY ---------------------------------------
+
+		// Send GET MSG =============================================
+
+		// Process MEMBERS = GET REPLY ------------------------------
+
+		// Send BYE MSG =============================================
+		if err == nil {
+			op = XLRegMsg_Bye
+			request = &XLRegMsg{
+				Op: &op,
+			}
+			// SHOULD CHECK FOR TIMEOUT
+			err = mc.writeMsg(request)
+			// DEBUG
+			fmt.Println("Bye sent")
+			// END
+		}
+		// Process ACK = BYE REPLY ----------------------------------
+		if err == nil {
+			// SHOULD CHECK FOR TIMEOUT AND VERIFY THAT IT'S AN ACK
+			response, err = mc.readMsg()
+			op = response.GetOp()
+			_ = op
+			// DEBUG
+			fmt.Printf("client has received Ack; err is %v\n", err)
+			// END
+			if err == nil {
+
+			}
+		}
+		// END OF RUN ===============================================
 		if cnx != nil {
 			cnx.Close()
 		}
 
-		fmt.Println("CLIENT RUN COMPLETE")
+		fmt.Print("CLIENT RUN COMPLETE ")
+		if err != nil {
+			fmt.Printf("- ERROR: %v", err)
+		}
+		fmt.Println("")
 
 		mc.err = err
 		mc.doneCh <- true
 	}()
+	return
+}
+
+// Read the next message over the connection
+func (mc *Client) readMsg() (m *XLRegMsg, err error) {
+	inBuf, err := mc.h.readData()
+	if err == nil && inBuf != nil {
+		m, err = DecryptUnpadDecode(inBuf, mc.decrypterC)
+	}
+	return
+}
+
+// Write a message out over the connection
+func (mc *Client) writeMsg(m *XLRegMsg) (err error) {
+	var data []byte
+	// serialize, marshal the message
+	data, err = EncodePadEncrypt(m, mc.encrypterC)
+	if err == nil {
+		err = mc.h.writeData(data)
+	}
 	return
 }

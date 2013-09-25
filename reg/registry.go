@@ -40,7 +40,7 @@ func NewRegistry(clusters []*RegCluster, name string, id *xi.NodeID,
 		}
 		if clusters != nil {
 			// XXX need to populate the indexes here
-		} 
+		}
 	}
 	return
 }
@@ -54,8 +54,8 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 		err = NilCluster
 	} else {
 		name := cluster.Name
-		id   := cluster.ID		// []byte 
-	
+		id := cluster.ID // []byte
+
 		if _, ok := reg.ClustersByName[name]; ok {
 			err = NameAlreadyInUse
 		} else if reg.ClustersByID.FindBNI(id) != nil {
@@ -67,7 +67,7 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 			reg.ClustersByName[name] = cluster
 			err = reg.ClustersByID.AddToBNIMap(cluster)
 		}
-	} 
+	}
 	if err != nil {
 		index = -1
 	}

@@ -31,22 +31,22 @@ func badCombo(h *InHandler) {
 // Handle the message which gives us information about the client and
 // so associates this connection with a specific user.
 
-func  doClientMsg(h *InHandler) {
+func doClientMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
 	}()
 	// Examine incoming message -------------------------------------
 	var (
-		name	string
-		attrs	uint64
-		nodeID	*xi.NodeID
-		ck,sk	*rsa.PublicKey
-		myEnds	[]string
-		cm		*ClusterMember
+		name   string
+		attrs  uint64
+		nodeID *xi.NodeID
+		ck, sk *rsa.PublicKey
+		myEnds []string
+		cm     *ClusterMember
 	)
 	// XXX We should accept EITHER clientName + token OR clientID
-	// This implementation does neither!
+	// This implementation only accepts a token.
 
 	clientMsg := h.msgIn
 	name = clientMsg.GetClientName()
@@ -64,7 +64,7 @@ func  doClientMsg(h *InHandler) {
 	}
 	// Take appropriate action --------------------------------------
 	if err == nil {
-		// The appropriate action is to hang a token for this client off 
+		// The appropriate action is to hang a token for this client off
 		// the InHandler.
 		cm, err = NewClusterMember(name, nodeID, ck, sk, attrs, myEnds)
 		if err == nil {
@@ -73,7 +73,7 @@ func  doClientMsg(h *InHandler) {
 	}
 	if err == nil {
 		// Prepare reply to client --------------------------------------
-		// In this implementation We simply accept the client's proposed 
+		// In this implementation We simply accept the client's proposed
 		// attrs and ID.
 		op := XLRegMsg_ClientOK
 		h.msgOut = &XLRegMsg{
@@ -83,6 +83,8 @@ func  doClientMsg(h *InHandler) {
 		}
 		// Set exit state -----------------------------------------------
 		h.exitState = CLIENT_DETAILS_RCVD
+		// DEBUG
+		fmt.Printf("server has received client details and sent OK\n")
 	}
 }
 
@@ -94,7 +96,7 @@ func  doClientMsg(h *InHandler) {
 //
 // XXX This implementation does not handle cluster attrs.
 
-func  doCreateMsg(h *InHandler) {
+func doCreateMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
@@ -115,7 +117,7 @@ func  doCreateMsg(h *InHandler) {
 	cluster, exists := h.reg.ClustersByName[clusterName]
 	if exists {
 		clusterSize = uint32(cluster.MaxSize)
-		clusterID,_ = xi.New(cluster.ID)
+		clusterID, _ = xi.New(cluster.ID)
 	} else {
 		attrs := uint64(0)
 		if clusterSize < 2 {
@@ -131,7 +133,7 @@ func  doCreateMsg(h *InHandler) {
 			index, err = h.reg.AddCluster(cluster)
 		}
 	}
-	_ = index		// INDEX IS NOT BEING USED
+	_ = index // INDEX IS NOT BEING USED
 
 	if err == nil {
 		// Prepare reply to client --------------------------------------
@@ -152,7 +154,7 @@ func  doCreateMsg(h *InHandler) {
 // name or using the clusterID.  Return the cluster ID and its size.
 //
 
-func  doJoinMsg(h *InHandler) {
+func doJoinMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
@@ -171,8 +173,8 @@ func  doJoinMsg(h *InHandler) {
 	// attempt to retrieve the ID; it's an error if it does not exist
 	// in the registry.  . In either case use the ID to retrieve the size.
 
-	clusterName = joinMsg.GetClusterName()	// will be "" if absent
-	clusterID   = joinMsg.GetClusterID()	// will be nil if absent
+	clusterName = joinMsg.GetClusterName() // will be "" if absent
+	clusterID = joinMsg.GetClusterID()     // will be nil if absent
 
 	if clusterID == nil {
 		if clusterName == "" {
@@ -185,7 +187,7 @@ func  doJoinMsg(h *InHandler) {
 				err = CantFindClusterByName
 			}
 		}
-	} 
+	}
 	if err == nil {
 		// Prepare reply to client ----------------------------------
 		// XXX If the cluster cannot be found, we will return an error
@@ -198,7 +200,7 @@ func  doJoinMsg(h *InHandler) {
 		}
 		// Set exit state -------------------------------------------
 		h.exitState = JOIN_RCVD
-	} 
+	}
 }
 
 // GET AND MEMBERS ==================================================
@@ -213,7 +215,7 @@ func  doJoinMsg(h *InHandler) {
 // server returns a bit vector specifying which member tokens are being
 // returned.
 
-func  doGetMsg(h *InHandler) {
+func doGetMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
@@ -221,7 +223,7 @@ func  doGetMsg(h *InHandler) {
 	// Examine incoming message -------------------------------------
 	getMsg := h.msgIn
 	clusterID := getMsg.GetClusterID()
-	whichIn := getMsg.GetWhich()	// a uint64
+	whichIn := getMsg.GetWhich() // a uint64
 
 	// Take appropriate action --------------------------------------
 	var tokens []*XLRegMsg_Token
@@ -231,13 +233,13 @@ func  doGetMsg(h *InHandler) {
 	if cluster == nil {
 		err = CantFindClusterByID
 	} else {
-		size := uint(len(cluster.Members))	// actual size, not MaxSize
-		if size > 64 {						// yes, should be impossible
+		size := uint(len(cluster.Members)) // actual size, not MaxSize
+		if size > 64 {                     // yes, should be impossible
 			size = 64
 		}
 		for i := uint(0); i < size; i++ {
 			bit := uint64(1) << i
-			if bit & whichIn != 0 {			// they want this one
+			if bit&whichIn != 0 { // they want this one
 				whichOut |= bit
 				member := cluster.Members[i]
 				token, err := member.Token()
@@ -253,10 +255,10 @@ func  doGetMsg(h *InHandler) {
 		// Prepare reply to client --------------------------------------
 		op := XLRegMsg_Members
 		h.msgOut = &XLRegMsg{
-			Op:			&op,
-			ClusterID:	clusterID,
-			Which:		&whichOut,
-			Tokens:		tokens,
+			Op:        &op,
+			ClusterID: clusterID,
+			Which:     &whichOut,
+			Tokens:    tokens,
 		}
 		// Set exit state -----------------------------------------------
 		h.exitState = JOIN_RCVD // this is intentional !
@@ -265,11 +267,15 @@ func  doGetMsg(h *InHandler) {
 
 // BYE AND ACK ======================================================
 
-func  doByeMsg(h *InHandler) {
+func doByeMsg(h *InHandler) {
 	var err error
 	defer func() {
 		h.errOut = err
 	}()
+	// DEBUG
+	fmt.Println("server in doByeMsg")
+	// END
+
 	// Examine incoming message -------------------------------------
 	//ByeMsg := h.msgIn
 
@@ -283,4 +289,7 @@ func  doByeMsg(h *InHandler) {
 	}
 	// Set exit state -----------------------------------------------
 	h.exitState = BYE_RCVD
+	// DEBUG
+	fmt.Println("server has sent ack")
+	// END
 }

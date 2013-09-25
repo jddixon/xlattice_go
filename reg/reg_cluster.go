@@ -309,7 +309,7 @@ func (rc *RegCluster) GetOverlay(n int) (o xo.OverlayI) {
 	return
 }
 
-func (rc *RegCluster) GetCommsPublicKey() (ck *rsa.PublicKey ) {
+func (rc *RegCluster) GetCommsPublicKey() (ck *rsa.PublicKey) {
 	return
 }
 func (rc *RegCluster) GetSSHCommsPublicKey() (s string) {

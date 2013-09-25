@@ -29,6 +29,7 @@ type MockClient struct {
 
 func NewMockClient(
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
+	serverCK *rsa.PublicKey,
 	clusterName string, clusterID *xi.NodeID, size int, endPointCount int) (
 	mc *MockClient, err error) {
 
@@ -49,8 +50,8 @@ func NewMockClient(
 	lfs := "tmp/" + hex.EncodeToString(idBuf)
 	id, err := xi.New(idBuf)
 	if err == nil {
-		// XXX cheap keys, not meant for any serious use
-		ckPriv, err = rsa.GenerateKey(rand.Reader, 512)
+		// XXX key must be large enough to hold data to be encrypted
+		ckPriv, err = rsa.GenerateKey(rand.Reader, 1024)
 		if err == nil {
 			skPriv, err = rsa.GenerateKey(rand.Reader, 512)
 		}
@@ -70,7 +71,7 @@ func NewMockClient(
 	}
 	if err == nil {
 		client, err = NewClient(serverName, serverID, serverEnd,
-			&ckPriv.PublicKey,
+			serverCK,
 			clusterName, clusterID, size, ep, cn)
 	}
 	if err == nil {

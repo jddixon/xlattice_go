@@ -1,5 +1,8 @@
 xlattice_go/reg/TODO
 
+2013-09-25
+    * FIX: mock_server_test only makes 2 clients
+
 2013-09-24
     * modify functions in msg_handlers.go so that they are no longer    * DONE
         instance functions but look like

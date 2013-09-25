@@ -28,32 +28,14 @@ type CnxHandler struct {
 func (h *CnxHandler) readData() (data []byte, err error) {
 	data = make([]byte, MSG_BUF_LEN)
 	count, err := h.Cnx.Read(data)
+	// DEBUG
+	fmt.Printf("readData: count is %d, err is %v\n", count, err)
+	// END
 	if err == nil && count > 0 {
 		data = data[:count]
 		return
 	}
 	return nil, err
-}
-
-// Read the next message over the connection
-func (h *CnxHandler) readMsg() (m *XLRegMsg, err error) {
-	inBuf, err := h.readData()
-	if err == nil && inBuf != nil {
-		// parse = deserialize, unmarshal the message
-		m, err = DecodePacket(inBuf)
-	}
-	return
-}
-
-// Write a message out over the connection
-func (h *CnxHandler) writeMsg(m *XLRegMsg) (err error) {
-	var data []byte
-	// serialize, marshal the message
-	data, err = EncodePacket(m)
-	if err == nil {
-		err = h.writeData(data)
-	}
-	return
 }
 
 func (h *CnxHandler) writeData(data []byte) (err error) {
@@ -100,3 +82,23 @@ func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegM
 	}
 	return
 }
+
+//// Read the next message over the connection
+//func (mc *Client) readMsg() (m *XLRegMsg, err error) {
+//	inBuf, err := mc.h.readData()
+//	if err == nil && inBuf != nil {
+//		m, err = DecryptUnpadDecode(inBuf, mc.decrypterC)
+//	}
+//	return
+//}
+//
+//// Write a message out over the connection
+//func (mc *Client) writeMsg(m *XLRegMsg) (err error) {
+//	var data []byte
+//	// serialize, marshal the message
+//	data, err = EncodePadEncrypt(m, mc.encrypterC)
+//	if err == nil {
+//		err = mc.h.writeData(data)
+//	}
+//	return
+//}

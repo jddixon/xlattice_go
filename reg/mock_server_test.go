@@ -23,7 +23,7 @@ func (s *XLSuite) TestMockServer(c *C) {
 	clusterName := rng.NextFileName(8)
 	clusterID, err := xi.New(nil) // creates a random ID
 	c.Assert(err, IsNil)
-	K := 2 + rng.Intn(6) // so the size is 2 .. 7
+	K := 2 //			+ rng.Intn(6) // so the size is 2 .. 7
 	ms, err := NewMockServer(clusterName, clusterID, K)
 	c.Assert(err, IsNil)
 	c.Assert(ms, Not(IsNil))
@@ -33,12 +33,13 @@ func (s *XLSuite) TestMockServer(c *C) {
 	serverName := ms.GetName()
 	serverID := ms.GetNodeID()
 	serverEnd := ms.GetEndPoint(0)
+	serverCK := ms.GetCommsPublicKey()
 	c.Assert(serverEnd, Not(IsNil))
 
 	// creake K clients ---------------------------------------------
 	mc := make([]*MockClient, K)
 	for i := 0; i < K; i++ {
-		mc[i], err = NewMockClient(serverName, serverID, serverEnd,
+		mc[i], err = NewMockClient(serverName, serverID, serverEnd, serverCK,
 			clusterName, clusterID, K, 1) // 1 is endPoint count
 		c.Assert(err, IsNil)
 		c.Assert(mc[i], Not(IsNil))

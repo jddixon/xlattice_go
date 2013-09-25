@@ -51,7 +51,7 @@ func NewClusterMember(name string, id *xi.NodeID,
 func (cm *ClusterMember) Token() (token *XLRegMsg_Token, err error) {
 
 	var ckBytes, skBytes []byte
-	
+
 	ckBytes, err = xc.RSAPubKeyToWire(cm.GetCommsPublicKey())
 	if err == nil {
 		skBytes, err = xc.RSAPubKeyToWire(cm.GetSigPublicKey())
@@ -62,11 +62,12 @@ func (cm *ClusterMember) Token() (token *XLRegMsg_Token, err error) {
 				CommsKey: ckBytes,
 				SigKey:   skBytes,
 				MyEnds:   cm.myEnds,
-			} 
+			}
 		}
 	}
 	return
 }
+
 // EQUAL ////////////////////////////////////////////////////////////
 
 func (cm *ClusterMember) Equal(any interface{}) bool {

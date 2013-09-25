@@ -62,7 +62,9 @@ func NewRegNode(name string, id *xi.NodeID, lfs string,
 	if overlay != nil {
 		o = []xo.OverlayI{overlay}
 	}
-	if endPoint == nil {
+	if commsKey == nil || sigKey == nil {
+		err = NilPrivateKey
+	} else if endPoint == nil {
 		endPoint, err = xt.NewTcpEndPoint("127.0.0.1:44444")
 	}
 	if err == nil {
