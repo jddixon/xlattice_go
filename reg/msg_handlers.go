@@ -126,7 +126,7 @@ func doCreateMsg(h *InHandler) {
 			clusterSize = 64
 		}
 		// Assign a quasi-random cluster ID
-		clusterID, _ := xi.New(nil)
+		clusterID, _ = xi.New(nil)
 		cluster, err = NewRegCluster(
 			attrs, clusterName, clusterID, int(clusterSize))
 		if err == nil {
@@ -138,9 +138,10 @@ func doCreateMsg(h *InHandler) {
 	if err == nil {
 		// Prepare reply to client --------------------------------------
 		op := XLRegMsg_CreateReply
+		id := clusterID.Value()	// XXX blows up 
 		h.msgOut = &XLRegMsg{
 			Op:          &op,
-			ClusterID:   clusterID.Value(),
+			ClusterID:   id,
 			ClusterSize: &clusterSize,
 		}
 		// Set exit state -----------------------------------------------
@@ -183,6 +184,7 @@ func doJoinMsg(h *InHandler) {
 			cluster, ok := h.reg.ClustersByName[clusterName]
 			if ok {
 				clusterID = cluster.ID
+				clusterSize = uint32(cluster.MaxSize)
 			} else {
 				err = CantFindClusterByName
 			}
@@ -190,7 +192,7 @@ func doJoinMsg(h *InHandler) {
 	}
 	if err == nil {
 		// Prepare reply to client ----------------------------------
-		// XXX If the cluster cannot be found, we will return an error
+		// XXX If the cluster cannot be found, we must return an error
 		// instead.
 		op := XLRegMsg_JoinReply
 		h.msgOut = &XLRegMsg{
@@ -261,7 +263,7 @@ func doGetMsg(h *InHandler) {
 			Tokens:    tokens,
 		}
 		// Set exit state -----------------------------------------------
-		h.exitState = JOIN_RCVD // this is intentional !
+		h.exitState = JOIN_RCVD // the JOIN is intentional !
 	}
 }
 
@@ -272,9 +274,6 @@ func doByeMsg(h *InHandler) {
 	defer func() {
 		h.errOut = err
 	}()
-	// DEBUG
-	fmt.Println("server in doByeMsg")
-	// END
 
 	// Examine incoming message -------------------------------------
 	//ByeMsg := h.msgIn
@@ -289,7 +288,4 @@ func doByeMsg(h *InHandler) {
 	}
 	// Set exit state -----------------------------------------------
 	h.exitState = BYE_RCVD
-	// DEBUG
-	fmt.Println("server has sent ack")
-	// END
 }

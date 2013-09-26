@@ -67,6 +67,11 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 		// a registry with no clusters
 		reg, err = NewRegistry(nil, name, id, lfs, ckPriv, skPriv, nil, ep)
 	}
+	// DEBUG
+	if reg.ClustersByID == nil {
+		fmt.Println("NewMockServer: CLUSTERS_BY_ID IS NIL")
+	}
+	// END
 	if err == nil {
 		rn = &reg.RegNode
 		ms = &MockServer{

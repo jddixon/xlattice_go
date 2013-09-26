@@ -28,13 +28,13 @@ const (
 )
 
 type Client struct {
-	serverName  string
-	serverID    *xi.NodeID
-	serverEnd   xt.EndPointI
-	serverCK    *rsa.PublicKey
-	clusterName string
-	clusterID   *xi.NodeID
-	size        int
+	serverName		string
+	serverID		*xi.NodeID
+	serverEnd		xt.EndPointI
+	serverCK		*rsa.PublicKey
+	clusterName		string
+	clusterID		*xi.NodeID
+	clusterSize     uint32
 
 	// run information
 	doneCh chan bool
@@ -94,7 +94,7 @@ func NewClient(
 			serverCK:    serverCK,
 			clusterName: clusterName,
 			clusterID:   clusterID,
-			size:        size,
+			clusterSize: uint32(size),
 			h:           cnxHandler,
 			endPoints:   e,
 			BaseNodeI:   bni,
@@ -218,16 +218,84 @@ func (mc *Client) Run() (err error) {
 			}
 		}
 		// Send CREATE MSG ==========================================
-
+		if err == nil {
+			op = XLRegMsg_Create
+			wireSize := uint32(mc.clusterSize)
+			request = &XLRegMsg{
+				Op:				&op,
+				ClusterName:	&mc.clusterName,
+				ClusterSize:	&wireSize,
+			}
+			// SHOULD CHECK FOR TIMEOUT
+			err = mc.writeMsg(request)
+			// DEBUG
+			fmt.Printf("Create sent for cluster %s\n", mc.clusterName)
+			// END
+		}
 		// Process CREATE REPLY -------------------------------------
+		
+		if err == nil {
+			// SHOULD CHECK FOR TIMEOUT AND VERIFY THAT IT'S A CREATE REPLY
+			response, err = mc.readMsg()
+			op = response.GetOp()
+			_ = op
+			// DEBUG
+			fmt.Printf("client has received CreateReply; err is %v\n", err)
+			// END
+			if err == nil {
+				mc.clusterSize	= response.GetClusterSize()
+				id		:= response.GetClusterID()
+				mc.clusterID, err = xi.New(id)
+			}
+		} // GEEP 
+
 
 		// Send JOIN MSG ============================================
-
+		fmt.Printf("Cluster size before Join: %d\n", mc.clusterSize)
+		if err == nil {
+			op = XLRegMsg_Join
+			request = &XLRegMsg{
+				Op:				&op,
+				ClusterName:	&mc.clusterName,
+			}
+			// SHOULD CHECK FOR TIMEOUT
+			err = mc.writeMsg(request)
+			// DEBUG
+			fmt.Printf("Join by name sent for cluster %s\n", mc.clusterName)
+			// END
+		}
 		// Process JOIN REPLY ---------------------------------------
+		if err == nil {
+			// SHOULD CHECK FOR TIMEOUT AND VERIFY THAT IT'S A JOIN REPLY
+			response, err = mc.readMsg()
+			op = response.GetOp()
+			_ = op
+			// DEBUG
+			fmt.Printf("client has received JoinReply; err is %v\n", err)
+			// END
+			if err == nil {
+				mc.clusterSize	= response.GetClusterSize()
+				id		:= response.GetClusterID()
+				mc.clusterID, err = xi.New(id)
+			}
+		} // GEEP 
 
-		// Send GET MSG =============================================
+		// COLLECT INFORMATION ON ALL CLUSTER MEMBERS ***************
+		fmt.Printf("Cluster size after Join: %d\n", mc.clusterSize)
+		var stillToGet uint64
+		for i := uint(0); i < uint(mc.clusterSize); i++ {
+			stillToGet |= ( 1 << i )
+		}
+		fmt.Printf("STILL TO GET: 0x%x\n", stillToGet)
 
-		// Process MEMBERS = GET REPLY ------------------------------
+		// THIS IS JUST NONSENSE:
+		for soFar := uint(0); soFar < uint(mc.clusterSize); soFar++ {
+
+			// Send GET MSG =========================================
+
+			// Process MEMBERS = GET REPLY --------------------------
+
+		}
 
 		// Send BYE MSG =============================================
 		if err == nil {
@@ -253,7 +321,8 @@ func (mc *Client) Run() (err error) {
 			if err == nil {
 
 			}
-		}
+		} // GEEP
+
 		// END OF RUN ===============================================
 		if cnx != nil {
 			cnx.Close()

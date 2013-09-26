@@ -33,9 +33,11 @@ func NewRegistry(clusters []*RegCluster, name string, id *xi.NodeID,
 
 	rn, err := NewRegNode(name, id, lfs, ckPriv, skPriv, overlay, endPoint)
 	if err == nil {
+		var bniMap xn.BNIMap
 		reg = &Registry{
 			Clusters:       clusters,
 			ClustersByName: make(map[string]*RegCluster),
+			ClustersByID:	&bniMap,
 			RegNode:        *rn,
 		}
 		if clusters != nil {
