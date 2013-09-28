@@ -1,7 +1,8 @@
 xlattice_go/util/TODO
 
-2013-09-26
-    * need to constrain N (as in the Nth bit) to 0..63 inclusive
+2013-09-27
+    * need to constrain N (as in the Nth bit in BitMap64 functions)
+        to 0..63 inclusive
 
 2013-08-26
     * SameBytes test should be extended to make sure it fails

@@ -30,8 +30,8 @@ func (s *XLSuite) TestClusterMaker(c *C) {
 
 	_ = cl // DEBUG
 
-	c.Assert(cl.MaxSize, Equals, maxSize)
-	c.Assert(cl.Size(), Equals, maxSize)
+	c.Assert(cl.MaxSize(), Equals, maxSize)
+	c.Assert(cl.Size(), Equals, maxSize) //
 
 	// and that their names are unique
 	// XXX STUB ///

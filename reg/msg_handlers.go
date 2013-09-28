@@ -7,6 +7,7 @@ import (
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	xu "github.com/jddixon/xlattice_go/util"
 )
 
 var _ = fmt.Print
@@ -116,7 +117,7 @@ func doCreateMsg(h *InHandler) {
 
 	cluster, exists := h.reg.ClustersByName[clusterName]
 	if exists {
-		clusterSize = uint32(cluster.MaxSize)
+		clusterSize = uint32(cluster.maxSize)
 		clusterID, _ = xi.New(cluster.ID)
 	} else {
 		attrs := uint64(0)
@@ -138,7 +139,7 @@ func doCreateMsg(h *InHandler) {
 	if err == nil {
 		// Prepare reply to client --------------------------------------
 		op := XLRegMsg_CreateReply
-		id := clusterID.Value()	// XXX blows up 
+		id := clusterID.Value() // XXX blows up
 		h.msgOut = &XLRegMsg{
 			Op:          &op,
 			ClusterID:   id,
@@ -184,7 +185,7 @@ func doJoinMsg(h *InHandler) {
 			cluster, ok := h.reg.ClustersByName[clusterName]
 			if ok {
 				clusterID = cluster.ID
-				clusterSize = uint32(cluster.MaxSize)
+				clusterSize = uint32(cluster.maxSize)
 			} else {
 				err = CantFindClusterByName
 			}
@@ -225,28 +226,30 @@ func doGetMsg(h *InHandler) {
 	// Examine incoming message -------------------------------------
 	getMsg := h.msgIn
 	clusterID := getMsg.GetClusterID()
-	whichIn := getMsg.GetWhich() // a uint64
+	whichRequested := xu.NewBitMap64(getMsg.GetWhich())
 
 	// Take appropriate action --------------------------------------
 	var tokens []*XLRegMsg_Token
-	var whichOut uint64
+	whichReturned := xu.NewBitMap64(0)
 
 	cluster := h.reg.ClustersByID.FindBNI(clusterID).(*RegCluster)
 	if cluster == nil {
 		err = CantFindClusterByID
 	} else {
-		size := uint(len(cluster.Members)) // actual size, not MaxSize
-		if size > 64 {                     // yes, should be impossible
+		size := uint(cluster.Size()) // actual size, not MaxSize
+		if size > 64 {               // yes, should be impossible
 			size = 64
 		}
+		weHave := xu.LowNMap(size)
+		whichRequested = whichRequested.Intersection(weHave)
 		for i := uint(0); i < size; i++ {
-			bit := uint64(1) << i
-			if bit&whichIn != 0 { // they want this one
-				whichOut |= bit
-				member := cluster.Members[i]
+			bit := uint(1) << i
+			if whichRequested.Test(bit) { // they want this one
+				member := cluster.members[i]
 				token, err := member.Token()
 				if err == nil {
 					tokens = append(tokens, token)
+					whichReturned.Set(bit)
 				} else {
 					break
 				}
@@ -259,7 +262,7 @@ func doGetMsg(h *InHandler) {
 		h.msgOut = &XLRegMsg{
 			Op:        &op,
 			ClusterID: clusterID,
-			Which:     &whichOut,
+			Which:     &whichReturned.Bits,
 			Tokens:    tokens,
 		}
 		// Set exit state -----------------------------------------------

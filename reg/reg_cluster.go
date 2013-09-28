@@ -15,6 +15,7 @@ import (
 	xu "github.com/jddixon/xlattice_go/util"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 var _ = fmt.Print
@@ -28,10 +29,11 @@ type RegCluster struct {
 	Attrs         uint64 // a field of bit flags
 	Name          string // must be unique
 	ID            []byte // must be unique
-	MaxSize       int    // a maximum; must be > 1
-	Members       []*ClusterMember
+	maxSize       int    // a maximum; must be > 1
+	members       []*ClusterMember
 	MembersByName map[string]*ClusterMember
 	MembersByID   *xn.BNIMap
+	mu            sync.RWMutex
 }
 
 func NewRegCluster(attrs uint64, name string, id *xi.NodeID, maxSize int) (
@@ -49,16 +51,12 @@ func NewRegCluster(attrs uint64, name string, id *xi.NodeID, maxSize int) (
 			Attrs:         attrs,
 			Name:          name,
 			ID:            id.Value(),
-			MaxSize:       maxSize,
+			maxSize:       maxSize,
 			MembersByName: nameMap,
 			MembersByID:   &bnm,
 		}
 	}
 	return
-}
-
-func (rc *RegCluster) Size() int {
-	return len(rc.MembersByName)
 }
 
 func (rc *RegCluster) AddToCluster(name string, id *xi.NodeID,
@@ -84,11 +82,23 @@ func (rc *RegCluster) AddMember(member *ClusterMember) (err error) {
 	// XXX CHECK FOR ENTRY IN BNIMap
 	// XXX STUB
 
+	rc.mu.Lock()
 	rc.MembersByName[name] = member
-	rc.Members = append(rc.Members, member)
+	rc.members = append(rc.members, member)
 	err = rc.MembersByID.AddToBNIMap(member)
-
+	rc.mu.Unlock()
 	return
+}
+
+func (rc *RegCluster) MaxSize() int {
+	return rc.maxSize
+}
+func (rc *RegCluster) Size() int {
+	var curSize int
+	rc.mu.RLock()
+	curSize = len(rc.members)
+	rc.mu.RUnlock()
+	return curSize
 }
 
 // EQUAL ////////////////////////////////////////////////////////////
@@ -127,10 +137,10 @@ func (rc *RegCluster) Equal(any interface{}) bool {
 		// END
 		return false
 	}
-	if rc.MaxSize != other.MaxSize {
+	if rc.maxSize != other.maxSize {
 		// DEBUG
 		fmt.Printf("rc.Equal: MAXSIZES DIFFER %d vs %d\n",
-			rc.MaxSize, other.MaxSize)
+			rc.maxSize, other.maxSize)
 		// END
 		return false
 	}
@@ -143,8 +153,8 @@ func (rc *RegCluster) Equal(any interface{}) bool {
 	}
 	// Members			[]*ClusterMember
 	for i := 0; i < rc.Size(); i++ {
-		rcMember := rc.Members[i]
-		otherMember := other.Members[i]
+		rcMember := rc.members[i]
+		otherMember := other.members[i]
 		if !rcMember.Equal(otherMember) {
 			return false
 		}
@@ -161,11 +171,11 @@ func (rc *RegCluster) Strings() (ss []string) {
 	ss = append(ss, fmt.Sprintf("    Attrs: 0x%016x", rc.Attrs))
 	ss = append(ss, "    Name: "+rc.Name)
 	ss = append(ss, "    ID: "+hex.EncodeToString(rc.ID))
-	ss = append(ss, fmt.Sprintf("    MaxSize: %d", rc.MaxSize))
+	ss = append(ss, fmt.Sprintf("    maxSize: %d", rc.maxSize))
 
 	ss = append(ss, "    Members {")
-	for i := 0; i < len(rc.Members); i++ {
-		mem := rc.Members[i].Strings()
+	for i := 0; i < len(rc.members); i++ {
+		mem := rc.members[i].Strings()
 		for i := 0; i < len(mem); i++ {
 			ss = append(ss, "        "+mem[i])
 		}
@@ -236,7 +246,7 @@ func ParseRegClusterFromStrings(ss []string) (
 	}
 	if err == nil {
 		line = xn.NextNBLine(&rest)
-		if strings.HasPrefix(line, "MaxSize: ") {
+		if strings.HasPrefix(line, "maxSize: ") {
 			maxSize, err = strconv.Atoi(line[9:])
 		} else {
 			fmt.Println("BAD MAX_SIZE")

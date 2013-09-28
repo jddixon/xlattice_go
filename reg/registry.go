@@ -37,7 +37,7 @@ func NewRegistry(clusters []*RegCluster, name string, id *xi.NodeID,
 		reg = &Registry{
 			Clusters:       clusters,
 			ClustersByName: make(map[string]*RegCluster),
-			ClustersByID:	&bniMap,
+			ClustersByID:   &bniMap,
 			RegNode:        *rn,
 		}
 		if clusters != nil {

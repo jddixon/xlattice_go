@@ -1,5 +1,9 @@
 xlattice_go/reg/TODO
 
+2013-09-27
+    * need read lock on reg.members when we get size
+    * need write lock when we add members
+
 2013-09-25
     * FIX: mock_server_test only makes 2 clients
 
