@@ -36,14 +36,15 @@ message XLRegMsg {
         
     }
     message Token {
-	    optional uint64 Attrs       = 1;    // bit field
-	    optional bytes  ID          = 2;    // 20 or 32 byte nodeID
-        optional bytes  CommsKey    = 3;
-        optional bytes  SigKey      = 4;
+        optional string Name        = 1;
+	    optional uint64 Attrs       = 2;    // bit field
+	    optional bytes  ID          = 3;    // 20 or 32 byte nodeID
+        optional bytes  CommsKey    = 4;
+        optional bytes  SigKey      = 5;
         // by convention, MyEnds[0] for inter-cluster comms, 
         // MyEnds[1] for cluster-client comms 
-        repeated string MyEnds      = 5;    // overlay, endPoint
-	    optional bytes  DigSig      = 6;    // over fields 1 - 5
+        repeated string MyEnds      = 6;    // overlay, endPoint
+	    optional bytes  DigSig      = 7;    // over fields present, in order
 	}
     optional Tag    Op          = 1;
     optional bytes  AesIV       = 2;

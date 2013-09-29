@@ -227,18 +227,26 @@ func (m *XLRegMsg) GetErrDesc() string {
 }
 
 type XLRegMsg_Token struct {
-	Attrs            *uint64  `protobuf:"varint,1,opt" json:"Attrs,omitempty"`
-	ID               []byte   `protobuf:"bytes,2,opt" json:"ID,omitempty"`
-	CommsKey         []byte   `protobuf:"bytes,3,opt" json:"CommsKey,omitempty"`
-	SigKey           []byte   `protobuf:"bytes,4,opt" json:"SigKey,omitempty"`
-	MyEnds           []string `protobuf:"bytes,5,rep" json:"MyEnds,omitempty"`
-	DigSig           []byte   `protobuf:"bytes,6,opt" json:"DigSig,omitempty"`
+	Name             *string  `protobuf:"bytes,1,opt" json:"Name,omitempty"`
+	Attrs            *uint64  `protobuf:"varint,2,opt" json:"Attrs,omitempty"`
+	ID               []byte   `protobuf:"bytes,3,opt" json:"ID,omitempty"`
+	CommsKey         []byte   `protobuf:"bytes,4,opt" json:"CommsKey,omitempty"`
+	SigKey           []byte   `protobuf:"bytes,5,opt" json:"SigKey,omitempty"`
+	MyEnds           []string `protobuf:"bytes,6,rep" json:"MyEnds,omitempty"`
+	DigSig           []byte   `protobuf:"bytes,7,opt" json:"DigSig,omitempty"`
 	XXX_unrecognized []byte   `json:"-"`
 }
 
 func (m *XLRegMsg_Token) Reset()         { *m = XLRegMsg_Token{} }
 func (m *XLRegMsg_Token) String() string { return proto.CompactTextString(m) }
 func (*XLRegMsg_Token) ProtoMessage()    {}
+
+func (m *XLRegMsg_Token) GetName() string {
+	if m != nil && m.Name != nil {
+		return *m.Name
+	}
+	return ""
+}
 
 func (m *XLRegMsg_Token) GetAttrs() uint64 {
 	if m != nil && m.Attrs != nil {

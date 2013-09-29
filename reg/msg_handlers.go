@@ -54,7 +54,7 @@ func doClientMsg(h *InHandler) {
 	clientSpecs := clientMsg.GetClientSpecs()
 	attrs = clientSpecs.GetAttrs()
 	nodeID, err = xi.New(clientSpecs.GetID())
-	if err != nil {
+	if err == nil {
 		ck, err = xc.RSAPubKeyFromWire(clientSpecs.GetCommsKey())
 		if err == nil {
 			sk, err = xc.RSAPubKeyFromWire(clientSpecs.GetSigKey())
@@ -69,6 +69,7 @@ func doClientMsg(h *InHandler) {
 		// the InHandler.
 		cm, err = NewClusterMember(name, nodeID, ck, sk, attrs, myEnds)
 		if err == nil {
+			fmt.Printf("'thisMember' for connection is %s\n", cm.GetName())
 			h.thisMember = cm
 		}
 	}
@@ -117,6 +118,7 @@ func doCreateMsg(h *InHandler) {
 
 	cluster, exists := h.reg.ClustersByName[clusterName]
 	if exists {
+		h.cluster = cluster
 		clusterSize = uint32(cluster.maxSize)
 		clusterID, _ = xi.New(cluster.ID)
 	} else {
@@ -131,7 +133,9 @@ func doCreateMsg(h *InHandler) {
 		cluster, err = NewRegCluster(
 			attrs, clusterName, clusterID, int(clusterSize))
 		if err == nil {
+			h.cluster = cluster
 			index, err = h.reg.AddCluster(cluster)
+			// XXX index not used
 		}
 	}
 	_ = index // INDEX IS NOT BEING USED
@@ -163,6 +167,7 @@ func doJoinMsg(h *InHandler) {
 	}()
 	// Examine incoming message -------------------------------------
 	var (
+		cluster     *RegCluster
 		clusterName string
 		clusterID   []byte
 		clusterSize uint32
@@ -178,18 +183,33 @@ func doJoinMsg(h *InHandler) {
 	clusterName = joinMsg.GetClusterName() // will be "" if absent
 	clusterID = joinMsg.GetClusterID()     // will be nil if absent
 
-	if clusterID == nil {
-		if clusterName == "" {
-			err = MissingClusterNameOrID
+	if clusterID == nil && clusterName == "" {
+		// if neither is present, we will use any cluster already
+		// associated with this connection
+		if h.cluster != nil {
+			cluster = h.cluster
 		} else {
-			cluster, ok := h.reg.ClustersByName[clusterName]
-			if ok {
-				clusterID = cluster.ID
-				clusterSize = uint32(cluster.maxSize)
-			} else {
-				err = CantFindClusterByName
-			}
+			err = MissingClusterNameOrID
 		}
+	} else if clusterID != nil {
+		// if an ID has been defined, we will try to use that
+		cluster = h.reg.ClustersByID.FindBNI(clusterID).(*RegCluster)
+		if cluster == nil {
+			err = CantFindClusterByID
+		}
+	} else {
+		// we have no ID and clusterName is not nil, so we will try to use that
+		var ok bool
+		if cluster, ok = h.reg.ClustersByName[clusterName]; !ok {
+			err = CantFindClusterByName
+		}
+	}
+	if err == nil {
+		// if we get here, cluster is not nil
+		h.cluster = cluster
+		clusterID = cluster.ID
+		clusterSize = uint32(h.cluster.maxSize)
+		err = cluster.AddMember(h.thisMember)
 	}
 	if err == nil {
 		// Prepare reply to client ----------------------------------
@@ -241,16 +261,27 @@ func doGetMsg(h *InHandler) {
 			size = 64
 		}
 		weHave := xu.LowNMap(size)
-		whichRequested = whichRequested.Intersection(weHave)
+		whichToSend := whichRequested.Intersection(weHave)
+		// DEBUG
+		fmt.Printf("doGetMsg: have 0x%x, client requests 0x%x, yields 0x%x\n",
+			weHave.Bits, whichRequested.Bits, whichToSend.Bits)
+		// END
 		for i := uint(0); i < size; i++ {
 			bit := uint(1) << i
-			if whichRequested.Test(bit) { // they want this one
+			if whichToSend.Test(bit) { // they want this one
 				member := cluster.members[i]
+				// DEBUG
+				fmt.Printf("ATTEMPTING TO TOKENIZE MEMBER %d\n", i) // XXX
+				// END
 				token, err := member.Token()
 				if err == nil {
 					tokens = append(tokens, token)
 					whichReturned.Set(bit)
 				} else {
+					// DEBUG
+					fmt.Printf("ERROR seen while tokenizing member %d, %s\n",
+						i, member.GetName())
+					// END
 					break
 				}
 			}

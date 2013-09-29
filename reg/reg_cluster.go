@@ -77,16 +77,24 @@ func (rc *RegCluster) AddMember(member *ClusterMember) (err error) {
 	name := member.GetName()
 	if _, ok := rc.MembersByName[name]; ok {
 		// XXX surely something more complicated is called for!
+
+		fmt.Printf("AddMember: ATTEMPT TO ADD EXISTING MEMBER %s\n", name)
 		return
 	}
 	// XXX CHECK FOR ENTRY IN BNIMap
 	// XXX STUB
 
 	rc.mu.Lock()
-	rc.MembersByName[name] = member
+	index := len(rc.members) // DEBUG
 	rc.members = append(rc.members, member)
+	rc.MembersByName[name] = member
 	err = rc.MembersByID.AddToBNIMap(member)
 	rc.mu.Unlock()
+
+	// DEBUG
+	fmt.Printf("ADDED MEMBER %s TO CLUSTER %s AT INDEX %d\n",
+		name, rc.Name, index)
+	// END
 	return
 }
 

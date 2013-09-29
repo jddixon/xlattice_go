@@ -47,16 +47,48 @@ func NewClusterMember(name string, id *xi.NodeID,
 	return
 }
 
+// Create the ClusterMember corresponding to the token passed.
+
+func NewClusterMemberFromToken(token *XLRegMsg_Token) (
+	m *ClusterMember, err error) {
+
+	var nodeID *xi.NodeID
+	if token == nil {
+		err = NilToken
+	} else {
+		nodeID, err = xi.New(token.GetID())
+		if err == nil {
+			ck, err := xc.RSAPubKeyFromWire(token.GetCommsKey())
+			if err == nil {
+				sk, err := xc.RSAPubKeyFromWire(token.GetSigKey())
+				if err == nil {
+					m, err = NewClusterMember(token.GetName(), nodeID,
+						ck, sk, token.GetAttrs(), token.GetMyEnds())
+				}
+			}
+		}
+	}
+	return
+}
+
 // Return the XLRegMsg_Token corresponding to this cluster member.
 func (cm *ClusterMember) Token() (token *XLRegMsg_Token, err error) {
 
 	var ckBytes, skBytes []byte
 
-	ckBytes, err = xc.RSAPubKeyToWire(cm.GetCommsPublicKey())
+	ck := cm.GetCommsPublicKey()
+	// DEBUG
+	if ck == nil {
+		fmt.Printf("ClusterMember.Token: %s commsPubKey is nil\n", cm.GetName())
+	}
+	// END
+	ckBytes, err = xc.RSAPubKeyToWire(ck)
 	if err == nil {
 		skBytes, err = xc.RSAPubKeyToWire(cm.GetSigPublicKey())
 		if err == nil {
+			name := cm.GetName()
 			token = &XLRegMsg_Token{
+				Name:     &name,
 				Attrs:    &cm.attrs,
 				ID:       cm.GetNodeID().Value(),
 				CommsKey: ckBytes,

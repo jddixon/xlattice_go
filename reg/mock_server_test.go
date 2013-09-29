@@ -39,7 +39,8 @@ func (s *XLSuite) TestMockServer(c *C) {
 	// creake K clients ---------------------------------------------
 	mc := make([]*MockClient, K)
 	for i := 0; i < K; i++ {
-		mc[i], err = NewMockClient(serverName, serverID, serverEnd, serverCK,
+		mc[i], err = NewMockClient(rng,
+			serverName, serverID, serverEnd, serverCK,
 			clusterName, clusterID, K, 1) // 1 is endPoint count
 		c.Assert(err, IsNil)
 		c.Assert(mc[i], Not(IsNil))

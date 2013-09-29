@@ -67,16 +67,20 @@ type InHandler struct {
 	decrypterS                         cipher.BlockMode
 	reg                                *Registry
 	thisMember                         *ClusterMember
-	clusterName                        string
-	clusterID                          []byte
-	clusterSize                        int
-	version                            uint32 // protocol version used in session
-	known                              uint64 // a bit vector:
-	entryState                         int
-	exitState                          int
-	msgIn                              *XLRegMsg
-	msgOut                             *XLRegMsg
-	errOut                             error
+	cluster                            *RegCluster
+	// XXX next three should be redundant
+	clusterName string
+	clusterID   []byte
+	clusterSize int
+	// XXX end redundant fields
+
+	version    uint32 // protocol version used in session
+	known      uint64 // a bit vector:
+	entryState int
+	exitState  int
+	msgIn      *XLRegMsg
+	msgOut     *XLRegMsg
+	errOut     error
 	CnxHandler
 }
 

@@ -21,6 +21,7 @@ var (
 	NilCluster                = errors.New("nil cluster argument")
 	NilPrivateKey             = errors.New("nil private key argument")
 	NilRegistry               = errors.New("nil registry argument")
+	NilToken                  = errors.New("nil XLRegMsg_Token argument")
 	RcvdInvalidMsgForState    = errors.New("invalid msg type for current state")
 	UnexpectedMsgType         = errors.New("unexpected message type")
 	WrongNumberOfBytesInAttrs = errors.New("wrong number of bytes in attrs")

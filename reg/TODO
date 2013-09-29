@@ -1,5 +1,9 @@
 xlattice_go/reg/TODO
 
+2013-09-28
+    * cluster_member_test should test that member.Token() and
+        NewClusterMemberFromToken() can be used circularly              * DONE
+
 2013-09-27
     * need read lock on reg.members when we get size
     * need write lock when we add members

@@ -28,6 +28,7 @@ type MockClient struct {
 // on the entire membership.
 
 func NewMockClient(
+	rng *xr.PRNG,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK *rsa.PublicKey,
 	clusterName string, clusterID *xi.NodeID, size int, endPointCount int) (
@@ -43,7 +44,6 @@ func NewMockClient(
 	var ep []xt.EndPointI
 	var client *Client
 
-	rng := xr.MakeSimpleRNG()
 	name := rng.NextFileName(16)
 	idBuf := make([]byte, SHA1_LEN)
 	rng.NextBytes(&idBuf)

@@ -13,6 +13,7 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
+	"time"
 )
 
 var _ = fmt.Print
@@ -35,7 +36,7 @@ type Client struct {
 	serverCK    *rsa.PublicKey
 	clusterName string
 	clusterID   *xi.NodeID
-	clusterSize uint32
+	clusterSize uint32 // this is a FIXED size, aka MaxSize
 
 	// run information
 	doneCh chan bool
@@ -53,8 +54,8 @@ type Client struct {
 	encrypterC   cipher.BlockMode
 	decrypterC   cipher.BlockMode
 
-	// information on other cluster members
-	others []*ClusterMember
+	// information on cluster members
+	members []*ClusterMember
 
 	// Information on this cluster member.  By convention endPoints[0]
 	// is used for member-member communications and [1] for comms with
@@ -168,7 +169,7 @@ func (mc *Client) Run() (err error) {
 				mc.decrypterC = cipher.NewCBCDecrypter(mc.engineC, iv2)
 			}
 			// DEBUG
-			fmt.Println("AES engines set up")
+			fmt.Println("client AES engines set up")
 			// END
 		}
 		// Send CLIENT MSG ==========================================
@@ -183,7 +184,9 @@ func (mc *Client) Run() (err error) {
 					for i := 0; i < len(mc.endPoints); i++ {
 						myEnds = append(myEnds, mc.endPoints[i].String())
 					}
+					clientName := mc.GetName()
 					token := &XLRegMsg_Token{
+						Name:     &clientName,
 						Attrs:    &mc.proposedAttrs,
 						ID:       mc.GetNodeID().Value(),
 						CommsKey: ckBytes,
@@ -192,10 +195,9 @@ func (mc *Client) Run() (err error) {
 					}
 
 					op = XLRegMsg_Client
-					clientName := mc.GetName()
 					request = &XLRegMsg{
 						Op:          &op,
-						ClientName:  &clientName,
+						ClientName:  &clientName, // XXX redundant
 						ClientSpecs: token,
 					}
 					// SHOULD CHECK FOR TIMEOUT
@@ -230,7 +232,8 @@ func (mc *Client) Run() (err error) {
 			// SHOULD CHECK FOR TIMEOUT
 			err = mc.writeMsg(request)
 			// DEBUG
-			fmt.Printf("Create sent for cluster %s\n", mc.clusterName)
+			fmt.Printf("Create sent for cluster %s, size %d\n",
+				mc.clusterName, mc.clusterSize)
 			// END
 		}
 		// Process CREATE REPLY -------------------------------------
@@ -245,13 +248,14 @@ func (mc *Client) Run() (err error) {
 			// END
 			if err == nil {
 				mc.clusterSize = response.GetClusterSize()
+				mc.members = make([]*ClusterMember, mc.clusterSize)
 				id := response.GetClusterID()
 				mc.clusterID, err = xi.New(id)
 			}
-		} // GEEP
+		}
 
 		// Send JOIN MSG ============================================
-		fmt.Printf("Cluster size before Join: %d\n", mc.clusterSize)
+		fmt.Printf("Pre-Join client-side cluster size: %d\n", mc.clusterSize)
 		if err == nil {
 			op = XLRegMsg_Join
 			request = &XLRegMsg{
@@ -274,7 +278,13 @@ func (mc *Client) Run() (err error) {
 			fmt.Printf("client has received JoinReply; err is %v\n", err)
 			// END
 			if err == nil {
-				mc.clusterSize = response.GetClusterSize()
+				// XXX We collect this information for the second time;
+				// it might be different!
+				clusterSizeNow := response.GetClusterSize()
+				if mc.clusterSize != clusterSizeNow {
+					mc.clusterSize = clusterSizeNow
+					mc.members = make([]*ClusterMember, mc.clusterSize)
+				}
 				id := response.GetClusterID()
 				mc.clusterID, err = xi.New(id)
 			}
@@ -284,23 +294,67 @@ func (mc *Client) Run() (err error) {
 		fmt.Printf("Cluster size after Join: %d\n", mc.clusterSize)
 		stillToGet := xu.LowNMap(uint(mc.clusterSize))
 
-		count := 0 // DEBUG?
-
-		for err == nil && stillToGet.Any() {
-			fmt.Printf("STILL TO GET: 0x%x\n", stillToGet.Bits)
-
-			// Send GET MSG =========================================
-
-			// XXX WORKING HERE
-
-			// Process MEMBERS = GET REPLY --------------------------
-
-			// DEBUG?
-			if count += 1; count >= 1 {
-				break
+		if err == nil {
+			MAX_GET := 16
+			// XXX It should be impossible for mc.members to be nil
+			// at this point
+			if mc.members == nil {
+				mc.members = make([]*ClusterMember, mc.clusterSize)
 			}
-		}
+			for count := 0; count < MAX_GET && stillToGet.Any(); count++ {
 
+				fmt.Printf("STILL TO GET: %d (bits 0x%x)\n",
+					stillToGet.Count(), stillToGet.Bits)
+
+				// Send GET MSG =========================================
+				op = XLRegMsg_Get
+				request = &XLRegMsg{
+					Op:        &op,
+					ClusterID: mc.clusterID.Value(),
+					Which:     &stillToGet.Bits,
+				}
+				// SHOULD CHECK FOR TIMEOUT
+				err = mc.writeMsg(request)
+
+				// Process MEMBERS = GET REPLY --------------------------
+				if err != nil {
+					break
+				}
+				response, err = mc.readMsg()
+				// XXX HANDLE ANY ERROR
+				op = response.GetOp()
+				// XXX op MUST BE XLRegMsg_Members
+				_ = op
+
+				if err == nil {
+					id := response.GetClusterID()
+					_ = id // XXX ignore for now
+					which := xu.NewBitMap64(response.GetWhich())
+					// DEBUG
+					fmt.Printf("client has received %d Members\n",
+						which.Count())
+					// END
+					tokens := response.GetTokens() // a slice
+					offset := 0
+					if which.Any() {
+						for i := uint(0); i < uint(mc.clusterSize); i++ {
+							if which.Test(i) {
+								token := tokens[offset]
+								offset++
+								mc.members[i], err = NewClusterMemberFromToken(
+									token)
+								stillToGet.Clear(i)
+							}
+						}
+					}
+					if stillToGet.None() {
+						fmt.Println("HAVE ALL MEMBERS") // DEBUG
+						break
+					}
+					time.Sleep(10 * time.Millisecond)
+				}
+			} // FOO
+		}
 		// Send BYE MSG =============================================
 		if err == nil {
 			op = XLRegMsg_Bye
