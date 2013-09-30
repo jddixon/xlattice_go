@@ -43,6 +43,26 @@ func (s *XLSuite) TestCounts(c *C) {
 	}
 }
 
+func (s *XLSuite) TestSetAndClear(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_SET_AND_CLEAR")
+	}
+	rng := rnglib.MakeSimpleRNG()
+
+	// Set(0) and Clear(0) were wrong before 2013-09-29
+	z := NewBitMap64(0)
+	z = z.Set(0)
+	c.Assert(z.Bits, Equals, uint64(1))
+	z = z.Clear(0)
+	c.Assert(z.Bits, Equals, uint64(0))
+
+	n := uint (rng.Intn(64))	// so in 0..63 inclusive
+	z = z.Set(n)
+	c.Assert(z.Bits, Equals, uint64(1) << n)
+	z = z.Clear(n)
+	c.Assert(z.Bits, Equals, uint64(0))
+}
+
 func (s *XLSuite) TestOtherFuncs(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_OTHER_FUNCS")
@@ -94,3 +114,4 @@ func (s *XLSuite) TestOtherFuncs(c *C) {
 		}
 	}
 }
+

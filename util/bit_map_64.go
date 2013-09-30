@@ -75,10 +75,15 @@ func (bm *BitMap64) All() bool {
 func (bm *BitMap64) Any() bool {
 	return bm.Bits != 0
 }
-// Set the low order N bits to zero.
+// Clear bit N, setting it to zero.
 func (bm *BitMap64) Clear(n uint) *BitMap64 {
 	// XXX Constrain 0 <= n <= 63
-	return &BitMap64{Bits: bm.Bits & ^ lowNMap[n]} 
+	return &BitMap64{Bits: bm.Bits & ^ ( uint64(1) << n) } 
+}
+// Set the low order N bits to zero.
+func (bm *BitMap64) ClearLowN(n uint) *BitMap64 {
+	// XXX Constrain 0 <= n <= 63
+	return &BitMap64{Bits: bm.Bits & ^ lowNMap[n + 1]} 
 }
 // Return a clone of this bit map.
 func (bm *BitMap64) Clone() *BitMap64 {
@@ -134,7 +139,7 @@ func (bm *BitMap64) None() bool {
 // Return a map identical to this one except that the Nth bit is set.
 func (bm *BitMap64) Set (n uint) *BitMap64 {
 	// XXX Constrain 0 <= n <= 63
-	b := bm.Bits | (1 << n)
+	b := bm.Bits | (uint64(1) << n)
 	return &BitMap64{b}
 }
 // Return a map which is the XOR of the two inputs.
