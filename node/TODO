@@ -10,7 +10,6 @@ xlattice_go/node/TODO
 
 2013-09-18
     * peer_map.go and test should be replaced by bni_map and test
-    * FIX bni_map test byte(0xf) should be byte(0xff)                   * DONE
 
 2013-09-17
     * Peer.Equal() needs to be fleshed out
@@ -24,10 +23,9 @@ xlattice_go/node/TODO
 2013-09-16
     * BaseNode.Equal() was wrong and needs to be fixed further
 
-2013-09-12
-    * BaseNodeMap as in bn_map.go should replace PeerMap and
-        peer_map.go; this needs further checking
-        - attempt to do straight replacment in node.go failed
+2013-09-12 (edited 09-30)
+    * BNIMap as in bni_map.go should replace PeerMap and                * DONE
+        peer_map.go
 
 2013-08-29
     * The Peer 'up' field should be a field of bit flags

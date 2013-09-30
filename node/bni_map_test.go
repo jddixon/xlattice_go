@@ -1,59 +1,82 @@
 package node
 
-// xlattice_go/node/bni_map_test.go
+// xlattice_go/node/bn_map_test.go
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
-	"github.com/jddixon/xlattice_go/rnglib"
+	xr "github.com/jddixon/xlattice_go/rnglib"
+	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 )
 
 var _ = fmt.Print
-var _ = rnglib.MakeSimpleRNG
 
-func (s *XLSuite) makeTopAndBottomBN(c *C) (topBaseNode, bottomBaseNode *BaseNode) {
+func (s *XLSuite) makePubKey(c *C) *rsa.PublicKey {
+	key, err := rsa.GenerateKey(rand.Reader, 512) // 512 because cheaper
+	c.Assert(err, IsNil)
+	return &key.PublicKey
+}
+
+func (s *XLSuite) makePeerGivenID(c *C, rng *xr.PRNG, name string,
+	id []byte) (member *Peer) {
+
+	nodeID, err := xi.New(id)
+	c.Assert(err, IsNil)
+
+	ck := s.makePubKey(c)
+	sk := s.makePubKey(c)
+	port := 1024 + rng.Intn(256*256-1024)
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
+	myEnd, err := xt.NewTcpEndPoint(addr)
+	c.Assert(err, IsNil)
+	ctor, err := xt.NewTcpConnector(myEnd)
+	c.Assert(err, IsNil)
+	ctors := []xt.ConnectorI{ctor}
+
+	member, err = NewPeer(name, nodeID, ck, sk, nil, ctors)
+	c.Assert(err, IsNil)
+	return
+}
+func (s *XLSuite) makeTopAndBottomBNI(c *C, rng *xr.PRNG) (
+	topBNI, bottomBNI BaseNodeI) {
+
+	// top contains  a slice of SHA1_LEN 0xFF as NodeID
 	t := make([]byte, SHA1_LEN)
 	for i := 0; i < SHA1_LEN; i++ {
 		t[i] = byte(0xff)
 	}
-	top, err := xi.NewNodeID(t)
-	c.Assert(err, IsNil)
-	c.Assert(top, Not(IsNil))
+	topBNI = s.makePeerGivenID(c, rng, "top", t)
 
-	topBaseNode, err = NewNewBaseNode("top", top)
-	c.Assert(err, IsNil)
-	c.Assert(topBaseNode, Not(IsNil))
+	// bottom contains  a slice of SHA1_LEN zeroes as NodeID
+	b := make([]byte, SHA1_LEN)
+	bottomBNI = s.makePeerGivenID(c, rng, "bottom", b)
 
-	bottom, err := xi.NewNodeID(make([]byte, SHA1_LEN))
-	c.Assert(err, IsNil)
-	c.Assert(bottom, Not(IsNil))
-
-	bottomBaseNode, err = NewNewBaseNode("bottom", bottom)
-	c.Assert(err, IsNil)
-	c.Assert(bottomBaseNode, Not(IsNil))
-
-	return topBaseNode, bottomBaseNode
+	return topBNI, bottomBNI
 }
-func (s *XLSuite) makeABaseNode(c *C, name string, id ...int) (baseNode *BaseNode) {
+
+// Create a randomish Peer for use as a BNI, assigning it a
+// nodeID based upon the variable-length list of ints passed
+
+func (s *XLSuite) makeABNI(c *C, rng *xr.PRNG, name string, id ...int) (
+	bni BaseNodeI) {
+
 	t := make([]byte, SHA1_LEN)
 	for i := 0; i < len(id); i++ {
 		t[i] = byte(id[i])
 	}
-	nodeID, err := xi.NewNodeID(t)
-	c.Assert(err, IsNil)
-	c.Assert(nodeID, Not(IsNil))
-
-	baseNode, err = NewNewBaseNode(name, nodeID)
-	c.Assert(err, IsNil)
-	c.Assert(baseNode, Not(IsNil))
+	bni = s.makePeerGivenID(c, rng, name, t)
+	c.Assert(bni, Not(IsNil))
 	return
 }
 func (s *XLSuite) TestBNIMapTools(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_BASE_NODE_MAP_TOOLS")
+		fmt.Println("TEST_BNI_MAP_TOOLS")
 	}
-	threeBaseNode := s.makeABaseNode(c, "threeBaseNode", 1, 2, 3)
+	rng := xr.MakeSimpleRNG()
+	threeBaseNode := s.makeABNI(c, rng, "threeBaseNode", 1, 2, 3)
 	nodeID := threeBaseNode.GetNodeID()
 	value := nodeID.Value()
 	c.Assert(threeBaseNode.GetName(), Equals, "threeBaseNode")
@@ -73,28 +96,31 @@ func (s *XLSuite) TestTopBottomBNMap(c *C) {
 	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
-	topBaseNode, bottomBaseNode := s.makeTopAndBottomBN(c)
-	err := pm.AddToBNIMap(topBaseNode)
+	rng := xr.MakeSimpleRNG()
+	topBNI, bottomBNI := s.makeTopAndBottomBNI(c, rng)
+	err := pm.AddToBNIMap(topBNI)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 	lowest := pm.NextCol
 	c.Assert(lowest.CellNode, Not(IsNil))
+
 	// THESE THREE TESTS ARE LOGICALLY EQUIVALENT ----------------------
-	c.Assert(lowest.CellNode, Equals, topBaseNode) // succeeds ...
-	c.Assert(xi.SameNodeID(lowest.CellNode.GetNodeID(), topBaseNode.GetNodeID()),
+	c.Assert(lowest.CellNode, Equals, topBNI)
+	c.Assert(xi.SameNodeID(lowest.CellNode.GetNodeID(), topBNI.GetNodeID()),
 		Equals, true)
-	// XXX This fails, but it's a bug in BaseNode.Equal()
-	// c.Assert(topBaseNode.Equal(lowest.CellNode), Equals, true)
+	c.Assert(topBNI.Equal(lowest.CellNode), Equals, true)
 	// END LOGICALLY EQUIVALENT -----------------------------------------
+
 	c.Assert(lowest.CellNode.GetName(), Equals, "top")
 
-	// We expect that bottomBaseNode will become the lowest with its
-	// higher field pointing at topBaseNode.
-	err = pm.AddToBNIMap(bottomBaseNode)
+	// We expect that bottomBNI will become the lowest with its
+	// higher field pointing at topBNI.
+	err = pm.AddToBNIMap(bottomBNI)
 	c.Assert(err, IsNil)
 	lowest = pm.NextCol
-	// c.Assert(bottomBaseNode.Equal(lowest.CellNode), Equals, true)   // FAILS
-	c.Assert(lowest.CellNode.GetName(), Equals, "bottom") // XXX gets 'top'
+
+	c.Assert(bottomBNI.Equal(lowest.CellNode), Equals, true)
+	c.Assert(lowest.CellNode.GetName(), Equals, "bottom")
 }
 func (s *XLSuite) TestShallowBNMap(c *C) {
 	if VERBOSITY > 0 {
@@ -103,11 +129,12 @@ func (s *XLSuite) TestShallowBNMap(c *C) {
 	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
-	baseNode1 := s.makeABaseNode(c, "baseNode1", 1)
-	baseNode2 := s.makeABaseNode(c, "baseNode2", 2)
-	baseNode3 := s.makeABaseNode(c, "baseNode3", 3)
+	rng := xr.MakeSimpleRNG()
+	baseNode1 := s.makeABNI(c, rng, "baseNode1", 1)
+	baseNode2 := s.makeABNI(c, rng, "baseNode2", 2)
+	baseNode3 := s.makeABNI(c, rng, "baseNode3", 3)
 
-	// ADD BASE_NODE 3 ---------------------------------------------------
+	// ADD BNI 3 ---------------------------------------------------
 	err := pm.AddToBNIMap(baseNode3)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
@@ -116,7 +143,7 @@ func (s *XLSuite) TestShallowBNMap(c *C) {
 	c.Assert(cell3.CellNode, Not(IsNil))
 	c.Assert(cell3.CellNode.GetName(), Equals, baseNode3.GetName())
 
-	// INSERT BASE_NODE 2 ------------------------------------------------
+	// INSERT BNI 2 ------------------------------------------------
 	err = pm.AddToBNIMap(baseNode2)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
@@ -128,7 +155,7 @@ func (s *XLSuite) TestShallowBNMap(c *C) {
 
 	// DumpBNIMap(&pm, "dump of shallow map, baseNodes 3 and 2")
 
-	// INSERT BASE_NODE 1 ------------------------------------------------
+	// INSERT BNI 1 ------------------------------------------------
 	err = pm.AddToBNIMap(baseNode1)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
@@ -156,9 +183,10 @@ func (s *XLSuite) TestDeeperBNMap(c *C) {
 	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
-	baseNode1 := s.makeABaseNode(c, "baseNode1", 1)
-	baseNode12 := s.makeABaseNode(c, "baseNode12", 1, 2)
-	baseNode123 := s.makeABaseNode(c, "baseNode123", 1, 2, 3)
+	rng := xr.MakeSimpleRNG()
+	baseNode1 := s.makeABNI(c, rng, "baseNode1", 1)
+	baseNode12 := s.makeABNI(c, rng, "baseNode12", 1, 2)
+	baseNode123 := s.makeABNI(c, rng, "baseNode123", 1, 2, 3)
 
 	// add baseNode123 ================================================
 	err := pm.AddToBNIMap(baseNode123)
@@ -254,12 +282,12 @@ func (s *XLSuite) TestDeeperBNMap(c *C) {
 
 }
 
-func (s *XLSuite) addABaseNode(c *C, pm *BNIMap, baseNode *BaseNode) {
+func (s *XLSuite) addABNI(c *C, pm *BNIMap, baseNode BaseNodeI) {
 	err := pm.AddToBNIMap(baseNode)
 	c.Assert(err, IsNil)
 	c.Assert(pm.NextCol, Not(IsNil))
 }
-func (s *XLSuite) findABaseNode(c *C, pm *BNIMap, baseNode *BaseNode) {
+func (s *XLSuite) findABaseNode(c *C, pm *BNIMap, baseNode BaseNodeI) {
 	nodeID := baseNode.GetNodeID()
 	d := nodeID.Value()
 	c.Assert(d, Not(IsNil))
@@ -276,22 +304,23 @@ func (s *XLSuite) findABaseNode(c *C, pm *BNIMap, baseNode *BaseNode) {
 }
 func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_FIND_FLAT_BASE_NODES")
+		fmt.Println("TEST_FIND_FLAT_BNIS")
 	}
 	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
-	baseNode1 := s.makeABaseNode(c, "baseNode1", 1)
-	baseNode2 := s.makeABaseNode(c, "baseNode2", 2)
-	baseNode4 := s.makeABaseNode(c, "baseNode4", 4)
-	baseNode5 := s.makeABaseNode(c, "baseNode5", 5)
-	baseNode6 := s.makeABaseNode(c, "baseNode6", 6)
+	rng := xr.MakeSimpleRNG()
+	baseNode1 := s.makeABNI(c, rng, "baseNode1", 1)
+	baseNode2 := s.makeABNI(c, rng, "baseNode2", 2)
+	baseNode4 := s.makeABNI(c, rng, "baseNode4", 4)
+	baseNode5 := s.makeABNI(c, rng, "baseNode5", 5)
+	baseNode6 := s.makeABNI(c, rng, "baseNode6", 6)
 
 	// TODO: randomize order in which baseNodes are added
 
 	// ADD 1 AND THEN 5 ---------------------------------------------
-	s.addABaseNode(c, &pm, baseNode1)
-	s.addABaseNode(c, &pm, baseNode5)
+	s.addABNI(c, &pm, baseNode1)
+	s.addABNI(c, &pm, baseNode5)
 
 	cell1 := pm.NextCol
 	c.Assert(cell1.Pred, Equals, &pm.BNIMapCell)
@@ -305,7 +334,7 @@ func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 	c.Assert(cell5.ThisCol, IsNil)
 
 	// INSERT 4 -----------------------------------------------------
-	s.addABaseNode(c, &pm, baseNode4)
+	s.addABNI(c, &pm, baseNode4)
 
 	cell4 := cell1.ThisCol
 	c.Assert(cell4.ByteVal, Equals, byte(4))
@@ -315,7 +344,7 @@ func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 	c.Assert(cell5.Pred, Equals, cell4)
 
 	// ADD 6 --------------------------------------------------------
-	s.addABaseNode(c, &pm, baseNode6)
+	s.addABNI(c, &pm, baseNode6)
 
 	cell6 := cell5.ThisCol
 	c.Assert(cell6.ByteVal, Equals, byte(6))
@@ -324,7 +353,7 @@ func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 	c.Assert(cell6.ThisCol, IsNil)
 
 	// INSERT 2 -----------------------------------------------------
-	s.addABaseNode(c, &pm, baseNode2)
+	s.addABNI(c, &pm, baseNode2)
 
 	cell2 := cell1.ThisCol
 	c.Assert(cell2.ByteVal, Equals, byte(2))
@@ -344,51 +373,52 @@ func (s *XLSuite) TestFindFlatBaseNodes(c *C) {
 }
 func (s *XLSuite) TestFindBNI(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_FIND_BASE_NODE")
+		fmt.Println("TEST_FIND_BNI")
 	}
 	var pm BNIMap
 	c.Assert(pm.NextCol, IsNil)
 
-	baseNode0123 := s.makeABaseNode(c, "baseNode0123", 0, 1, 2, 3)
-	baseNode1 := s.makeABaseNode(c, "baseNode1", 1)
-	baseNode12 := s.makeABaseNode(c, "baseNode12", 1, 2)
-	baseNode123 := s.makeABaseNode(c, "baseNode123", 1, 2, 3)
-	baseNode4 := s.makeABaseNode(c, "baseNode4", 4)
-	baseNode42 := s.makeABaseNode(c, "baseNode42", 4, 2)
-	baseNode423 := s.makeABaseNode(c, "baseNode423", 4, 2, 3)
-	// baseNode5 := s.makeABaseNode(c, "baseNode5", 5)
-	baseNode6 := s.makeABaseNode(c, "baseNode6", 6)
-	baseNode62 := s.makeABaseNode(c, "baseNode62", 6, 2)
-	baseNode623 := s.makeABaseNode(c, "baseNode623", 6, 2, 3)
+	rng := xr.MakeSimpleRNG()
+	baseNode0123 := s.makeABNI(c, rng, "baseNode0123", 0, 1, 2, 3)
+	baseNode1 := s.makeABNI(c, rng, "baseNode1", 1)
+	baseNode12 := s.makeABNI(c, rng, "baseNode12", 1, 2)
+	baseNode123 := s.makeABNI(c, rng, "baseNode123", 1, 2, 3)
+	baseNode4 := s.makeABNI(c, rng, "baseNode4", 4)
+	baseNode42 := s.makeABNI(c, rng, "baseNode42", 4, 2)
+	baseNode423 := s.makeABNI(c, rng, "baseNode423", 4, 2, 3)
+	// baseNode5 := s.makeABNI(c, rng, "baseNode5", 5)
+	baseNode6 := s.makeABNI(c, rng, "baseNode6", 6)
+	baseNode62 := s.makeABNI(c, rng, "baseNode62", 6, 2)
+	baseNode623 := s.makeABNI(c, rng, "baseNode623", 6, 2, 3)
 
 	// TODO: randomize order in which baseNodes are added
-	s.addABaseNode(c, &pm, baseNode123)
-	s.addABaseNode(c, &pm, baseNode12)
-	s.addABaseNode(c, &pm, baseNode1)
+	s.addABNI(c, &pm, baseNode123)
+	s.addABNI(c, &pm, baseNode12)
+	s.addABNI(c, &pm, baseNode1)
 	//DumpBNIMap(&pm, "after adding baseNode1, baseNode12, baseNode123, before baseNode4")
 
-	// s.addABaseNode(c, &pm, baseNode5)
+	// s.addABNI(c, &pm, baseNode5)
 	// DumpBNIMap(&pm, "after adding baseNode5")
 
-	s.addABaseNode(c, &pm, baseNode4)
-	s.addABaseNode(c, &pm, baseNode42)
-	s.addABaseNode(c, &pm, baseNode423)
+	s.addABNI(c, &pm, baseNode4)
+	s.addABNI(c, &pm, baseNode42)
+	s.addABNI(c, &pm, baseNode423)
 	// DumpBNIMap(&pm, "after adding baseNode4, baseNode42, baseNode423")
 
-	s.addABaseNode(c, &pm, baseNode6)
+	s.addABNI(c, &pm, baseNode6)
 	// DumpBNIMap(&pm, "after adding baseNode6")
-	s.addABaseNode(c, &pm, baseNode623)
+	s.addABNI(c, &pm, baseNode623)
 	//DumpBNIMap(&pm, "after adding baseNode623")
-	s.addABaseNode(c, &pm, baseNode62)
+	s.addABNI(c, &pm, baseNode62)
 	//DumpBNIMap(&pm, "after adding baseNode62")
 
-	s.addABaseNode(c, &pm, baseNode0123)
+	s.addABNI(c, &pm, baseNode0123)
 	//DumpBNIMap(&pm, "after adding baseNode0123")
 
 	// adding duplicates should have no effect
-	s.addABaseNode(c, &pm, baseNode4)
-	s.addABaseNode(c, &pm, baseNode42)
-	s.addABaseNode(c, &pm, baseNode423)
+	s.addABNI(c, &pm, baseNode4)
+	s.addABNI(c, &pm, baseNode42)
+	s.addABNI(c, &pm, baseNode423)
 
 	// TODO: randomize order in which finding baseNodes is tested
 	s.findABaseNode(c, &pm, baseNode0123) // XXX
