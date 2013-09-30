@@ -9,6 +9,7 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/reg"
 	xt "github.com/jddixon/xlattice_go/transport"
+	xu "github.com/jddixon/xlattice_go/util"
 	"os"
 	"path"
 )
@@ -24,12 +25,6 @@ const (
 	DEFAULT_NAME = "xlReg"
 	DEFAULT_LFS  = "/var/app/xlReg"
 	DEFAULT_PORT = 44444 // for the registry, not clients
-)
-
-var (
-	// these are here for testing
-	regData *reg.RegData
-	regNode *reg.RegNode
 )
 
 var (
@@ -76,7 +71,7 @@ func main() {
 			*name = "testReg"
 		}
 		if *lfs == DEFAULT_LFS || *lfs == "" {
-			*lfs = "./myReg"
+			*lfs = "./myApp/xlReg"
 		} else {
 			*lfs = path.Join("tmp", *lfs)
 		}
@@ -85,9 +80,6 @@ func main() {
 		}
 	}
 	addrAndPort := fmt.Sprintf("%s:%d", *address, *port)
-	// DEBUG
-	fmt.Printf("XLReg.Main: addrAndPort is %s\n", addrAndPort)
-	// END
 	endPoint, err := xt.NewTcpEndPoint(addrAndPort)
 	if err != nil {
 		fmt.Printf("not a valid endPoint: %s\n", addrAndPort)
@@ -95,8 +87,13 @@ func main() {
 	}
 
 	// SANITY CHECKS ////////////////////////////////////////////////
-
-	// DISPLAY FLAGS ////////////////////////////////////////////////
+	if err == nil {
+		err = xu.CheckLFS(*lfs)		// tries to create if it doesn't exist
+	}
+	// DISPLAY STUFF ////////////////////////////////////////////////
+	if *verbose {
+		fmt.Printf("xlReg v%s %s\n", reg.VERSION, reg.VERSION_DATE)
+	}
 	if *verbose || *justShow {
 		fmt.Printf("address      = %v\n", *address)
 		fmt.Printf("endPoint     = %v\n", endPoint)
@@ -125,21 +122,22 @@ func main() {
 	}
 	_ = err
 }
-func setup(opt *reg.RegOptions) (r *reg.RegNode, err error) {
+func setup(opt *reg.RegOptions) (r *reg.Registry, err error) {
 	// If LFS/.xlattice/config exists, we load that.  Otherwise we
 	// create a node.  In either case we force the node to listen on
 	// the designated port
 
 	// XXX STUB XXX
 
-	r, err = reg.New(opt.Name, opt.ID, opt.Lfs,
-		nil, nil, // opt.CKey, opt.SKey,
-		nil, // overlays
+	r, err = reg.NewRegistry(nil,		// nil = clusters so far
+		opt.Name, opt.ID, opt.Lfs,
+		nil, nil,						// opt.CKey, opt.SKey,
+		nil,							// overlays
 		opt.EndPoint)
 
 	return r, err
 }
-func serve(r *reg.RegNode) (err error) {
+func serve(r *reg.Registry) (err error) {
 
 	// XXX STUB XXX
 

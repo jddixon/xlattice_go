@@ -1,16 +1,35 @@
 xlattice_go/reg/TODO
 
+2013-09-30
+    * drop Hello and HelloReply from p.proto 
+    * lfs for xlReg is myApp/xlReg for testing,
+        /var/app/xlReg otherwise
+    * xlReg loads from/saves to lfs (see 09-16 TODO)
+    * xlReg listens on 33333 if testing (-T), 
+        defaults to 44444 otherwise
+    * need locking at the registry level when we
+        - check whether name, id in use (read lock)
+        - add cluster (write lock)
+    * xlReg needs log
+        - logs by default to LFS/log
+    * reg needs version number for use by xlReg
+        - currently 0.1.0
+        - server ignores client-requested version number, replies 
+            with current
+        - 0.2.0 has lfs, logging, load/save
+    * deploy xlReg 0.2.0 on salinas:55555
+
 2013-09-29
     * improve RegCluster.AddMember handling of dupe names
-    * on adding member check for entry in BNIMap
+    * when adding member check for entry in BNIMap
     * client.go needs to check op for all replies from server
 
 2013-09-27
-    * need read lock on reg.members when we get size
+    * need read lock on RegCluster.members when we get size
     * need write lock when we add members
 
 2013-09-25
-    * FIX: mock_server_test only makes 2 clients
+    * FIX: mock_server_test only makes 2 clients                        * DONE
 
 2013-09-24
     * modify functions in msg_handlers.go so that they are no longer    * DONE
@@ -22,17 +41,11 @@ xlattice_go/reg/TODO
     * packets.go writeDate should handle partial writes, looping on count 
         until all bytes have gone
 
-    * need to add conventional logging 
-
 2013-09-20
     * several tests could obviously benefit from parallelizing: 
         they run one CPU at 100% while the others are more or less idle
         - look at cluster_member_test
         - also reg_cluster_test 
-
-2013-09-18
-    * RegCluster.AddMember(): improve handling of attempts to add 
-        entries with the same name 
 
 2013-09-16
     * regNode serialization follows practice in ../node: we first
@@ -56,10 +69,3 @@ xlattice_go/reg/TODO
     * when this is stable, merge back into main branch
         - and deploy on test:44444
     * document
-    * deploy on salinas:44444
-2013-09-04
-    * complete crypto_test                                              * DONE
-    * repackage so that the same approach can be used in other
-        modules
-        - presumably most of this moves to ../crypto/
-    

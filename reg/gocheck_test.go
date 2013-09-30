@@ -20,8 +20,6 @@ var _ = Suite(&XLSuite{})
 
 const (
 	VERBOSITY = 1
-	SHA1_LEN  = 20
-	SHA3_LEN  = 32
 )
 
 func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {

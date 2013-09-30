@@ -1,12 +1,16 @@
 xlattice_go/node/TODO
 
+2013-09-30 (marked as DONE 09-11, but it wasn't)
+    * lfs should be validated in node.Node                              * DONE
+        - specifically, if it doesn't exist, we should create it        * DONE
+
 2013-09-19
     * first NextNBLine check in Peer.collectConnectors should be
         peek !
 
 2013-09-18
     * peer_map.go and test should be replaced by bni_map and test
-    * FIX bn_map test byte(0xf) should be byte(0xff) 
+    * FIX bni_map test byte(0xf) should be byte(0xff)                   * DONE
 
 2013-09-17
     * Peer.Equal() needs to be fleshed out
@@ -18,42 +22,38 @@ xlattice_go/node/TODO
     * FIX: tests have not shown BaseNode.Equal failing                  * FIXED
 
 2013-09-16
-    * BaseNode.Equal() was wrong and needs to be fixed further 
+    * BaseNode.Equal() was wrong and needs to be fixed further
 
 2013-09-12
     * BaseNodeMap as in bn_map.go should replace PeerMap and
         peer_map.go; this needs further checking
         - attempt to do straight replacment in node.go failed
 
-2013-09-11
-    * lfs should be validated in node.Node                              * DONE
-        - specifically, if it doesn't exist, we should create it        * DONE
-
-2013-08-30
-    * Consolidate all error messages into errors.go                     * DONE
-
 2013-08-29
     * The Peer 'up' field should be a field of bit flags
         (declare as int but only use 32 bits)
 
 2013-08-25
-    * complete the stubbed sections in 
+    * complete the stubbed sections in
         test_node.TestAutoCreateOverlays
 
 2013-08-24
-    * peer_map: strip debug statements and meaningless comments 
+    * peer_map: strip debug statements and meaningless comments
         from code
 
 2013-08-23
     * Move TestSameNodeID into ../nodeID/nodeID_test.go                 * DONE
 
-    * peer_map: consider replacing the current approach, perhaps with 
+    * peer_map: consider replacing the current approach, perhaps with
         one where we have an array of 2^N pointers at each level -
         should be simpler to construct and much faster to search
 
 2013-08-19
-    * "connection reset by peer" in localHost_test.go at lines
+    * "connection reset by peer" in localHost_test.go at lines          * FIXED
         115, 126 seen once (seen again 08-25) (and again 09-11)
+        (and again, many times, 09-30)
+        - fixed 2013-09-30 by doubling sleep to 2 ms and retrying
+            up to 5 times
     * arguably need stronger version of Peer.Equal(); it only
         confirms that NodeIDs are the same
 
@@ -68,31 +68,31 @@ xlattice_go/node/TODO
             the slice is not to have entries deleted from it.
 
 2013-08-15
-    * document this: running localHost_test.go with Q=64 now just works 
+    * document this: running localHost_test.go with Q=64 now just works
         - on Ubuntu edit /etc/security/limits.conf adding
             * soft nofile 16384
             * hard nofile 65536
         - Panicked on test; then made the above change, rebooted, and
             tried again.  Succeeded as normal user.
-    * Added code to set MAXPROC to 8 at the beginning of each unit 
+    * Added code to set MAXPROC to 8 at the beginning of each unit
         test.  Definitely improved cpu usage as reported by top,
         usually by 2 or 3% but peak usage went from 100% to 127%
-        on a 2-cpu system (not yet tested on 4-cpu).  However, 
+        on a 2-cpu system (not yet tested on 4-cpu).  However,
         local_host_test line 96 now blows up with
         "connection reset by peer" within nodeAsClient(), invoked
         by TestLocalHostTcpCluster().
         - if I reset MAXPROC to 1 or 2, the test succeeds :-)
-        - at MAXPROC of 3 to 5 it sometimes blows up; higher 
+        - at MAXPROC of 3 to 5 it sometimes blows up; higher
             values seem to always blow up
         - if I do two test runs at the same time, both blow up
             * this suggests that Go multi-threading is not safe
         - if I run six tests simultaneouwly by detaching with
             ampersand, at least one blows up with connection
-            errors.  CPU usage is good, totalling about 200% 
+            errors.  CPU usage is good, totalling about 200%
             with 2 cores.
         - I ran eight tests simultaneously: 1 failed with connection
             errors, 2 failed because a listening address was already
-            in use when deserializing 
+            in use when deserializing
         _ Reran 8 detached, 1 failed with "connection reset by peer"
         _ Reran 8 detached, 1 failed with 'address already in use'
             in serialization/deserialization test
@@ -113,7 +113,7 @@ xlattice_go/node/TODO
         resources.  This approach precludes or at least constrains
         controlling a node through one of those connections.
 
-    * While the test is running, CPU usage goes up to 100% - 
+    * While the test is running, CPU usage goes up to 100% -
         which would seem to mean it's only using 1 CPU out of the
         8 available.  Not good.
 
@@ -130,15 +130,15 @@ xlattice_go/node/TODO
         - Save() is not just a SnapShot(): it forces an orderly
             shutdown of the node
 
-    * if a node is started with only the name, id, and lfs 
-        specified, it should load its configuration from say 
+    * if a node is started with only the name, id, and lfs
+        specified, it should load its configuration from say
         LFS/.xlattice/config
-   
+
     * extract localHost cluster configuration from localHost_test
 
     * extend localHostTest so that after configurations have
-        been saved, all of the nodes in the cluster are shut 
-        down and then all are restarted from their saved 
+        been saved, all of the nodes in the cluster are shut
+        down and then all are restarted from their saved
         configurations.  The save-and-reload should precede
         the communications checks.
 
@@ -160,6 +160,6 @@ xlattice_go/node/TODO
     * need UDP transport
 
 2013-07-29
-    * Node.Close must close all open connections 
+    * Node.Close must close all open connections
         - take care, servers may have MANY such connections
             * could put each Close() in separate goroutine

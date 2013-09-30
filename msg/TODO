@@ -1,5 +1,21 @@
 xlattice_go/msg/TODO
 
+2013-09-30
+    * drop Hello from p.proto
+    * modify tests to register with XLReg on 44444
+    * initial goal is group of K peers which exchange keepalives
+        until stopped
+    * modify protocol so that each peer has an app which can use
+        the msg layer 
+        - to send single messages to an app associated with another
+            peer
+        - to broadcast messages to the apps associated with other
+            peers
+        - such messages should be opaque possibly except for a
+            recipient index (this would be the index of an app)
+            * recipient index allows us to have multiple apps
+                using the same XLatticeMsg layer
+
 2013-09-16
     * need benchmarks for helloAndReply functions
 

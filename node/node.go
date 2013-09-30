@@ -10,8 +10,8 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
+	xu "github.com/jddixon/xlattice_go/util"
 	"hash"
-	"os"
 	"strings"
 )
 
@@ -50,7 +50,7 @@ func New(name string, id *xi.NodeID, lfs string,
 
 	// lfs should be a well-formed POSIX path; if the directory does
 	// not exist we should create it.
-	err = checkLFS(lfs)
+	err = xu.CheckLFS(lfs)
 
 	// The commsKey is an RSA key used to encrypt short messages.
 	if err == nil {
@@ -331,17 +331,6 @@ func (n *Node) GetConnection(x int) xt.ConnectionI {
 
 // LOCAL FILE SYSTEM ////////////////////////////////////////////////
 
-// If the directory named does not exist, create it, restricting
-// visibility to the owner.  If the directory name is empty, call it
-// "lfs", that is, ./lfs/
-
-func checkLFS(lfs string) (err error) {
-	if lfs == "" {
-		lfs = "lfs"
-	}
-	return os.MkdirAll(lfs, 0700)
-}
-
 // Return the path to the Node's local file system, its private
 // persistent storage.  Conventionally there is a .xlattice subdirectory
 // for storage of the Node's configuration information.
@@ -356,7 +345,7 @@ func (n *Node) setLFS(val string) (err error) {
 	if val == "" {
 		err = NilLFS
 	} else {
-		err = checkLFS(val) 
+		err = xu.CheckLFS(val) 
 	}
 	if err == nil {
 		n.lfs = val

@@ -1,5 +1,9 @@
 xlattice_go/util/TODO
 
+2013-09-28
+    * need to confirm that all functions are tested (Set and Clear
+        weren't)
+    * possibly want to use table lookup for left shifts
 2013-09-27
     * need to constrain N (as in the Nth bit in BitMap64 functions)
         to 0..63 inclusive
