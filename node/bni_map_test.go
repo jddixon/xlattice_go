@@ -15,7 +15,7 @@ var _ = rnglib.MakeSimpleRNG
 func (s *XLSuite) makeTopAndBottomBN(c *C) (topBaseNode, bottomBaseNode *BaseNode) {
 	t := make([]byte, SHA1_LEN)
 	for i := 0; i < SHA1_LEN; i++ {
-		t[i] = byte(0xf)
+		t[i] = byte(0xff)
 	}
 	top, err := xi.NewNodeID(t)
 	c.Assert(err, IsNil)

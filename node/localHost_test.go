@@ -93,12 +93,15 @@ func (s *XLSuite) nodeAsClient(c *C, node *Node, q int, doneCh chan bool) {
 				// open cnx to peer j
 				peer := node.GetPeer(j)
 				ctor := peer.GetConnector(0)
+				// XXX soFar and the sleep handle 'lost connection' errors
+				// Before 2013-09-30 we did 3 soFars and a 1 ms delay, and
+				// sometimes got many lost connections.
 				for soFar := 0; soFar < 3; soFar++ {
 					cnx, err = ctor.Connect(ANY_END_POINT)
 					if err == nil {
 						break
 					}
-					time.Sleep(time.Millisecond)
+					time.Sleep(2 * time.Millisecond)
 				}
 				c.Assert(err, Equals, nil)
 				c.Assert(cnx, Not(IsNil))
@@ -123,6 +126,9 @@ func (s *XLSuite) nodeAsClient(c *C, node *Node, q int, doneCh chan bool) {
 
 				// wait for reply
 				count, err = tcpCnx.Read(hashBuf)
+
+				// XXX 2013-09-30 *many* "connection reset by peer"
+				// errors from this point.
 				c.Assert(err, IsNil)
 				c.Assert(count, Equals, xi.SHA1_LEN)
 
@@ -174,7 +180,7 @@ func (s *XLSuite) TestLocalHostTcpCluster(c *C) {
 		c.Assert(err, IsNil)
 		cfgFileName := path.Join(pathsToCfg[i], "config")
 
-		fmt.Printf("WRITING CONFIG FILE %s\n", cfgFileName)
+		// fmt.Printf("WRITING CONFIG FILE %s\n", cfgFileName)
 
 		cfg := nodes[i].String()
 		err = ioutil.WriteFile(cfgFileName, []byte(cfg), 0644)

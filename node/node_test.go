@@ -229,11 +229,9 @@ func (s *XLSuite) peerFromHost(c *C, n *Node) (peer *Peer) {
 	return peer
 }
 
-// Creates a dummy endPoint.  This is not a real endPoint, it's only
-// for use in testing.  It may not be unique.
-func (s *XLSuite) makeAnEndPoint(c *C, rng *rnglib.PRNG, node *Node) {
-	port := 1024 + rng.Intn(256*256-1024)
-	addr := fmt.Sprintf("127.0.0.1:%d", port)
+// Creates a local (127.0.0.1) endPoint and adds it to the node.
+func (s *XLSuite) makeAnEndPoint(c *C, node *Node) {
+	addr := fmt.Sprintf("127.0.0.1:0")
 	ep, err := xt.NewTcpEndPoint(addr)
 	c.Assert(err, IsNil)
 	c.Assert(ep, Not(IsNil))
@@ -251,7 +249,7 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 	rng := rnglib.MakeSimpleRNG()
 
 	node := s.makeHost(c, rng)
-	s.makeAnEndPoint(c, rng, node)
+	s.makeAnEndPoint(c, node)
 	lfs := rng.NextFileName(4)
 	err := node.setLFS(lfs)
 	c.Assert(err, IsNil)
@@ -262,7 +260,7 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 
 	for i := 0; i < K; i++ {
 		host := s.makeHost(c, rng)
-		s.makeAnEndPoint(c, rng, host)
+		s.makeAnEndPoint(c, host)
 		peers[i] = s.peerFromHost(c, host)
 		ndx, err := node.AddPeer(peers[i])
 		c.Assert(err, IsNil)

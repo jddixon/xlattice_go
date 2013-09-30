@@ -46,29 +46,23 @@ func NewNew(name string, id *xi.NodeID) (*Node, error) {
 // XXX Creating a Node with a list of live connections seems nonsensical.
 func New(name string, id *xi.NodeID, lfs string,
 	commsKey, sigKey *rsa.PrivateKey,
-	o []xo.OverlayI, e []xt.EndPointI, p []Peer) (*Node, error) {
-
-	var err error
+	o []xo.OverlayI, e []xt.EndPointI, p []Peer) (n *Node, err error) {
 
 	// lfs should be a well-formed POSIX path; if the directory does
 	// not exist we should create it.
-	// XXX STUB XXX
+	err = checkLFS(lfs)
 
 	// The commsKey is an RSA key used to encrypt short messages.
-	if commsKey == nil {
-		k, err := rsa.GenerateKey(rand.Reader, 2048)
-		if err != nil {
-			return nil, err
+	if err == nil {
+		if commsKey == nil {
+			commsKey, err = rsa.GenerateKey(rand.Reader, 2048)
 		}
-		commsKey = k
-	}
-	// The sigKey is an RSA key used to create digital signatures.
-	if sigKey == nil {
-		k, err := rsa.GenerateKey(rand.Reader, 2048)
-		if err != nil {
-			return nil, err
+		if err == nil {
+			// The sigKey is an RSA key used to create digital signatures.
+			if sigKey == nil {
+				sigKey, err = rsa.GenerateKey(rand.Reader, 2048)
+			}
 		}
-		sigKey = k
 	}
 	// The node communicates through its endpoints.  These are
 	// contained in overlays.  If an endpoint in 127.0.0.0/8
@@ -87,53 +81,56 @@ func New(name string, id *xi.NodeID, lfs string,
 
 	var endPoints []xt.EndPointI
 	var acceptors []xt.AcceptorI // each must share index with endPoint
-
 	var overlays []xo.OverlayI
 
-	if o != nil {
-		count := len(o)
-		for i := 0; i < count; i++ {
-			overlays = append(overlays, o[i])
+	if err == nil {
+		if o != nil {
+			count := len(o)
+			for i := 0; i < count; i++ {
+				overlays = append(overlays, o[i])
+			}
 		}
-	}
-	if e != nil {
-		count := len(e)
-		for i := 0; i < count; i++ {
-			_, err = addEndPoint(e[i], &endPoints, &acceptors, &overlays)
-			if err != nil {
-				return nil, err
+		if e != nil {
+			count := len(e)
+			for i := 0; i < count; i++ {
+				_, err = addEndPoint(e[i], &endPoints, &acceptors, &overlays)
 			}
 		}
 	}
 	var pm PeerMap // empty PeerMap
 	pmPtr := &pm
-
 	var peers []Peer // an empty slice
-	if p != nil {
-		count := len(p)
-		for i := 0; i < count; i++ {
-			err = pmPtr.AddToPeerMap(&p[i])
-			peers = append(peers, p[i])
+	if err == nil {
+		if p != nil {
+			count := len(p)
+			for i := 0; i < count; i++ {
+				err = pmPtr.AddToPeerMap(&p[i])
+				if err != nil {
+					break
+				}
+				peers = append(peers, p[i])
+			}
 		}
 	}
-	commsPubKey := &(*commsKey).PublicKey
-	sigPubKey := &(*sigKey).PublicKey
-
-	baseNode, err := NewBaseNode(name, id, commsPubKey, sigPubKey, overlays)
 	if err == nil {
-		p := Node{commsKey: commsKey,
-			sigKey:    sigKey,
-			acceptors: acceptors,
-			endPoints: endPoints,
-			peers:     peers,
-			gateways:  nil,
-			lfs:       lfs,
-			peerMap:   pmPtr,
-			BaseNode:  *baseNode}
-		return &p, nil
-	} else {
-		return nil, err
+		commsPubKey := &(*commsKey).PublicKey
+		sigPubKey := &(*sigKey).PublicKey
+
+		var baseNode *BaseNode
+		baseNode, err = NewBaseNode(name, id, commsPubKey, sigPubKey, overlays)
+		if err == nil {
+			n = &Node{commsKey: commsKey,
+				sigKey:    sigKey,
+				acceptors: acceptors,
+				endPoints: endPoints,
+				peers:     peers,
+				gateways:  nil,
+				lfs:       lfs,
+				peerMap:   pmPtr,
+				BaseNode:  *baseNode}
+		} 
 	}
+	return
 }
 
 // ENDPOINTS ////////////////////////////////////////////////////////
@@ -338,7 +335,7 @@ func (n *Node) GetConnection(x int) xt.ConnectionI {
 // visibility to the owner.  If the directory name is empty, call it
 // "lfs", that is, ./lfs/
 
-func (n *Node) checkLFS(lfs string) (err error) {
+func checkLFS(lfs string) (err error) {
 	if lfs == "" {
 		lfs = "lfs"
 	}
@@ -351,10 +348,20 @@ func (n *Node) checkLFS(lfs string) (err error) {
 func (n *Node) GetLFS() string {
 	return n.lfs
 }
-func (n *Node) setLFS(val string) error {
-	// XXX SHOULD VALIDATE
-	n.lfs = val
-	return nil
+
+// Sets the path to the node's local storage.  If the directory does
+// not exist, it creates it.  XXX Note possible race condition!
+func (n *Node) setLFS(val string) (err error) {
+
+	if val == "" {
+		err = NilLFS
+	} else {
+		err = checkLFS(val) 
+	}
+	if err == nil {
+		n.lfs = val
+	}
+	return
 }
 
 // CLOSE ////////////////////////////////////////////////////////////

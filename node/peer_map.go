@@ -1,5 +1,7 @@
 package node
 
+// THIS IS OBSOLETE: IT IS REPLACED BY bni_map.go
+
 import (
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"

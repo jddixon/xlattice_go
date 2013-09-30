@@ -8,6 +8,7 @@ var (
 	NilConnection      = errors.New("nil connection argument")
 	NilConnector       = errors.New("nil connector argument")
 	NilEndPoint        = errors.New("nil endPoint argument")
+	NilLFS             = errors.New("nil LFS argument")
 	NilNodeID          = errors.New("nil nodeID argument")
 	NilOverlay         = errors.New("nil overlay argument")
 	NilPeer            = errors.New("nil peer argument")
