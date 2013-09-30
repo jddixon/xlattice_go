@@ -67,7 +67,8 @@ type InHandler struct {
 	decrypterS                         cipher.BlockMode
 	reg                                *Registry
 	thisMember                         *ClusterMember
-	cluster                            *RegCluster
+
+	cluster *RegCluster
 	// XXX next three should be redundant
 	clusterName string
 	clusterID   []byte

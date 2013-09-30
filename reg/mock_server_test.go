@@ -23,7 +23,7 @@ func (s *XLSuite) TestMockServer(c *C) {
 	clusterName := rng.NextFileName(8)
 	clusterID, err := xi.New(nil) // creates a random ID
 	c.Assert(err, IsNil)
-	K := 2 //			+ rng.Intn(6) // so the size is 2 .. 7
+	K := 2 + rng.Intn(6) // so the size is 2 .. 7
 	ms, err := NewMockServer(clusterName, clusterID, K)
 	c.Assert(err, IsNil)
 	c.Assert(ms, Not(IsNil))

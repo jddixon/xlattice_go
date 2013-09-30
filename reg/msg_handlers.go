@@ -267,16 +267,12 @@ func doGetMsg(h *InHandler) {
 			weHave.Bits, whichRequested.Bits, whichToSend.Bits)
 		// END
 		for i := uint(0); i < size; i++ {
-			bit := uint(1) << i
-			if whichToSend.Test(bit) { // they want this one
+			if whichToSend.Test(i) { // they want this one
 				member := cluster.members[i]
-				// DEBUG
-				fmt.Printf("ATTEMPTING TO TOKENIZE MEMBER %d\n", i) // XXX
-				// END
 				token, err := member.Token()
 				if err == nil {
 					tokens = append(tokens, token)
-					whichReturned.Set(bit)
+					whichReturned = whichReturned.Set(i)
 				} else {
 					// DEBUG
 					fmt.Printf("ERROR seen while tokenizing member %d, %s\n",
@@ -286,6 +282,10 @@ func doGetMsg(h *InHandler) {
 				}
 			}
 		}
+		// DEBUG
+		fmt.Printf("server has %d tokens ready to return\n",
+			whichReturned.Count())
+		// END
 	}
 	if err == nil {
 		// Prepare reply to client --------------------------------------
@@ -298,6 +298,10 @@ func doGetMsg(h *InHandler) {
 		}
 		// Set exit state -----------------------------------------------
 		h.exitState = JOIN_RCVD // the JOIN is intentional !
+
+		// DEBUG
+		fmt.Printf("server returning %d tokens\n", whichReturned.Count())
+		// END
 	}
 }
 

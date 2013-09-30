@@ -119,6 +119,8 @@ func (mc *Client) Run() (err error) {
 			request, response                     *XLRegMsg
 			op                                    XLRegMsg_Tag
 		)
+		clientName := mc.GetName()
+
 		// Set up connection to server. -----------------------------
 		ctor, err := xt.NewTcpConnector(mc.serverEnd)
 		if err == nil {
@@ -184,7 +186,6 @@ func (mc *Client) Run() (err error) {
 					for i := 0; i < len(mc.endPoints); i++ {
 						myEnds = append(myEnds, mc.endPoints[i].String())
 					}
-					clientName := mc.GetName()
 					token := &XLRegMsg_Token{
 						Name:     &clientName,
 						Attrs:    &mc.proposedAttrs,
@@ -203,7 +204,7 @@ func (mc *Client) Run() (err error) {
 					// SHOULD CHECK FOR TIMEOUT
 					err = mc.writeMsg(request)
 					// DEBUG
-					fmt.Println("ClientMsg sent")
+					fmt.Printf("CLIENT_MSG for %s sent\n", clientName)
 					// END
 				}
 			}
@@ -216,7 +217,7 @@ func (mc *Client) Run() (err error) {
 				mc.clientID = response.GetClientID()
 				mc.decidedAttrs = response.GetAttrs()
 				// DEBUG
-				fmt.Println("client has received ClientOK")
+				fmt.Println("    client %s has received ClientOK\n")
 				// END
 			}
 		}
@@ -232,8 +233,8 @@ func (mc *Client) Run() (err error) {
 			// SHOULD CHECK FOR TIMEOUT
 			err = mc.writeMsg(request)
 			// DEBUG
-			fmt.Printf("Create sent for cluster %s, size %d\n",
-				mc.clusterName, mc.clusterSize)
+			fmt.Printf("client %s sends CREATE for cluster %s, size %d\n",
+				clientName, mc.clusterName, mc.clusterSize)
 			// END
 		}
 		// Process CREATE REPLY -------------------------------------
@@ -244,7 +245,7 @@ func (mc *Client) Run() (err error) {
 			op = response.GetOp()
 			_ = op
 			// DEBUG
-			fmt.Printf("client has received CreateReply; err is %v\n", err)
+			fmt.Printf("    client has received CreateReply; err is %v\n", err)
 			// END
 			if err == nil {
 				mc.clusterSize = response.GetClusterSize()
@@ -265,7 +266,8 @@ func (mc *Client) Run() (err error) {
 			// SHOULD CHECK FOR TIMEOUT
 			err = mc.writeMsg(request)
 			// DEBUG
-			fmt.Printf("Join by name sent for cluster %s\n", mc.clusterName)
+			fmt.Printf("Client %s sends JOIN by name sent for cluster %s\n",
+				clientName, mc.clusterName)
 			// END
 		}
 		// Process JOIN REPLY ---------------------------------------
@@ -275,7 +277,7 @@ func (mc *Client) Run() (err error) {
 			op = response.GetOp()
 			_ = op
 			// DEBUG
-			fmt.Printf("client has received JoinReply; err is %v\n", err)
+			fmt.Printf("    client has received JoinReply; err is %v\n", err)
 			// END
 			if err == nil {
 				// XXX We collect this information for the second time;
@@ -292,7 +294,6 @@ func (mc *Client) Run() (err error) {
 
 		// COLLECT INFORMATION ON ALL CLUSTER MEMBERS ***************
 		fmt.Printf("Cluster size after Join: %d\n", mc.clusterSize)
-		stillToGet := xu.LowNMap(uint(mc.clusterSize))
 
 		if err == nil {
 			MAX_GET := 16
@@ -300,11 +301,24 @@ func (mc *Client) Run() (err error) {
 			// at this point
 			if mc.members == nil {
 				mc.members = make([]*ClusterMember, mc.clusterSize)
+				// DEBUG
+				fmt.Println("Client.Run after Join: UNEXPECTED MAKE mc.members")
+			} else {
+				fmt.Println("Client.Run after Join: NO NEED TO MAKE mc.members")
+				// END
 			}
+			stillToGet := xu.LowNMap(uint(mc.clusterSize))
 			for count := 0; count < MAX_GET && stillToGet.Any(); count++ {
 
-				fmt.Printf("STILL TO GET: %d (bits 0x%x)\n",
-					stillToGet.Count(), stillToGet.Bits)
+				for i := uint(0); i < uint(mc.clusterSize); i++ {
+					if mc.members[i] != nil {
+						stillToGet = stillToGet.Clear(i)
+					}
+				}
+				// DEBUG
+				fmt.Printf("Client %s sends GET for %d members (bits 0x%x)\n",
+					clientName, stillToGet.Count(), stillToGet.Bits)
+				// END
 
 				// Send GET MSG =========================================
 				op = XLRegMsg_Get
@@ -331,25 +345,37 @@ func (mc *Client) Run() (err error) {
 					_ = id // XXX ignore for now
 					which := xu.NewBitMap64(response.GetWhich())
 					// DEBUG
-					fmt.Printf("client has received %d Members\n",
+					fmt.Printf("    client has received %d MEMBERS\n",
 						which.Count())
 					// END
 					tokens := response.GetTokens() // a slice
-					offset := 0
 					if which.Any() {
+						offset := 0
 						for i := uint(0); i < uint(mc.clusterSize); i++ {
 							if which.Test(i) {
 								token := tokens[offset]
 								offset++
 								mc.members[i], err = NewClusterMemberFromToken(
 									token)
-								stillToGet.Clear(i)
+								// DEBUG
+								fmt.Printf("Client adds member %d to list\n", i)
+								// END
+								stillToGet = stillToGet.Clear(i)
 							}
 						}
 					}
 					if stillToGet.None() {
-						fmt.Println("HAVE ALL MEMBERS") // DEBUG
+						// DEBUG
+						fmt.Printf("    Client %s has all %d members, DONE\n",
+							clientName, mc.clusterSize)
+						// END
 						break
+
+						// DEBUG
+					} else {
+						fmt.Printf("    Client %s still missing %d members (0x%x)\n",
+							clientName, stillToGet.Count(), stillToGet.Bits)
+						// END
 					}
 					time.Sleep(10 * time.Millisecond)
 				}
@@ -364,7 +390,7 @@ func (mc *Client) Run() (err error) {
 			// SHOULD CHECK FOR TIMEOUT
 			err = mc.writeMsg(request)
 			// DEBUG
-			fmt.Println("Bye sent")
+			fmt.Printf("client %s BYE sent\n", clientName)
 			// END
 		}
 		// Process ACK = BYE REPLY ----------------------------------
@@ -374,10 +400,11 @@ func (mc *Client) Run() (err error) {
 			op = response.GetOp()
 			_ = op
 			// DEBUG
-			fmt.Printf("client has received Ack; err is %v\n", err)
+			fmt.Printf("    client %s has received ACK; err is %v\n",
+				clientName, err)
 			// END
 			if err == nil {
-
+				// XXX STUB
 			}
 		} // GEEP
 
@@ -386,7 +413,7 @@ func (mc *Client) Run() (err error) {
 			cnx.Close()
 		}
 
-		fmt.Print("CLIENT RUN COMPLETE ")
+		fmt.Printf("CLIENT %s RUN COMPLETE ", clientName)
 		if err != nil {
 			fmt.Printf("- ERROR: %v", err)
 		}

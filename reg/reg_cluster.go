@@ -86,15 +86,12 @@ func (rc *RegCluster) AddMember(member *ClusterMember) (err error) {
 
 	rc.mu.Lock()
 	index := len(rc.members) // DEBUG
+	_ = index                // we might want to use this
 	rc.members = append(rc.members, member)
 	rc.MembersByName[name] = member
 	err = rc.MembersByID.AddToBNIMap(member)
 	rc.mu.Unlock()
 
-	// DEBUG
-	fmt.Printf("ADDED MEMBER %s TO CLUSTER %s AT INDEX %d\n",
-		name, rc.Name, index)
-	// END
 	return
 }
 
