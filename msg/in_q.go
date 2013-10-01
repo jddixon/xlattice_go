@@ -160,10 +160,20 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	if err == nil {
 		//  the message is a hello; is its NodeID that of a known peer?
 		id = m.GetID()
-		if peer = n.FindPeer(id); peer == nil {
-			err = xn.NotAKnownPeer
+		if id == nil {
+			// DEBUG
+			fmt.Printf("handleHello: message has no ID field\n")
+			// END
+			err = NilPeer
 		} else {
-			h.Peer = peer
+			peer, err = n.FindPeer(id)
+			if err == nil {
+				if peer == nil {
+					err = xn.NotAKnownPeer
+				} else {
+					h.Peer = peer
+				}
+			}
 		}
 	}
 

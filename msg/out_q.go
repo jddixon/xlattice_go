@@ -3,6 +3,7 @@ package msg
 // xlattice_go/msg/out_q.go
 
 import (
+	//"encoding/hex"				// DEBUG
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"

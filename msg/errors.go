@@ -14,6 +14,7 @@ var (
 	NilConnection         = errors.New("nil connection")
 	NilControlCh          = errors.New("nil control chan argument")
 	NilNode               = errors.New("nil node argument")
+	NilPeer				  = errors.New("nil peer argument")
 	NoPeers               = errors.New("node has no peers")
 	NotExpectedCommsKey   = errors.New("not peer's expected comms public key")
 	NotExpectedNodeID     = errors.New("not peer's expected NodeID")

@@ -3,6 +3,7 @@ package msg
 // xlattice_go/msg/in_q_test.go
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -29,7 +30,8 @@ func (s *XLSuite) makeANode(c *C) (badGuy *node.Node, acc xt.AcceptorI) {
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)
 	name := rng.NextFileName(8)
-	badGuy, err = node.NewNew(name, nodeID)
+	lfs := "tmp/" + hex.EncodeToString(id)
+	badGuy, err = node.NewNew(name, nodeID, lfs)
 	c.Assert(err, IsNil)
 	accCount := badGuy.SizeAcceptors()
 	c.Assert(accCount, Equals, 0)

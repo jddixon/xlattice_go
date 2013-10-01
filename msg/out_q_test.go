@@ -3,6 +3,7 @@ package msg
 // xlattice_go/msg/out_q_test.go
 
 import (
+	"encoding/hex"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	"github.com/jddixon/xlattice_go/node"
@@ -34,7 +35,8 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	c.Assert(err, IsNil)
 
 	name := rng.NextFileName(8)
-	mrX, err := node.NewNew(name, nodeID)
+	lfs  := "tmp/" + hex.EncodeToString(id)
+	mrX, err := node.NewNew(name, nodeID, lfs)
 	c.Assert(err, IsNil)
 	cPubKey := mrX.GetCommsPublicKey()
 	c.Assert(cPubKey, Not(IsNil))

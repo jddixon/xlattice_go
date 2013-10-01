@@ -297,12 +297,17 @@ func (n *Node) GetPeer(x int) *Peer {
 	// XXX should return copy
 	return &n.peers[x]
 }
-func (n *Node) FindPeer(id []byte) (p *Peer, err error) {
+// Return a pointer to the peer whose NodeID matches ID, or nil if
+// there is no such peer.
+func (n *Node) FindPeer(id []byte) (peer *Peer, err error) {
 	if id == nil {
-		err = NilPeer
+		err = NilID
 	} else {
 		// XXX should return copy
-		p = n.peerMap.FindBNI(id).(*Peer)
+		p := n.peerMap.FindBNI(id)
+		if p != nil {
+			peer = p.(*Peer)
+		}
 	}
 	return
 }
