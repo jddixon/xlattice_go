@@ -297,9 +297,14 @@ func (n *Node) GetPeer(x int) *Peer {
 	// XXX should return copy
 	return &n.peers[x]
 }
-func (n *Node) FindPeer(id []byte) *Peer {
-	// XXX should return copy
-	return n.peerMap.FindBNI(id).(*Peer)
+func (n *Node) FindPeer(id []byte) (p *Peer, err error) {
+	if id == nil {
+		err = NilPeer
+	} else {
+		// XXX should return copy
+		p = n.peerMap.FindBNI(id).(*Peer)
+	}
+	return
 }
 
 // CONNECTIONS //////////////////////////////////////////////////////

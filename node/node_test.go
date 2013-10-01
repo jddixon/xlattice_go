@@ -253,6 +253,10 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 
 	node := s.makeHost(c, rng)
 	s.makeAnEndPoint(c, node)
+
+	// SEGUE I: TEST Get/setLFS()
+	currentLFS := node.GetLFS()
+
 	// This does not follow our standard practice of using the nodeID
 	// as the name of the local file system directory.
 	lfs := "tmp/" + rng.NextFileName(4)
@@ -260,6 +264,11 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(node.GetLFS(), Equals, lfs)
 
+	// restore old LFS
+	err = node.setLFS(currentLFS)
+	c.Assert(err, IsNil)
+	c.Assert(node.GetLFS(), Equals, currentLFS)
+	
 	const K = 3
 	peers := make([]*Peer, K)
 
@@ -274,6 +283,14 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 	// we now have a node with K peers
 	serialized := node.String()
 
+	// SEGUE II: verify that FindPeer works
+	for i := 0; i < K ; i++ {
+		id := peers[i].GetNodeID().Value()
+		p, err  := node.FindPeer(id)
+		c.Assert(err, IsNil)
+		c.Assert(p, Not(IsNil))
+		c.Assert(p.Equal(peers[i]), Equals, true)
+	}
 	// we can't deserialize the node - it contains live acceptors!
 	for i := 0; i < node.SizeAcceptors(); i++ {
 		node.GetAcceptor(i).Close()

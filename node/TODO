@@ -1,11 +1,12 @@
 xlattice_go/node/TODO
 
-2013-09-30 (marked as DONE 09-11, but it wasn't)
-    * lfs should be validated in node.Node                              * DONE
-        - specifically, if it doesn't exist, we should create it        * DONE
-    * drop peer_map.go and its test                                     * DONE
-    * stop whatever is creating randomly-named directories in node/     * DONE
-        during test runs
+2013-10-01
+    * test node.FindPeer()                                              * DONE
+
+2013-09-30 
+    * running go test --race gets some peculiar errors relating to      * FIXED
+        ../overlay/parser.go
+    * same --race test finds data races in TEST_LOCAL_HOST_TCP_CLUSTER
 
 2013-09-30 (from 2013-08-23, edited)
     * bni_map: consider replacing the current approach, perhaps with
@@ -16,19 +17,12 @@ xlattice_go/node/TODO
     * first NextNBLine check in Peer.collectConnectors should be
         peek !
 
-2013-09-18
-    * peer_map.go and test should be replaced by bni_map and test       * DONE
-
 2013-09-17
     * Peer.Equal() needs to be fleshed out
     * BaseNode.Equal() also needs to be fleshed out
 
 2013-09-16
     * BaseNode.Equal() was wrong and needs to be fixed further
-
-2013-09-12 (edited 09-30)
-    * BNIMap as in bni_map.go should replace PeerMap and                * DONE
-        peer_map.go
 
 2013-08-29
     * The Peer 'up' field should be a field of bit flags
@@ -50,16 +44,6 @@ xlattice_go/node/TODO
             up to 5 times
     * arguably need stronger version of Peer.Equal(); it only
         confirms that NodeIDs are the same
-
-2013-08-16
-    * Add a method to locate a node's peer by its nodeID                * DONE
-        - This should be a fast nodeID -> peer index map; if
-            we are using a fixed peer index then we will never
-            be able to delete peers, so the data must be kept
-            but marked deleted.  So what we actually retain is
-            a slice of pointers, with a nil signfying that that
-            peer has been deleted.  With the understanding that
-            the slice is not to have entries deleted from it.
 
 2013-08-15
     * document this: running localHost_test.go with Q=64 now just works
@@ -137,7 +121,6 @@ xlattice_go/node/TODO
         the communications checks.
 
 2013-08-02
-    * lfs is a path; it must be filtered accordingly
     * need peer.Parse() which converts a slice of strings back      * DONE
         into a Peer object
         - first version of parser can be quite strict
