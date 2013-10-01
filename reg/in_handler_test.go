@@ -4,15 +4,29 @@ package reg
 
 import (
 	"fmt"
-	//xc "github.com/jddixon/xlattice_go/crypto"
-	//xn "github.com/jddixon/xlattice_go/node"
 	. "launchpad.net/gocheck"
+	"strings"
 )
 
 func (s *XLSuite) TestInHandler(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_IN_HANDLER")
 	}
+
+	parts := strings.Split(VERSION, ".")
+	c.Assert(len(parts), Equals, 3)
+	for i := 0; i < 3; i++ {
+		if len(parts[i]) == 1 {
+			parts[i] = "0" + parts[i]
+		}
+	} 
+	joinedParts := strings.Join(parts, "")
+	paddedSV := fmt.Sprintf("%06d", serverVersion)
+	c.Assert(paddedSV, Equals, joinedParts)
+
+	// DEBUG
+	fmt.Printf("VERSION is %s, serverVersion %06d\n", VERSION, serverVersion)
+	// END
 
 	// These are the tags that InHandler will accept from a client.
 

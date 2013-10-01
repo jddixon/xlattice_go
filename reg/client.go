@@ -13,6 +13,7 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
+	"io"
 	"time"
 )
 
@@ -171,7 +172,7 @@ func (mc *Client) Run() (err error) {
 				mc.decrypterC = cipher.NewCBCDecrypter(mc.engineC, iv2)
 			}
 			// DEBUG
-			fmt.Println("client AES engines set up")
+			fmt.Printf("client %s AES engines set up\n", mc.GetName())
 			// END
 		}
 		// Send CLIENT MSG ==========================================
@@ -217,7 +218,8 @@ func (mc *Client) Run() (err error) {
 				mc.clientID = response.GetClientID()
 				mc.decidedAttrs = response.GetAttrs()
 				// DEBUG
-				fmt.Println("    client %s has received ClientOK\n")
+				fmt.Printf("    client %s has received ClientOK\n", 
+					mc.GetName())
 				// END
 			}
 		}
@@ -293,7 +295,8 @@ func (mc *Client) Run() (err error) {
 		} // GEEP
 
 		// COLLECT INFORMATION ON ALL CLUSTER MEMBERS ***************
-		fmt.Printf("Cluster size after Join: %d\n", mc.clusterSize)
+		fmt.Printf("Client %s cluster size after Join: %d\n", 
+			mc.GetName(), mc.clusterSize)
 
 		if err == nil {
 			MAX_GET := 16
@@ -412,12 +415,13 @@ func (mc *Client) Run() (err error) {
 		if cnx != nil {
 			cnx.Close()
 		}
-
-		fmt.Printf("CLIENT %s RUN COMPLETE ", clientName)
-		if err != nil {
+		// DEBUG
+		fmt.Printf("client %s run complete ", clientName)
+		if err != nil && err != io.EOF {
 			fmt.Printf("- ERROR: %v", err)
 		}
 		fmt.Println("")
+		// END
 
 		mc.err = err
 		mc.doneCh <- true

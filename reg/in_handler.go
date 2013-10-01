@@ -10,6 +10,8 @@ import (
 	"github.com/jddixon/xlattice_go/msg"
 	// xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
+	"strconv"
+	"strings"
 )
 
 var _ = fmt.Print
@@ -42,6 +44,7 @@ const (
 
 var (
 	msgHandlers [][]interface{}
+	serverVersion uint32
 )
 
 func init() {
@@ -57,31 +60,46 @@ func init() {
 		// messages permitted in JOIN_RCVD
 		{badCombo, badCombo, badCombo, doGetMsg, doByeMsg},
 	}
-
+	// VERSION is a string in M.m.d format, where each of M, m, and d
+	// is either one or two digits.  We want to convert this to a number 
+	// like MMmmdd, a uint32 value. 
+	var err error
+	var M, m, d int
+	
+	parts := strings.Split(VERSION, ".")
+	if len(parts) != 3 {
+		err = BadVersion
+	} else {
+		M, err = strconv.Atoi(parts[0])
+		if err == nil {
+			m, err = strconv.Atoi(parts[1])
+			if err == nil {
+				d, err = strconv.Atoi(parts[2])
+			}
+		}
+	}
+	if err != nil {
+		panic (err)
+	}
+	serverVersion = uint32( M * 10000 + m * 100 + d )
 }
 
 type InHandler struct {
 	iv1, key1, iv2, key2, salt1, salt2 []byte
-	engineS                            cipher.Block
-	encrypterS                         cipher.BlockMode
-	decrypterS                         cipher.BlockMode
-	reg                                *Registry
-	thisMember                         *ClusterMember
+	engineS		cipher.Block
+	encrypterS	cipher.BlockMode
+	decrypterS	cipher.BlockMode
+	reg			*Registry
+	thisMember	*ClusterMember
+	cluster		*RegCluster
 
-	cluster *RegCluster
-	// XXX next three should be redundant
-	clusterName string
-	clusterID   []byte
-	clusterSize int
-	// XXX end redundant fields
-
-	version    uint32 // protocol version used in session
-	known      uint64 // a bit vector:
-	entryState int
-	exitState  int
-	msgIn      *XLRegMsg
-	msgOut     *XLRegMsg
-	errOut     error
+	version     uint32 // protocol version used in session
+	known       uint64 // a bit vector:
+	entryState  int
+	exitState   int
+	msgIn       *XLRegMsg
+	msgOut      *XLRegMsg
+	errOut      error
 	CnxHandler
 }
 
@@ -165,12 +183,8 @@ func (h *InHandler) Run() (err error) {
 			return
 		}
 		op := h.msgIn.GetOp()
+		// TODO: range check on either op or tag 
 		tag = op2tag(op)
-
-		// CRUDE CHECK
-		if tag != 0 {
-			fmt.Printf("InHandler.Run(): tag is %d\n", tag)
-		}
 
 		// ACTION ----------------------------------------------------
 		// Take the action appropriate for the current state
@@ -241,9 +255,10 @@ func handleHello(h *InHandler) (err error) {
 	if err == nil {
 		iv1, key1, salt1, version1,
 			err = msg.ServerDecodeHello(ciphertext, rn.ckPriv)
+		_ = version1	// ignore whatever version they propose
 	}
 	if err == nil {
-		version2 := version1 // accept whatever version they propose
+		version2 := serverVersion	
 		iv2, key2, salt2, ciphertextOut, err := msg.ServerEncodeHelloReply(
 			iv1, key1, salt1, version2)
 		if err == nil {

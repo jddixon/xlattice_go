@@ -29,7 +29,7 @@ func (h *CnxHandler) readData() (data []byte, err error) {
 	data = make([]byte, MSG_BUF_LEN)
 	count, err := h.Cnx.Read(data)
 	// DEBUG
-	fmt.Printf("readData: count is %d, err is %v\n", count, err)
+	//fmt.Printf("readData: count is %d, err is %v\n", count, err)
 	// END
 	if err == nil && count > 0 {
 		data = data[:count]

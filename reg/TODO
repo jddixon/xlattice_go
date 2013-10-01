@@ -1,41 +1,46 @@
 xlattice_go/reg/TODO
 
+2013-10-01
+    * InHandler.Run() needs range check on op or tag about line 169
+    * need locking for reg_cluster Members 
+        - checking whether client is cluster member by name (read lock) * DONE
+        - adding member to cluster by name (write lock)                 * DONE
+        - checking whether client is cluster member by ID (read lock)
+        - adding member to cluster by ID (write lock)                   * DONE
+
+    * registry RegMembersByID should be dropped or used; if used
+        - when members added to clusters
+            * must read lock reg and check reg.RegMembersByID
+            * must write lock when adding
+        - but need to decide whether this is useful
+            * and whether the intention is to prevent clients from
+                belonging to more than one cluster (why??)
+
 2013-09-30
     * drop Hello and HelloReply from p.proto 
     * lfs for xlReg is myApp/xlReg for testing,
         /var/app/xlReg otherwise
     * xlReg loads from/saves to lfs (see 09-16 TODO)
-    * xlReg listens on 33333 if testing (-T), 
-        defaults to 44444 otherwise
+    * xlReg listens on 33333 if testing (-T),                           * DONE
+        defaults to 44444 otherwise                                     * DONE
     * need locking at the registry level when we
-        - check whether name, id in use (read lock)
-        - add cluster (write lock)
+        - check whether cluster name in use (read lock)                 * DONE
+        - add cluster (write lock)                                      * DONE
+        - check whether cluster ID in use (read lock)                   * DONE
+        - add cluster (write lock)                                      * DONE
     * xlReg needs log
         - logs by default to LFS/log
     * reg needs version number for use by xlReg
-        - currently 0.1.0
-        - server ignores client-requested version number, replies 
+        - currently 0.1.0 (in const.go)                                 * DONE
+        - server ignores client-requested version number, replies       * DONE
             with current
         - 0.2.0 has lfs, logging, load/save
     * deploy xlReg 0.2.0 on salinas:55555
 
 2013-09-29
     * improve RegCluster.AddMember handling of dupe names
-    * when adding member check for entry in BNIMap
-    * client.go needs to check op for all replies from server
-
-2013-09-27
-    * need read lock on RegCluster.members when we get size
-    * need write lock when we add members
-
-2013-09-25
-    * FIX: mock_server_test only makes 2 clients                        * DONE
 
 2013-09-24
-    * modify functions in msg_handlers.go so that they are no longer    * DONE
-        instance functions but look like
-            func doClientMsg(h *InHandler)
-
     * packets.go readDate should handle partial reads, looping on count 
         until all bytes have been received
     * packets.go writeDate should handle partial writes, looping on count 

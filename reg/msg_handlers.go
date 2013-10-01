@@ -116,7 +116,10 @@ func doCreateMsg(h *InHandler) {
 	// Determine whether the cluster exists.  If it does, we will just
 	// use its existing properties.
 
+	h.reg.mu.RLock()
 	cluster, exists := h.reg.ClustersByName[clusterName]
+	h.reg.mu.RUnlock()
+
 	if exists {
 		h.cluster = cluster
 		clusterSize = uint32(cluster.maxSize)
@@ -192,17 +195,21 @@ func doJoinMsg(h *InHandler) {
 			err = MissingClusterNameOrID
 		}
 	} else if clusterID != nil {
-		// if an ID has been defined, we will try to use that
+		// if an ID has Leen defined, we will try to use that
+		h.reg.mu.RLock()
 		cluster = h.reg.ClustersByID.FindBNI(clusterID).(*RegCluster)
+		h.reg.mu.RUnlock()
 		if cluster == nil {
 			err = CantFindClusterByID
 		}
 	} else {
 		// we have no ID and clusterName is not nil, so we will try to use that
 		var ok bool
+		h.reg.mu.RLock()
 		if cluster, ok = h.reg.ClustersByName[clusterName]; !ok {
 			err = CantFindClusterByName
 		}
+		h.reg.mu.RUnlock()
 	}
 	if err == nil {
 		// if we get here, cluster is not nil
@@ -252,7 +259,10 @@ func doGetMsg(h *InHandler) {
 	var tokens []*XLRegMsg_Token
 	whichReturned := xu.NewBitMap64(0)
 
+	h.reg.mu.RLock()
 	cluster := h.reg.ClustersByID.FindBNI(clusterID).(*RegCluster)
+	h.reg.mu.RUnlock()
+
 	if cluster == nil {
 		err = CantFindClusterByID
 	} else {
@@ -263,7 +273,7 @@ func doGetMsg(h *InHandler) {
 		weHave := xu.LowNMap(size)
 		whichToSend := whichRequested.Intersection(weHave)
 		// DEBUG
-		fmt.Printf("doGetMsg: have 0x%x, client requests 0x%x, yields 0x%x\n",
+		fmt.Printf("doGetMsg: have 0x%x, client requests 0x%x, will send 0x%x\n",
 			weHave.Bits, whichRequested.Bits, whichToSend.Bits)
 		// END
 		for i := uint(0); i < size; i++ {
@@ -282,10 +292,6 @@ func doGetMsg(h *InHandler) {
 				}
 			}
 		}
-		// DEBUG
-		fmt.Printf("server has %d tokens ready to return\n",
-			whichReturned.Count())
-		// END
 	}
 	if err == nil {
 		// Prepare reply to client --------------------------------------

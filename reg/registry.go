@@ -12,16 +12,18 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
+	"sync"
 )
 
 var _ = fmt.Print
 
 type Registry struct {
 	// registry data
-	Clusters       []*RegCluster
-	ClustersByName map[string]*RegCluster
-	ClustersByID   *xn.BNIMap
-	MembersByID    *xn.BNIMap
+	Clusters       []*RegCluster			// serialized
+	ClustersByName map[string]*RegCluster	// volatile, not serialized
+	ClustersByID   *xn.BNIMap				// -ditto-
+	RegMembersByID *xn.BNIMap				// -ditto-
+	mu				sync.RWMutex			// -ditto-
 
 	// the extended XLattice node, so files, communications, and keys
 	RegNode
@@ -47,7 +49,7 @@ func NewRegistry(clusters []*RegCluster, name string, id *xi.NodeID,
 	return
 }
 
-// XXX MembersByID is not being updated!  This is the redundant and so
+// XXX RegMembersByID is not being updated!  This is the redundant and so
 // possibly inconsistent index of members of registry clusters
 
 func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
@@ -57,6 +59,9 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 	} else {
 		name := cluster.Name
 		id := cluster.ID // []byte
+
+		reg.mu.Lock()
+		defer reg.mu.Unlock()
 
 		if _, ok := reg.ClustersByName[name]; ok {
 			err = NameAlreadyInUse
