@@ -2,6 +2,7 @@ package node
 
 import (
 	"crypto/rsa"
+	"encoding/hex"
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
@@ -31,7 +32,8 @@ func MockLocalHostCluster(K int) (nodes []*Node, accs []*xt.TcpAcceptor) {
 	accs = make([]*xt.TcpAcceptor, K)
 	accEndPoints := make([]*xt.TcpEndPoint, K)
 	for i := 0; i < K; i++ {
-		nodes[i], _ = NewNew(names[i], nodeIDs[i])
+		lfs := "tmp/" + hex.EncodeToString(nodeIDs[i].Value())
+		nodes[i], _ = NewNew(names[i], nodeIDs[i], lfs)
 	}
 	// XXX We need this functionality in using code
 	//	defer func() {

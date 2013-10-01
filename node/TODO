@@ -3,22 +3,25 @@ xlattice_go/node/TODO
 2013-09-30 (marked as DONE 09-11, but it wasn't)
     * lfs should be validated in node.Node                              * DONE
         - specifically, if it doesn't exist, we should create it        * DONE
+    * drop peer_map.go and its test                                     * DONE
+    * stop whatever is creating randomly-named directories in node/     * DONE
+        during test runs
+
+2013-09-30 (from 2013-08-23, edited)
+    * bni_map: consider replacing the current approach, perhaps with
+        one where we have an array of 2^N pointers at each level -
+        should be simpler to construct and much faster to search
 
 2013-09-19
     * first NextNBLine check in Peer.collectConnectors should be
         peek !
 
 2013-09-18
-    * peer_map.go and test should be replaced by bni_map and test
+    * peer_map.go and test should be replaced by bni_map and test       * DONE
 
 2013-09-17
     * Peer.Equal() needs to be fleshed out
     * BaseNode.Equal() also needs to be fleshed out
-
-    * Implement Peer.Equal                                              * DONE
-        - and test                                                      * DONE
-    * FIX: BaseNode.Equal() is buggy                                    * DONE
-    * FIX: tests have not shown BaseNode.Equal failing                  * FIXED
 
 2013-09-16
     * BaseNode.Equal() was wrong and needs to be fixed further
@@ -36,15 +39,8 @@ xlattice_go/node/TODO
         test_node.TestAutoCreateOverlays
 
 2013-08-24
-    * peer_map: strip debug statements and meaningless comments
+    * peer_map: strip debug statements and meaningless comments * NOW IRRELEVANT
         from code
-
-2013-08-23
-    * Move TestSameNodeID into ../nodeID/nodeID_test.go                 * DONE
-
-    * peer_map: consider replacing the current approach, perhaps with
-        one where we have an array of 2^N pointers at each level -
-        should be simpler to construct and much faster to search
 
 2013-08-19
     * "connection reset by peer" in localHost_test.go at lines          * FIXED

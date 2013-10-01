@@ -34,13 +34,13 @@ type Node struct {
 	peers       []Peer
 	connections []xt.ConnectionI // volatile
 	gateways    []Gateway
-	peerMap     *PeerMap
+	peerMap     *BNIMap
 	BaseNode    // listed last, but serialize first
 }
 
-func NewNew(name string, id *xi.NodeID) (*Node, error) {
+func NewNew(name string, id *xi.NodeID, lfs string) (*Node, error) {
 	// XXX create default 2K bit RSA key
-	return New(name, id, "", nil, nil, nil, nil, nil)
+	return New(name, id, lfs, nil, nil, nil, nil, nil)
 }
 
 // XXX Creating a Node with a list of live connections seems nonsensical.
@@ -97,14 +97,14 @@ func New(name string, id *xi.NodeID, lfs string,
 			}
 		}
 	}
-	var pm PeerMap // empty PeerMap
+	var pm BNIMap // empty BNIMap
 	pmPtr := &pm
 	var peers []Peer // an empty slice
 	if err == nil {
 		if p != nil {
 			count := len(p)
 			for i := 0; i < count; i++ {
-				err = pmPtr.AddToPeerMap(&p[i])
+				err = pmPtr.AddToBNIMap(&p[i])
 				if err != nil {
 					break
 				}
@@ -277,7 +277,7 @@ func (n *Node) AddPeer(peer *Peer) (ndx int, err error) {
 			}
 		}
 		if ndx == -1 {
-			err = n.peerMap.AddToPeerMap(peer)
+			err = n.peerMap.AddToBNIMap(peer)
 			if err == nil {
 				n.peers = append(n.peers, *peer)
 				ndx = len(n.peers) - 1
@@ -299,7 +299,7 @@ func (n *Node) GetPeer(x int) *Peer {
 }
 func (n *Node) FindPeer(id []byte) *Peer {
 	// XXX should return copy
-	return n.peerMap.FindPeer(id)
+	return n.peerMap.FindBNI(id).(*Peer)
 }
 
 // CONNECTIONS //////////////////////////////////////////////////////
@@ -339,7 +339,11 @@ func (n *Node) GetLFS() string {
 }
 
 // Sets the path to the node's local storage.  If the directory does
-// not exist, it creates it.  XXX Note possible race condition!
+// not exist, it creates it.  
+
+// XXX Note possible race condition!  What is the justification for
+// this function??
+
 func (n *Node) setLFS(val string) (err error) {
 
 	if val == "" {
@@ -465,7 +469,7 @@ func Parse(s string) (node *Node, rest []string, err error) {
 	bn, rest, err := ParseBaseNode(s, "node")
 	if err == nil {
 		node = &Node{BaseNode: *bn}
-		var pm PeerMap
+		var pm BNIMap
 		node.peerMap = &pm
 
 		line := NextNBLine(&rest)

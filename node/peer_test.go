@@ -3,6 +3,7 @@ package node
 // xlattice_go/node/peer_test.go
 
 import (
+	"encoding/hex"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xo "github.com/jddixon/xlattice_go/overlay"
@@ -29,7 +30,9 @@ func (s *XLSuite) TestPeerSerialization(c *C) {
 	name := rng.NextFileName(4)
 	nid, err := makeNodeID(rng)
 	c.Assert(err, Equals, nil)
-	node, err := NewNew(name, nid)
+	
+	lfs := "tmp/" + hex.EncodeToString(nid.Value())
+	node, err := NewNew(name, nid, lfs)
 	c.Assert(err, Equals, nil)
 
 	// harvest its keys

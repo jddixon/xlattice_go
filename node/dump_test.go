@@ -17,36 +17,36 @@ const (
 	SP_COUNT = len(SPACES)
 )
 
-func dumpRight(cell *PeerMapCell, indent string) {
+func dumpRight(cell *BNIMapCell, indent string) {
 	firstCell := cell
 	ss := []string{indent}
 	var offset int
-	var lastCell *PeerMapCell
-	for ; cell != nil; cell = cell.nextCol {
-		if cell.peer == nil {
+	var lastCell *BNIMapCell
+	for ; cell != nil; cell = cell.NextCol {
+		if cell.CellNode == nil {
 			ss = append(ss, NIL_PEER)
 		} else {
-			ss = append(ss, fmt.Sprintf("%-10s", cell.peer.GetName()))
+			ss = append(ss, fmt.Sprintf("%-10s", cell.CellNode.GetName()))
 		}
 		lastCell = cell
 		offset++
 	}
 	line := strings.Join(ss, "")
 	fmt.Printf("%s\n", line)
-	if firstCell != lastCell && lastCell.thisCol != nil {
+	if firstCell != lastCell && lastCell.ThisCol != nil {
 		for i := 0; i < offset-1; i++ {
 			indent += SPACES
 		}
-		dumpDown(lastCell.thisCol, indent)
+		dumpDown(lastCell.ThisCol, indent)
 	}
 }
-func dumpDown(cell *PeerMapCell, indent string) {
-	for ; cell != nil; cell = cell.thisCol {
+func dumpDown(cell *BNIMapCell, indent string) {
+	for ; cell != nil; cell = cell.ThisCol {
 		dumpRight(cell, indent)
 	}
 }
-func DumpPeerMap(pm *PeerMap, where string) {
+func DumpBNIMap(pm *BNIMap, where string) {
 	fmt.Printf("PEER MAP DUMP %s --------\n", where)
-	dumpDown(pm.nextCol, "")
+	dumpDown(pm.NextCol, "")
 	fmt.Println("END PEER MAP DUMP -------------------------------")
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -165,7 +166,8 @@ func (s *XLSuite) TestAutoCreateOverlays(c *C) {
 	ep2 := s.shouldCreateTcpEndPoint(c, "127.0.0.0:0")
 	e := []xt.EndPointI{ep0, ep1, ep2}
 
-	n, err := New(name, id, "", nil, nil, nil, e, nil)
+	lfs := "tmp/" + hex.EncodeToString(id.Value())
+	n, err := New(name, id, lfs, nil, nil, nil, e, nil)
 	c.Assert(err, Equals, nil)
 	c.Assert(n, Not(Equals), nil)
 	defer n.Close()
@@ -198,9 +200,10 @@ func (s *XLSuite) makeHost(c *C, rng *rnglib.PRNG) *Node {
 	c.Assert(err, Equals, nil)
 	c.Assert(id, Not(IsNil))
 
-	n, err2 := NewNew(name, id)
-	c.Assert(n, Not(IsNil))
+	lfs := "tmp/" + hex.EncodeToString(id.Value())
+	n, err2 := NewNew(name, id, lfs)
 	c.Assert(err2, IsNil)
+	c.Assert(n, Not(IsNil))
 	c.Assert(name, Equals, n.GetName())
 	actualID := n.GetNodeID()
 	c.Assert(true, Equals, id.Equal(actualID))
@@ -208,7 +211,7 @@ func (s *XLSuite) makeHost(c *C, rng *rnglib.PRNG) *Node {
 	c.Assert(0, Equals, (*n).SizePeers())
 	c.Assert(0, Equals, (*n).SizeOverlays())
 	c.Assert(0, Equals, n.SizeConnections())
-	c.Assert("", Equals, n.GetLFS())
+	c.Assert(lfs, Equals, n.GetLFS())
 	return n
 }
 
@@ -250,7 +253,9 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 
 	node := s.makeHost(c, rng)
 	s.makeAnEndPoint(c, node)
-	lfs := rng.NextFileName(4)
+	// This does not follow our standard practice of using the nodeID
+	// as the name of the local file system directory.
+	lfs := "tmp/" + rng.NextFileName(4)
 	err := node.setLFS(lfs)
 	c.Assert(err, IsNil)
 	c.Assert(node.GetLFS(), Equals, lfs)
