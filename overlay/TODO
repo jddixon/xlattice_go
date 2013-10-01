@@ -1,5 +1,10 @@
 xlattice_go/overlay/TODO
 
+2013-09-30
+    * FIX: parser.go references NAME_STARTERS and NAME_CHARS which  * DONE
+        are in ../db/util/entityName*.go
+        - will move these to ../util                                * DONE
+
 2013-07-29
     * need to test AddrRange.String()
     * need to test IPOverlay.Equal

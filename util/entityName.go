@@ -1,6 +1,6 @@
 package util
 
-// xlattice_go/db/util/entityName.go
+// xlattice_go/util/entityName.go
 
 import (
 	"regexp"

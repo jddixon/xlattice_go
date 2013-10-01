@@ -6,14 +6,14 @@ import (
 	"regexp"
 	"strconv"
 	//"strings"
-	x "github.com/jddixon/xlattice_go"
 	xt "github.com/jddixon/xlattice_go/transport"
+	xu "github.com/jddixon/xlattice_go/util"
 )
 
 var _ = fmt.Print
 
 const (
-	NAME       = `[` + x.NAME_STARTERS + `][` + x.NAME_CHARS + `]*`
+	NAME       = `[` + xu.NAME_STARTERS + `][` + xu.NAME_CHARS + `]*`
 	QUAD       = xt.QUAD_PAT
 	ADDR_RANGE = QUAD + `.` + QUAD + `.` + QUAD + `.` + QUAD + `/\d+`
 	IP_OVERLAY = `^overlay:\s*(` + NAME + `),\s*(` + NAME + `),\s*(` + ADDR_RANGE + `),\s*(\d+\.\d*)$`

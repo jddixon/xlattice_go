@@ -1,6 +1,6 @@
 package util
 
-// xlattice_go/db/util/errors.go
+// xlattice_go/util/errors.go
 
 import (
 	"errors"
