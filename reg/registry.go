@@ -89,3 +89,24 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 	}
 	return
 }
+
+// SERIALIZATION ====================================================
+
+func ParseRegistry(s string) (reg *Registry, rest []string, err error) {
+
+
+	// XXX STUB
+	return
+}
+
+func (reg *Registry) String() (s string) {
+
+	// STUB XXX
+	return
+}
+
+func (reg *Registry) Strings() (s []string) {
+
+	// STUB XXX
+	return
+}

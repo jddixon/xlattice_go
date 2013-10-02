@@ -295,8 +295,6 @@ func (mc *Client) Run() (err error) {
 		} // GEEP
 
 		// COLLECT INFORMATION ON ALL CLUSTER MEMBERS ***************
-		fmt.Printf("Client %s cluster size after Join: %d\n",
-			mc.GetName(), mc.clusterSize)
 
 		if err == nil {
 			MAX_GET := 16
@@ -360,29 +358,16 @@ func (mc *Client) Run() (err error) {
 								offset++
 								mc.members[i], err = NewClusterMemberFromToken(
 									token)
-								// DEBUG
-								fmt.Printf("Client adds member %d to list\n", i)
-								// END
 								stillToGet = stillToGet.Clear(i)
 							}
 						}
 					}
 					if stillToGet.None() {
-						// DEBUG
-						fmt.Printf("    Client %s has all %d members, DONE\n",
-							clientName, mc.clusterSize)
-						// END
 						break
-
-						// DEBUG
-					} else {
-						fmt.Printf("    Client %s still missing %d members (0x%x)\n",
-							clientName, stillToGet.Count(), stillToGet.Bits)
-						// END
 					}
 					time.Sleep(10 * time.Millisecond)
 				}
-			} // FOO
+			} 
 		}
 		// Send BYE MSG =============================================
 		if err == nil {

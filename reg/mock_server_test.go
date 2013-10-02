@@ -28,12 +28,15 @@ func (s *XLSuite) TestMockServer(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(ms, Not(IsNil))
 
-	c.Assert(&ms.RegNode.ckPriv.PublicKey, DeepEquals, ms.GetCommsPublicKey())
+	server := ms.Server
 
-	serverName := ms.GetName()
-	serverID := ms.GetNodeID()
-	serverEnd := ms.GetEndPoint(0)
-	serverCK := ms.GetCommsPublicKey()
+	c.Assert(&server.RegNode.ckPriv.PublicKey, 
+		DeepEquals, server.GetCommsPublicKey())
+
+	serverName := server.GetName()
+	serverID := server.GetNodeID()
+	serverEnd := server.GetEndPoint(0)
+	serverCK := server.GetCommsPublicKey()
 	c.Assert(serverEnd, Not(IsNil))
 
 	// creake K clients ---------------------------------------------

@@ -224,9 +224,6 @@ func (h *InHandler) Run() (err error) {
 			}
 
 		}
-		// DEBUG
-		fmt.Printf("InHandler states: %d --> %d\n", h.entryState, h.exitState)
-		// END
 		h.entryState = h.exitState
 		if h.exitState == IN_CLOSED {
 			break

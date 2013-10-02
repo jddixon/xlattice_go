@@ -93,3 +93,24 @@ func NewRegNode(name string, id *xi.NodeID, lfs string,
 	}
 	return
 }
+
+// SERIALIZATION ====================================================
+
+func ParseRegNode(s string) (rn *RegNode, rest []string, err error) {
+
+
+	// XXX STUB
+	return
+}
+
+func (rn *RegNode) String() (s string) {
+
+	// STUB XXX
+	return
+}
+
+func (rn *RegNode) Strings() (s []string) {
+
+	// STUB XXX
+	return
+}

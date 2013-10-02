@@ -21,7 +21,7 @@ type MockServer struct {
 	clusterName string
 	clusterID   *xi.NodeID
 	size        int
-	Registry
+	Server		*RegServer
 }
 
 // A Mock Server is primarily intended for use in testing.  It contains
@@ -42,10 +42,13 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 	// Create an XLattice node with quasi-random parameters including
 	// low-quality keys and an endPoint in 127.0.0.1, localhost.
 
-	var ckPriv, skPriv *rsa.PrivateKey
-	var rn *RegNode
-	var ep *xt.TcpEndPoint
-	var reg *Registry
+	var (
+		ckPriv, skPriv *rsa.PrivateKey
+		rn			*RegNode
+		ep			*xt.TcpEndPoint
+		reg			*Registry
+		server		*RegServer
+	)
 
 	rng := xr.MakeSimpleRNG()
 	name := rng.NextFileName(16)
@@ -54,7 +57,7 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 	lfs := "tmp/" + hex.EncodeToString(idBuf)
 	id, err := xi.New(idBuf)
 	if err == nil {
-		// XXX cheap keys, not meant for any serious use
+		// XXX cheap keys, too weak for any serious use
 		ckPriv, err = rsa.GenerateKey(rand.Reader, 1024)
 		if err == nil {
 			skPriv, err = rsa.GenerateKey(rand.Reader, 1024)
@@ -72,6 +75,11 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 		fmt.Println("NewMockServer: CLUSTERS_BY_ID IS NIL")
 	}
 	// END
+
+	if err == nil {
+		server, err = NewRegServer(reg, true, 1)
+	}
+
 	if err == nil {
 		rn = &reg.RegNode
 		ms = &MockServer{
@@ -79,7 +87,7 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 			clusterName: clusterName,
 			clusterID:   clusterID,
 			size:        size,
-			Registry:    *reg,
+			Server:      server,
 		}
 	}
 	return
@@ -89,33 +97,10 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 
 func (ms *MockServer) Run() (err error) {
 
-	go func() {
-		for {
-			// As each client connects its connection is passed to a
-			// handler running in a separate goroutine.
-			cnx, err := ms.acc.Accept()
-			if err != nil {
-				// Any I/O error shuts down the server.
-				break
-			}
-			go func() {
-				var (
-					h *InHandler
-				)
-				h, err = NewInHandler(&ms.Registry, cnx)
-				if err == nil {
-					err = h.Run()
-				}
-				// XXX notice the error has no effect
-			}()
-		}
-	}()
+	err = ms.Server.Run()
 	return
 }
 
 func (ms *MockServer) Close() {
-	acc := ms.GetAcceptor(0)
-	if acc != nil {
-		acc.Close()
-	}
+	ms.Server.Close()
 }

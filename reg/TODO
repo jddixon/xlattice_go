@@ -1,5 +1,30 @@
 xlattice_go/reg/TODO
 
+2013-10-02
+    * change protocol so that nodeID is assigned by server (to
+        avoid Douceur's Sybil Attack)
+        - so first variant of Client message has token + digSig
+            * without clientID in token
+        - second version has only clientID + digSig
+        - either attaches client's token to the connection
+    * rename Get msg to GetCluster, Members to ClusterMembers
+
+    * code up RegNode serialization in reg/reg_node.go:
+        - ParseRegNode()
+        - String()
+        - Strings()
+
+    * code up Registry serialization in reg/registry.go:
+        - ParseRegistry()
+        - String()
+        - Strings()
+
+    * code up RegServer bits in reg/server.go:
+        - Run()
+        - ParseRegServer()
+        - String()
+        - Strings()
+
 2013-10-01
     * InHandler.Run() needs range check on op or tag about line 169
     * need locking for reg_cluster Members 
@@ -7,7 +32,6 @@ xlattice_go/reg/TODO
         - adding member to cluster by name (write lock)                 * DONE
         - checking whether client is cluster member by ID (read lock)
         - adding member to cluster by ID (write lock)                   * DONE
-
     * registry RegMembersByID should be dropped or used; if used
         - when members added to clusters
             * must read lock reg and check reg.RegMembersByID
@@ -15,57 +39,35 @@ xlattice_go/reg/TODO
         - but need to decide whether this is useful
             * and whether the intention is to prevent clients from
                 belonging to more than one cluster (why??)
-
-    * move relevant bits of MockServer into reg/server.go
-        - implement reg.Server.NewServer(...)
-        - and reg.Server.Run(...)
+    * move relevant bits of MockServer into reg/server.go               * DONE
+        - implement reg.Server.NewServer(...)                           * DONE
+        - and reg.Server.Run(...)                                       * DONE
     * when this is running, drop into ../cmd/xlReg/xlReg
 
 2013-09-30
-    * drop Hello and HelloReply from p.proto                            * DONE
-    * lfs for xlReg is myApp/xlReg for testing,                         * DONE
-        /var/app/xlReg otherwise                                        * DONE
     * xlReg loads from/saves to lfs (see 09-16 TODO)
-    * xlReg listens on 33333 if testing (-T),                           * DONE
-        defaults to 44444 otherwise                                     * DONE
-    * need locking at the registry level when we
-        - check whether cluster name in use (read lock)                 * DONE
-        - add cluster (write lock)                                      * DONE
-        - check whether cluster ID in use (read lock)                   * DONE
-        - add cluster (write lock)                                      * DONE
-    * xlReg needs log                                                   * DONE
-        - logs by default to LFS/log                                    * DONE
-    * reg needs version number for use by xlReg                         * DONE
-        - currently 0.1.0 (in const.go)                                 * DONE
-        - server ignores client-requested version number, replies       * DONE
-            with 'serverVersion'                                        * DONE
-        - 0.2.0 has lfs, logging, load/save
+    * xlReg 0.2.0 must have lfs, logging, load/save
     * deploy xlReg 0.2.0 on salinas:55555
-
 2013-09-29
     * improve RegCluster.AddMember handling of dupe names
-
 2013-09-24
-    * packets.go readDate should handle partial reads, looping on count 
+    * packets.go readData should handle partial reads, looping on count 
         until all bytes have been received
-    * packets.go writeDate should handle partial writes, looping on count 
+    * packets.go writeData should handle partial writes, looping on count 
         until all bytes have gone
-
 2013-09-20
     * several tests could obviously benefit from parallelizing: 
         they run one CPU at 100% while the others are more or less idle
         - look at cluster_member_test
         - also reg_cluster_test 
-
 2013-09-16
     * regNode serialization follows practice in ../node: we first
         serialize BaseNode, then rest of Node, then fields of 
         RegNode
         - need Strings(), String(), Parse()
-
 2013-09-13
-    * FIX: ClientMsg does NOT include digsig, so server cannot verify
-        that the client knows skPriv
+    * URGENT FIX: ClientMsg does NOT include digsig, so server cannot 
+        verify that the client knows skPriv
     * longer term xlReg needs to be distributed, using Paxos for
         consensus
 2013-09-12
