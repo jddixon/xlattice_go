@@ -268,7 +268,7 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 	err = node.setLFS(currentLFS)
 	c.Assert(err, IsNil)
 	c.Assert(node.GetLFS(), Equals, currentLFS)
-	
+
 	const K = 3
 	peers := make([]*Peer, K)
 
@@ -284,9 +284,9 @@ func (s *XLSuite) TestNodeSerialization(c *C) {
 	serialized := node.String()
 
 	// SEGUE II: verify that FindPeer works
-	for i := 0; i < K ; i++ {
+	for i := 0; i < K; i++ {
 		id := peers[i].GetNodeID().Value()
-		p, err  := node.FindPeer(id)
+		p, err := node.FindPeer(id)
 		c.Assert(err, IsNil)
 		c.Assert(p, Not(IsNil))
 		c.Assert(p.Equal(peers[i]), Equals, true)

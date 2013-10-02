@@ -64,8 +64,8 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 		ep, err = xt.NewTcpEndPoint("127.0.0.1:0")
 	}
 	if err == nil {
-		// a registry with no clusters
-		reg, err = NewRegistry(nil, name, id, lfs, ckPriv, skPriv, nil, ep)
+		// a registry with no clusters and no logger
+		reg, err = NewRegistry(nil, name, id, lfs, ckPriv, skPriv, nil, ep, nil)
 	}
 	// DEBUG
 	if reg.ClustersByID == nil {

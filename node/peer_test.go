@@ -30,7 +30,7 @@ func (s *XLSuite) TestPeerSerialization(c *C) {
 	name := rng.NextFileName(4)
 	nid, err := makeNodeID(rng)
 	c.Assert(err, Equals, nil)
-	
+
 	lfs := "tmp/" + hex.EncodeToString(nid.Value())
 	node, err := NewNew(name, nid, lfs)
 	c.Assert(err, Equals, nil)

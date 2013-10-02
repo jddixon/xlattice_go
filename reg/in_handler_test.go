@@ -19,14 +19,10 @@ func (s *XLSuite) TestInHandler(c *C) {
 		if len(parts[i]) == 1 {
 			parts[i] = "0" + parts[i]
 		}
-	} 
+	}
 	joinedParts := strings.Join(parts, "")
 	paddedSV := fmt.Sprintf("%06d", serverVersion)
 	c.Assert(paddedSV, Equals, joinedParts)
-
-	// DEBUG
-	fmt.Printf("VERSION is %s, serverVersion %06d\n", VERSION, serverVersion)
-	// END
 
 	// These are the tags that InHandler will accept from a client.
 

@@ -75,11 +75,11 @@ func (rc *RegCluster) AddMember(member *ClusterMember) (err error) {
 
 	// verify no existing member has the same name
 	name := member.GetName()
-	
-	rc.mu.RLock()	// <------------------------------------
+
+	rc.mu.RLock() // <------------------------------------
 	_, ok := rc.MembersByName[name]
-	rc.mu.RUnlock()	// <------------------------------------
-	
+	rc.mu.RUnlock() // <------------------------------------
+
 	if ok {
 		// XXX surely something more complicated is called for!
 
@@ -89,13 +89,13 @@ func (rc *RegCluster) AddMember(member *ClusterMember) (err error) {
 	// XXX CHECK FOR ENTRY IN BNIMap
 	// XXX STUB
 
-	rc.mu.Lock()	// <------------------------------------
+	rc.mu.Lock()             // <------------------------------------
 	index := len(rc.members) // DEBUG
 	_ = index                // we might want to use this
 	rc.members = append(rc.members, member)
 	rc.MembersByName[name] = member
 	err = rc.MembersByID.AddToBNIMap(member)
-	rc.mu.Unlock()	// <------------------------------------
+	rc.mu.Unlock() // <------------------------------------
 
 	return
 }
@@ -105,9 +105,9 @@ func (rc *RegCluster) MaxSize() int {
 }
 func (rc *RegCluster) Size() int {
 	var curSize int
-	rc.mu.RLock()	// <------------------------------------
+	rc.mu.RLock() // <------------------------------------
 	curSize = len(rc.members)
-	rc.mu.RUnlock()	// <------------------------------------
+	rc.mu.RUnlock() // <------------------------------------
 	return curSize
 }
 

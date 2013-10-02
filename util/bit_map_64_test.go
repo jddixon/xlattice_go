@@ -29,13 +29,13 @@ func (s *XLSuite) TestCounts(c *C) {
 		fmt.Println("TEST_COUNTS")
 	}
 	rng := rnglib.MakeSimpleRNG()
-	
-	for i := 0; i < 8 ; i++ {
+
+	for i := 0; i < 8; i++ {
 		x := uint64(rng.Int63())
-		
+
 		// these operate on uint64s, not BitMap64s
 		count3 := popCount3(x)
-		c.Assert( count3, Equals, popCount4(x))
+		c.Assert(count3, Equals, popCount4(x))
 
 		// test the BitMap64 operation
 		b := NewBitMap64(x)
@@ -56,9 +56,9 @@ func (s *XLSuite) TestSetAndClear(c *C) {
 	z = z.Clear(0)
 	c.Assert(z.Bits, Equals, uint64(0))
 
-	n := uint (rng.Intn(64))	// so in 0..63 inclusive
+	n := uint(rng.Intn(64)) // so in 0..63 inclusive
 	z = z.Set(n)
-	c.Assert(z.Bits, Equals, uint64(1) << n)
+	c.Assert(z.Bits, Equals, uint64(1)<<n)
 	z = z.Clear(n)
 	c.Assert(z.Bits, Equals, uint64(0))
 }
@@ -69,7 +69,7 @@ func (s *XLSuite) TestOtherFuncs(c *C) {
 	}
 	rng := rnglib.MakeSimpleRNG()
 
-	for i := 0; i < 8 ; i++ {
+	for i := 0; i < 8; i++ {
 		x := uint64(rng.Int63())
 		y := uint64(rng.Int63())
 		for x == y {
@@ -84,34 +84,32 @@ func (s *XLSuite) TestOtherFuncs(c *C) {
 		c.Assert(xx.Equal(zz), Equals, true)
 
 		zero := NewBitMap64(0)
-		one  := NewBitMap64(0xffffffffffffffff)
+		one := NewBitMap64(0xffffffffffffffff)
 
 		c.Assert(one.Any(), Equals, true)
 		c.Assert(one.None(), Equals, false)
 		c.Assert(zero.Any(), Equals, false)
 		c.Assert(zero.None(), Equals, true)
-		
-		c.Assert(zero.Union(xx).Equal(xx), Equals,true)	
+
+		c.Assert(zero.Union(xx).Equal(xx), Equals, true)
 		c.Assert(one.Intersection(xx).Equal(xx), Equals, true)
 
 		c.Assert(xx.Union(xx.Complement()).Equal(one), Equals, true)
 		c.Assert(xx.Intersection(xx.Complement()).Equal(zero), Equals, true)
 
 		count := xx.Count()
-		n := uint(rng.Intn(64))	// so values range from 0 to 63
+		n := uint(rng.Intn(64)) // so values range from 0 to 63
 		if xx.Test(n) {
 			// it's set
 			rr := xx.Flip(n)
-			c.Assert( rr.Count(), Equals, count - 1 )
-			c.Assert( xx.Difference(rr).Count(), Equals, 1)
-
+			c.Assert(rr.Count(), Equals, count-1)
+			c.Assert(xx.Difference(rr).Count(), Equals, 1)
 
 		} else {
 			// the bit is not set
 			rr := xx.Flip(n)
-			c.Assert( rr.Count(), Equals, count + 1 )
-			c.Assert( rr.Difference(xx).Count(), Equals, 1)
+			c.Assert(rr.Count(), Equals, count+1)
+			c.Assert(rr.Difference(xx).Count(), Equals, 1)
 		}
 	}
 }
-

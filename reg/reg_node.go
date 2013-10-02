@@ -12,8 +12,8 @@ import (
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
-	// xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
+	"log"
 )
 
 var _ = fmt.Print
@@ -21,12 +21,13 @@ var _ = fmt.Print
 // options normally set from the command line or derived from those
 
 type RegOptions struct {
-	Name     string
+	Address  string
+	EndPoint xt.EndPointI // derived from Address, Port
 	ID       *xi.NodeID
 	Lfs      string
-	Address  string
+	Logger   *log.Logger
+	Name     string
 	Port     int
-	EndPoint xt.EndPointI // derived from Address, Port
 	Testing  bool
 	Verbose  bool
 }

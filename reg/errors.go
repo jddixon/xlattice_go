@@ -6,7 +6,7 @@ import (
 
 var (
 	BadAttrsLine              = errors.New("badly formed attrs line")
-	BadVersion				  = errors.New("badly formated VERSION")
+	BadVersion                = errors.New("badly formated VERSION")
 	CantFindClusterByID       = errors.New("cannot find cluster with this ID")
 	CantFindClusterByName     = errors.New("cannot find cluster with this name")
 	ClientMustHaveEndPoint    = errors.New("client must have at least one endPoint")

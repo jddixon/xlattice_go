@@ -218,7 +218,7 @@ func (mc *Client) Run() (err error) {
 				mc.clientID = response.GetClientID()
 				mc.decidedAttrs = response.GetAttrs()
 				// DEBUG
-				fmt.Printf("    client %s has received ClientOK\n", 
+				fmt.Printf("    client %s has received ClientOK\n",
 					mc.GetName())
 				// END
 			}
@@ -295,7 +295,7 @@ func (mc *Client) Run() (err error) {
 		} // GEEP
 
 		// COLLECT INFORMATION ON ALL CLUSTER MEMBERS ***************
-		fmt.Printf("Client %s cluster size after Join: %d\n", 
+		fmt.Printf("Client %s cluster size after Join: %d\n",
 			mc.GetName(), mc.clusterSize)
 
 		if err == nil {

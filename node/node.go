@@ -128,7 +128,7 @@ func New(name string, id *xi.NodeID, lfs string,
 				lfs:       lfs,
 				peerMap:   pmPtr,
 				BaseNode:  *baseNode}
-		} 
+		}
 	}
 	return
 }
@@ -297,6 +297,7 @@ func (n *Node) GetPeer(x int) *Peer {
 	// XXX should return copy
 	return &n.peers[x]
 }
+
 // Return a pointer to the peer whose NodeID matches ID, or nil if
 // there is no such peer.
 func (n *Node) FindPeer(id []byte) (peer *Peer, err error) {
@@ -349,7 +350,7 @@ func (n *Node) GetLFS() string {
 }
 
 // Sets the path to the node's local storage.  If the directory does
-// not exist, it creates it.  
+// not exist, it creates it.
 
 // XXX Note possible race condition!  What is the justification for
 // this function??
@@ -359,7 +360,7 @@ func (n *Node) setLFS(val string) (err error) {
 	if val == "" {
 		err = NilLFS
 	} else {
-		err = xu.CheckLFS(val) 
+		err = xu.CheckLFS(val)
 	}
 	if err == nil {
 		n.lfs = val

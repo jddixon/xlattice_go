@@ -10,6 +10,7 @@ import (
 	"github.com/jddixon/xlattice_go/reg"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
+	"log"
 	"os"
 	"path"
 )
@@ -33,6 +34,7 @@ var (
 	hexID    = flag.String("i", "", "hex reg ID")
 	justShow = flag.Bool("j", false, "display option settings and exit")
 	lfs      = flag.String("lfs", DEFAULT_LFS, "path to work directory")
+	logFile  = flag.String("l", "log", "path to log file")
 	name     = flag.String("n", DEFAULT_NAME, "registry name")
 	port     = flag.Int("p", DEFAULT_PORT, "registry listening port")
 	testing  = flag.Bool("T", false, "test run")
@@ -85,21 +87,23 @@ func main() {
 		fmt.Printf("not a valid endPoint: %s\n", addrAndPort)
 		// XXX STUB XXX
 	}
-
 	// SANITY CHECKS ////////////////////////////////////////////////
 	if err == nil {
-		err = xu.CheckLFS(*lfs)		// tries to create if it doesn't exist
+		err = xu.CheckLFS(*lfs) // tries to create if it doesn't exist
+		if err == nil {
+			if *logFile != "" {
+				*logFile = path.Join(*lfs, *logFile)
+			}
+		}
 	}
 	// DISPLAY STUFF ////////////////////////////////////////////////
-	if *verbose {
-		fmt.Printf("xlReg v%s %s\n", reg.VERSION, reg.VERSION_DATE)
-	}
 	if *verbose || *justShow {
 		fmt.Printf("address      = %v\n", *address)
 		fmt.Printf("endPoint     = %v\n", endPoint)
 		fmt.Printf("hexID        = %v\n", *hexID)
 		fmt.Printf("justShow     = %v\n", *justShow)
 		fmt.Printf("lfs          = %s\n", *lfs)
+		fmt.Printf("logFile      = %s\n", *logFile)
 		fmt.Printf("name         = %s\n", *name)
 		fmt.Printf("port         = %d\n", *port)
 		fmt.Printf("testing      = %v\n", *testing)
@@ -109,17 +113,36 @@ func main() {
 		return
 	}
 	// SET UP OPTIONS ///////////////////////////////////////////////
-	var opt reg.RegOptions
-	opt.ID = id
-	opt.Lfs = *lfs
-	opt.Port = *port
-	opt.Testing = *testing
-	opt.Verbose = *verbose
-
-	r, err := setup(&opt)
-	if err == nil {
-		err = serve(r)
+	var (
+		f      *os.File
+		logger *log.Logger
+		opt    reg.RegOptions
+		r      *reg.Registry
+	)
+	if *logFile != "" {
+		f, err = os.OpenFile(*logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0660)
+		if err == nil {
+			logger = log.New(f, "", log.Ldate|log.Ltime)
+		}
 	}
+	if f != nil {
+		defer f.Close()
+	}
+	if err == nil {
+		opt.Address = *address
+		opt.ID = id
+		opt.Lfs = *lfs
+		opt.Logger = logger
+		opt.Port = *port
+		opt.Testing = *testing
+		opt.Verbose = *verbose
+
+		r, err = setup(&opt)
+		if err == nil {
+			err = serve(r)
+		}
+	}
+	_ = logger // NOT YET
 	_ = err
 }
 func setup(opt *reg.RegOptions) (r *reg.Registry, err error) {
@@ -127,13 +150,18 @@ func setup(opt *reg.RegOptions) (r *reg.Registry, err error) {
 	// create a node.  In either case we force the node to listen on
 	// the designated port
 
+	greetings := fmt.Sprintf("xlReg v%s %s start run\n",
+		reg.VERSION, reg.VERSION_DATE)
+	// fmt.Print(greetings)
+	opt.Logger.Print(greetings)
+
 	// XXX STUB XXX
 
-	r, err = reg.NewRegistry(nil,		// nil = clusters so far
+	r, err = reg.NewRegistry(nil, // nil = clusters so far
 		opt.Name, opt.ID, opt.Lfs,
-		nil, nil,						// opt.CKey, opt.SKey,
-		nil,							// overlays
-		opt.EndPoint)
+		nil, nil, // opt.CKey, opt.SKey,
+		nil, // overlays
+		opt.EndPoint, opt.Logger)
 
 	return r, err
 }

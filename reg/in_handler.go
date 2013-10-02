@@ -43,7 +43,7 @@ const (
 )
 
 var (
-	msgHandlers [][]interface{}
+	msgHandlers   [][]interface{}
 	serverVersion uint32
 )
 
@@ -61,11 +61,11 @@ func init() {
 		{badCombo, badCombo, badCombo, doGetMsg, doByeMsg},
 	}
 	// VERSION is a string in M.m.d format, where each of M, m, and d
-	// is either one or two digits.  We want to convert this to a number 
-	// like MMmmdd, a uint32 value. 
+	// is either one or two digits.  We want to convert this to a number
+	// like MMmmdd, a uint32 value.
 	var err error
 	var M, m, d int
-	
+
 	parts := strings.Split(VERSION, ".")
 	if len(parts) != 3 {
 		err = BadVersion
@@ -79,27 +79,27 @@ func init() {
 		}
 	}
 	if err != nil {
-		panic (err)
+		panic(err)
 	}
-	serverVersion = uint32( M * 10000 + m * 100 + d )
+	serverVersion = uint32(M*10000 + m*100 + d)
 }
 
 type InHandler struct {
 	iv1, key1, iv2, key2, salt1, salt2 []byte
-	engineS		cipher.Block
-	encrypterS	cipher.BlockMode
-	decrypterS	cipher.BlockMode
-	reg			*Registry
-	thisMember	*ClusterMember
-	cluster		*RegCluster
+	engineS                            cipher.Block
+	encrypterS                         cipher.BlockMode
+	decrypterS                         cipher.BlockMode
+	reg                                *Registry
+	thisMember                         *ClusterMember
+	cluster                            *RegCluster
 
-	version     uint32 // protocol version used in session
-	known       uint64 // a bit vector:
-	entryState  int
-	exitState   int
-	msgIn       *XLRegMsg
-	msgOut      *XLRegMsg
-	errOut      error
+	version    uint32 // protocol version used in session
+	known      uint64 // a bit vector:
+	entryState int
+	exitState  int
+	msgIn      *XLRegMsg
+	msgOut     *XLRegMsg
+	errOut     error
 	CnxHandler
 }
 
@@ -183,7 +183,7 @@ func (h *InHandler) Run() (err error) {
 			return
 		}
 		op := h.msgIn.GetOp()
-		// TODO: range check on either op or tag 
+		// TODO: range check on either op or tag
 		tag = op2tag(op)
 
 		// ACTION ----------------------------------------------------
@@ -255,10 +255,10 @@ func handleHello(h *InHandler) (err error) {
 	if err == nil {
 		iv1, key1, salt1, version1,
 			err = msg.ServerDecodeHello(ciphertext, rn.ckPriv)
-		_ = version1	// ignore whatever version they propose
+		_ = version1 // ignore whatever version they propose
 	}
 	if err == nil {
-		version2 := serverVersion	
+		version2 := serverVersion
 		iv2, key2, salt2, ciphertextOut, err := msg.ServerEncodeHelloReply(
 			iv1, key1, salt1, version2)
 		if err == nil {

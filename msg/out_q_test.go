@@ -35,7 +35,7 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	c.Assert(err, IsNil)
 
 	name := rng.NextFileName(8)
-	lfs  := "tmp/" + hex.EncodeToString(id)
+	lfs := "tmp/" + hex.EncodeToString(id)
 	mrX, err := node.NewNew(name, nodeID, lfs)
 	c.Assert(err, IsNil)
 	cPubKey := mrX.GetCommsPublicKey()
