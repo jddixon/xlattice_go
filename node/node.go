@@ -459,7 +459,7 @@ func (n *Node) String() string {
 // Collect an RSA private key in string form.  Only call this if
 // '-----BEGIN -----' has already been seen
 
-func collectKey(rest *[]string) (key *rsa.PrivateKey, err error) {
+func ExpectRSAPrivateKey(rest *[]string) (key *rsa.PrivateKey, err error) {
 	ss := []string{"-----BEGIN -----"}
 	for {
 		// NOT ROBUST; should detect end of rest, blank line, any other errors
@@ -477,7 +477,12 @@ func collectKey(rest *[]string) (key *rsa.PrivateKey, err error) {
 	return
 }
 func Parse(s string) (node *Node, rest []string, err error) {
-	bn, rest, err := ParseBaseNode(s, "node")
+	ss := strings.Split(s, "\n")
+	return ParseFromStrings(ss)
+}
+func ParseFromStrings(ss []string) (node *Node, rest[]string, err error) {
+
+	bn, rest, err := ParseBNFromStrings(ss, "node")
 	if err == nil {
 		node = &Node{BaseNode: *bn}
 		var pm BNIMap
@@ -494,11 +499,11 @@ func Parse(s string) (node *Node, rest []string, err error) {
 
 		var commsKey, sigKey *rsa.PrivateKey
 		if err == nil {
-			// move some of this into collectKey() !
+			// move some of this into ExpectRSAPrivateKey() !
 			line = NextNBLine(&rest)
 			parts = strings.Split(line, ": ")
 			if parts[0] == "commsKey" && parts[1] == "-----BEGIN -----" {
-				commsKey, err = collectKey(&rest)
+				commsKey, err = ExpectRSAPrivateKey(&rest)
 				node.commsKey = commsKey
 			} else {
 				fmt.Println("MISSING OR ILL-FORMED COMMS_KEY")
@@ -507,11 +512,11 @@ func Parse(s string) (node *Node, rest []string, err error) {
 		} // FOO
 
 		if err == nil {
-			// move some of this into collectKey() !
+			// move some of this into ExpectRSAPrivateKey() !
 			line = NextNBLine(&rest)
 			parts = strings.Split(line, ": ")
 			if parts[0] == "sigKey" && parts[1] == "-----BEGIN -----" {
-				sigKey, err = collectKey(&rest)
+				sigKey, err = ExpectRSAPrivateKey(&rest)
 				node.sigKey = sigKey
 			} else {
 				fmt.Println("MISSING OR ILL-FORMED SIG_KEY")

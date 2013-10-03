@@ -16,17 +16,17 @@ var _ = math.Inf
 type XLRegMsg_Tag int32
 
 const (
-	XLRegMsg_Client      XLRegMsg_Tag = 3
-	XLRegMsg_ClientOK    XLRegMsg_Tag = 4
-	XLRegMsg_Create      XLRegMsg_Tag = 5
-	XLRegMsg_CreateReply XLRegMsg_Tag = 6
-	XLRegMsg_Join        XLRegMsg_Tag = 7
-	XLRegMsg_JoinReply   XLRegMsg_Tag = 8
-	XLRegMsg_Get         XLRegMsg_Tag = 9
-	XLRegMsg_Members     XLRegMsg_Tag = 10
-	XLRegMsg_Bye         XLRegMsg_Tag = 11
-	XLRegMsg_Ack         XLRegMsg_Tag = 12
-	XLRegMsg_Error       XLRegMsg_Tag = 13
+	XLRegMsg_Client         XLRegMsg_Tag = 3
+	XLRegMsg_ClientOK       XLRegMsg_Tag = 4
+	XLRegMsg_Create         XLRegMsg_Tag = 5
+	XLRegMsg_CreateReply    XLRegMsg_Tag = 6
+	XLRegMsg_Join           XLRegMsg_Tag = 7
+	XLRegMsg_JoinReply      XLRegMsg_Tag = 8
+	XLRegMsg_GetCluster     XLRegMsg_Tag = 9
+	XLRegMsg_ClusterMembers XLRegMsg_Tag = 10
+	XLRegMsg_Bye            XLRegMsg_Tag = 11
+	XLRegMsg_Ack            XLRegMsg_Tag = 12
+	XLRegMsg_Error          XLRegMsg_Tag = 13
 )
 
 var XLRegMsg_Tag_name = map[int32]string{
@@ -36,24 +36,24 @@ var XLRegMsg_Tag_name = map[int32]string{
 	6:  "CreateReply",
 	7:  "Join",
 	8:  "JoinReply",
-	9:  "Get",
-	10: "Members",
+	9:  "GetCluster",
+	10: "ClusterMembers",
 	11: "Bye",
 	12: "Ack",
 	13: "Error",
 }
 var XLRegMsg_Tag_value = map[string]int32{
-	"Client":      3,
-	"ClientOK":    4,
-	"Create":      5,
-	"CreateReply": 6,
-	"Join":        7,
-	"JoinReply":   8,
-	"Get":         9,
-	"Members":     10,
-	"Bye":         11,
-	"Ack":         12,
-	"Error":       13,
+	"Client":         3,
+	"ClientOK":       4,
+	"Create":         5,
+	"CreateReply":    6,
+	"Join":           7,
+	"JoinReply":      8,
+	"GetCluster":     9,
+	"ClusterMembers": 10,
+	"Bye":            11,
+	"Ack":            12,
+	"Error":          13,
 }
 
 func (x XLRegMsg_Tag) Enum() *XLRegMsg_Tag {

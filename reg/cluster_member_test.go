@@ -19,7 +19,7 @@ func (s *XLSuite) TestClusterMember(c *C) {
 
 func (s *XLSuite) TestCMSerialization(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_CM_SERIALIZARTION")
+		fmt.Println("TEST_CM_SERIALIZATION")
 	}
 	rng := xr.MakeSimpleRNG()
 

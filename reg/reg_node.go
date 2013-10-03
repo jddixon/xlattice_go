@@ -8,12 +8,13 @@ package reg
 import (
 	"crypto/rsa"
 	"fmt"
+	xc "github.com/jddixon/xlattice_go/crypto"
 	xm "github.com/jddixon/xlattice_go/msg"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
-	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"log"
+	"strings"
 )
 
 var _ = fmt.Print
@@ -33,47 +34,28 @@ type RegOptions struct {
 }
 
 type RegNode struct {
-	Acc       xt.AcceptorI
-	StopCh    chan bool       // volatile, so not serialized
-	StoppedCh chan bool       // -ditto-
-	ckPriv    *rsa.PrivateKey // duplicate to allow simple
-	skPriv    *rsa.PrivateKey // access in this package
-	xn.Node                   // name, id, ck, sk, etc, etc
+	Acc       xt.AcceptorI		// a convenience here, so not serialized
+	StopCh    chan bool			// volatile, so not serialized
+	StoppedCh chan bool			// -ditto-
+	ckPriv    *rsa.PrivateKey	// duplicate to allow simple
+	skPriv    *rsa.PrivateKey	// access in this package
+	xn.Node						// name, id, ck, sk, etc, etc
 }
 
-func NewRegNode(name string, id *xi.NodeID, lfs string,
-	commsKey, sigKey *rsa.PrivateKey,
-	overlay xo.OverlayI, endPoint xt.EndPointI) (
+// 
+func NewRegNode(node *xn.Node,  commsKey, sigKey *rsa.PrivateKey) (
 	q *RegNode, err error) {
 
-	var myNode *xn.Node
-	var o []xo.OverlayI
-	var e []xt.EndPointI
 	var acc xt.AcceptorI
 
-	if name == "" {
-		name = "xlReg"
+	if node == nil {
+		err = NilNode
 	}
-	if id == nil {
-		id, _ = xi.New(nil) // uses expensive SystemRNG to create a random ID
-	}
-	if lfs == "" {
-		lfs = "/var/app/xlReg"
-	}
-	if overlay != nil {
-		o = []xo.OverlayI{overlay}
-	}
-	if commsKey == nil || sigKey == nil {
-		err = NilPrivateKey
-	} else if endPoint == nil {
-		endPoint, err = xt.NewTcpEndPoint("127.0.0.1:44444")
-	}
+	// We would prefer that the node's name be xlReg and that its 
+	// LFS default to /var/app/xlReg.  
+
 	if err == nil {
-		e = []xt.EndPointI{endPoint}
-		myNode, err = xn.New(name, id, lfs, commsKey, sigKey, o, e, nil)
-	}
-	if err == nil {
-		acc = myNode.GetAcceptor(0)
+		acc = node.GetAcceptor(0)
 		if acc == nil {
 			err = xm.AcceptorNotLive
 		}
@@ -88,7 +70,7 @@ func NewRegNode(name string, id *xi.NodeID, lfs string,
 			StoppedCh: stoppedCh,
 			ckPriv:    commsKey,
 			skPriv:    sigKey,
-			Node:      *myNode,
+			Node:      *node,
 		}
 	}
 	return
@@ -96,21 +78,72 @@ func NewRegNode(name string, id *xi.NodeID, lfs string,
 
 // SERIALIZATION ====================================================
 
-func ParseRegNode(s string) (rn *RegNode, rest []string, err error) {
-
-
-	// XXX STUB
+func (rn *RegNode) Strings() (ss []string) {
+	ss = []string{"regNode {"}
+	ns := rn.Node.Strings()
+	for i := 0; i < len(ns); i++ {
+		ss = append(ss, "    " + ns[i])
+	}
+	// XXX Possibly foolish assumption that serialization must succeed.
+	ckSer, _ := xc.RSAPrivateKeyToDisk(rn.ckPriv)
+	skSer, _ := xc.RSAPrivateKeyToDisk(rn.skPriv)
+	ss = append(ss, fmt.Sprintf("    ckPriv: %s", ckSer))
+	ss = append(ss, fmt.Sprintf("    skPriv: %s", skSer))
+	ss = append(ss, "}")
 	return
 }
 
 func (rn *RegNode) String() (s string) {
+	return strings.Join(rn.Strings(), "\n")
+}
 
-	// STUB XXX
+func ParseRegNode(s string) (rn *RegNode, rest []string, err error) {
+	ss := strings.Split(s, "\n")
+	return ParseRegNodeFromStrings(ss)
+}
+	
+func ParseRegNodeFromStrings(ss []string) (
+	rn *RegNode, rest []string, err error) {
+
+	var (
+		node	*xn.Node
+		ckPriv	*rsa.PrivateKey
+		skPriv	*rsa.PrivateKey
+	)
+	rest = ss
+	line := xn.NextNBLine(&rest)
+	if line != "regNode {" {
+		err = MissingRegNodeLine
+	} else {
+		node, rest, err = xn.ParseFromStrings(rest)
+		if err == nil {
+			line = xn.NextNBLine(&rest)
+			parts := strings.Split(line, ": ")
+			if parts[0] == "ckPriv" && parts[1] == "-----BEGIN -----" {
+				ckPriv, err = xn.ExpectRSAPrivateKey(&rest)
+			} else {
+				err = MissingPrivateKey
+			}
+		}
+		if err == nil {
+			line = xn.NextNBLine(&rest)
+			parts := strings.Split(line, ": ")
+			if parts[0] == "skPriv" && parts[1] == "-----BEGIN -----" {
+				skPriv, err = xn.ExpectRSAPrivateKey(&rest)
+			} else {
+				err = MissingPrivateKey
+			}
+		}
+		if err == nil {
+			line = xn.NextNBLine(&rest)
+			if line != "}" {
+				err = MissingClosingBrace
+			}
+		}
+		if err == nil {
+			rn, err = NewRegNode(node, ckPriv, skPriv) 
+		}
+	}
 	return
 }
 
-func (rn *RegNode) Strings() (s []string) {
-
-	// STUB XXX
-	return
-}

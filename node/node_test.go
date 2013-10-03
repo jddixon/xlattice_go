@@ -213,7 +213,7 @@ func (s *XLSuite) makeHost(c *C, rng *rnglib.PRNG) *Node {
 	c.Assert(0, Equals, n.SizeConnections())
 	c.Assert(lfs, Equals, n.GetLFS())
 	return n
-}
+} // GEEP
 
 // Create a Peer from information in the Node passed.  Endpoints
 // (and so Overlays) must have already been added to the Node.

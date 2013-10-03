@@ -7,8 +7,7 @@ import (
 	"crypto/rsa"
 	"encoding/hex"
 	"fmt"
-	//xc "github.com/jddixon/xlattice_go/crypto"
-	//xn "github.com/jddixon/xlattice_go/node"
+	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
@@ -46,6 +45,7 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 		ckPriv, skPriv *rsa.PrivateKey
 		rn			*RegNode
 		ep			*xt.TcpEndPoint
+		node		*xn.Node
 		reg			*Registry
 		server		*RegServer
 	)
@@ -65,10 +65,12 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 	}
 	if err == nil {
 		ep, err = xt.NewTcpEndPoint("127.0.0.1:0")
-	}
-	if err == nil {
-		// a registry with no clusters and no logger
-		reg, err = NewRegistry(nil, name, id, lfs, ckPriv, skPriv, nil, ep, nil)
+		eps := []xt.EndPointI{ep}
+		if err == nil {
+			node, err = xn.New(name, id, lfs, ckPriv, skPriv, nil, eps, nil)
+			// a registry with no clusters and no logger
+			reg, err = NewRegistry(nil, node, ckPriv, skPriv, nil)
+		}
 	}
 	// DEBUG
 	if reg.ClustersByID == nil {

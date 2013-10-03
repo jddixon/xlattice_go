@@ -295,7 +295,7 @@ func doGetMsg(h *InHandler) {
 	}
 	if err == nil {
 		// Prepare reply to client --------------------------------------
-		op := XLRegMsg_Members
+		op := XLRegMsg_ClusterMembers
 		h.msgOut = &XLRegMsg{
 			Op:        &op,
 			ClusterID: clusterID,

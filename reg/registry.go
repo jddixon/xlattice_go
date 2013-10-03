@@ -9,9 +9,6 @@ import (
 	"crypto/rsa"
 	"fmt"
 	xn "github.com/jddixon/xlattice_go/node"
-	xi "github.com/jddixon/xlattice_go/nodeID"
-	xo "github.com/jddixon/xlattice_go/overlay"
-	xt "github.com/jddixon/xlattice_go/transport"
 	"log"
 	"os"
 	"sync"
@@ -32,12 +29,11 @@ type Registry struct {
 	RegNode
 }
 
-func NewRegistry(clusters []*RegCluster, name string, id *xi.NodeID,
-	lfs string, ckPriv, skPriv *rsa.PrivateKey,
-	overlay xo.OverlayI, endPoint xt.EndPointI,
-	logger *log.Logger) (reg *Registry, err error) {
+func NewRegistry(clusters []*RegCluster, node *xn.Node, 
+	ckPriv, skPriv *rsa.PrivateKey, logger *log.Logger) (
+	reg *Registry, err error) {
 
-	rn, err := NewRegNode(name, id, lfs, ckPriv, skPriv, overlay, endPoint)
+	rn, err := NewRegNode(node, ckPriv, skPriv)
 	if err == nil {
 		var bniMap xn.BNIMap
 		if logger == nil {
@@ -53,7 +49,6 @@ func NewRegistry(clusters []*RegCluster, name string, id *xi.NodeID,
 		if clusters != nil {
 			// XXX need to populate the indexes here
 		}
-
 	}
 	return
 }

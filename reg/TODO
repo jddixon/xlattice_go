@@ -7,7 +7,10 @@ xlattice_go/reg/TODO
             * without clientID in token
         - second version has only clientID + digSig
         - either attaches client's token to the connection
-    * rename Get msg to GetCluster, Members to ClusterMembers
+    * NEEDS MORE THOUGHT - can't have a node without a nodeID,
+        only nodes can contact the server
+
+    * rename Get msg to GetCluster, Members to ClusterMembers           * DONE
 
     * code up RegNode serialization in reg/reg_node.go:
         - ParseRegNode()
@@ -20,13 +23,15 @@ xlattice_go/reg/TODO
         - Strings()
 
     * code up RegServer bits in reg/server.go:
-        - Run()
+        - Run()                                                         * DONE
         - ParseRegServer()
         - String()
         - Strings()
 
+    * any errors found by InHandler should be logged
+
 2013-10-01
-    * InHandler.Run() needs range check on op or tag about line 169
+    * InHandler.Run() needs range check on op or tag about line 169     * DONE
     * need locking for reg_cluster Members 
         - checking whether client is cluster member by name (read lock) * DONE
         - adding member to cluster by name (write lock)                 * DONE

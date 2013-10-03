@@ -31,7 +31,7 @@ func (s *XLSuite) TestInHandler(c *C) {
 	c.Assert(op2tag(XLRegMsg_Client), Equals, 0)
 	c.Assert(op2tag(XLRegMsg_Create), Equals, 1)
 	c.Assert(op2tag(XLRegMsg_Join), Equals, 2)
-	c.Assert(op2tag(XLRegMsg_Get), Equals, 3)
+	c.Assert(op2tag(XLRegMsg_GetCluster), Equals, 3)
 	c.Assert(op2tag(XLRegMsg_Bye), Equals, 4)
 
 	c.Assert(op2tag(XLRegMsg_Bye), Equals, MAX_TAG)

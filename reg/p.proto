@@ -16,25 +16,25 @@ message XLRegMsg {
     
         // All messages are encrypted using the server-provided
         // session key and PKCS7-padded.
-        Client      = 3;    // clientName, token OR clientID
-        ClientOK    = 4;    // clientID, attrs
+        Client      	= 3;    // clientName, token OR clientID
+        ClientOK    	= 4;    // clientID, attrs
 
-        Create      = 5;    // clusterName (must be unique), size <= 64
-        CreateReply = 6;    // clusterID, optional size -OR- error
+        Create      	= 5;    // clusterName (must be unique), size <= 64
+        CreateReply 	= 6;    // clusterID, optional size -OR- error
 
         // Response to Join is clusterID + size -OR- error
-        Join        = 7;    // clusterName or clusterID
-        JoinReply   = 8;    // clusterID, size
+        Join        	= 7;    // clusterName or clusterID
+        JoinReply   	= 8;    // clusterID, size
 
-        Get         = 9;    // clusterID, which = bit vector; -1 = all
+        GetCluster  	= 9;    // clusterID, which = bit vector; -1 = all
         // Response to Get is a list of known members -OR- error
-        Members     = 10;    // clusterID, which, tokens
+        ClusterMembers 	= 10;   // clusterID, which, tokens
 
         // Orderly close
-        Bye         = 11;    // from client
-        Ack         = 12;    // from server; followed by close
+        Bye         	= 11;   // from client
+        Ack         	= 12;   // from server; followed by close
         
-        Error       = 13;    // errDesc; from server, followed by close
+        Error       	= 13;   // errDesc; from server, followed by close
         
     }
     message Token {

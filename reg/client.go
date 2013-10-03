@@ -322,7 +322,7 @@ func (mc *Client) Run() (err error) {
 				// END
 
 				// Send GET MSG =========================================
-				op = XLRegMsg_Get
+				op = XLRegMsg_GetCluster
 				request = &XLRegMsg{
 					Op:        &op,
 					ClusterID: mc.clusterID.Value(),

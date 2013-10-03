@@ -185,7 +185,9 @@ func (h *InHandler) Run() (err error) {
 		op := h.msgIn.GetOp()
 		// TODO: range check on either op or tag
 		tag = op2tag(op)
-
+		if tag < MIN_TAG || tag > MAX_TAG {
+			h.errOut = TagOutOfRange
+		}
 		// ACTION ----------------------------------------------------
 		// Take the action appropriate for the current state
 		msgHandlers[h.entryState][tag].(func(*InHandler))(h)
