@@ -367,7 +367,7 @@ func (mc *Client) Run() (err error) {
 					}
 					time.Sleep(10 * time.Millisecond)
 				}
-			} 
+			}
 		}
 		// Send BYE MSG =============================================
 		if err == nil {

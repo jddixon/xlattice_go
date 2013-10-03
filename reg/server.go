@@ -7,24 +7,24 @@ import (
 )
 
 type RegServer struct {
-	acc				xt.AcceptorI	// volatile, not serialized
-	Testing			bool			// serialized
-	Verbosity		int				// serialized
+	acc       xt.AcceptorI // volatile, not serialized
+	Testing   bool         // serialized
+	Verbosity int          // serialized
 	Registry
 }
 
-func NewRegServer (reg *Registry, testing bool, verbosity int) (
+func NewRegServer(reg *Registry, testing bool, verbosity int) (
 	rs *RegServer, err error) {
 
 	if reg == nil {
 		err = NilRegistry
 	} else {
-		acc := reg.GetAcceptor(0)		// by convention
+		acc := reg.GetAcceptor(0) // by convention
 		rs = &RegServer{
-				acc:		acc,
-				Testing:	testing,
-				Verbosity:	verbosity,
-				Registry:	*reg,
+			acc:       acc,
+			Testing:   testing,
+			Verbosity: verbosity,
+			Registry:  *reg,
 		}
 	}
 	return
@@ -41,7 +41,7 @@ func (rs *RegServer) GetAcceptor() xt.AcceptorI {
 
 // Starts the server running in a goroutine.  Does not block.
 func (rs *RegServer) Run() (err error) {
-	
+
 	go func() {
 		for {
 			// As each client connects its connection is passed to a
@@ -69,7 +69,6 @@ func (rs *RegServer) Run() (err error) {
 // SERIALIZATION ====================================================
 
 func ParseRegServer(s string) (rs *RegServer, rest []string, err error) {
-
 
 	// XXX STUB
 	return

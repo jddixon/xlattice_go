@@ -30,7 +30,7 @@ func (s *XLSuite) TestMockServer(c *C) {
 
 	server := ms.Server
 
-	c.Assert(&server.RegNode.ckPriv.PublicKey, 
+	c.Assert(&server.RegNode.ckPriv.PublicKey,
 		DeepEquals, server.GetCommsPublicKey())
 
 	serverName := server.GetName()

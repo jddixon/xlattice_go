@@ -1,21 +1,55 @@
 xlattice_go/reg/TODO
 
 2013-10-02
+    CLIENT, MOCK_CLIENT
+    * mock_client renamed client_node.go
+    * MockClient becomes ClientNode
+    * client.go reorganized a bit so that it either loads or
+        creates a ClientNode
+    
     * change protocol so that nodeID is assigned by server (to
         avoid Douceur's Sybil Attack)
         - so first variant of Client message has token + digSig
             * without clientID in token
-        - second version has only clientID + digSig
-        - either attaches client's token to the connection
-    * NEEDS MORE THOUGHT - can't have a node without a nodeID,
-        only nodes can contact the server
+                - any client ID is ignored and discarded
+                - which will cause digSig to be wrong
+        - second version of Client message has only clientID + digSig
+        - either attaches client's full token to the connection
+            * this includes nodeID
+    * move Node into Client struct 
+    * code up the usual serialization/deserialization 
+        * ParseClient
+        * Client.String()
+        * Client.Strings()
+        * Client.Run()
+    * when a Client is run, 
+        - if it has a configuration in its lfs, it loads = does a 
+            ParseClient on its configuration file; this returns
+            a Client with a *xn.Node field
+        - otherwise it starts talking to the server (does a 
+            Hello/Reply to get a session key) and then sends a
+            Client message without a nodeID; the nodeID returned
+            is used to build its *xn.Node
+    * if testing (-T option), default lfs is ./tmp/ID/lfs, where
+        ID is the hex version of the server-assigned ID
+    * otherwise default lfs is ./lfs
+        - so there is one obvious configuration file in a subdirectory
+            of the current directory
+    
+    SERVER, CLIENT/SERVER MESSAGING
+    * it must be possible for a Client to create a Cluster (by name)
+        and set its size without joining it
+        - ah: it must be possible for a Client to create a Cluster
+            without a name and get its assigned name and ID back
+    * equally it must be possible for a client to join a cluster 
+        using its name and get its ID back
+        - but if its full the client gets a ClusterFull error msg
 
     * rename Get msg to GetCluster, Members to ClusterMembers           * DONE
-
-    * code up RegNode serialization in reg/reg_node.go:
-        - ParseRegNode()
-        - String()
-        - Strings()
+    * code up RegNode serialization in reg/reg_node.go:				    * DONE
+        - ParseRegNode()							                    * DONE
+        - String()						                            	* DONE
+        - Strings()							                            * DONE
 
     * code up Registry serialization in reg/registry.go:
         - ParseRegistry()

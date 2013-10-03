@@ -47,7 +47,7 @@ func (s *XLSuite) TestRegNodeSerialization(c *C) {
 
 	// DEBUG
 	if len(rest) > 0 {
-		for i := 0 ; i < len(rest); i++ {
+		for i := 0; i < len(rest); i++ {
 			fmt.Printf("REST: %s\n", rest[i])
 		}
 	}

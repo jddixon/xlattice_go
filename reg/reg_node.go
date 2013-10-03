@@ -34,16 +34,16 @@ type RegOptions struct {
 }
 
 type RegNode struct {
-	Acc       xt.AcceptorI		// a convenience here, so not serialized
-	StopCh    chan bool			// volatile, so not serialized
-	StoppedCh chan bool			// -ditto-
-	ckPriv    *rsa.PrivateKey	// duplicate to allow simple
-	skPriv    *rsa.PrivateKey	// access in this package
-	xn.Node						// name, id, ck, sk, etc, etc
+	Acc       xt.AcceptorI    // a convenience here, so not serialized
+	StopCh    chan bool       // volatile, so not serialized
+	StoppedCh chan bool       // -ditto-
+	ckPriv    *rsa.PrivateKey // duplicate to allow simple
+	skPriv    *rsa.PrivateKey // access in this package
+	xn.Node                   // name, id, ck, sk, etc, etc
 }
 
-// 
-func NewRegNode(node *xn.Node,  commsKey, sigKey *rsa.PrivateKey) (
+//
+func NewRegNode(node *xn.Node, commsKey, sigKey *rsa.PrivateKey) (
 	q *RegNode, err error) {
 
 	var acc xt.AcceptorI
@@ -51,8 +51,8 @@ func NewRegNode(node *xn.Node,  commsKey, sigKey *rsa.PrivateKey) (
 	if node == nil {
 		err = NilNode
 	}
-	// We would prefer that the node's name be xlReg and that its 
-	// LFS default to /var/app/xlReg.  
+	// We would prefer that the node's name be xlReg and that its
+	// LFS default to /var/app/xlReg.
 
 	if err == nil {
 		acc = node.GetAcceptor(0)
@@ -78,11 +78,17 @@ func NewRegNode(node *xn.Node,  commsKey, sigKey *rsa.PrivateKey) (
 
 // SERIALIZATION ====================================================
 
+// A regNode is serialized in more or less reverse order.  The
+// "regNode {" line, which is followed by a "node {" line, which
+// is followed by the body of the BaseNode, after which comes the
+// body of the Node, which is followed by the RegNodes two private keys.
+
+// THE CURRENT IMPLEMENTATION serializes clusters including their
 func (rn *RegNode) Strings() (ss []string) {
 	ss = []string{"regNode {"}
 	ns := rn.Node.Strings()
 	for i := 0; i < len(ns); i++ {
-		ss = append(ss, "    " + ns[i])
+		ss = append(ss, "    "+ns[i])
 	}
 	// XXX Possibly foolish assumption that serialization must succeed.
 	ckSer, _ := xc.RSAPrivateKeyToDisk(rn.ckPriv)
@@ -101,14 +107,14 @@ func ParseRegNode(s string) (rn *RegNode, rest []string, err error) {
 	ss := strings.Split(s, "\n")
 	return ParseRegNodeFromStrings(ss)
 }
-	
+
 func ParseRegNodeFromStrings(ss []string) (
 	rn *RegNode, rest []string, err error) {
 
 	var (
-		node	*xn.Node
-		ckPriv	*rsa.PrivateKey
-		skPriv	*rsa.PrivateKey
+		node   *xn.Node
+		ckPriv *rsa.PrivateKey
+		skPriv *rsa.PrivateKey
 	)
 	rest = ss
 	line := xn.NextNBLine(&rest)
@@ -141,9 +147,8 @@ func ParseRegNodeFromStrings(ss []string) (
 			}
 		}
 		if err == nil {
-			rn, err = NewRegNode(node, ckPriv, skPriv) 
+			rn, err = NewRegNode(node, ckPriv, skPriv)
 		}
 	}
 	return
 }
-

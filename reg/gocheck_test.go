@@ -63,7 +63,7 @@ func (s *XLSuite) makeALocalEndPoint(c *C, node *xn.Node) {
 // and then simplified a bit.
 
 func (s *XLSuite) makeHostAndKeys(c *C, rng *xr.PRNG) (
-	n *xn.Node, ckPriv, skPriv *rsa.PrivateKey)  {
+	n *xn.Node, ckPriv, skPriv *rsa.PrivateKey) {
 
 	// XXX names may not be unique
 	name := rng.NextFileName(6)
@@ -79,7 +79,7 @@ func (s *XLSuite) makeHostAndKeys(c *C, rng *xr.PRNG) (
 	lfs := "tmp/" + hex.EncodeToString(id.Value())
 	ckPriv = s.makeAnRSAKey(c)
 	skPriv = s.makeAnRSAKey(c)
-	
+
 	n, err2 := xn.New(name, id, lfs, ckPriv, skPriv, nil, nil, nil)
 
 	c.Assert(err2, IsNil)
@@ -93,7 +93,7 @@ func (s *XLSuite) makeHostAndKeys(c *C, rng *xr.PRNG) (
 	c.Assert(0, Equals, n.SizeConnections())
 	c.Assert(lfs, Equals, n.GetLFS())
 	return n, ckPriv, skPriv
-} 
+}
 
 // Using functions must check to ensure members have unique names
 

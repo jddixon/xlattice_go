@@ -11,25 +11,28 @@ import (
 	xn "github.com/jddixon/xlattice_go/node"
 	"log"
 	"os"
+	"strings"
 	"sync"
 )
 
 var _ = fmt.Print
 
 type Registry struct {
+	LogFile        string
+	Logger         *log.Logger            // volatile, not serialized
+	
 	// registry data
 	Clusters       []*RegCluster          // serialized
 	ClustersByName map[string]*RegCluster // volatile, not serialized
 	ClustersByID   *xn.BNIMap             // -ditto-
 	RegMembersByID *xn.BNIMap             // -ditto-
-	Logger         *log.Logger            // -ditto-
-	mu             sync.RWMutex           // -ditto-
+	mu             sync.RWMutex			  // -ditto-
 
-	// the extended XLattice node, so files, communications, and keys
+	// the extended XLattice node, so id, lfs, keys, etc
 	RegNode
 }
 
-func NewRegistry(clusters []*RegCluster, node *xn.Node, 
+func NewRegistry(clusters []*RegCluster, node *xn.Node,
 	ckPriv, skPriv *rsa.PrivateKey, logger *log.Logger) (
 	reg *Registry, err error) {
 
@@ -87,21 +90,33 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 
 // SERIALIZATION ====================================================
 
-func ParseRegistry(s string) (reg *Registry, rest []string, err error) {
-
-
-	// XXX STUB
-	return
-}
+// Tentatively the registry is serialized separately from the regNode
+// and so consists of a sequence of serialized clusters
 
 func (reg *Registry) String() (s string) {
+	return strings.Join(reg.Strings(), "\n")
+}
 
-	// STUB XXX
+// If we change the serialization so that there is no closing brace,
+// it will be possible to simply append cluster serializations to the
+// registry configuration file while the registry is running.
+
+func (reg *Registry) Strings() (ss []string) {
+	ss = []string {"registry {"}
+	ss = append(ss, fmt.Sprintf("    LogFile: %s", reg.LogFile))
+	ss = append(ss, "}")
+
+	for i := 0 ; i < len(reg.Clusters); i++ {
+		cs := reg.Clusters[i].Strings()
+		for j := 0; j < len(cs); j++ {
+			ss = append(ss, cs[j])
+		}
+	}
 	return
 }
 
-func (reg *Registry) Strings() (s []string) {
+func ParseRegistry(s string) (reg *Registry, rest []string, err error) {
 
-	// STUB XXX
+	// XXX STUB
 	return
 }

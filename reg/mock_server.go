@@ -20,7 +20,7 @@ type MockServer struct {
 	clusterName string
 	clusterID   *xi.NodeID
 	size        int
-	Server		*RegServer
+	Server      *RegServer
 }
 
 // A Mock Server is primarily intended for use in testing.  It contains
@@ -43,11 +43,11 @@ func NewMockServer(clusterName string, clusterID *xi.NodeID, size int) (
 
 	var (
 		ckPriv, skPriv *rsa.PrivateKey
-		rn			*RegNode
-		ep			*xt.TcpEndPoint
-		node		*xn.Node
-		reg			*Registry
-		server		*RegServer
+		rn             *RegNode
+		ep             *xt.TcpEndPoint
+		node           *xn.Node
+		reg            *Registry
+		server         *RegServer
 	)
 
 	rng := xr.MakeSimpleRNG()
