@@ -1,0 +1,5 @@
+// xlattice_go/util/merkletree/TODO
+
+2013-10-04
+    * need 'typesafe' version of MerkleNode.Equal that skips the
+        type checks
