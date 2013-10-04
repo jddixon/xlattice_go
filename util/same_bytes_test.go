@@ -22,4 +22,8 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 		rng.NextBytes(&buf)
 		c.Assert(SameBytes(buf, buf), Equals, true)
 	}
+
+	// 2013-10-04: empty slices should be equal
+	var x, y []byte
+	c.Assert(SameBytes(x, y), Equals, true)
 }

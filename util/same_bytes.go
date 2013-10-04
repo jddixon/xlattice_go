@@ -6,15 +6,18 @@ import (
 	"unsafe"
 )
 
+// Return true if the two byte slices have the same length and no
+// byte differ.
+
 func SameBytes(a, b []byte) bool {
 	var aInt, bInt int
-	if a == nil || b == nil {
-		return false
-	}
 	if len(a) != len(b) {
 		return false
 	}
 	length := len(a)
+	if length == 0 {
+		return true
+	}
 	sizeInt := int(unsafe.Sizeof(aInt))
 	var i int
 	for i := 0; i < length-sizeInt; i += sizeInt {
