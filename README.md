@@ -1,9 +1,11 @@
-xlattice-go
+xlattice_go
 ===========
 
 An implementation of [XLattice](http://xlattice.sourceforge.net)
-for the Go language.  XLattice is a Java communications library 
-for peer-to-peer networks.
+for the Go language.  XLattice is a communications library 
+for peer-to-peer networks.  More extensive (although somewhat
+dated) information on XLattice is available as the 
+[XLattice website](http://www.xlattice.org).
 
 This version of xlattice-go includes a Go implementation of *rnglib*
 for use in testing and an implementation of u256x256, a system for
