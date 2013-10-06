@@ -26,8 +26,8 @@ type MerkleNodeI interface {
 
 	Equal(any interface{}) bool
 	// XXX DELAY THESE FOR A WHILE
-	// ToString(int)	string
-	// GetPath()		string
+	// ToString(indent string)	string
+	// GetPath()		        string
 	// SetPath(value	string) error
 }
 
@@ -40,12 +40,21 @@ type MerkleNode struct {
 func NewMerkleNode(name string, hash []byte, usingSHA1 bool) (
 	mn *MerkleNode, err error) {
 
-	// XXX MISSING CHECKS
-
-	mn = &MerkleNode{
-		name:      name,
-		hash:      hash,
-		usingSHA1: usingSHA1,
+	if name == "" {
+		err = EmptyName
+	} 
+	if err == nil {
+		length := len(hash)
+		if length != 0 && length != SHA1_LEN && length != SHA3_LEN {
+			err = InvalidHashLength
+		}
+	}
+	if err == nil {
+		mn = &MerkleNode{
+			name:      name,
+			hash:      hash,
+			usingSHA1: usingSHA1,
+		}
 	}
 	return
 }
