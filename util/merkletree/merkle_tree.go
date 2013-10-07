@@ -236,7 +236,7 @@ func ParseMerkleTree(s string) (mt *MerkleTree, err error) {
 //                line = line.rstrip()
 //                if line == "":
 //                    continue
-//                if self._usingSHA1:
+//                if mt.usingSHA1:
 //                    m = re.match(MerkleTree.OTHER_LINE_PAT_1, line)
 //                else:
 //                    m = re.match(MerkleTree.OTHER_LINE_PAT_3, line)
@@ -350,65 +350,116 @@ func (mt *MerkleTree) AddNode(mn MerkleNodeI) (err error) {
 }
 
 // SERIALIZATION ////////////////////////////////////////////////
-func (mt *MerkleTree) ToString(indent string) (s string) {
 
-	// XXX STUB
+// Called ToString because it returns an error.  XXX Consider dropping
+// the indent argument.
+
+func (mt *MerkleTree) ToString(indent string) (str string, err error) {
+	var ss []string
+	err = mt.ToStrings(indent, &ss) // top level indent
+	if err == nil {
+		str = strings.Join(ss, "\r\n")
+		str += "\r\n"
+	}
 	return
 }
 
-//    @property
-//    def __str__(self):
-//        return self.toString("")
+// Serialize a MerkleTree node recursively.
+func (mt *MerkleTree) toStringsNotTop(indent string, ss *[]string) (err error) {
+
+	var top string
+	topHash := mt.GetHash()
+	if len(topHash) == 0 {
+		if mt.usingSHA1 {
+			top = fmt.Sprintf("%s%s %s/\r\n", indent, SHA1_NONE, mt.name)
+		} else {
+			top = fmt.Sprintf("%s%s %s/\r\n", indent, SHA3_NONE, mt.name)
+		}
+	} else {
+		hexHash := hex.EncodeToString(topHash)
+		top = fmt.Sprintf("%s%s %s/\r\n", indent, hexHash,
+			mt.name) // <--- LEVEL 0 NODE
+	}
+	*ss = append(*ss, top)
+	// WORKING HERE - THIS JUST COPIED FROM ToStrings:
+	myIndent := indent + "  "
+	for i := 0; i < len(mt.nodes); i++ {
+		node := mt.nodes[i]
+		if node.IsLeaf() {
+			mLeaf := node.(*MerkleLeaf)
+			err = mLeaf.ToStrings(myIndent, ss)
+		} else {
+			mTree := node.(*MerkleTree)
+			err = mTree.toStringsNotTop(myIndent, ss) // recurses
+		}
+		if err != nil {
+			break
+		}
+	}
+	return
+}
 
 //    def toStringNotTop(self, indent):
 //        """ indent is the indentation to be used for the top node"""
 //        s      = []                             # a list of strings
-//        if self._hash == None:
-//            if self._usingSHA1:
-//                top = "%s%s %s/\r\n" % (indent, SHA1_NONE, self.name)
+//        if mt._hash == None:
+//            if mt.usingSHA1:
+//                top = "%s%s %s/\r\n" % (indent, SHA1_NONE, mt.name)
 //            else:
-//                top = "%s%s %s/\r\n" % (indent, SHA3_NONE, self.name)
+//                top = "%s%s %s/\r\n" % (indent, SHA3_NONE, mt.name)
 //        else:
-//            top = "%s%s %s/\r\n" % (indent, binascii.b2a_hex(self._hash),
-//                              self.name)
+//            top = "%s%s %s/\r\n" % (indent, binascii.b2a_hex(mt._hash),
+//                              mt.name)
 //        s.append(top)
 //        # DEBUG
 //        # print "toStringNotTop appends: %s" % top
 //        # END
 //        indent = indent + "  "              # <--- LEVEL 2+ NODE
-//        for node in self.nodes:
+//        for node in mt.nodes:
 //            if isinstance(node, MerkleLeaf):
 //                s.append( node.toString(indent) )
 //            else:
 //                s.append( node.toStringNotTop(indent) )     # recurses
 //
 //        return "".join(s)
-//
-//    def toString(self, indent):
-//        """
-//        indent is the initial indentation of the serialized list, NOT the
+
+//        Indent is the initial indentation of the serialized list, NOT the
 //        extra indentation added at each recursion, which is fixed at 2 spaces.
 //        Using code should take into account that the last line is CR-LF
 //        terminated, and so a split on CRLF will generate an extra blank line
-//        """
-//        s      = []                             # a list of strings
-//        if self._hash == None:
-//            if self._usingSHA1:
-//                top = "%s%s %s/\r\n" % (indent, SHA1_NONE, self.name)
-//            else:
-//                top = "%s%s %s/\r\n" % (indent, SHA3_NONE, self.name)
-//        else:
-//            top = "%s%s %s/\r\n" % (indent, binascii.b2a_hex(self._hash),
-//                              self.name)    # <--- LEVEL 0 NODE
-//        s.append(top)
-//        myIndent = indent + "  "            # <--- LEVEL 1 NODE
-//        for node in self.nodes:
-//            if isinstance (node, MerkleLeaf):
-//                s.append(node.toString(myIndent))
-//            else:
-//                s.append( node.toStringNotTop(myIndent) )     # recurses
-//
-//        return "".join(s)
+
+func (mt *MerkleTree) ToStrings(indent string, ss *[]string) (err error) {
+
+	var top string
+	topHash := mt.GetHash()
+	if len(topHash) == 0 {
+		if mt.usingSHA1 {
+			top = fmt.Sprintf("%s%s %s/\r\n", indent, SHA1_NONE, mt.name)
+		} else {
+			top = fmt.Sprintf("%s%s %s/\r\n", indent, SHA3_NONE, mt.name)
+		}
+	} else {
+		hexHash := hex.EncodeToString(topHash)
+		top = fmt.Sprintf("%s%s %s/\r\n", indent, hexHash,
+			mt.name) // <--- LEVEL 0 NODE
+	}
+	*ss = append(*ss, top)
+	myIndent := indent + "  "
+	for i := 0; i < len(mt.nodes); i++ {
+		node := mt.nodes[i]
+		if node.IsLeaf() {
+			mLeaf := node.(*MerkleLeaf)
+			err = mLeaf.ToStrings(myIndent, ss)
+		} else {
+			mTree := node.(*MerkleTree)
+			err = mTree.toStringsNotTop(myIndent, ss) // recurses
+		}
+		if err != nil {
+			break
+		}
+	} // GEEP
+	return
+}
 
 func (mt *MerkleTree) Equal(any interface{}) bool {
 	if any == mt {

@@ -15,5 +15,5 @@ var _ = Suite(&XLSuite{})
 
 // TEST CONSTANTS BELOW THIS LINE
 const (
-	VERBOSITY = 0
+	VERBOSITY = 1
 )

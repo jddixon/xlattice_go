@@ -75,7 +75,7 @@ func (ml *MerkleLeaf) Equal(any interface{}) bool {
 // Serialize the leaf node, prefixing it with 'indent', which should
 // conventionally be a number of spaces.
 
-func (ml *MerkleLeaf) ToString(indent string) string {
+func (ml *MerkleLeaf) ToString(indent string) (str string, err error) {
 	var shash string
 	hash := ml.hash
 	if len(hash) == 0 {
@@ -87,7 +87,16 @@ func (ml *MerkleLeaf) ToString(indent string) string {
 	} else {
 		shash = hex.EncodeToString(hash)
 	}
-	return fmt.Sprintf("%s%s %s\r\n", indent, shash, ml.name)
+	str = fmt.Sprintf("%s%s %s\r\n", indent, shash, ml.name)
+	return
+}
+
+func (ml *MerkleLeaf) ToStrings(indent string, ss *[]string) (err error) {
+	str, err := ml.ToString(indent)
+	if err == nil {
+		*ss = append(*ss, str)
+	}
+	return
 }
 
 // Return the SHA1 hash of a file.  This is a sequence of 20 bytes.

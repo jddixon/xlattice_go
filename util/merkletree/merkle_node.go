@@ -25,8 +25,9 @@ type MerkleNodeI interface {
 	IsLeaf() bool
 
 	Equal(any interface{}) bool
+	ToString(indent string) (string, error)
+	ToStrings(indent string, ss *[]string) error
 	// XXX DELAY THESE FOR A WHILE
-	// ToString(indent string)	string
 	// GetPath()		        string
 	// SetPath(value	string) error
 }
