@@ -42,7 +42,7 @@ func NewMerkleNode(name string, hash []byte, usingSHA1 bool) (
 
 	if name == "" {
 		err = EmptyName
-	} 
+	}
 	if err == nil {
 		length := len(hash)
 		if length != 0 && length != SHA1_LEN && length != SHA3_LEN {
