@@ -3,18 +3,9 @@ package merkletree
 // xlattice_go/util/merkletree/merkle_node.go
 
 import (
-	//"code.google.com/p/go.crypto/sha3"
-	//"crypto/sha1"
-	//"encoding/hex"
 	"fmt"
 	xu "github.com/jddixon/xlattice_go/util"
-	//"hash"
-	//"os"
-	//"path"
-	//re "regexp"
-	//"strings"
 )
-
 var _ = fmt.Print
 
 type MerkleNodeI interface {
@@ -91,6 +82,14 @@ func (mn *MerkleNode) Equal(any interface{}) bool {
 	}
 	other := any.(*MerkleNode) // type assertion
 
-	return mn.name == other.name && xu.SameBytes(mn.hash, other.hash) &&
-		mn.usingSHA1 == other.usingSHA1
+	if mn.name != other.name {
+		return false
+	}
+	if !xu.SameBytes(mn.hash, other.hash) {
+		return false
+	}
+	if mn.usingSHA1 != other.usingSHA1 {
+		return false
+	}
+	return true
 }

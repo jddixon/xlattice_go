@@ -1,5 +1,8 @@
 // xlattice_go/util/merkletree/TODO
 
+2013-10-07
+    * consider adding GetPath/SetPath to MerkleNodeI interface
+
 2013-10-06
     * all classes should have a func String() string implemented
         as in merkle_tree.go

@@ -54,6 +54,14 @@ func (mt *MerkleTree) IsLeaf() bool {
 	return false
 }
 
+func (mt *MerkleTree) addNode(node MerkleNodeI) (err error) {
+	if node == nil {
+		err = NilNode
+	} else {
+		mt.nodes = append(mt.nodes, node)
+	}
+	return
+}
 func ParseFirstLine(line string) (
 	indent int, treeHash []byte, dirName string, err error) {
 
@@ -103,107 +111,108 @@ func ParseOtherLine(line string) (
 	return
 }
 
-func ParseMerkleTreeFromStrings(ss []string) (mt *MerkleTree, err error) {
+// The string array is expected to follow conventional indentation
+// rules, with zero indentation on the first line and some multiple
+// of two spaces on all successive lines.
 
-	// XXX STUB
+func ParseMerkleTreeFromStrings(ss *[]string) (mt *MerkleTree, err error) {
+	
+	var (
+		indent		int
+		treeHash	[]byte
+		dirName		string
+		usingSHA1	bool
+		stack		[]MerkleNodeI
+		stkDepth	int
+		curTree		*MerkleTree
+		// lastWasDir	bool	// not being used
+	)
+	if len(*ss) == 0 {
+		err = EmptySerialization
+	}
+	if err == nil {
+		firstLine := (*ss)[0]
+		firstLine = strings.TrimRight( firstLine, " \t")
+		indent, treeHash, dirName, err = ParseFirstLine(firstLine)
+		if err == nil && indent > 0 {
+			err = InitialIndent
+		}
+	}
+	if err == nil {
+		usingSHA1 = len(treeHash) == SHA1_LEN
+		mt, err = NewNewMerkleTree(dirName, usingSHA1)
+		if err != nil {
+			return
+		}
+		mt.SetHash(treeHash)
+		_ = indent					// NEVER USED?	XXX
+        curTree		= mt
+        stack		= append(stack, curTree)           // rootTree = mt
+        stkDepth++                   // always step after pushing tree
+	}
+	for i := 1; i < len(*ss); i++ {
+		var (
+			lineIndent	int
+			thisHash	[]byte
+			name		string
+			isDir		bool
+		)
+		line := (*ss)[i]
+		line = strings.TrimRight(line, " \t")
+		if len(line) == 0 {
+			continue
+		}
+		// Note the hash may not be of the expected type.
+		lineIndent, thisHash, name, isDir, err := ParseOtherLine(line)
+		if err != nil {
+			break
+		}
+		if lineIndent < stkDepth {
+			for lineIndent < stkDepth {
+				stkDepth--
+				stack = stack[:len(stack) - 1]
+			}
+			curTree = stack[len(stack) - 1].(*MerkleTree)	// MAY NOT BE!!
+		}
+		if stkDepth != lineIndent {
+			fmt.Printf("INTERNAL ERROR: stkDepth %d, lineIndent, %d\n",
+				stkDepth, lineIndent)
+		}
+		if isDir {
+			// create and set attributes of a new node
+			var newTree *MerkleTree
+			newTree, err = NewNewMerkleTree(name, usingSHA1)
+			if err != nil {
+				break
+			}
+			newTree.SetHash(thisHash)
 
+            //  add the new node into the existing tree
+            curTree.addNode(newTree)
+            stack = append(stack, newTree)
+            stkDepth++
+            curTree   = newTree
+		} else { 
+			var newNode *MerkleLeaf
+            // create and set attributes of new node
+            newNode, err = NewMerkleLeaf(name, thisHash, usingSHA1)
+			if err != nil {
+				break
+			}
+            // add the new node into the existing tree
+            curTree.addNode(newNode)
+		}
+	}
 	return
 }
 
-//class MerkleTree(MerkleNode):
-// ...
-
-//    @staticmethod
-//    def createFromStringArray(s):
-//        """
-//        The string array is expected to follow conventional indentation
-//        rules, with zero indentation on the first line and some multiple
-//        of two spaces on all successive lines.
-//        """
-//        if s == None:
-//            raise RuntimeError("null argument")
-//
-//        # XXX should check TYPE - must be array of strings
-//
-//        if len(s) == 0:
-//            raise RuntimeError("empty string array")
-//        (indent, treeHash, dirName) = \
-//                            MerkleTree.parseFirstLine(s[0].rstrip())
-//        usingSHA1   = (40 == len(treeHash))
-//        rootTree    = MerkleTree(dirName, usingSHA1)    # an empty tree
-//        rootTree.setHash(treeHash)
-//
-//        if indent != 0:
-//            print "INTERNAL ERROR: initial line indent %d" % indent
-//
-//        stack      = []
-//        stkDepth   = 0
-//        curTree    = rootTree
-//        stack.append(curTree)           # rootTree
-//        stkDepth  += 1                  # always step after pushing tree
-//        lastWasDir = False
-//
-//        # REMEMBER THAT PYTHON HANDLES LARGE RANGES BADLY
-//        for n in range(1, len(s)):
-//            line = s[n].rstrip()
-//#           print "LINE: " + line       # DEBUG
-//            if len(line) == 0:
-//                n += 1
-//                continue
-//            # XXX SHOULD/COULD CHECK THAT HASHES ARE OF THE RIGHT TYPE
-//            (lineIndent, hash, name, isDir) = MerkleTree.parseOtherLine(line)
-//#           print "DEBUG: item %d, lineIndent %d, stkDepth %d, name %s" % (
-//#                           n, lineIndent, stkDepth, name)    # DEBUG
-//            if lineIndent < stkDepth:
-//                while lineIndent < stkDepth:
-//                    stkDepth -= 1
-//                    stack.pop()
-//                curTree = stack[-1]
-//
-//#               print "DEBUG: item %d, lineIndent %d, stkDepth %d BEYOND LOOP curTree is %s" % (
-//#                           n, lineIndent, stkDepth, curTree.name)    # DEBUG
-//
-//#               MerkleTree.showStack(stack)         # DEBUG
-//
-//                if not stkDepth == lineIndent:
-//                    print "ERROR: stkDepth != lineIndent"
-//
-//            if isDir:
-//                # create and set attributes of new node
-//                newTree = MerkleTree(name, usingSHA1)  # , curTree)
-//                newTree.setHash(hash)
-//                # add the new node into the existing tree
-//                curTree.addNode(newTree)
-//                stack.append(newTree)
-//                stkDepth += 1
-//                curTree   = newTree
-//#               # DEBUG
-//#               MerkleTree.showStack( stack )
-//#               # END
-//            else:
-//                # create and set attributes of new node
-//                newNode = MerkleLeaf(name, usingSHA1, hash)
-//                # add the new node into the existing tree
-//                curTree.addNode(newNode)
-//#               print "DEBUG: added node %s to tree %s" % (newNode.name,
-//#                                                          curTree.name)
-//            n += 1
-//        return rootTree         # BAR
-//
-//    @staticmethod
-//    def createFromSerialization(s):
-//        if s == None:
-//            raise RuntimeError ("MerkleTree.createFromSerialization: no input")
-//        sArray = s.split("\r\n")                # note CR-LF
-//        return MerkleTree.createFromStringArray(sArray)
-//
 func ParseMerkleTree(s string) (mt *MerkleTree, err error) {
 
 	if s == "" {
 		err = EmptySerialization
 	} else {
 		ss := strings.Split(s, "\r\n")
-		mt, err = ParseMerkleTreeFromStrings(ss)
+		mt, err = ParseMerkleTreeFromStrings(&ss)
 	}
 	return
 }
@@ -219,9 +228,9 @@ func ParseMerkleTree(s string) (mt *MerkleTree, err error) {
 //            m = re.match(MerkleTree.FIRST_LINE_PAT_1, line)
 //            if m == None:
 //                m = re.match(MerkleTree.FIRST_LINE_PAT_3, line)
-//                usingSHA1 = False
+//                usingSHA1 = false
 //            else:
-//                usingSHA1 = True
+//                usingSHA1 = true
 //            if m == None:
 //                raise RuntimeError(
 //                        "line "%s" does not match expected pattern" %  line)
@@ -250,7 +259,7 @@ func ParseMerkleTree(s string) (mt *MerkleTree, err error) {
 //        return tree
 
 //    @staticmethod
-//    def CreateMerkleTreeFromFileSystem(pathToDir, usingSHA1 = False,
+//    def CreateMerkleTreeFromFileSystem(pathToDir, usingSHA1 = false,
 //                                        exRE = None, matchRE = None):
 
 func CreateMerkleTreeFromFileSystem(pathToDir string, usingSHA1 bool,
@@ -288,9 +297,6 @@ func CreateMerkleTreeFromFileSystem(pathToDir string, usingSHA1 bool,
 			var node MerkleNodeI
 			file := files[i]
 			name := file.Name()
-			// DEBUG
-			fmt.Printf("FILE: %s\n", name)
-			// END
 
 			// XXX should continue if any exRE matches
 			// XXX should NOT continue if any matchRE match
@@ -328,8 +334,7 @@ func CreateMerkleTreeFromFileSystem(pathToDir string, usingSHA1 bool,
 	}
 	return
 }
-
-//    # OTHER METHODS AND PROPERTIES ##################################
+// OTHER METHODS AND PROPERTIES =====================================
 
 // Return a pointer to the MerkleTree"s list of component nodes.
 // This is a potentially dangerous operation.
@@ -371,13 +376,13 @@ func (mt *MerkleTree) toStringsNotTop(indent string, ss *[]string) (err error) {
 	topHash := mt.GetHash()
 	if len(topHash) == 0 {
 		if mt.usingSHA1 {
-			top = fmt.Sprintf("%s%s %s/\r\n", indent, SHA1_NONE, mt.name)
+			top = fmt.Sprintf("%s%s %s/", indent, SHA1_NONE, mt.name)
 		} else {
-			top = fmt.Sprintf("%s%s %s/\r\n", indent, SHA3_NONE, mt.name)
+			top = fmt.Sprintf("%s%s %s/", indent, SHA3_NONE, mt.name)
 		}
 	} else {
 		hexHash := hex.EncodeToString(topHash)
-		top = fmt.Sprintf("%s%s %s/\r\n", indent, hexHash,
+		top = fmt.Sprintf("%s%s %s/", indent, hexHash,
 			mt.name) // <--- LEVEL 0 NODE
 	}
 	*ss = append(*ss, top)
@@ -434,13 +439,13 @@ func (mt *MerkleTree) ToStrings(indent string, ss *[]string) (err error) {
 	topHash := mt.GetHash()
 	if len(topHash) == 0 {
 		if mt.usingSHA1 {
-			top = fmt.Sprintf("%s%s %s/\r\n", indent, SHA1_NONE, mt.name)
+			top = fmt.Sprintf("%s%s %s/", indent, SHA1_NONE, mt.name)
 		} else {
-			top = fmt.Sprintf("%s%s %s/\r\n", indent, SHA3_NONE, mt.name)
+			top = fmt.Sprintf("%s%s %s/", indent, SHA3_NONE, mt.name)
 		}
 	} else {
 		hexHash := hex.EncodeToString(topHash)
-		top = fmt.Sprintf("%s%s %s/\r\n", indent, hexHash,
+		top = fmt.Sprintf("%s%s %s/", indent, hexHash,
 			mt.name) // <--- LEVEL 0 NODE
 	}
 	*ss = append(*ss, top)
@@ -457,7 +462,7 @@ func (mt *MerkleTree) ToStrings(indent string, ss *[]string) (err error) {
 		if err != nil {
 			break
 		}
-	} // GEEP
+	} 
 	return
 }
 
@@ -475,11 +480,14 @@ func (mt *MerkleTree) Equal(any interface{}) bool {
 		return false
 	}
 	other := any.(*MerkleTree) // type assertion
+	if other == nil {
+		return false
+	}
 
 	// compare MerkleNode-level properties (name, hash)
-	myNode := mt.MerkleNode
+	myNode := &mt.MerkleNode
 	otherNode := other.MerkleNode
-	if !myNode.Equal(otherNode) {
+	if !myNode.Equal(&otherNode) {
 		return false
 	}
 	// compare component nodes

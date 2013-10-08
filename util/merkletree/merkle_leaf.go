@@ -69,7 +69,8 @@ func (ml *MerkleLeaf) Equal(any interface{}) bool {
 		return false
 	}
 	other := any.(*MerkleLeaf) // type assertion
-	return ml.MerkleNode.Equal(other.MerkleNode)
+	myNode := &ml.MerkleNode
+	return myNode.Equal(&other.MerkleNode)
 }
 
 // Serialize the leaf node, prefixing it with 'indent', which should
@@ -87,7 +88,7 @@ func (ml *MerkleLeaf) ToString(indent string) (str string, err error) {
 	} else {
 		shash = hex.EncodeToString(hash)
 	}
-	str = fmt.Sprintf("%s%s %s\r\n", indent, shash, ml.name)
+	str = fmt.Sprintf("%s%s %s", indent, shash, ml.name)
 	return
 }
 
