@@ -116,15 +116,15 @@ func ParseOtherLine(line string) (
 // of two spaces on all successive lines.
 
 func ParseMerkleTreeFromStrings(ss *[]string) (mt *MerkleTree, err error) {
-	
+
 	var (
-		indent		int
-		treeHash	[]byte
-		dirName		string
-		usingSHA1	bool
-		stack		[]MerkleNodeI
-		stkDepth	int
-		curTree		*MerkleTree
+		indent    int
+		treeHash  []byte
+		dirName   string
+		usingSHA1 bool
+		stack     []MerkleNodeI
+		stkDepth  int
+		curTree   *MerkleTree
 		// lastWasDir	bool	// not being used
 	)
 	if len(*ss) == 0 {
@@ -132,7 +132,7 @@ func ParseMerkleTreeFromStrings(ss *[]string) (mt *MerkleTree, err error) {
 	}
 	if err == nil {
 		firstLine := (*ss)[0]
-		firstLine = strings.TrimRight( firstLine, " \t")
+		firstLine = strings.TrimRight(firstLine, " \t")
 		indent, treeHash, dirName, err = ParseFirstLine(firstLine)
 		if err == nil && indent > 0 {
 			err = InitialIndent
@@ -145,17 +145,17 @@ func ParseMerkleTreeFromStrings(ss *[]string) (mt *MerkleTree, err error) {
 			return
 		}
 		mt.SetHash(treeHash)
-		_ = indent					// NEVER USED?	XXX
-        curTree		= mt
-        stack		= append(stack, curTree)           // rootTree = mt
-        stkDepth++                   // always step after pushing tree
+		_ = indent // NEVER USED?	XXX
+		curTree = mt
+		stack = append(stack, curTree) // rootTree = mt
+		stkDepth++                     // always step after pushing tree
 	}
 	for i := 1; i < len(*ss); i++ {
 		var (
-			lineIndent	int
-			thisHash	[]byte
-			name		string
-			isDir		bool
+			lineIndent int
+			thisHash   []byte
+			name       string
+			isDir      bool
 		)
 		line := (*ss)[i]
 		line = strings.TrimRight(line, " \t")
@@ -170,9 +170,9 @@ func ParseMerkleTreeFromStrings(ss *[]string) (mt *MerkleTree, err error) {
 		if lineIndent < stkDepth {
 			for lineIndent < stkDepth {
 				stkDepth--
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			}
-			curTree = stack[len(stack) - 1].(*MerkleTree)	// MAY NOT BE!!
+			curTree = stack[len(stack)-1].(*MerkleTree) // MAY NOT BE!!
 		}
 		if stkDepth != lineIndent {
 			fmt.Printf("INTERNAL ERROR: stkDepth %d, lineIndent, %d\n",
@@ -187,20 +187,20 @@ func ParseMerkleTreeFromStrings(ss *[]string) (mt *MerkleTree, err error) {
 			}
 			newTree.SetHash(thisHash)
 
-            //  add the new node into the existing tree
-            curTree.addNode(newTree)
-            stack = append(stack, newTree)
-            stkDepth++
-            curTree   = newTree
-		} else { 
+			//  add the new node into the existing tree
+			curTree.addNode(newTree)
+			stack = append(stack, newTree)
+			stkDepth++
+			curTree = newTree
+		} else {
 			var newNode *MerkleLeaf
-            // create and set attributes of new node
-            newNode, err = NewMerkleLeaf(name, thisHash, usingSHA1)
+			// create and set attributes of new node
+			newNode, err = NewMerkleLeaf(name, thisHash, usingSHA1)
 			if err != nil {
 				break
 			}
-            // add the new node into the existing tree
-            curTree.addNode(newNode)
+			// add the new node into the existing tree
+			curTree.addNode(newNode)
 		}
 	}
 	return
@@ -334,6 +334,7 @@ func CreateMerkleTreeFromFileSystem(pathToDir string, usingSHA1 bool,
 	}
 	return
 }
+
 // OTHER METHODS AND PROPERTIES =====================================
 
 // Return a pointer to the MerkleTree"s list of component nodes.
@@ -462,7 +463,7 @@ func (mt *MerkleTree) ToStrings(indent string, ss *[]string) (err error) {
 		if err != nil {
 			break
 		}
-	} 
+	}
 	return
 }
 

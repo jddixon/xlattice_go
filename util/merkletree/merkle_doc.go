@@ -17,6 +17,8 @@ import (
 
 var _ = fmt.Print
 
+// The path to a tree, and the SHA hash of the path and the treehash.
+
 type MerkleDoc struct {
 	bound   bool
 	exRE    []*re.Regexp // exclusions
@@ -101,9 +103,10 @@ func (md *MerkleDoc) Equal(any interface{}) bool {
 	}
 	other := any.(*MerkleDoc) // type assertion
 
-	return md.path == other.path && xu.SameBytes(md.hash, other.hash) &&
+	return md.path == other.path &&
+		xu.SameBytes(md.hash, other.hash) &&
 		md.tree.Equal(other.tree)
-} // GEEP
+}
 
 func (md *MerkleDoc) Hash() []byte {
 	return md.hash
@@ -115,6 +118,12 @@ func (md *MerkleDoc) SetPath(value string) (err error) {
 	// XXX STUB: MUST CHECK VALUE
 	md.path = value
 	return
+}
+func (md *MerkleDoc) GetExRE() []*re.Regexp {
+	return md.exRE
+}
+func (md *MerkleDoc) GetMatchRE() []*re.Regexp {
+	return md.matchRE
 }
 
 //# -------------------------------------------------------------------
@@ -217,31 +226,36 @@ func (md *MerkleDoc) SetPath(value string) (err error) {
 //        docHash  = m.group(1)
 //        docPath  = m.group(2)          # includes terminating slash
 //        return (docHash, docPath)
-//
-//    @staticmethod
-//    def makeExRE(exclusions):
-//        """compile a regular expression which ORs exclusion patterns"""
-//        if exclusions == None:
-//            exclusions = []
-//        exclusions.append('^\.$')
-//        exclusions.append('^\.\.$')
-//        exclusions.append('^\.merkle$')
-//        exclusions.append('^\.svn$')            # subversion control data
-//        # some might disagree with these:
-//        exclusions.append('^junk')
-//        exclusions.append('^\..*\.swp$')        # vi editor files
-//        exPat = '|'.join(exclusions)
-//        return re.compile(exPat)
-//
-//    @staticmethod
-//    def makeMatchRE(matchList):
-//        """compile a regular expression which ORs match patterns"""
-//        if matchList and len(matchList) > 0:
-//            matchPat = '|'.join(matchList)
-//            return re.compile(matchPat)
-//        else:
-//            return None
-//
+
+// Given a string array of regular expressions, append a list of standard
+// exclusions, and then return the compiled regexp.
+
+func MakeExRE(excl []string) (exRE *re.Regexp, err error) {
+	excl = append(excl, "^\\.$")       // .
+	excl = append(excl, "^\\.\\.$")    // ..
+	excl = append(excl, "^\\.merkle$") // merkletree hidden files
+	excl = append(excl, "^\\.git$")    // git control data
+	excl = append(excl, "^\\.svn$")    // subversion control data
+	// some might disagree with these:
+	excl = append(excl, "^junk")
+	excl = append(excl, "^\\..*\\.swp$") // vi editor files
+
+	exPat := strings.Join(excl, "|")
+	exRE, err = re.Compile(exPat)
+	return
+}
+
+// Given a possibly empty list of expressions to be matched, return
+// nil if the list is empty or a regular expression which matches
+// any of the patterns in the list.
+func MakeMatchRE(matches []string) (matchRE *re.Regexp, err error) {
+	if len(matches) > 0 {
+		matchPat := strings.Join(matches, "|")
+		matchRE, err = re.Compile(matchPat)
+	}
+	return
+}
+
 //    # SERIALIZATION #################################################
 //    def __str__(self):
 //        return self.toString()

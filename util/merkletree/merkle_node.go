@@ -6,6 +6,7 @@ import (
 	"fmt"
 	xu "github.com/jddixon/xlattice_go/util"
 )
+
 var _ = fmt.Print
 
 type MerkleNodeI interface {

@@ -1,5 +1,16 @@
 // xlattice_go/util/merkletree/TODO
 
+2013-10-08
+    * connect doTestSHA in merkle_leaf_test.go to something!
+
+    * merkle_doc_test.go
+        - write
+        - get working
+    * verify that exRE and matchRE are implemented and work in
+        all components
+    * code up gmerkleize as Go variant of Python merkleize
+    * benchmark the two
+
 2013-10-07
     * consider adding GetPath/SetPath to MerkleNodeI interface
 

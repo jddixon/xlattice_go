@@ -177,6 +177,7 @@ func (s *XLSuite) doTestParser(c *C, rng *xr.PRNG, usingSHA1 bool) {
 	c.Assert(nodeName, Equals, nameWithoutSlash)
 	c.Assert(isDir, Equals, yesIsDir)
 }
+
 //func (s *XLSuite) TestParser(c *C) {
 //	if VERBOSITY > 0 {
 //		fmt.Println("TEST_PARSER")
@@ -241,12 +242,12 @@ func (s *XLSuite) doTestPathlessUnboundConstructor(c *C, rng *xr.PRNG, usingSHA1
 			lines = lines[:lineCount-1]
 		}
 	}
-	// there should only be a header line	
+	// there should only be a header line
 	c.Assert(len(lines), Equals, 1)
 
 	tree1Rebuilt, err := ParseMerkleTree(tree1Str)
 	c.Assert(err, IsNil)
-	
+
 	// compare at the string level
 	t1RStr, err := tree1Rebuilt.ToString("")
 	c.Assert(err, IsNil)
@@ -300,8 +301,8 @@ func (s *XLSuite) doTestBoundFlatDirs(c *C, rng *xr.PRNG, usingSHA1 bool) {
 	t1RStr, err := tree1Rebuilt.ToString("")
 	c.Assert(err, IsNil)
 	c.Assert(t1RStr, Equals, tree1Str)
-	
-	c.Assert(tree1.Equal(tree1Rebuilt), Equals, true)		
+
+	c.Assert(tree1.Equal(tree1Rebuilt), Equals, true)
 }
 
 // ------------------------------------------------------------------
@@ -346,7 +347,7 @@ func (s *XLSuite) doTestBoundNeedleDirs(c *C, rng *xr.PRNG, usingSHA1 bool) {
 	//       print "NEEDLEDIR TREE1:\n" + tree1Str
 	//       print "REBUILT TREE1:\n" + tree1Rebuilt.ToString()
 	//       # END
-	c.Assert(tree1.Equal(tree1Rebuilt), Equals, true)		// FAILS
+	c.Assert(tree1.Equal(tree1Rebuilt), Equals, true) // FAILS
 }
 
 // ==================================================================
@@ -374,7 +375,7 @@ func (s *XLSuite) TestGrayBoxesBug(c *C) {
 	c.Assert(err, IsNil)
 	ser2, err := tree2.ToString("")
 	c.Assert(err, IsNil)
-	c.Assert(ser2, Equals, serialization)		// XXX FAILS
+	c.Assert(ser2, Equals, serialization) // XXX FAILS
 
 	// create from serialization ---------------------------------
 	tree1, err := ParseMerkleTree(serialization)
