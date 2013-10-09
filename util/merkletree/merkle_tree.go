@@ -20,8 +20,8 @@ var _ = fmt.Print
 
 type MerkleTree struct {
 	bound   bool
-	exRE    []*re.Regexp // exclusions
-	matchRE []*re.Regexp // must be matched
+	exRE    *re.Regexp // exclusions
+	matchRE *re.Regexp // must be matched
 	nodes   []MerkleNodeI
 
 	path       string
@@ -35,7 +35,7 @@ func NewNewMerkleTree(name string, usingSHA1 bool) (*MerkleTree, error) {
 // Create an unbound MerkleTree with a nil hash and an empty nodes list.
 // exRE and matchRE must have been validated by the calling code
 
-func NewMerkleTree(name string, usingSHA1 bool, exRE, matchRE []*re.Regexp) (
+func NewMerkleTree(name string, usingSHA1 bool, exRE, matchRE *re.Regexp) (
 	mt *MerkleTree, err error) {
 
 	// this validates its parameters
@@ -258,12 +258,8 @@ func ParseMerkleTree(s string) (mt *MerkleTree, err error) {
 //
 //        return tree
 
-//    @staticmethod
-//    def CreateMerkleTreeFromFileSystem(pathToDir, usingSHA1 = false,
-//                                        exRE = None, matchRE = None):
-
 func CreateMerkleTreeFromFileSystem(pathToDir string, usingSHA1 bool,
-	exRE, matchRE []*re.Regexp) (tree *MerkleTree, err error) {
+	exRE, matchRE *re.Regexp) (tree *MerkleTree, err error) {
 
 	var (
 		dirName string
@@ -299,7 +295,13 @@ func CreateMerkleTreeFromFileSystem(pathToDir string, usingSHA1 bool,
 			name := file.Name()
 
 			// XXX should continue if any exRE matches
+			if exRE != nil && exRE.MatchString(name) {
+				continue
+			}
 			// XXX should NOT continue if any matchRE match
+			if matchRE != nil && !matchRE.MatchString(name) {
+				continue
+			}
 
 			pathToFile := path.Join(pathToDir, name)
 			mode := file.Mode()

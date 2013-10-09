@@ -1,7 +1,12 @@
 // xlattice_go/util/merkletree/TODO
 
 2013-10-08
+    * doTestPathlessUnboundConstructor() contains a fix which
+        replaces a nil hash with an SHA1_LEN byte array of 
+        nulls.  This fix won't even work if !usingSHA1.  FIX ME
+
     * connect doTestSHA in merkle_leaf_test.go to something!
+    * MerkleTree.CreateFromFile() has not been translated
 
     * merkle_doc_test.go
         - write

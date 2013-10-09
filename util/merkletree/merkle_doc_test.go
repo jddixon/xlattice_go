@@ -3,33 +3,18 @@ package merkletree
 // xlatttice_go/util/merkletree/merkle_doc_test.go
 
 import (
-	//"code.google.com/p/go.crypto/sha3"
-	//"crypto/sha1"
-	// "encoding/hex"
+	"code.google.com/p/go.crypto/sha3"
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	//xu "github.com/jddixon/xlattice_go/util"
+	xu "github.com/jddixon/xlattice_go/util"
+	"hash"
 	//"io/ioutil"
 	. "launchpad.net/gocheck"
 	re "regexp"
 	//"strings"
 )
-
-func (s *XLSuite) doTestMerkleDoc(c *C, rng *xr.PRNG, usingSHA1 bool) {
-	fileName := rng.NextFileName(8)
-
-	// XXX STUB
-	_ = fileName
-}
-
-func (s *XLSuite) TestMerkleDoc(c *C) {
-	if VERBOSITY > 0 {
-		fmt.Println("TEST_MERKLE_DOC")
-	}
-	rng := xr.MakeSimpleRNG()
-	s.doTestMerkleDoc(c, rng, true)  // using SHA1
-	s.doTestMerkleDoc(c, rng, false) // not using SHA1
-}
 
 // REGEXP TESTS =====================================================
 func (s *XLSuite) doTestForExpectedExclusions(c *C, exRE *re.Regexp) {
@@ -131,4 +116,123 @@ func (s *XLSuite) TestMakeMatchRE(c *C) {
 
 	cases = []string{"junk.gz", "foolish.tar"}
 	s.doTestForExpectedMatchFailures(c, matchRE, cases)
+}
+
+// PARSER TESTS =====================================================
+
+func (s *XLSuite) doTestMDParser(c *C, rng *xr.PRNG, usingSHA1 bool) {
+
+	var tHash []byte
+	if usingSHA1 {
+		tHash = make([]byte, SHA1_LEN)
+	} else {
+		tHash = make([]byte, SHA3_LEN)
+	}
+	rng.NextBytes(&tHash)              // not really a hash, of course
+	sHash := hex.EncodeToString(tHash) // string form of tHash
+
+	withoutSlash := rng.NextFileName(8)
+	dirName := withoutSlash + "/"
+
+	length := rng.Intn(4)
+	var rSpaces string
+	for i := 0; i < length; i++ {
+		rSpaces += " " // on the right
+	}
+
+	// TEST FIRST LINE PARSER -----------------------------
+	line := sHash + " " + dirName + rSpaces
+
+	treeHash2, dirName2, err := ParseMerkleDocFirstLine(line)
+	c.Assert(err, IsNil)
+	c.Assert(xu.SameBytes(treeHash2, tHash), Equals, true)
+	// we retain the terminating slash in MerkleDoc first lines
+	c.Assert(dirName2, Equals, dirName)
+}
+
+func (s *XLSuite) TestMDParser(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_MERKLE_DOC_PARSER")
+	}
+	rng := xr.MakeSimpleRNG()
+
+	s.doTestMDParser(c, rng, true)  // usingSHA1
+	s.doTestMDParser(c, rng, false) // using SHA3 instead
+}
+
+// OTHER TESTS ======================================================
+
+func (s *XLSuite) TestMerkleDoc(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_MERKLE_DOC_CONSTRUCTOR")
+	}
+	rng := xr.MakeSimpleRNG()
+	s.doTestMerkleDoc(c, rng, true)  // usingSHA1
+	s.doTestMerkleDoc(c, rng, false) // not
+}
+
+func (s *XLSuite) doTestMerkleDoc(c *C, rng *xr.PRNG, usingSHA1 bool) {
+
+	//test directory is single level, with four data files"""
+	dirName1, dirPath1, dirName2, dirPath2 := s.makeTwoTestDirectories(
+		c, rng, ONE, FOUR)
+
+	// DEBUG
+	fmt.Printf("NAME/PATH 1: %s, %s\n", dirName1, dirPath1)
+	fmt.Printf("NAME/PATH 2: %s, %s\n", dirName2, dirPath2)
+	// END
+
+	tree1, err := CreateMerkleTreeFromFileSystem(dirPath1, usingSHA1, nil, nil)
+	c.Assert(err, IsNil)
+	c.Assert(tree1.Name(), Equals, dirName1)
+	nodes1 := tree1.nodes
+	c.Assert(nodes1, NotNil)
+	c.Assert(len(nodes1), Equals, FOUR)
+	s.verifyTreeSHA(c, rng, tree1, dirPath1, usingSHA1)
+	treeHash1 := tree1.GetHash()
+
+	doc1, err := CreateMerkleDocFromFileSystem(dirPath1, usingSHA1, nil, nil)
+	c.Assert(err, IsNil)
+	c.Assert(doc1, NotNil)
+
+	tree1d := doc1.GetTree()
+	c.Assert(tree1.Equal(tree1d), Equals, true)
+
+	c.Assert(doc1.Bound(), Equals, true)
+	c.Assert(doc1.GetExRE(), Equals, (*re.Regexp)(nil))
+	c.Assert(doc1.GetMatchRE(), Equals, (*re.Regexp)(nil))
+	c.Assert(doc1.GetPath(), Equals, "tmp")
+	c.Assert(doc1.UsingSHA1(), Equals, usingSHA1)
+
+	var sha hash.Hash
+	if usingSHA1 {
+		sha = sha1.New()
+	} else {
+		sha = sha3.NewKeccak256()
+	}
+	// Python uses this order
+	sha.Write(treeHash1)
+	sha.Write([]byte("tmp"))
+	expectedDocHash := sha.Sum(nil)
+	actualDocHash := doc1.GetHash()
+	c.Assert(expectedDocHash, DeepEquals, actualDocHash)
+
+	// WORKING HERE XXX
+
+	doc1Str, err := doc1.ToString("")
+	c.Assert(err, IsNil)
+	c.Assert(len(doc1Str) > 0, Equals, true)
+
+	// DEBUG
+	fmt.Printf("DOC1:\n%s", doc1Str)
+	// END
+	doc1Rebuilt, err := ParseMerkleDoc(doc1Str)
+	c.Assert(err, IsNil)
+
+	// compare at the string level
+	doc1RStr, err := doc1Rebuilt.ToString("")
+	c.Assert(err, IsNil)
+	c.Assert(doc1RStr, Equals, doc1Str)
+
+	c.Assert(doc1.Equal(doc1Rebuilt), Equals, true)
 }

@@ -5,7 +5,7 @@ package merkletree
 import (
 	"code.google.com/p/go.crypto/sha3"
 	"crypto/sha1"
-	//"encoding/hex"
+	"encoding/hex"
 	"fmt"
 	xu "github.com/jddixon/xlattice_go/util"
 	"hash"
@@ -21,8 +21,8 @@ var _ = fmt.Print
 
 type MerkleDoc struct {
 	bound   bool
-	exRE    []*re.Regexp // exclusions
-	matchRE []*re.Regexp // must be matched
+	exRE    *re.Regexp // exclusions
+	matchRE *re.Regexp // must be matched
 	tree    *MerkleTree
 
 	path      string
@@ -45,49 +45,65 @@ func PathExists(path string) (whether bool, err error) {
 // XXX "MUST ADD matchRE and exRE and test on their values at this level."
 
 func NewMerkleDoc(pathToDir string, usingSHA1, binding bool, tree *MerkleTree,
-	exRE, matchRE []*re.Regexp) (m *MerkleDoc, err error) {
+	exRE, matchRE *re.Regexp) (m *MerkleDoc, err error) {
 
 	if pathToDir == "" {
 		err = EmptyPath
 	}
 	if err == nil {
 		if strings.HasSuffix(pathToDir, "/") {
-			pathToDir += "/"
+			pathToDir = pathToDir[:len(pathToDir)-1]
 		}
 		self := MerkleDoc{
 			exRE:      exRE,
 			matchRE:   matchRE,
 			path:      pathToDir,
-			tree:      tree,
 			usingSHA1: usingSHA1,
 		}
+		p := &self
 		if tree != nil {
-			var digest hash.Hash
-			if usingSHA1 {
-				digest = sha1.New()
-			} else {
-				digest = sha3.NewKeccak256()
-			}
-			digest.Write(tree.hash)
-			digest.Write([]byte(pathToDir))
-			self.hash = digest.Sum(nil)
+			err = p.SetTree(tree)
 		} else if !binding {
 			err = NilTreeButNotBinding
-			if err == nil && binding {
-				var whether bool
-				fullerPath := path.Join(pathToDir, tree.name)
-				whether, err = PathExists(fullerPath)
-				if err == nil && !whether {
-					err = DirectoryNotFound
-				}
+		}
+		if err == nil && binding {
+			var whether bool
+			fullerPath := path.Join(pathToDir, tree.name)
+			whether, err = PathExists(fullerPath)
+			if err == nil && !whether {
+				err = DirectoryNotFound
 			}
-			if err == nil {
-				m = &self
-			}
+		}
+		if err == nil {
+			m = p
 		}
 	}
 	return
 }
+func (md *MerkleDoc) GetTree() *MerkleTree {
+	return md.tree
+}
+func (md *MerkleDoc) SetTree(tree *MerkleTree) (err error) {
+	if tree == nil {
+		err = NilTree
+	} else {
+		var digest hash.Hash
+		if md.usingSHA1 {
+			digest = sha1.New()
+		} else {
+			digest = sha3.NewKeccak256()
+		}
+		digest.Write(tree.hash)
+		digest.Write([]byte(md.path))
+		md.tree = tree
+		md.hash = digest.Sum(nil)
+	}
+	return
+}
+func (md *MerkleDoc) Bound() bool {
+	return md.bound
+}
+
 func (md *MerkleDoc) Equal(any interface{}) bool {
 	if any == md {
 		return true
@@ -108,9 +124,12 @@ func (md *MerkleDoc) Equal(any interface{}) bool {
 		md.tree.Equal(other.tree)
 }
 
-func (md *MerkleDoc) Hash() []byte {
+func (md *MerkleDoc) GetHash() []byte {
 	return md.hash
 }
+
+// XXX SetHash missing
+
 func (md *MerkleDoc) GetPath() string {
 	return md.path
 }
@@ -119,11 +138,14 @@ func (md *MerkleDoc) SetPath(value string) (err error) {
 	md.path = value
 	return
 }
-func (md *MerkleDoc) GetExRE() []*re.Regexp {
+func (md *MerkleDoc) GetExRE() *re.Regexp {
 	return md.exRE
 }
-func (md *MerkleDoc) GetMatchRE() []*re.Regexp {
+func (md *MerkleDoc) GetMatchRE() *re.Regexp {
 	return md.matchRE
+}
+func (md *MerkleDoc) UsingSHA1() bool {
+	return md.usingSHA1
 }
 
 //# -------------------------------------------------------------------
@@ -146,44 +168,119 @@ func (md *MerkleDoc) GetMatchRE() []*re.Regexp {
 //    @property
 //    def usingSHA1(self):
 //        return self._usingSHA1
-//
+
+// Create a MerkleDoc based on the information in the directory at
+// pathToDir.  The name of the directory will be the last component of
+// pathToDir.  Return the MerkleTree.
+
+func CreateMerkleDocFromFileSystem(pathToDir string, usingSHA1 bool,
+	exclusions, matches []string) (md *MerkleDoc, err error) {
+
+	if len(pathToDir) == 0 {
+		err = NilPath
+	}
+	if err == nil {
+		var found bool
+		found, err = PathExists(pathToDir)
+		if err == nil && !found {
+			err = FileNotFound
+		}
+	}
+	// get the path to the directory, excluding the directory name
+	var (
+		path string
+		// dirName		string
+		exRE, matchRE *re.Regexp
+		tree          *MerkleTree
+	)
+	if strings.HasSuffix(pathToDir, "/") {
+		pathToDir = pathToDir[:len(pathToDir)-1] // drop trailing slash
+	}
+	parts := strings.Split(pathToDir, "/")
+	if len(parts) == 1 {
+		path = "."
+		// dirName = pathToDir
+	} else {
+		partCount := len(parts)
+		// dirName = parts[partCount - 1]
+		parts = parts[:partCount-1]
+		path = strings.Join(parts, "/")
+	}
+	if exclusions != nil {
+		exRE, err = MakeExRE(exclusions)
+		if err == nil && matches != nil {
+			matchRE, err = MakeMatchRE(matches)
+		}
+	}
+	if err == nil {
+		tree, err = CreateMerkleTreeFromFileSystem(
+			pathToDir, usingSHA1, exRE, matchRE)
+		if err == nil {
+			// "creates the hash"
+			md, err = NewMerkleDoc(path, usingSHA1, false, tree, exRE, matchRE)
+			if err == nil {
+				md.bound = true
+			}
+		}
+	}
+	return
+}
+
+func ParseMerkleDocFirstLine(line string) (
+	docHash []byte, docPath string, err error) {
+
+	line = strings.TrimRight(line, " \t")
+
+	groups := FIRST_LINE_RE_1d.FindStringSubmatch(line)
+	if groups == nil {
+		groups = FIRST_LINE_RE_3d.FindStringSubmatch(line)
+	}
+	if groups == nil {
+		err = CantParseFirstLine
+	} else {
+		docHash, err = hex.DecodeString(groups[1])
+		if err == nil {
+			docPath = groups[2] // includes terminating slash
+		}
+	}
+	return
+}
+
+func ParseMerkleDoc(s string) (md *MerkleDoc, err error) {
+	if len(s) == 0 {
+		err = EmptySerialization
+	} else {
+		ss := strings.Split(s, "\r\n")
+		md, err = ParseMerkleDocFromStrings(&ss)
+	}
+	return
+}
+
+func ParseMerkleDocFromStrings(ss *[]string) (md *MerkleDoc, err error) {
+
+	var (
+		docHash   []byte
+		path      string
+		tree      *MerkleTree
+		usingSHA1 bool
+	)
+	if ss == nil {
+		err = NilSerialization
+	} else {
+		docHash, path, err = ParseMerkleDocFirstLine((*ss)[0])
+	}
+	if err == nil {
+		usingSHA1 = len(docHash) == SHA1_LEN
+		rest := (*ss)[1:]
+		tree, err = ParseMerkleTreeFromStrings(&rest)
+	}
+	if err == nil {
+		md, err = NewMerkleDoc(path, usingSHA1, false, tree, nil, nil)
+	}
+	return
+}
+
 //    # QUASI-CONSTRUCTORS ############################################
-//    @staticmethod
-//    def createFromFileSystem(pathToDir, usingSHA1 = False,
-//                             exclusions = None, matches = None):
-//        """
-//        Create a MerkleDoc based on the information in the directory
-//        at pathToDir.  The name of the directory will be the last component
-//        of pathToDir.  Return the MerkleTree.
-//        """
-//        if not pathToDir:
-//            raise RuntimeError("cannot create a MerkleTree, no path set")
-//        if not os.path.exists(pathToDir):
-//            raise RuntimeError(
-//                "MerkleTree: directory '%s' does not exist" % self._path)
-//        (path, delim, name) = pathToDir.rpartition('/')
-//        if path == '':
-//            raise RuntimeError("cannot parse inclusive path " + pathToDir)
-//        path += '/'
-//        exRE = None
-//        if exclusions:
-//            exRE    = MerkleDoc.makeExRE(exclusions)
-//        matchRE = None
-//        if matches:
-//            matchRE = MerkleDoc.makeMatchRE(matches)
-//        tree = MerkleTree.createFromFileSystem(pathToDir, usingSHA1,
-//                                            exRE, matchRE)
-//        # creates the hash
-//        doc  = MerkleDoc(path, usingSHA1, False, tree, exRE, matchRE)
-//        doc.bound = True
-//        return doc
-//
-//    @staticmethod
-//    def createFromSerialization(s):
-//        if s == None:
-//            raise RuntimeError ("MerkleDoc.createFromSerialization: no input")
-//        sArray = s.split('\r\n')                # note CR-LF
-//        return MerkleDoc.createFromStringArray(sArray)
 //
 //    @staticmethod
 //    def createFromStringArray(s):
@@ -256,12 +353,15 @@ func MakeMatchRE(matches []string) (matchRE *re.Regexp, err error) {
 	return
 }
 
-//    # SERIALIZATION #################################################
-//    def __str__(self):
-//        return self.toString()
-//
-//    def toString(self):
-//        return ''.join([
-//            "%s %s\r\n" % ( self.hash, self.path),
-//            self._tree.toString('')
-//            ])	// GEEP
+// SERIALIZATION ====================================================
+// XXX WHY THE INDENT?
+func (md *MerkleDoc) ToString(indent string) (s string, err error) {
+
+	hexHash := hex.EncodeToString(md.hash)
+	topLine := fmt.Sprintf("%s%s %s/\r\n", indent, hexHash, md.path)
+	treeText, err := md.tree.ToString("")
+	if err == nil {
+		s = topLine + treeText
+	}
+	return
+}

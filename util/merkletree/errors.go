@@ -16,5 +16,8 @@ var (
 	InvalidHashLength    = errors.New("invalid hash length")
 	NilMerkleNode        = errors.New("nil MerkleNode")
 	NilNode              = errors.New("nil node argument")
+	NilPath              = errors.New("nil path argument")
+	NilSerialization     = errors.New("nil string array argument")
+	NilTree              = errors.New("nil tree argument")
 	NilTreeButNotBinding = errors.New("nil tree but not binding")
 )

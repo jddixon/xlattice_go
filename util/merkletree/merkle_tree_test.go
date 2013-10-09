@@ -178,15 +178,15 @@ func (s *XLSuite) doTestParser(c *C, rng *xr.PRNG, usingSHA1 bool) {
 	c.Assert(isDir, Equals, yesIsDir)
 }
 
-//func (s *XLSuite) TestParser(c *C) {
-//	if VERBOSITY > 0 {
-//		fmt.Println("TEST_PARSER")
-//	}
-//	rng := xr.MakeSimpleRNG()
-//
-//	s.doTestParser(c, rng, true)  // usingSHA1
-//	s.doTestParser(c, rng, false) // using SHA3 instead
-//} // GEEP
+func (s *XLSuite) TestParser(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_PARSER")
+	}
+	rng := xr.MakeSimpleRNG()
+
+	s.doTestParser(c, rng, true)  // usingSHA1
+	s.doTestParser(c, rng, false) // using SHA3 instead
+} // GEEP
 
 // OTHER UNIT TESTS /////////////////////////////////////////////////
 
@@ -197,7 +197,7 @@ func (s *XLSuite) TestPathlessUnboundConstructor(c *C) {
 	rng := xr.MakeSimpleRNG()
 	s.doTestPathlessUnboundConstructor(c, rng, true)  // usingSHA1
 	s.doTestPathlessUnboundConstructor(c, rng, false) // not
-} // GEEP
+}
 
 func (s *XLSuite) doTestPathlessUnboundConstructor(c *C, rng *xr.PRNG, usingSHA1 bool) {
 
@@ -253,7 +253,7 @@ func (s *XLSuite) doTestPathlessUnboundConstructor(c *C, rng *xr.PRNG, usingSHA1
 	c.Assert(err, IsNil)
 	c.Assert(t1RStr, Equals, tree1Str)
 	c.Assert(tree1.Equal(tree1Rebuilt), Equals, true)
-}
+} // GEEP
 
 // ------------------------------------------------------------------
 func (s *XLSuite) TestBoundFlatDirs(c *C) {
@@ -267,7 +267,7 @@ func (s *XLSuite) TestBoundFlatDirs(c *C) {
 
 func (s *XLSuite) doTestBoundFlatDirs(c *C, rng *xr.PRNG, usingSHA1 bool) {
 
-	//test directory is single level, with four data files"""
+	// test directory is single level, with four data files"""
 	dirName1, dirPath1, dirName2, dirPath2 := s.makeTwoTestDirectories(
 		c, rng, ONE, FOUR)
 	tree1, err := CreateMerkleTreeFromFileSystem(dirPath1, usingSHA1, nil, nil)
@@ -303,7 +303,7 @@ func (s *XLSuite) doTestBoundFlatDirs(c *C, rng *xr.PRNG, usingSHA1 bool) {
 	c.Assert(t1RStr, Equals, tree1Str)
 
 	c.Assert(tree1.Equal(tree1Rebuilt), Equals, true)
-}
+} // FOO
 
 // ------------------------------------------------------------------
 func (s *XLSuite) TestBoundNeedleDirs(c *C) {
