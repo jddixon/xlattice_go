@@ -1,5 +1,16 @@
 // xlattice_go/util/merkletree/TODO
 
+2013-10-09
+    * gMerkleize ignores -t (showTimestamp) and -V (showVersion)
+    * -M (match) and -X (exclude) have insufficient testing
+    * gMerkleize needs to be tested on real file systems, companing
+        results to merkleize
+    * benchmark gMerkleize against Python versiobn, merkleize
+    * gMerkleize is entirely single-threaded; 
+        - introduce some concurrency 
+        - benchmark against single-threaded version 
+        - benchmark against merkleize
+
 2013-10-08
     * doTestPathlessUnboundConstructor() contains a fix which
         replaces a nil hash with an SHA1_LEN byte array of 
