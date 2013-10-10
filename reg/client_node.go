@@ -1,6 +1,8 @@
 package reg
 
-// xlattice_go/reg/mock_client.go
+// xlattice_go/reg/client_node.go
+
+// this used to be called mock_client.go
 
 import (
 	"crypto/rand"
@@ -16,23 +18,22 @@ import (
 
 var _ = fmt.Print
 
-type MockClient struct {
-	Err      error   // run information
+type ClientNode struct {
+	// Err      error   // run information
 	Client   *Client // the real client
-	*xn.Node         // dummy node providing keys, etc
+	*xn.Node         // node providing keys, etc
 }
 
-// A Mock Client for use in testing.  Given contact information for a
-// registry and the name of a cluster, it joins the cluster, collects
-// information on the other members, and terminates when it has info
-// on the entire membership.
+// Given contact information for a registry and the name of a cluster, 
+// a ClientNode joins the cluster, collects information on the other 
+// members, and terminates when it has info on the entire membership.
 
-func NewMockClient(
+func NewClientNode(
 	rng *xr.PRNG,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK *rsa.PublicKey,
 	clusterName string, clusterID *xi.NodeID, size int, endPointCount int) (
-	mc *MockClient, err error) {
+	mc *ClientNode, err error) {
 
 	if endPointCount < 1 {
 		err = ClientMustHaveEndPoint
@@ -76,7 +77,7 @@ func NewMockClient(
 	}
 	if err == nil {
 		// THIS IS WRONG: We create a Client first
-		mc = &MockClient{
+		mc = &ClientNode{
 			Client: client,
 			Node:   cn,
 		}
@@ -84,13 +85,10 @@ func NewMockClient(
 	return
 }
 
-// Start the client running in separate goroutine, so that this function
+// The client's Run() runs in separate goroutine, so that this function
 // is non-blocking.
 
-func (mc *MockClient) Run() (err error) {
-
-	go func() {
-		mc.Client.Run()
-	}()
+func (mc *ClientNode) Run() (err error) {
+	mc.Client.Run()
 	return
 }

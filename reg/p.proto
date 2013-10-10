@@ -16,7 +16,7 @@ message XLRegMsg {
     
         // All messages are encrypted using the server-provided
         // session key and PKCS7-padded.
-        Client      	= 3;    // clientName, token OR clientID
+        Client      	= 3;    // token OR clientID, digSig
         ClientOK    	= 4;    // clientID, attrs
 
         Create      	= 5;    // clusterName (must be unique), size <= 64

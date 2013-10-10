@@ -1,9 +1,20 @@
 xlattice_go/reg/TODO
 
+2013-10-09
+    PROTOCOL
+    * ClientMsg is EITHER token without clientID OR clientID;
+        in either case plus a digital signature
+    CLIENT, MOCK_CLIENT/CLIENT_NODE
+    * 
+
+2013-10-03
+    * verify that mock_server_test considers it an error when
+        not all members are returned 
+
 2013-10-02
     CLIENT, MOCK_CLIENT
-    * mock_client renamed client_node.go
-    * MockClient becomes ClientNode
+    * mock_client renamed client_node.go                                * DONE
+    * MockClient becomes ClientNode                                     * DONE
     * client.go reorganized a bit so that it either loads or
         creates a ClientNode
     

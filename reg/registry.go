@@ -18,15 +18,15 @@ import (
 var _ = fmt.Print
 
 type Registry struct {
-	LogFile        string
-	Logger         *log.Logger            // volatile, not serialized
-	
+	LogFile string
+	Logger  *log.Logger // volatile, not serialized
+
 	// registry data
 	Clusters       []*RegCluster          // serialized
 	ClustersByName map[string]*RegCluster // volatile, not serialized
 	ClustersByID   *xn.BNIMap             // -ditto-
 	RegMembersByID *xn.BNIMap             // -ditto-
-	mu             sync.RWMutex			  // -ditto-
+	mu             sync.RWMutex           // -ditto-
 
 	// the extended XLattice node, so id, lfs, keys, etc
 	RegNode
@@ -102,11 +102,11 @@ func (reg *Registry) String() (s string) {
 // registry configuration file while the registry is running.
 
 func (reg *Registry) Strings() (ss []string) {
-	ss = []string {"registry {"}
+	ss = []string{"registry {"}
 	ss = append(ss, fmt.Sprintf("    LogFile: %s", reg.LogFile))
 	ss = append(ss, "}")
 
-	for i := 0 ; i < len(reg.Clusters); i++ {
+	for i := 0; i < len(reg.Clusters); i++ {
 		cs := reg.Clusters[i].Strings()
 		for j := 0; j < len(cs); j++ {
 			ss = append(ss, cs[j])
