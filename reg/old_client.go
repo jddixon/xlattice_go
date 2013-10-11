@@ -1,6 +1,10 @@
 package reg
 
-// xlattice_go/reg/client.go
+// xlattice_go/reg/old_client.go
+
+//////////////////////////
+// THIS IS BEING REPLACED.
+//////////////////////////
 
 import (
 	//"crypto/aes"
@@ -19,18 +23,7 @@ import (
 
 var _ = fmt.Print
 
-const (
-	CLIENT_START = iota
-	HELLO_SENT
-	CLIENT_SENT
-	CLUSTER_SENT
-	JOIN_SENT
-	GET_SENT
-	BYE_SENT
-	CLIENT_CLOSED
-)
-
-type Client struct {
+type OldClient struct {
 	serverName  string
 	serverID    *xi.NodeID
 	serverEnd   xt.EndPointI
@@ -70,15 +63,15 @@ type Client struct {
 // the client joins the cluster, collects information on the other members,
 // and terminates when it has info on the entire membership.
 
-func NewClient(
+func NewOldClient(
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK *rsa.PublicKey,
 	clusterName string, clusterID *xi.NodeID, size int,
 	e []xt.EndPointI, bni xn.BaseNodeI) (
-	mc *Client, err error) {
+	mc *OldClient, err error) {
 
 	// sanity checks on parameter list
-	if serverName == "" || serverID == nil || serverEnd == nil || 
+	if serverName == "" || serverID == nil || serverEnd == nil ||
 		serverCK == nil {
 
 		err = MissingServerInfo
@@ -91,7 +84,7 @@ func NewClient(
 	}
 	if err == nil {
 		cnxHandler := &CnxHandler{State: CLIENT_START}
-		mc = &Client{
+		mc = &OldClient{
 			doneCh:      make(chan bool, 1),
 			serverName:  serverName,
 			serverID:    serverID,
@@ -108,9 +101,8 @@ func NewClient(
 	return
 }
 
-
 // Read the next message over the connection
-func (mc *Client) readMsg() (m *XLRegMsg, err error) {
+func (mc *OldClient) readMsg() (m *XLRegMsg, err error) {
 	inBuf, err := mc.h.readData()
 	if err == nil && inBuf != nil {
 		m, err = DecryptUnpadDecode(inBuf, mc.decrypterC)
@@ -119,7 +111,7 @@ func (mc *Client) readMsg() (m *XLRegMsg, err error) {
 }
 
 // Write a message out over the connection
-func (mc *Client) writeMsg(m *XLRegMsg) (err error) {
+func (mc *OldClient) writeMsg(m *XLRegMsg) (err error) {
 	var data []byte
 	// serialize, marshal the message
 	data, err = EncodePadEncrypt(m, mc.encrypterC)

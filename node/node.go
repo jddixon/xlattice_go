@@ -480,7 +480,7 @@ func Parse(s string) (node *Node, rest []string, err error) {
 	ss := strings.Split(s, "\n")
 	return ParseFromStrings(ss)
 }
-func ParseFromStrings(ss []string) (node *Node, rest[]string, err error) {
+func ParseFromStrings(ss []string) (node *Node, rest []string, err error) {
 
 	bn, rest, err := ParseBNFromStrings(ss, "node")
 	if err == nil {

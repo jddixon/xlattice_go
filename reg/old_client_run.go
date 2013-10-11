@@ -1,5 +1,11 @@
 package reg
 
+// xlattice_go/reg/old_client_run.go
+
+//////////////////////////
+// THIS IS BEING REPLACED.
+//////////////////////////
+
 import (
 	"crypto/aes"
 	"crypto/cipher"
@@ -15,7 +21,7 @@ import (
 	"time"
 )
 
-func (mc *Client) SessionSetup(version1 uint32) (
+func (mc *OldClient) SessionSetup(version1 uint32) (
 	cnx *xt.TcpConnection, version2 uint32, err error) {
 	var (
 		ciphertext1, iv1, key1, salt1, salt1c []byte
@@ -77,11 +83,11 @@ func (mc *Client) SessionSetup(version1 uint32) (
 	return
 }
 
-func (mc *Client) ClientAndOK() (err error) {
+func (mc *OldClient) ClientAndOK() (err error) {
 
 	var (
 		ckBytes, skBytes []byte
-		myEnds []string
+		myEnds           []string
 	)
 	clientName := mc.GetName()
 	// XXX attrs not dealt with
@@ -130,8 +136,8 @@ func (mc *Client) ClientAndOK() (err error) {
 	return
 } // GEEP2
 
-func (mc *Client) CreateAndReply() (err error) {
-	
+func (mc *OldClient) CreateAndReply() (err error) {
+
 	var response *XLRegMsg
 	clientName := mc.GetName()
 
@@ -169,9 +175,9 @@ func (mc *Client) CreateAndReply() (err error) {
 	return
 } // GEEPGEEP
 
-func (mc *Client) JoinAndReply() (err error ) {
-	
-	clientName := mc.GetName()		// DEBUG
+func (mc *OldClient) JoinAndReply() (err error) {
+
+	clientName := mc.GetName() // DEBUG
 
 	// Send JOIN MSG ============================================
 	fmt.Printf("Pre-Join client-side cluster size: %d\n", mc.clusterSize)
@@ -213,10 +219,10 @@ func (mc *Client) JoinAndReply() (err error ) {
 	return
 }
 
-// Collect information on all cluster members 
-func (mc *Client) GetAndMembers() (err error) {
+// Collect information on all cluster members
+func (mc *OldClient) GetAndMembers() (err error) {
 
-	clientName := mc.GetName()		// DEBUG
+	clientName := mc.GetName() // DEBUG
 
 	MAX_GET := 16
 	// XXX It should be impossible for mc.members to be nil
@@ -295,9 +301,9 @@ func (mc *Client) GetAndMembers() (err error) {
 
 // Send Bye, wait for and process Ack.
 
-func (mc *Client)ByeAndAck() (err error) {
-	
-	clientName := mc.GetName()		// DEBUG
+func (mc *OldClient) ByeAndAck() (err error) {
+
+	clientName := mc.GetName() // DEBUG
 
 	op := XLRegMsg_Bye
 	request := &XLRegMsg{
@@ -308,7 +314,7 @@ func (mc *Client)ByeAndAck() (err error) {
 	// DEBUG
 	fmt.Printf("client %s BYE sent\n", clientName)
 	// END
-	
+
 	// Process ACK = BYE REPLY ----------------------------------
 	if err == nil {
 		var response *XLRegMsg
@@ -328,14 +334,14 @@ func (mc *Client)ByeAndAck() (err error) {
 // Start the client running in separate goroutine, so that this function
 // is non-blocking.
 
-func (mc *Client) Run() (err error) {
+func (mc *OldClient) Run() (err error) {
 	go func() {
 		var (
-			version1			uint32
+			version1 uint32
 		)
 		clientName := mc.GetName()
 		cnx, version2, err := mc.SessionSetup(version1)
-		_ = version2			// not yet used
+		_ = version2 // not yet used
 		if err == nil {
 			err = mc.ClientAndOK()
 		}

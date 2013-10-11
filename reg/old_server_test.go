@@ -1,6 +1,10 @@
 package reg
 
-// xlattice_go/reg/mock_server_test.go
+// xlattice_go/reg/old_server_test.go (was mock_server_test.go)
+
+//////////////////////////
+// THIS IS BEING REPLACED.
+//////////////////////////
 
 import (
 	// "crypto/rsa"
@@ -40,9 +44,9 @@ func (s *XLSuite) TestMockServer(c *C) {
 	c.Assert(serverEnd, Not(IsNil))
 
 	// creake K clients ---------------------------------------------
-	mc := make([]*ClientNode, K)
+	mc := make([]*MockClient, K)
 	for i := 0; i < K; i++ {
-		mc[i], err = NewClientNode(rng,
+		mc[i], err = NewMockClient(rng,
 			serverName, serverID, serverEnd, serverCK,
 			clusterName, clusterID, K, 1) // 1 is endPoint count
 		c.Assert(err, IsNil)
@@ -60,7 +64,7 @@ func (s *XLSuite) TestMockServer(c *C) {
 
 	// wait until all clients are done ------------------------------
 	for i := 0; i < K; i++ {
-		<-mc[i].Client.doneCh
+		<-mc[i].OldClient.doneCh
 	}
 
 	// stop the server by closing its acceptor ----------------------

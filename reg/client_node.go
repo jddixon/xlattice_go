@@ -2,93 +2,129 @@ package reg
 
 // xlattice_go/reg/client_node.go
 
-// this used to be called mock_client.go
-
 import (
-	"crypto/rand"
+	//"crypto/aes"
+	"crypto/cipher"
 	"crypto/rsa"
-	"encoding/hex"
 	"fmt"
 	//xc "github.com/jddixon/xlattice_go/crypto"
+	//xm "github.com/jddixon/xlattice_go/msg"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
-	xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
+	//xu "github.com/jddixon/xlattice_go/util"
+	//"io"
+	//"time"
 )
 
 var _ = fmt.Print
 
+const (
+	CLIENT_START = iota
+	HELLO_SENT
+	CLIENT_SENT
+	CLUSTER_SENT
+	JOIN_SENT
+	GET_SENT
+	BYE_SENT
+	CLIENT_CLOSED
+)
+
 type ClientNode struct {
-	// Err      error   // run information
-	Client   *Client // the real client
-	*xn.Node         // node providing keys, etc
+	serverName string
+	serverID   *xi.NodeID
+	serverEnd  xt.EndPointI
+	serverCK   *rsa.PublicKey
+
+	// MOVE TO UserClient
+	//clusterName string
+	//clusterID   *xi.NodeID
+	//clusterSize uint32 // this is a FIXED size, aka MaxSize
+
+	// run information
+	doneCh chan bool
+	err    error
+	h      *CnxHandler
+
+	proposedAttrs, decidedAttrs uint64
+
+	iv1, key1    []byte // one-shot
+	version1     uint32 // proposed by client
+	iv2, key2    []byte // session
+	version2     uint32 // decreed by server
+	salt1, salt2 []byte // not currently used
+	engineC      cipher.Block
+	encrypterC   cipher.BlockMode
+	decrypterC   cipher.BlockMode
+
+	// information on cluster members		// MOVED TO UserClient
+	members []*ClusterMember
+
+	// Information on this cluster member.  By convention endPoints[0]
+	// is used for member-member communications and [1] for comms with
+	// cluster clients, should they exist.
+	clientID  []byte // XXX or *xi.NodeID
+	endPoints []xt.EndPointI
+	xn.BaseNodeI
 }
 
-// Given contact information for a registry and the name of a cluster, 
-// a ClientNode joins the cluster, collects information on the other 
-// members, and terminates when it has info on the entire membership.
+// Given contact information for a registry and the name of a cluster,
+// the client joins the cluster, collects information on the other members,
+// and terminates when it has info on the entire membership.
 
 func NewClientNode(
-	rng *xr.PRNG,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK *rsa.PublicKey,
-	clusterName string, clusterID *xi.NodeID, size int, endPointCount int) (
-	mc *ClientNode, err error) {
+	clusterName string, clusterID *xi.NodeID, size int,
+	e []xt.EndPointI, bni xn.BaseNodeI) (
+	cn *ClientNode, err error) {
 
-	if endPointCount < 1 {
+	// sanity checks on parameter list
+	if serverName == "" || serverID == nil || serverEnd == nil ||
+		serverCK == nil {
+
+		err = MissingServerInfo
+	} else if clusterName == "" || clusterID == nil {
+		err = MissingClusterNameOrID
+	} else if size < 2 {
+		err = ClusterMustHaveTwo
+	} else if len(e) < 1 {
 		err = ClientMustHaveEndPoint
-		return
 	}
+	if err == nil {
+		cnxHandler := &CnxHandler{State: CLIENT_START}
+		cn = &ClientNode{
+			doneCh:     make(chan bool, 1),
+			serverName: serverName,
+			serverID:   serverID,
+			serverEnd:  serverEnd,
+			serverCK:   serverCK,
+			h:          cnxHandler,
+			endPoints:  e,
 
-	var ckPriv, skPriv *rsa.PrivateKey
-	var cn *xn.Node
-	var ep []xt.EndPointI
-	var client *Client
-
-	name := rng.NextFileName(16)
-	idBuf := make([]byte, SHA1_LEN)
-	rng.NextBytes(&idBuf)
-	lfs := "tmp/" + hex.EncodeToString(idBuf)
-	id, err := xi.New(idBuf)
-	if err == nil {
-		// XXX key must be large enough to hold data to be encrypted
-		ckPriv, err = rsa.GenerateKey(rand.Reader, 1024)
-		if err == nil {
-			skPriv, err = rsa.GenerateKey(rand.Reader, 512)
-		}
-	}
-	if err == nil {
-		for i := 0; i < endPointCount; i++ {
-			var endPoint xt.EndPointI
-			endPoint, err = xt.NewTcpEndPoint("127.0.0.1:0")
-			if err != nil {
-				break
-			}
-			ep = append(ep, endPoint)
-		}
-	}
-	if err == nil {
-		cn, err = xn.New(name, id, lfs, ckPriv, skPriv, nil, ep, nil)
-	}
-	if err == nil {
-		client, err = NewClient(serverName, serverID, serverEnd,
-			serverCK,
-			clusterName, clusterID, size, ep, cn)
-	}
-	if err == nil {
-		// THIS IS WRONG: We create a Client first
-		mc = &ClientNode{
-			Client: client,
-			Node:   cn,
+			// THIS BECOMES A NODE XXX, so Node: node,
+			BaseNodeI: bni,
 		}
 	}
 	return
 }
 
-// The client's Run() runs in separate goroutine, so that this function
-// is non-blocking.
+// Read the next message over the connection
+func (cn *ClientNode) readMsg() (m *XLRegMsg, err error) {
+	inBuf, err := cn.h.readData()
+	if err == nil && inBuf != nil {
+		m, err = DecryptUnpadDecode(inBuf, cn.decrypterC)
+	}
+	return
+}
 
-func (mc *ClientNode) Run() (err error) {
-	mc.Client.Run()
+// Write a message out over the connection
+func (cn *ClientNode) writeMsg(m *XLRegMsg) (err error) {
+	var data []byte
+	// serialize, marshal the message
+	data, err = EncodePadEncrypt(m, cn.encrypterC)
+	if err == nil {
+		err = cn.h.writeData(data)
+	}
 	return
 }

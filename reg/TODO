@@ -1,11 +1,39 @@
 xlattice_go/reg/TODO
 
+2013-10-10
+    * msg_handlers.go doClientMsg: change to either 
+        - accept ID, which must be known, plus digsig
+        - or to accept token without ID plus digsig
+            * in this case it generates a new and unique ID
+        - old tests must continue to run at least until new
+            code is stable
+
+    * reorganize client code to give us a base class ClientNode
+        with subclasses UserClient and AdminClient
+        - rename the old files and types to reduce confusion
+            * client.go becomes old_client.go (so OldClient)            * DONE
+            * mock_client.go reappears (was briefly client_node.go)     * DONE
+            * client_run.go becomes old_client_run.go                   * DONE
+            * mock_server_test.go becomes old_server_test.gon           * DONE
+        - copy old_client.go as client_node.go
+            - this is the base class
+            - either creates keys on the fly or reads config from LFS
+            - gets unique nodeID from the server
+                * CHANGE Client/ClientOK to expect either
+                    - token without name but with digSig OR
+                    - clientID plus digSig
+            - node is created after keys are created and ID is known
+            - Node is part of ClientNode struct
+    * Run() is defined differently for user and admin clients
+    * user_client.go 
+    * admin_client.go
+    * new mock_server_test.go is old code with a few changes
+        - incorporates an admin client
+
 2013-10-09
     PROTOCOL
     * ClientMsg is EITHER token without clientID OR clientID;
         in either case plus a digital signature
-    CLIENT, MOCK_CLIENT/CLIENT_NODE
-    * 
 
 2013-10-03
     * verify that mock_server_test considers it an error when
