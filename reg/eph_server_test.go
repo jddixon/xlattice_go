@@ -75,10 +75,11 @@ func (s *XLSuite) TestServer(c *C) {
 
 	// 4. create K clients ------------------------------------------
 	//
-	//	// MUST REPLACE MockClient BY UserClient
-	//	uc := make([]*MockClient, K)
+	//	uc := make([]*UserClient, K)
+	//  ucNames := make([]string, K)
 	//	for i := 0; i < K; i++ {
-	//		uc[i], err = NewMockClient(rng,
+	//		ucNames[] = rng.NextFileName(8)		// not guaranteed to be unique
+	//		uc[i], err = NewUserClient(ucNames[i], "",
 	//			serverName, serverID, serverEnd, serverCK,
 	//			clusterName, clusterID, K, 1) // 1 is endPoint count
 	//		c.Assert(err, IsNil)
@@ -105,6 +106,5 @@ func (s *XLSuite) TestServer(c *C) {
 	//	// XXX STUB XXX
 
 	// DEBUG
-	_, _, _, _, _ = serverName, serverID, serverEnd, serverCK, serverSK
-	_, _ = clusterName, K
+	// _, _, _, _, _ = serverName, serverID, serverEnd, serverCK, serverSK
 }

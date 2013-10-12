@@ -8,15 +8,6 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) TestClusterMember(c *C) {
-	if VERBOSITY > 0 {
-		fmt.Println("TEST_CLUSTER_MEMBER")
-	}
-	c.Assert(MEMBER_DELETED, Equals, 1)
-
-	// XXX STUB //
-}
-
 func (s *XLSuite) TestCMSerialization(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_CM_SERIALIZATION")

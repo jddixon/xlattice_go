@@ -20,6 +20,7 @@ import (
 
 var _ = fmt.Print // DEBUG
 
+// client states
 const (
 	CLIENT_START = iota
 	HELLO_SENT
@@ -76,9 +77,10 @@ type ClientNode struct {
 
 	// INFORMATION PERSISTED AS Node CONFIGURATION ------------------
 	// This is used to build the node and so is persisted as part of
-	// the node.
+	// the node when that is saved.
 	endPoints      []xt.EndPointI
 	lfs            string
+	name			string
 	clientID       []byte // used to make NodeID
 	ckPriv, skPriv *rsa.PrivateKey
 
@@ -93,7 +95,7 @@ type ClientNode struct {
 // and terminates when it has info on the entire membership.
 
 func NewClientNode(
-	lfs string, attrs uint64,
+	name, lfs string, attrs uint64,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK, serverSK *rsa.PublicKey,
 	clusterName string, size int,
@@ -143,6 +145,7 @@ func NewClientNode(
 	if err == nil {
 		cnxHandler := &CnxHandler{State: CLIENT_START}
 		cn = &ClientNode{
+			name:			name,
 			lfs:           lfs, // if blank, node is ephemeral
 			proposedAttrs: attrs,
 			doneCh:        make(chan bool, 1),
@@ -243,7 +246,7 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 			cn.decrypterC = cipher.NewCBCDecrypter(cn.engineC, iv2)
 		}
 		// DEBUG
-		fmt.Printf("client %s AES engines set up\n", cn.GetName())
+		fmt.Printf("client %s AES engines set up\n", cn.name)
 		// END
 	}
 	return
@@ -255,7 +258,6 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 		ckBytes, skBytes []byte
 		myEnds           []string
 	)
-	clientName := cn.GetName()
 	// XXX attrs not dealt with
 
 	// Send CLIENT MSG ==========================================
@@ -269,7 +271,7 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 				myEnds = append(myEnds, cn.endPoints[i].String())
 			}
 			token := &XLRegMsg_Token{
-				Name:     &clientName,
+				Name:     &cn.name,
 				Attrs:    &cn.proposedAttrs,
 				CommsKey: ckBytes,
 				SigKey:   skBytes,
@@ -279,13 +281,13 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 			op := XLRegMsg_Client
 			request := &XLRegMsg{
 				Op:          &op,
-				ClientName:  &clientName, // XXX redundant
+				ClientName:  &cn.name, // XXX redundant
 				ClientSpecs: token,
 			}
 			// SHOULD CHECK FOR TIMEOUT
 			err = cn.writeMsg(request)
 			// DEBUG
-			fmt.Printf("CLIENT_MSG for %s sent\n", clientName)
+			fmt.Printf("CLIENT_MSG for %s sent\n", cn.name)
 			// END
 		}
 	}
@@ -294,10 +296,10 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 	response, err := cn.readMsg()
 	if err == nil {
 		cn.clientID = response.GetClientID()
-		cn.decidedAttrs = response.GetAttrs()
+		cn.decidedAttrs = response.GetClientAttrs()
 		// DEBUG
 		fmt.Printf("    client %s has received ClientOK\n",
-			cn.GetName())
+			cn.name)
 		// END
 	}
 	return
@@ -306,7 +308,6 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 func (cn *ClientNode) CreateAndReply() (err error) {
 
 	var response *XLRegMsg
-	clientName := cn.GetName()
 
 	// Send CREATE MSG ==========================================
 	op := XLRegMsg_Create
@@ -320,7 +321,7 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 	err = cn.writeMsg(request)
 	// DEBUG
 	fmt.Printf("client %s sends CREATE for cluster %s, size %d\n",
-		clientName, cn.clusterName, cn.clusterSize)
+		cn.name, cn.clusterName, cn.clusterSize)
 	// END
 
 	if err == nil {
@@ -344,8 +345,6 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 
 func (cn *ClientNode) JoinAndReply() (err error) {
 
-	clientName := cn.GetName() // DEBUG
-
 	// Send JOIN MSG ============================================
 	fmt.Printf("Pre-Join client-side cluster size: %d\n", cn.clusterSize)
 	op := XLRegMsg_Join
@@ -357,7 +356,7 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 	err = cn.writeMsg(request)
 	// DEBUG
 	fmt.Printf("Client %s sends JOIN by name sent for cluster %s\n",
-		clientName, cn.clusterName)
+		cn.name, cn.clusterName)
 	// END
 
 	// Process JOIN REPLY ---------------------------------------
@@ -389,8 +388,6 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 // Collect information on all cluster members
 func (cn *ClientNode) GetAndMembers() (err error) {
 
-	clientName := cn.GetName() // DEBUG
-
 	MAX_GET := 16
 	// XXX It should be impossible for cn.members to be nil
 	// at this point
@@ -413,7 +410,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		}
 		// DEBUG
 		fmt.Printf("Client %s sends GET for %d members (bits 0x%x)\n",
-			clientName, stillToGet.Count(), stillToGet.Bits)
+			cn.name, stillToGet.Count(), stillToGet.Bits)
 		// END
 
 		// Send GET MSG =========================================
@@ -470,8 +467,6 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 
 func (cn *ClientNode) ByeAndAck() (err error) {
 
-	clientName := cn.GetName() // DEBUG
-
 	op := XLRegMsg_Bye
 	request := &XLRegMsg{
 		Op: &op,
@@ -479,7 +474,7 @@ func (cn *ClientNode) ByeAndAck() (err error) {
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
 	// DEBUG
-	fmt.Printf("client %s BYE sent\n", clientName)
+	fmt.Printf("client %s BYE sent\n", cn.name)
 	// END
 
 	// Process ACK = BYE REPLY ----------------------------------
@@ -492,7 +487,7 @@ func (cn *ClientNode) ByeAndAck() (err error) {
 		_ = op
 		// DEBUG
 		fmt.Printf("    client %s has received ACK; err is %v\n",
-			clientName, err)
+			cn.name, err)
 		// END
 	}
 	return

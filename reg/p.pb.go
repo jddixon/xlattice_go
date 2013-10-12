@@ -85,14 +85,16 @@ type XLRegMsg struct {
 	Version          *uint32           `protobuf:"varint,6,opt" json:"Version,omitempty"`
 	ClientName       *string           `protobuf:"bytes,8,opt" json:"ClientName,omitempty"`
 	ClientID         []byte            `protobuf:"bytes,9,opt" json:"ClientID,omitempty"`
-	Attrs            *uint64           `protobuf:"varint,10,opt" json:"Attrs,omitempty"`
+	ClientAttrs      *uint64           `protobuf:"varint,10,opt" json:"ClientAttrs,omitempty"`
 	ClientSpecs      *XLRegMsg_Token   `protobuf:"bytes,11,opt" json:"ClientSpecs,omitempty"`
 	ClusterID        []byte            `protobuf:"bytes,13,opt" json:"ClusterID,omitempty"`
 	ClusterName      *string           `protobuf:"bytes,14,opt" json:"ClusterName,omitempty"`
 	ClusterSize      *uint32           `protobuf:"varint,15,opt" json:"ClusterSize,omitempty"`
-	Which            *uint64           `protobuf:"varint,17,opt" json:"Which,omitempty"`
-	Tokens           []*XLRegMsg_Token `protobuf:"bytes,18,rep" json:"Tokens,omitempty"`
-	DigSig           []byte            `protobuf:"bytes,19,opt" json:"DigSig,omitempty"`
+	ClusterAttrs     *uint64           `protobuf:"varint,16,opt" json:"ClusterAttrs,omitempty"`
+	EndPointCount    *uint32           `protobuf:"varint,17,opt" json:"EndPointCount,omitempty"`
+	Which            *uint64           `protobuf:"varint,20,opt" json:"Which,omitempty"`
+	Tokens           []*XLRegMsg_Token `protobuf:"bytes,21,rep" json:"Tokens,omitempty"`
+	DigSig           []byte            `protobuf:"bytes,22,opt" json:"DigSig,omitempty"`
 	ErrDesc          *string           `protobuf:"bytes,23,opt" json:"ErrDesc,omitempty"`
 	XXX_unrecognized []byte            `json:"-"`
 }
@@ -157,9 +159,9 @@ func (m *XLRegMsg) GetClientID() []byte {
 	return nil
 }
 
-func (m *XLRegMsg) GetAttrs() uint64 {
-	if m != nil && m.Attrs != nil {
-		return *m.Attrs
+func (m *XLRegMsg) GetClientAttrs() uint64 {
+	if m != nil && m.ClientAttrs != nil {
+		return *m.ClientAttrs
 	}
 	return 0
 }
@@ -188,6 +190,20 @@ func (m *XLRegMsg) GetClusterName() string {
 func (m *XLRegMsg) GetClusterSize() uint32 {
 	if m != nil && m.ClusterSize != nil {
 		return *m.ClusterSize
+	}
+	return 0
+}
+
+func (m *XLRegMsg) GetClusterAttrs() uint64 {
+	if m != nil && m.ClusterAttrs != nil {
+		return *m.ClusterAttrs
+	}
+	return 0
+}
+
+func (m *XLRegMsg) GetEndPointCount() uint32 {
+	if m != nil && m.EndPointCount != nil {
+		return *m.EndPointCount
 	}
 	return 0
 }

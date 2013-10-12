@@ -3,8 +3,10 @@ package reg
 // xlattice_go/reg/user_client.go
 
 import (
+	"crypto/rsa"
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	xt "github.com/jddixon/xlattice_go/transport"
 	"io"
 )
 
@@ -25,21 +27,37 @@ var _ = fmt.Print
 // regenerating keys, etc.
 
 type UserClient struct {
-	// The client is associated with one and only one cluster.
-	clusterName string // not needed?
-	clusterID   *xi.NodeID
-	clusterSize uint32 // this is a FIXED size, aka MaxSize
-
 	members []ClusterMember
 
 	ClientNode
 }
 
-func NewUserClient() (uc *UserClient, err error) {
+func NewUserClient(
+	name, lfs string,
+	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
+	serverCK, serverSK *rsa.PublicKey,
+	clusterName string, size int, 
+	epCount int, e []xt.EndPointI) (ac *UserClient, err error) {
 
-	// XXX STUB XXX
+	var attrs uint64
 
+	if lfs == "" {
+		attrs |= ATTR_EPHEMERAL
+	}
+	cn, err := NewClientNode(name, lfs, attrs, 
+		serverName, serverID, serverEnd,
+		serverCK, serverSK, //  *rsa.PublicKey,
+		clusterName, size,
+		epCount, e)
+
+	if err == nil {
+		// Run() fills in clusterID
+		ac = &UserClient{
+			ClientNode:  *cn,
+		}
+	}
 	return
+
 }
 
 // Start the client running in separate goroutine, so that this function

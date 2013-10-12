@@ -95,7 +95,7 @@ func doClientMsg(h *InHandler) {
 		h.msgOut = &XLRegMsg{
 			Op:       &op,
 			ClientID: nodeID.Value(),
-			Attrs:    &attrs, // in production, review and limit
+			ClientAttrs:    &attrs, // in production, review and limit
 		}
 		// Set exit state -----------------------------------------------
 		h.exitState = CLIENT_DETAILS_RCVD

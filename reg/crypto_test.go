@@ -270,7 +270,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	clientOKMsg := XLRegMsg{
 		Op:       &op,
 		ClientID: clientID,
-		Attrs:    &attrsBack,
+		ClientAttrs:    &attrsBack,
 	}
 	ciphertext, err = EncodePadEncrypt(&clientOKMsg, encrypterS)
 	c.Assert(err, IsNil)
@@ -282,7 +282,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	c.Assert(clientOK2.GetOp(), Equals, XLRegMsg_ClientOK)
 	clientID2 := clientOK2.GetClientID()
 	c.Assert(clientID2, DeepEquals, clientID)
-	attrsBack2 := clientOK2.GetAttrs()
+	attrsBack2 := clientOK2.GetClientAttrs()
 	c.Assert(attrsBack2, Equals, attrsBack)
 
 	// == CREATE ====================================================

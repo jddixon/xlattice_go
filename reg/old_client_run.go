@@ -127,7 +127,7 @@ func (mc *OldClient) ClientAndOK() (err error) {
 	response, err := mc.readMsg()
 	if err == nil {
 		mc.clientID = response.GetClientID()
-		mc.decidedAttrs = response.GetAttrs()
+		mc.decidedAttrs = response.GetClientAttrs()
 		// DEBUG
 		fmt.Printf("    client %s has received ClientOK\n",
 			mc.GetName())

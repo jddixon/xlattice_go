@@ -17,15 +17,9 @@ import (
 
 var _ = fmt.Print
 
-// cluster member bit flags
-const (
-	MEMBER_DELETED = 1 << iota
-	FOO
-	BAR
-)
 
 type ClusterMember struct {
-	attrs       uint64
+	attrs       uint64	//  bit flags are defined in const.go
 	myEnds      []string // serialized EndPointI
 	xn.BaseNode          // name and ID must be unique
 }

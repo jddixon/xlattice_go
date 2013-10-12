@@ -13,8 +13,8 @@ const (
 	VERSION_DATE = "2013-10-10"
 )
 
-// bits in the attrs variable
+// client attrs bits, also used for member attrs
 const (
-	ATTR_ADMIN     = iota // zero
-	ATTR_EPHEMERAL        // increments up, so one
+	ATTR_EPHEMERAL	= 1 << iota  
+	ATTR_ADMIN
 )

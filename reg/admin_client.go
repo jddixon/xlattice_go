@@ -25,9 +25,6 @@ var _ = fmt.Print
 type AdminClient struct {
 	// In this implementation, AdminClient is a one-shot, launched
 	// to create a single cluster
-	clusterName string
-	clusterID   *xi.NodeID
-	clusterSize uint32 // this is a FIXED size, aka MaxSize
 
 	ClientNode
 }
@@ -37,7 +34,7 @@ func NewAdminClient(
 	serverCK, serverSK *rsa.PublicKey,
 	clusterName string, size int, epCount int) (ac *AdminClient, err error) {
 
-	cn, err := NewClientNode("", ATTR_ADMIN, //  lfs string, attrs uint64,
+	cn, err := NewClientNode("admin", "", ATTR_ADMIN, //  lfs string, attrs uint64,
 		serverName, serverID, serverEnd,
 		serverCK, serverSK, //  *rsa.PublicKey,
 		clusterName,
@@ -48,12 +45,10 @@ func NewAdminClient(
 	if err == nil {
 		// Run() fills in clusterID
 		ac = &AdminClient{
-			clusterName: clusterName,
-			clusterSize: uint32(size),
 			ClientNode:  *cn,
 		}
 	}
-	return
+	return	// FOO
 }
 
 // Start the client running in separate goroutine, so that this function
@@ -67,7 +62,7 @@ func (ac *AdminClient) Run() (err error) {
 		var (
 			version1 uint32
 		)
-		clientName := cn.GetName()
+		clientName := cn.name
 		cnx, version2, err := cn.SessionSetup(version1)
 		_ = version2 // not yet used
 		if err == nil {

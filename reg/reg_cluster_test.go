@@ -9,15 +9,6 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) TestClusterAttrs(c *C) {
-	if VERBOSITY > 0 {
-		fmt.Println("TEST_CLUSTER_ATTRS")
-	}
-	c.Assert(CLUSTER_DELETED, Equals, 1)
-	c.Assert(FOO, Equals, 2)
-	c.Assert(BAR, Equals, 4)
-}
-
 func (s *XLSuite) TestClusterMaker(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_CLUSTER_MAKER")

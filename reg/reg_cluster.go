@@ -20,9 +20,10 @@ import (
 
 var _ = fmt.Print
 
-// cluster bit flags
+// cluster bit flags (Attrs)
 const (
-	CLUSTER_DELETED = 1 << iota
+	CLUSTER_EPHEMERAL = 1 << iota
+	CLUSTER_DELETED 
 )
 
 type RegCluster struct {
