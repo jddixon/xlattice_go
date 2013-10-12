@@ -33,7 +33,7 @@ func (s *XLSuite) TestServer(c *C) {
 	// 1.  create a new ephemeral server ----------------------------
 	es, err := NewEphServer()
 	c.Assert(err, IsNil)
-	c.Assert(es, Not(IsNil))
+	c.Assert(es, NotNil)
 
 	server := es.Server
 
@@ -44,7 +44,7 @@ func (s *XLSuite) TestServer(c *C) {
 	serverEnd := server.GetEndPoint(0)
 	serverCK := server.GetCommsPublicKey()
 	serverSK := server.GetSigPublicKey()
-	c.Assert(serverEnd, Not(IsNil))
+	c.Assert(serverEnd, NotNil)
 
 	// start the mock server ------------------------------
 	err = es.Run()
@@ -69,9 +69,11 @@ func (s *XLSuite) TestServer(c *C) {
 	cn := &an.ClientNode // a bit ugly, this ...
 	<-cn.doneCh
 
+	c.Assert(cn.clusterID, NotNil) // the purpose of the exercise
+
 	// DEBUG
-	fmt.Printf("we're back! cluster ID is %s\n",
-		hex.EncodeToString(cn.clusterID.Value()))
+	fmt.Printf("AdmnClient has registered a cluster of size %d\n    cluster ID is %s\n",
+		K, hex.EncodeToString(cn.clusterID.Value()))
 	// END
 
 	// 4. create K clients ------------------------------------------
@@ -89,7 +91,8 @@ func (s *XLSuite) TestServer(c *C) {
 			clusterName, cn.clusterID,
 			K, 1, e) //1 is endPoint count
 		c.Assert(err, IsNil)
-		c.Assert(uc[i], Not(IsNil))
+		c.Assert(uc[i], NotNil)
+		c.Assert(uc[i].clusterID, NotNil) // FAILS :-)
 	}
 
 	// 5. start the K clients, each in a separate goroutine ---------

@@ -81,7 +81,7 @@ type ClientNode struct {
 	endPoints      []xt.EndPointI
 	lfs            string
 	name           string
-	clientID       []byte // used to make NodeID
+	clientID       *xi.NodeID
 	ckPriv, skPriv *rsa.PrivateKey
 
 	// XLattice Node ------------------------------------------------
@@ -98,7 +98,7 @@ func NewClientNode(
 	name, lfs string, attrs uint64,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK, serverSK *rsa.PublicKey,
-	clusterName string, size int,
+	clusterName string, clusterID *xi.NodeID, size int,
 	epCount int, e []xt.EndPointI) (
 	cn *ClientNode, err error) {
 
@@ -153,7 +153,10 @@ func NewClientNode(
 			serverID:      serverID,
 			serverEnd:     serverEnd,
 			serverCK:      serverCK,
-			serverSK:      serverCK,
+			serverSK:      serverSK,
+			clusterName:   clusterName,
+			clusterID:     clusterID,
+			clusterSize:   uint32(size),
 			h:             cnxHandler,
 			endPoints:     e,
 			ckPriv:        ckPriv,
@@ -215,7 +218,8 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 		err = cn.h.writeData(ciphertext1)
 		// DEBUG
 		if err != nil {
-			fmt.Printf("Client.Run(): err after write is %v\n", err)
+			fmt.Printf("SessionSetup, sending Hello: err after write is %v\n",
+				err)
 		}
 		// END
 	}
@@ -224,7 +228,8 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 		ciphertext2, err = cn.h.readData()
 		// DEBUG
 		if err != nil {
-			fmt.Printf("Client.Run(): err after read is %v\n", err)
+			fmt.Printf("SessionSetup, sending Hello: err after read is %v\n",
+				err)
 		}
 		// END
 	}
@@ -295,7 +300,11 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 	// SHOULD CHECK FOR TIMEOUT
 	response, err := cn.readMsg()
 	if err == nil {
-		cn.clientID = response.GetClientID()
+		id := response.GetClientID()
+		cn.clientID, err = xi.New(id)
+
+		// XXX err ignored
+
 		cn.decidedAttrs = response.GetClientAttrs()
 		// DEBUG
 		fmt.Printf("    client %s has received ClientOK\n",
@@ -341,12 +350,11 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 		}
 	}
 	return
-} // GEEPGEEP
+}
 
 func (cn *ClientNode) JoinAndReply() (err error) {
 
 	// Send JOIN MSG ============================================
-	fmt.Printf("Pre-Join client-side cluster size: %d\n", cn.clusterSize)
 	op := XLRegMsg_Join
 	request := &XLRegMsg{
 		Op:          &op,
@@ -355,7 +363,7 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
 	// DEBUG
-	fmt.Printf("Client %s sends JOIN by name sent for cluster %s\n",
+	fmt.Printf("Client %s sends JOIN by name cluster %s\n",
 		cn.name, cn.clusterName)
 	// END
 
@@ -378,8 +386,10 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 				cn.clusterSize = clusterSizeNow
 				cn.members = make([]*ClusterMember, cn.clusterSize)
 			}
+			// XXX This is just wrong: we already know the cluster ID
 			id := response.GetClusterID()
-			cn.clusterID, err = xi.New(id)
+			// cn.clusterID, err = xi.New(id)
+			_ = id // DO SOMETHING WITH IT  XXX
 		}
 	} // GEEP3
 	return
@@ -388,15 +398,17 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 // Collect information on all cluster members
 func (cn *ClientNode) GetAndMembers() (err error) {
 
+	if cn.clusterID == nil {
+		fmt.Printf("** ENTERING GetAndMembers for %s with nil clusterID! **\n",
+			cn.name)
+	}
 	MAX_GET := 16
-	// XXX It should be impossible for cn.members to be nil
-	// at this point
 	if cn.members == nil {
 		cn.members = make([]*ClusterMember, cn.clusterSize)
 		// DEBUG
-		fmt.Println("Client.Run after Join: UNEXPECTED MAKE cn.members")
+		fmt.Println("ClientNode.GetAndMembers: UNEXPECTED MAKE cn.members")
 	} else {
-		fmt.Println("Client.Run after Join: NO NEED TO MAKE cn.members")
+		fmt.Println("ClientNode.GetAndMembers: NO NEED TO MAKE cn.members")
 		// END
 	}
 	stillToGet := xu.LowNMap(uint(cn.clusterSize))
@@ -409,7 +421,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			}
 		}
 		// DEBUG
-		fmt.Printf("Client %s sends GET for %d members (bits 0x%x)\n",
+		fmt.Printf("ClientNode %s sends GET for %d members (bits 0x%x)\n",
 			cn.name, stillToGet.Count(), stillToGet.Bits)
 		// END
 

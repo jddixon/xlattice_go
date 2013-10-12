@@ -3,6 +3,8 @@ xlattice_go/crypto/TODO
 2013-10-12
     * implement Bloom filter (xlattice_j/.../crypto/filters)
         for use in ../reg
+    * then look at Wikipedia article
+    * and google on "golang bloom filter"
 
 2013-09-20
     * Supposedly RSA believes dual elliptic curve deterministic 
@@ -10,7 +12,7 @@ xlattice_go/crypto/TODO
         introduced by NSA and so has advised not using it 
         (BBC article today)
         - so review the code
-        - do something to scramble the bits 
+        - do something to scramble the bits ?
 
 2013-08-27
     * IMPLEMENT rsa private key to/from wire 

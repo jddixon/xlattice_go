@@ -230,9 +230,9 @@ func (mc *OldClient) GetAndMembers() (err error) {
 	if mc.members == nil {
 		mc.members = make([]*ClusterMember, mc.clusterSize)
 		// DEBUG
-		fmt.Println("Client.Run after Join: UNEXPECTED MAKE mc.members")
+		fmt.Println("OldClient.Run after Join: UNEXPECTED MAKE mc.members")
 	} else {
-		fmt.Println("Client.Run after Join: NO NEED TO MAKE mc.members")
+		fmt.Println("OldClient.Run after Join: NO NEED TO MAKE mc.members")
 		// END
 	}
 	stillToGet := xu.LowNMap(uint(mc.clusterSize))
@@ -245,7 +245,7 @@ func (mc *OldClient) GetAndMembers() (err error) {
 			}
 		}
 		// DEBUG
-		fmt.Printf("Client %s sends GET for %d members (bits 0x%x)\n",
+		fmt.Printf("OldClient %s sends GET for %d members (bits 0x%x)\n",
 			clientName, stillToGet.Count(), stillToGet.Bits)
 		// END
 

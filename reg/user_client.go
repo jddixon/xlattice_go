@@ -4,6 +4,7 @@ package reg
 
 import (
 	"crypto/rsa"
+	"encoding/hex" // DEBUG
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
@@ -44,10 +45,14 @@ func NewUserClient(
 	if lfs == "" {
 		attrs |= ATTR_EPHEMERAL
 	}
+	// DEBUG
+	fmt.Printf("NewUserClient %s: cluster ID is \n    %s\n",
+		name, hex.EncodeToString(clusterID.Value()))
+	// END
 	cn, err := NewClientNode(name, lfs, attrs,
 		serverName, serverID, serverEnd,
 		serverCK, serverSK, //  *rsa.PublicKey,
-		clusterName, size,
+		clusterName, clusterID, size,
 		epCount, e)
 
 	if err == nil {
@@ -77,11 +82,8 @@ func (uc *UserClient) Run() (err error) {
 		if err == nil {
 			err = cn.ClientAndOK()
 		}
-		// XXX MODIFY TO SKIP THIS STEP
-		if err == nil {
-			err = cn.CreateAndReply()
-		}
 		// XXX MODIFY TO USE CLUSTER_ID PASSED TO UserClient
+		// 2013-10-12 this is a join by cluster name
 		if err == nil {
 			err = cn.JoinAndReply()
 		}

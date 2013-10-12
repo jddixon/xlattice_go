@@ -4,7 +4,11 @@ xlattice_go/reg/TODO
     * eph_server_test.go step 4, 5                                      * DONE
     * need clear decision: does UserClient get clusterName?
     * use BloomSHA3 to handle registry ID map?  about 300 SLOC
-        in Java
+        in Java (as implemented in xlattice_j)
+    * client.go JoinAndReply overwrites clusterID, should check         * FIXED
+        it for correctness
+    * drop old*.go, which should include all files containing "Old"
+    * get ready to drop crypto_test.go
 
 2013-10-11
     * in mock_server_test.go				                            * DONE
@@ -13,7 +17,7 @@ xlattice_go/reg/TODO
     * msg_handlers doClientMsg about line 70 sets all generated
         IDs to 32 bytes (SHA3)
     * AdminClient accepts epCount but not part of protocol
-        - add to p.proto
+        - add to p.proto                                                * DONE
         - server must make this part of registry data structure
         - UserClients get epCount in JoinReply
     * doClientMsg assigns an ID if nil but just uses the SHA3 
