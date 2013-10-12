@@ -5,6 +5,7 @@ package reg
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
@@ -17,7 +18,7 @@ import (
 	"time"
 )
 
-var _ = fmt.Print
+var _ = fmt.Print // DEBUG
 
 const (
 	CLIENT_START = iota
@@ -31,43 +32,60 @@ const (
 )
 
 type ClientNode struct {
-	serverName string
-	serverID   *xi.NodeID
-	serverEnd  xt.EndPointI
-	serverCK   *rsa.PublicKey
 
+	// EPHEMERAL INFORMATION ========================================
+	doneCh          chan bool
+	err             error
+	h               *CnxHandler
+	proposedAttrs   uint64
+	proposedVersion uint32 // proposed by client
+	iv1, key1       []byte // one-shot
+	iv2, key2       []byte // session
+	salt1, salt2    []byte // not currently used
+	engineC         cipher.Block
+	encrypterC      cipher.BlockMode
+	decrypterC      cipher.BlockMode
+
+	// SOMETIMES (?) PERSISTED ======================================
 	// The significance of these fields is different in different
 	// subclasses.  To the user, this is the cluster being joined.
 	// To an admin client, it is a cluster being created.
+
 	clusterName string
 	clusterID   *xi.NodeID
 	clusterSize uint32 // this is a FIXED size, aka MaxSize
 
-	// run information
-	doneCh chan bool
-	err    error
-	h      *CnxHandler
+	// PERSISTED ====================================================
+	// If the ClientNode is not ephemeral, this information is saved
+	// as LFS/.xlattice/client.node
 
-	proposedAttrs, decidedAttrs uint64
+	serverName     string
+	serverID       *xi.NodeID
+	serverEnd      xt.EndPointI
+	serverCK       *rsa.PublicKey
+	serverSK       *rsa.PublicKey
+	decidedAttrs   uint64
+	decidedVersion uint32           // decreed by server
+	members        []*ClusterMember // information on cluster members
 
-	iv1, key1    []byte // one-shot
-	version1     uint32 // proposed by client
-	iv2, key2    []byte // session
-	version2     uint32 // decreed by server
-	salt1, salt2 []byte // not currently used
-	engineC      cipher.Block
-	encrypterC   cipher.BlockMode
-	decrypterC   cipher.BlockMode
+	// By convention endPoints[0] is used for member-member communications
+	// and [1] for comms with cluster clients, should they exist. Some or
+	// all of these (the first epCount) are passed to other cluster
+	// members via the registry.
+	epCount int
 
-	// information on cluster members		// MOVED TO UserClient
-	members []*ClusterMember
+	// INFORMATION PERSISTED AS Node CONFIGURATION ------------------
+	// This is used to build the node and so is persisted as part of
+	// the node.
+	endPoints      []xt.EndPointI
+	lfs            string
+	clientID       []byte // used to make NodeID
+	ckPriv, skPriv *rsa.PrivateKey
 
-	// Information on this cluster member.  By convention endPoints[0]
-	// is used for member-member communications and [1] for comms with
-	// cluster clients, should they exist.
-	clientID  []byte // XXX or *xi.NodeID
-	endPoints []xt.EndPointI
-	xn.BaseNodeI
+	// XLattice Node ------------------------------------------------
+	// This is created during the first session and serialized to
+	// LFS/.xlattice/node.config if LFS != ""
+	xn.Node
 }
 
 // Given contact information for a registry and the name of a cluster,
@@ -75,37 +93,70 @@ type ClientNode struct {
 // and terminates when it has info on the entire membership.
 
 func NewClientNode(
+	lfs string, attrs uint64,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
-	serverCK *rsa.PublicKey,
-	clusterName string, clusterID *xi.NodeID, size int,
-	e []xt.EndPointI, bni xn.BaseNodeI) (
+	serverCK, serverSK *rsa.PublicKey,
+	clusterName string, size int,
+	epCount int, e []xt.EndPointI) (
 	cn *ClientNode, err error) {
+
+	var (
+		ckPriv, skPriv *rsa.PrivateKey
+		node           *xn.Node
+	)
 
 	// sanity checks on parameter list
 	if serverName == "" || serverID == nil || serverEnd == nil ||
 		serverCK == nil {
 
 		err = MissingServerInfo
-	} else if clusterName == "" || clusterID == nil {
-		err = MissingClusterNameOrID
-	} else if size < 2 {
-		err = ClusterMustHaveTwo
-	} else if len(e) < 1 {
-		err = ClientMustHaveEndPoint
+		if clusterName == "" {
+			err = MissingClusterNameOrID
+			if size < 2 {
+				err = ClusterMustHaveTwo
+				if len(e) < 1 {
+					err = ClientMustHaveEndPoint
+				}
+			}
+		}
+	}
+	// epCount cannot exceed number of endPoints
+	if epCount < 1 {
+		epCount = 1
+	} else if e != nil && epCount > len(e) {
+		epCount = len(e)
+	}
+	// XXX This is a gross simplification.  If lfs is not specified,
+	// this is an ephemeral node.  If lfs IS specified and
+	// configuration files are present, we should deserialize the
+	// configuration files, which creates the node.
+	if lfs == "" {
+		ckPriv, err = rsa.GenerateKey(rand.Reader, 2048)
+		if err == nil {
+			skPriv, err = rsa.GenerateKey(rand.Reader, 2048)
+		}
+	}
+
+	if node == nil && (ckPriv == nil || skPriv == nil) {
+		panic("don't have Node, don't have the keys necesssary to build one")
 	}
 	if err == nil {
 		cnxHandler := &CnxHandler{State: CLIENT_START}
 		cn = &ClientNode{
-			doneCh:     make(chan bool, 1),
-			serverName: serverName,
-			serverID:   serverID,
-			serverEnd:  serverEnd,
-			serverCK:   serverCK,
-			h:          cnxHandler,
-			endPoints:  e,
+			lfs:           lfs, // if blank, node is ephemeral
+			proposedAttrs: attrs,
+			doneCh:        make(chan bool, 1),
+			serverName:    serverName,
+			serverID:      serverID,
+			serverEnd:     serverEnd,
+			serverCK:      serverCK,
+			serverSK:      serverCK,
+			h:             cnxHandler,
+			endPoints:     e,
+			ckPriv:        ckPriv,
+			skPriv:        skPriv,
 
-			// THIS BECOMES A NODE XXX, so Node: node,
-			BaseNodeI: bni,
+			// Node NOT YET INITIALIZED
 		}
 	}
 	return
@@ -133,8 +184,11 @@ func (cn *ClientNode) writeMsg(m *XLRegMsg) (err error) {
 
 // RUN CODE =========================================================
 
-func (cn *ClientNode) SessionSetup(version1 uint32) (
-	cnx *xt.TcpConnection, version2 uint32, err error) {
+// Subclasses (UserClient, AdminClient, etc) use sequences of calls to
+// these these functions to accomplish their purposes.
+
+func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
+	cnx *xt.TcpConnection, decidedVersion uint32, err error) {
 	var (
 		ciphertext1, iv1, key1, salt1, salt1c []byte
 		ciphertext2, iv2, key2, salt2         []byte
@@ -152,7 +206,7 @@ func (cn *ClientNode) SessionSetup(version1 uint32) (
 	if err == nil {
 		cn.h.Cnx = cnx
 		ciphertext1, iv1, key1, salt1,
-			err = xm.ClientEncodeHello(version1, cn.serverCK)
+			err = xm.ClientEncodeHello(proposedVersion, cn.serverCK)
 	}
 	if err == nil {
 		err = cn.h.writeData(ciphertext1)
@@ -172,7 +226,7 @@ func (cn *ClientNode) SessionSetup(version1 uint32) (
 		// END
 	}
 	if err == nil {
-		iv2, key2, salt2, salt1c, version2,
+		iv2, key2, salt2, salt1c, decidedVersion,
 			err = xm.ClientDecodeHelloReply(ciphertext2, iv1, key1)
 		_ = salt1c // XXX
 	}
@@ -182,7 +236,7 @@ func (cn *ClientNode) SessionSetup(version1 uint32) (
 		cn.iv2 = iv2
 		cn.key2 = key2
 		cn.salt2 = salt2
-		cn.version2 = version2
+		cn.decidedVersion = decidedVersion
 		cn.engineC, err = aes.NewCipher(key2)
 		if err == nil {
 			cn.encrypterC = cipher.NewCBCEncrypter(cn.engineC, iv2)
@@ -205,9 +259,11 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 	// XXX attrs not dealt with
 
 	// Send CLIENT MSG ==========================================
-	ckBytes, err = xc.RSAPubKeyToWire(cn.GetCommsPublicKey())
+	//ckBytes, err = xc.RSAPubKeyToWire(cn.GetCommsPublicKey())
+	ckBytes, err = xc.RSAPubKeyToWire(&cn.ckPriv.PublicKey)
 	if err == nil {
-		skBytes, err = xc.RSAPubKeyToWire(cn.GetSigPublicKey())
+		//skBytes, err = xc.RSAPubKeyToWire(cn.GetSigPublicKey())
+		skBytes, err = xc.RSAPubKeyToWire(&cn.skPriv.PublicKey)
 		if err == nil {
 			for i := 0; i < len(cn.endPoints); i++ {
 				myEnds = append(myEnds, cn.endPoints[i].String())
@@ -215,7 +271,6 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 			token := &XLRegMsg_Token{
 				Name:     &clientName,
 				Attrs:    &cn.proposedAttrs,
-				ID:       cn.GetNodeID().Value(),
 				CommsKey: ckBytes,
 				SigKey:   skBytes,
 				MyEnds:   myEnds,
@@ -442,48 +497,3 @@ func (cn *ClientNode) ByeAndAck() (err error) {
 	}
 	return
 } // GEEP6
-
-//// Start the client running in separate goroutine, so that this function
-//// is non-blocking.
-//
-//func (cn *ClientNode) Run() (err error) {
-//	go func() {
-//		var (
-//			version1 uint32
-//		)
-//		clientName := cn.GetName()
-//		cnx, version2, err := cn.SessionSetup(version1)
-//		_ = version2 // not yet used
-//		if err == nil {
-//			err = cn.ClientAndOK()
-//		}
-//		if err == nil {
-//			err = cn.CreateAndReply()
-//		}
-//		if err == nil {
-//			err = cn.JoinAndReply()
-//		}
-//		if err == nil {
-//			err = cn.GetAndMembers()
-//		}
-//		if err == nil {
-//			err = cn.ByeAndAck()
-//		}
-//
-//		// END OF RUN ===============================================
-//		if cnx != nil {
-//			cnx.Close()
-//		}
-//		// DEBUG
-//		fmt.Printf("client %s run complete ", clientName)
-//		if err != nil && err != io.EOF {
-//			fmt.Printf("- ERROR: %v", err)
-//		}
-//		fmt.Println("")
-//		// END
-//
-//		cn.err = err
-//		cn.doneCh <- true
-//	}()
-//	return
-//}

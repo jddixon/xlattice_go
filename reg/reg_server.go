@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/reg/server.go
+// xlattice_go/reg/reg_server.go
 
 import (
 	xt "github.com/jddixon/xlattice_go/transport"

@@ -10,8 +10,23 @@ import (
 
 var _ = fmt.Print
 
+// The UserClient is created to enable the caller to join a cluster
+// and learn information about the cluster's other members.  Once the
+// client has learned that information, it is done.
+
+// As implemented so far, this is an ephemeral client, meaning that it
+// neither saves nor restores its Node; keys and such are generated for
+// each instance.
+
+// For practical use, it is essential that the UserClient create its
+// Node when NewUserClient() is first called, but then save its
+// configuration.  This is conventionally written to LFS/.xlattice/config.
+// On subsequent the client reads its configuration file rather than
+// regenerating keys, etc.
+
 type UserClient struct {
-	clusterName string // not needed ?
+	// The client is associated with one and only one cluster.
+	clusterName string // not needed?
 	clusterID   *xi.NodeID
 	clusterSize uint32 // this is a FIXED size, aka MaxSize
 
@@ -20,7 +35,12 @@ type UserClient struct {
 	ClientNode
 }
 
-// CONSTRUCTOR IS PASSED clusterID, name is not needed
+func NewUserClient() (uc *UserClient, err error) {
+
+	// XXX STUB XXX
+
+	return
+}
 
 // Start the client running in separate goroutine, so that this function
 // is non-blocking.

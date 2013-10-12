@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/reg/old_server_test.go (was mock_server_test.go)
+// xlattice_go/reg/old_mock_server_test.go (was mock_server_test.go)
 
 //////////////////////////
 // THIS IS BEING REPLACED.

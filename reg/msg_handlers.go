@@ -3,6 +3,7 @@ package reg
 // xlattice_go/reg/msg_handlers.go
 
 import (
+	"code.google.com/p/go.crypto/sha3"
 	"crypto/rsa"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
@@ -53,15 +54,28 @@ func doClientMsg(h *InHandler) {
 	name = clientMsg.GetClientName()
 	clientSpecs := clientMsg.GetClientSpecs()
 	attrs = clientSpecs.GetAttrs()
-	nodeID, err = xi.New(clientSpecs.GetID())
+	ckBytes := clientSpecs.GetCommsKey()
+	skBytes := clientSpecs.GetSigKey()
+
 	if err == nil {
-		ck, err = xc.RSAPubKeyFromWire(clientSpecs.GetCommsKey())
+		ck, err = xc.RSAPubKeyFromWire(ckBytes)
 		if err == nil {
-			sk, err = xc.RSAPubKeyFromWire(clientSpecs.GetSigKey())
+			sk, err = xc.RSAPubKeyFromWire(skBytes)
 			if err == nil {
 				myEnds = clientSpecs.GetMyEnds() // a string array
 			}
 		}
+	}
+	if err == nil {
+		id := clientSpecs.GetID()
+		if id == nil {
+			sha := sha3.NewKeccak256()
+			sha.Write(ckBytes)
+			sha.Write(skBytes)
+			// XXX WE NEED SOME RANDOMNESS HERE!
+			id = sha.Sum(nil)
+		}
+		nodeID, err = xi.New(id)
 	}
 	// Take appropriate action --------------------------------------
 	if err == nil {

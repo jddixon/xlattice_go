@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/reg/mock_server.go
+// xlattice_go/reg/old_mock_server.go
 
 import (
 	"crypto/rand"

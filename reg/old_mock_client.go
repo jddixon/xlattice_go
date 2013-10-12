@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/reg/mock_client.go
+// xlattice_go/reg/old_mock_client.go, used to be mock_client.go
 
 //////////////////////////
 // THIS IS BEING REPLACED.

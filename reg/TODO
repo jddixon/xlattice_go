@@ -1,5 +1,12 @@
 xlattice_go/reg/TODO
 
+2013-10-11
+    * in mock_server_test.go
+        - REPLACE NewMockClient BY NewUserClient, about line 53
+        - REPLACE MockClient BY UserClient, about line 74
+    * msg_handlers doClientMsg about line 70 sets all generated
+        IDs to 32 bytes (SHA3)
+
 2013-10-10
     * msg_handlers.go doClientMsg: change to either 
         - accept ID, which must be known, plus digsig
