@@ -268,9 +268,9 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	op = XLRegMsg_ClientOK
 	clientOKMsg := XLRegMsg{
-		Op:       &op,
-		ClientID: clientID,
-		ClientAttrs:    &attrsBack,
+		Op:          &op,
+		ClientID:    clientID,
+		ClientAttrs: &attrsBack,
 	}
 	ciphertext, err = EncodePadEncrypt(&clientOKMsg, encrypterS)
 	c.Assert(err, IsNil)

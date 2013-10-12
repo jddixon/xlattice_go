@@ -1,5 +1,11 @@
 xlattice_go/reg/TODO
 
+2013-10-12
+    * eph_server_test.go step 4, 5                                      * DONE
+    * need clear decision: does UserClient get clusterName?
+    * use BloomSHA3 to handle registry ID map?  about 300 SLOC
+        in Java
+
 2013-10-11
     * in mock_server_test.go				                            * DONE
         - REPLACE NewMockClient BY NewUserClient, about line 53			* DONE
@@ -21,7 +27,7 @@ xlattice_go/reg/TODO
         - to const in reg_cluster.go                                    * DONE
         - to client CreateMsg
         - to server CreateReply
-    * IMPLEMENT USER CLIENT
+    * IMPLEMENT USER CLIENT                                             * DONE
 
 2013-10-10
     * msg_handlers.go doClientMsg: change to either 

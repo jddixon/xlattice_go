@@ -80,7 +80,7 @@ type ClientNode struct {
 	// the node when that is saved.
 	endPoints      []xt.EndPointI
 	lfs            string
-	name			string
+	name           string
 	clientID       []byte // used to make NodeID
 	ckPriv, skPriv *rsa.PrivateKey
 
@@ -145,7 +145,7 @@ func NewClientNode(
 	if err == nil {
 		cnxHandler := &CnxHandler{State: CLIENT_START}
 		cn = &ClientNode{
-			name:			name,
+			name:          name,
 			lfs:           lfs, // if blank, node is ephemeral
 			proposedAttrs: attrs,
 			doneCh:        make(chan bool, 1),

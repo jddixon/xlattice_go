@@ -45,10 +45,10 @@ func NewAdminClient(
 	if err == nil {
 		// Run() fills in clusterID
 		ac = &AdminClient{
-			ClientNode:  *cn,
+			ClientNode: *cn,
 		}
 	}
-	return	// FOO
+	return // FOO
 }
 
 // Start the client running in separate goroutine, so that this function

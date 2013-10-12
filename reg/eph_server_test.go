@@ -19,6 +19,7 @@ import (
 	//xn "github.com/jddixon/xlattice_go/node"
 	// xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
+	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 )
 
@@ -74,37 +75,39 @@ func (s *XLSuite) TestServer(c *C) {
 	// END
 
 	// 4. create K clients ------------------------------------------
-	//
-	//	uc := make([]*UserClient, K)
-	//  ucNames := make([]string, K)
-	//	for i := 0; i < K; i++ {
-	//		ucNames[] = rng.NextFileName(8)		// not guaranteed to be unique
-	//		uc[i], err = NewUserClient(ucNames[i], "",
-	//			serverName, serverID, serverEnd, serverCK,
-	//			clusterName, clusterID, K, 1) // 1 is endPoint count
-	//		c.Assert(err, IsNil)
-	//		c.Assert(uc[i], Not(IsNil))
-	//	}
+
+	uc := make([]*UserClient, K)
+	ucNames := make([]string, K)
+	for i := 0; i < K; i++ {
+		var ep *xt.TcpEndPoint
+		ep, err = xt.NewTcpEndPoint("127.0.0.1:0")
+		c.Assert(err, IsNil)
+		e := []xt.EndPointI{ep}
+		ucNames[i] = rng.NextFileName(8) // not guaranteed to be unique
+		uc[i], err = NewUserClient(ucNames[i], "",
+			serverName, serverID, serverEnd, serverCK, serverSK,
+			clusterName, cn.clusterID,
+			K, 1, e) //1 is endPoint count
+		c.Assert(err, IsNil)
+		c.Assert(uc[i], Not(IsNil))
+	}
 
 	// 5. start the K clients, each in a separate goroutine ---------
-	//	for i := 0; i < K; i++ {
-	//		err = uc[i].Run()
-	//		c.Assert(err, IsNil)
-	//	}
-	//
-	//	// wait until all clients are done ------------------------------
-	//	// XXX MUST REPLACE OldClient BY ClientNode
-	//	for i := 0; i < K; i++ {
-	//		<-uc[i].OldClient.doneCh
-	//	}
-	//
-	//	// stop the server by closing its acceptor ----------------------
-	//	es.Close()
-	//
-	//	// verify that results are as expected --------------------------
-	//
-	//	// XXX STUB XXX
+	for i := 0; i < K; i++ {
+		err = uc[i].Run()
+		c.Assert(err, IsNil)
+	}
 
-	// DEBUG
-	// _, _, _, _, _ = serverName, serverID, serverEnd, serverCK, serverSK
+	// wait until all clients are done ------------------------------
+	for i := 0; i < K; i++ {
+		<-uc[i].ClientNode.doneCh
+	}
+	//
+	// stop the server by closing its acceptor ----------------------
+	es.Close()
+	//
+	// verify that results are as expected --------------------------
+	//
+	// XXX STUB XXX
+
 }

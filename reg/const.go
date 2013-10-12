@@ -15,6 +15,6 @@ const (
 
 // client attrs bits, also used for member attrs
 const (
-	ATTR_EPHEMERAL	= 1 << iota  
+	ATTR_EPHEMERAL = 1 << iota
 	ATTR_ADMIN
 )

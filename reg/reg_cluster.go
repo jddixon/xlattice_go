@@ -23,7 +23,7 @@ var _ = fmt.Print
 // cluster bit flags (Attrs)
 const (
 	CLUSTER_EPHEMERAL = 1 << iota
-	CLUSTER_DELETED 
+	CLUSTER_DELETED
 )
 
 type RegCluster struct {

@@ -1,5 +1,9 @@
 xlattice_go/crypto/TODO
 
+2013-10-12
+    * implement Bloom filter (xlattice_j/.../crypto/filters)
+        for use in ../reg
+
 2013-09-20
     * Supposedly RSA believes dual elliptic curve deterministic 
         random number generation algorithm contains a flaw 
