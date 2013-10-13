@@ -30,21 +30,25 @@ type RegCluster struct {
 	Attrs         uint64 // a field of bit flags
 	Name          string // must be unique
 	ID            []byte // must be unique
-	maxSize       int    // a maximum; must be > 1
+	epCount       uint   // a positive integer, for now is 1 or 2
+	maxSize       uint   // a maximum; must be > 1
 	members       []*ClusterMember
 	MembersByName map[string]*ClusterMember
 	MembersByID   *xn.BNIMap
 	mu            sync.RWMutex
 }
 
-func NewRegCluster(attrs uint64, name string, id *xi.NodeID, maxSize int) (
-	rc *RegCluster, err error) {
+func NewRegCluster(attrs uint64, name string, id *xi.NodeID,
+	epCount, maxSize uint) (rc *RegCluster, err error) {
 
 	if name == "" {
 		name = "xlCluster"
 	}
 	nameMap := make(map[string]*ClusterMember)
-	if maxSize < 2 {
+	if epCount < 1 {
+		err = ClusterMembersMustHaveEndPoint
+	}
+	if err == nil && maxSize < 2 {
 		err = ClusterMustHaveTwo
 	} else {
 		var bnm xn.BNIMap // empty map
@@ -52,6 +56,7 @@ func NewRegCluster(attrs uint64, name string, id *xi.NodeID, maxSize int) (
 			Attrs:         attrs,
 			Name:          name,
 			ID:            id.Value(),
+			epCount:       epCount,
 			maxSize:       maxSize,
 			MembersByName: nameMap,
 			MembersByID:   &bnm,
@@ -101,13 +106,16 @@ func (rc *RegCluster) AddMember(member *ClusterMember) (err error) {
 	return
 }
 
-func (rc *RegCluster) MaxSize() int {
+func (rc *RegCluster) EndPointCount() uint {
+	return rc.epCount
+}
+func (rc *RegCluster) MaxSize() uint {
 	return rc.maxSize
 }
-func (rc *RegCluster) Size() int {
-	var curSize int
+func (rc *RegCluster) Size() uint {
+	var curSize uint
 	rc.mu.RLock() // <------------------------------------
-	curSize = len(rc.members)
+	curSize = uint(len(rc.members))
 	rc.mu.RUnlock() // <------------------------------------
 	return curSize
 }
@@ -148,6 +156,13 @@ func (rc *RegCluster) Equal(any interface{}) bool {
 		// END
 		return false
 	}
+	if rc.epCount != other.epCount {
+		// DEBUG
+		fmt.Printf("rc.Equal: EPCOUNTS DIFFER %d vs %d\n",
+			rc.epCount, other.epCount)
+		// END
+		return false
+	}
 	if rc.maxSize != other.maxSize {
 		// DEBUG
 		fmt.Printf("rc.Equal: MAXSIZES DIFFER %d vs %d\n",
@@ -163,7 +178,7 @@ func (rc *RegCluster) Equal(any interface{}) bool {
 		return false
 	}
 	// Members			[]*ClusterMember
-	for i := 0; i < rc.Size(); i++ {
+	for i := uint(0); i < rc.Size(); i++ {
 		rcMember := rc.members[i]
 		otherMember := other.members[i]
 		if !rcMember.Equal(otherMember) {
@@ -182,6 +197,7 @@ func (rc *RegCluster) Strings() (ss []string) {
 	ss = append(ss, fmt.Sprintf("    Attrs: 0x%016x", rc.Attrs))
 	ss = append(ss, "    Name: "+rc.Name)
 	ss = append(ss, "    ID: "+hex.EncodeToString(rc.ID))
+	ss = append(ss, fmt.Sprintf("    epCount: %d", rc.epCount))
 	ss = append(ss, fmt.Sprintf("    maxSize: %d", rc.maxSize))
 
 	ss = append(ss, "    Members {")
@@ -208,10 +224,10 @@ func ParseRegClusterFromStrings(ss []string) (
 	rc *RegCluster, rest []string, err error) {
 
 	var (
-		attrs   uint64
-		name    string
-		id      *xi.NodeID
-		maxSize int
+		attrs            uint64
+		name             string
+		id               *xi.NodeID
+		epCount, maxSize uint
 	)
 	rest = ss
 
@@ -257,15 +273,32 @@ func ParseRegClusterFromStrings(ss []string) (
 	}
 	if err == nil {
 		line = xn.NextNBLine(&rest)
+		if strings.HasPrefix(line, "epCount: ") {
+			var count int
+			count, err = strconv.Atoi(line[9:])
+			if err == nil {
+				epCount = uint(count)
+			}
+		} else {
+			fmt.Println("BAD END POINT COUNT")
+			err = IllFormedCluster
+		}
+	}
+	if err == nil {
+		line = xn.NextNBLine(&rest)
 		if strings.HasPrefix(line, "maxSize: ") {
-			maxSize, err = strconv.Atoi(line[9:])
+			var size int
+			size, err = strconv.Atoi(line[9:])
+			if err == nil {
+				maxSize = uint(size)
+			}
 		} else {
 			fmt.Println("BAD MAX_SIZE")
 			err = IllFormedCluster
 		}
 	}
 	if err == nil {
-		rc, err = NewRegCluster(attrs, name, id, maxSize)
+		rc, err = NewRegCluster(attrs, name, id, epCount, maxSize)
 	}
 	if err == nil {
 		line = xn.NextNBLine(&rest)

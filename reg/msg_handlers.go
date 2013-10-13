@@ -123,6 +123,7 @@ func doCreateMsg(h *InHandler) {
 
 	createMsg := h.msgIn
 	clusterName := createMsg.GetClusterName()
+	endPointCount := createMsg.GetEndPointCount()
 	clusterSize := createMsg.GetClusterSize()
 
 	// Take appropriate action --------------------------------------
@@ -135,7 +136,9 @@ func doCreateMsg(h *InHandler) {
 	h.reg.mu.RUnlock()
 
 	if exists {
+		// XXX THIS NO LONGER MAKES ANY SENSE
 		h.cluster = cluster
+
 		clusterSize = uint32(cluster.maxSize)
 		clusterID, _ = xi.New(cluster.ID)
 	} else {
@@ -147,13 +150,16 @@ func doCreateMsg(h *InHandler) {
 		}
 		// Assign a quasi-random cluster ID
 		clusterID, _ = xi.New(nil)
-		cluster, err = NewRegCluster(
-			attrs, clusterName, clusterID, int(clusterSize))
+		cluster, err = NewRegCluster(attrs, clusterName, clusterID,
+			uint(endPointCount), uint(clusterSize))
 		if err == nil {
 			h.cluster = cluster
 			index, err = h.reg.AddCluster(cluster)
 			// XXX index not used
 		}
+		// DEBUG
+		fmt.Printf("cluster %s has epCount %d\n", clusterName, endPointCount)
+		// END
 	}
 	_ = index // INDEX IS NOT BEING USED
 
@@ -162,9 +168,10 @@ func doCreateMsg(h *InHandler) {
 		op := XLRegMsg_CreateReply
 		id := clusterID.Value() // XXX blows up
 		h.msgOut = &XLRegMsg{
-			Op:          &op,
-			ClusterID:   id,
-			ClusterSize: &clusterSize,
+			Op:            &op,
+			ClusterID:     id,
+			EndPointCount: &endPointCount,
+			ClusterSize:   &clusterSize,
 		}
 		// Set exit state -----------------------------------------------
 		h.exitState = CREATE_REQUEST_RCVD
@@ -184,10 +191,11 @@ func doJoinMsg(h *InHandler) {
 	}()
 	// Examine incoming message -------------------------------------
 	var (
-		cluster     *RegCluster
-		clusterName string
-		clusterID   []byte
-		clusterSize uint32
+		cluster       *RegCluster
+		clusterName   string
+		clusterID     []byte
+		endPointCount uint32
+		clusterSize   uint32
 	)
 	joinMsg := h.msgIn
 
@@ -229,6 +237,7 @@ func doJoinMsg(h *InHandler) {
 		// if we get here, cluster is not nil
 		h.cluster = cluster
 		clusterID = cluster.ID
+		endPointCount = uint32(h.cluster.epCount)
 		clusterSize = uint32(h.cluster.maxSize)
 		err = cluster.AddMember(h.thisMember)
 	}
@@ -238,9 +247,10 @@ func doJoinMsg(h *InHandler) {
 		// instead.
 		op := XLRegMsg_JoinReply
 		h.msgOut = &XLRegMsg{
-			Op:          &op,
-			ClusterID:   clusterID,
-			ClusterSize: &clusterSize,
+			Op:            &op,
+			ClusterID:     clusterID,
+			EndPointCount: &endPointCount,
+			ClusterSize:   &clusterSize,
 		}
 		// Set exit state -------------------------------------------
 		h.exitState = JOIN_RCVD

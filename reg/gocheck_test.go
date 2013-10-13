@@ -115,7 +115,8 @@ func (s *XLSuite) makeAClusterMember(c *C, rng *xr.PRNG) *ClusterMember {
 // Make a RegCluster for test purposes.  Cluster member names are guaranteed
 // to be unique but the name of the cluster itself may not be.
 
-func (s *XLSuite) makeACluster(c *C, rng *xr.PRNG, size int) (rc *RegCluster) {
+func (s *XLSuite) makeACluster(c *C, rng *xr.PRNG, epCount, size uint) (
+	rc *RegCluster) {
 
 	var err error
 	c.Assert(1 < size && size <= 64, Equals, true)
@@ -124,10 +125,10 @@ func (s *XLSuite) makeACluster(c *C, rng *xr.PRNG, size int) (rc *RegCluster) {
 	name := rng.NextFileName(8) // no guarantee of uniqueness
 	id := s.makeANodeID(c, rng)
 
-	rc, err = NewRegCluster(attrs, name, id, size)
+	rc, err = NewRegCluster(attrs, name, id, epCount, size)
 	c.Assert(err, IsNil)
 
-	for count := 0; count < size; count++ {
+	for count := uint(0); count < size; count++ {
 		cm := s.makeAClusterMember(c, rng)
 		for {
 			if _, ok := rc.MembersByName[cm.GetName()]; ok {

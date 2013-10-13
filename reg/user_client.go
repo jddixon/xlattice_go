@@ -4,7 +4,7 @@ package reg
 
 import (
 	"crypto/rsa"
-	"encoding/hex" // DEBUG
+	// "encoding/hex" // DEBUG
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
@@ -45,10 +45,6 @@ func NewUserClient(
 	if lfs == "" {
 		attrs |= ATTR_EPHEMERAL
 	}
-	// DEBUG
-	fmt.Printf("NewUserClient %s: cluster ID is \n    %s\n",
-		name, hex.EncodeToString(clusterID.Value()))
-	// END
 	cn, err := NewClientNode(name, lfs, attrs,
 		serverName, serverID, serverEnd,
 		serverCK, serverSK, //  *rsa.PublicKey,

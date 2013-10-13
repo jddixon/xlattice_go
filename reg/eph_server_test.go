@@ -56,7 +56,7 @@ func (s *XLSuite) TestServer(c *C) {
 
 	// 3. create an AdminClient, use it to get the clusterID
 	an, err := NewAdminClient(serverName, serverID, serverEnd,
-		serverCK, serverSK, clusterName, K, 1)
+		serverCK, serverSK, clusterName, K, 1, nil)
 	c.Assert(err, IsNil)
 
 	// DEBUG
@@ -69,7 +69,8 @@ func (s *XLSuite) TestServer(c *C) {
 	cn := &an.ClientNode // a bit ugly, this ...
 	<-cn.doneCh
 
-	c.Assert(cn.clusterID, NotNil) // the purpose of the exercise
+	c.Assert(cn.clusterID, NotNil)          // the purpose of the exercise
+	c.Assert(cn.epCount, Equals, uint32(1)) // FAILS
 
 	// DEBUG
 	fmt.Printf("AdmnClient has registered a cluster of size %d\n    cluster ID is %s\n",

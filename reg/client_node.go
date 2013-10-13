@@ -73,7 +73,7 @@ type ClientNode struct {
 	// and [1] for comms with cluster clients, should they exist. Some or
 	// all of these (the first epCount) are passed to other cluster
 	// members via the registry.
-	epCount int
+	epCount uint32
 
 	// INFORMATION PERSISTED AS Node CONFIGURATION ------------------
 	// This is used to build the node and so is persisted as part of
@@ -103,6 +103,7 @@ func NewClientNode(
 	cn *ClientNode, err error) {
 
 	var (
+		isAdmin        = (attrs & ATTR_ADMIN) != 0
 		ckPriv, skPriv *rsa.PrivateKey
 		node           *xn.Node
 	)
@@ -112,35 +113,42 @@ func NewClientNode(
 		serverCK == nil {
 
 		err = MissingServerInfo
-		if clusterName == "" {
-			err = MissingClusterNameOrID
-			if size < 2 {
-				err = ClusterMustHaveTwo
-				if len(e) < 1 {
-					err = ClientMustHaveEndPoint
-				}
+	}
+	if err == nil && clusterName == "" {
+		err = MissingClusterNameOrID
+	}
+	if err == nil && size < 2 {
+		err = ClusterMustHaveTwo
+	}
+	if err == nil {
+		// if the client is an admin client epCount applies to the cluster
+		if epCount < 1 {
+			epCount = 1
+		}
+		if !isAdmin {
+			// XXX There is some confusion here: we don't require that
+			// all members have the same number of endpoints
+			actualEPCount := len(e)
+			if actualEPCount == 0 {
+				err = ClientMustHaveEndPoint
+			} else if epCount > actualEPCount {
+				epCount = actualEPCount
+			}
+		}
+		// XXX This is a gross simplification.  If lfs is not specified,
+		// this is an ephemeral node.  If lfs IS specified and
+		// configuration files are present, we should deserialize the
+		// configuration files, which creates the node.
+		if lfs == "" {
+			ckPriv, err = rsa.GenerateKey(rand.Reader, 2048)
+			if err == nil {
+				skPriv, err = rsa.GenerateKey(rand.Reader, 2048)
 			}
 		}
 	}
-	// epCount cannot exceed number of endPoints
-	if epCount < 1 {
-		epCount = 1
-	} else if e != nil && epCount > len(e) {
-		epCount = len(e)
-	}
-	// XXX This is a gross simplification.  If lfs is not specified,
-	// this is an ephemeral node.  If lfs IS specified and
-	// configuration files are present, we should deserialize the
-	// configuration files, which creates the node.
-	if lfs == "" {
-		ckPriv, err = rsa.GenerateKey(rand.Reader, 2048)
-		if err == nil {
-			skPriv, err = rsa.GenerateKey(rand.Reader, 2048)
-		}
-	}
 
-	if node == nil && (ckPriv == nil || skPriv == nil) {
-		panic("don't have Node, don't have the keys necesssary to build one")
+	if err == nil && node == nil && (ckPriv == nil || skPriv == nil) {
+		err = NoNodeNoKeys
 	}
 	if err == nil {
 		cnxHandler := &CnxHandler{State: CLIENT_START}
@@ -158,6 +166,7 @@ func NewClientNode(
 			clusterID:     clusterID,
 			clusterSize:   uint32(size),
 			h:             cnxHandler,
+			epCount:       uint32(epCount),
 			endPoints:     e,
 			ckPriv:        ckPriv,
 			skPriv:        skPriv,
@@ -320,17 +329,17 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 
 	// Send CREATE MSG ==========================================
 	op := XLRegMsg_Create
-	wireSize := uint32(cn.clusterSize)
 	request := &XLRegMsg{
-		Op:          &op,
-		ClusterName: &cn.clusterName,
-		ClusterSize: &wireSize,
+		Op:            &op,
+		ClusterName:   &cn.clusterName,
+		EndPointCount: &cn.epCount,
+		ClusterSize:   &cn.clusterSize,
 	}
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
 	// DEBUG
-	fmt.Printf("client %s sends CREATE for cluster %s, size %d\n",
-		cn.name, cn.clusterName, cn.clusterSize)
+	fmt.Printf("client %s sends CREATE for cluster %s, epCount %d, size %d\n",
+		cn.name, cn.clusterName, cn.epCount, cn.clusterSize)
 	// END
 
 	if err == nil {
@@ -344,9 +353,9 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 		// END
 		if err == nil {
 			cn.clusterSize = response.GetClusterSize()
-			cn.members = make([]*ClusterMember, cn.clusterSize)
 			id := response.GetClusterID()
 			cn.clusterID, err = xi.New(id)
+			// XXX no check on err
 		}
 	}
 	return
@@ -375,17 +384,19 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 		response, err = cn.readMsg()
 		op := response.GetOp()
 		_ = op
+
+		epCount := uint32(response.GetEndPointCount())
 		// DEBUG
-		fmt.Printf("    client has received JoinReply; err is %v\n", err)
+		fmt.Printf("    client has received JoinReply; epCount %d, err is %v\n",
+			epCount, err)
 		// END
 		if err == nil {
-			// XXX We collect this information for the second time;
-			// it might be different!
 			clusterSizeNow := response.GetClusterSize()
 			if cn.clusterSize != clusterSizeNow {
 				cn.clusterSize = clusterSizeNow
 				cn.members = make([]*ClusterMember, cn.clusterSize)
 			}
+			cn.epCount = epCount
 			// XXX This is just wrong: we already know the cluster ID
 			id := response.GetClusterID()
 			// cn.clusterID, err = xi.New(id)
@@ -405,11 +416,6 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 	MAX_GET := 16
 	if cn.members == nil {
 		cn.members = make([]*ClusterMember, cn.clusterSize)
-		// DEBUG
-		fmt.Println("ClientNode.GetAndMembers: UNEXPECTED MAKE cn.members")
-	} else {
-		fmt.Println("ClientNode.GetAndMembers: NO NEED TO MAKE cn.members")
-		// END
 	}
 	stillToGet := xu.LowNMap(uint(cn.clusterSize))
 	for count := 0; count < MAX_GET && stillToGet.Any(); count++ {
