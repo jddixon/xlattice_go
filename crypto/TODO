@@ -3,6 +3,7 @@ xlattice_go/crypto/TODO
 2013-10-12
     * implement Bloom filter (xlattice_j/.../crypto/filters)
         for use in ../reg
+        - about 750 SLOC, of which about 450 test
     * then look at Wikipedia article
     * and google on "golang bloom filter"
 
