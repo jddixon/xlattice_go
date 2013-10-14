@@ -125,7 +125,7 @@ func (s *XLSuite) makeACluster(c *C, rng *xr.PRNG, epCount, size uint) (
 	name := rng.NextFileName(8) // no guarantee of uniqueness
 	id := s.makeANodeID(c, rng)
 
-	rc, err = NewRegCluster(attrs, name, id, epCount, size)
+	rc, err = NewRegCluster(name, id, attrs, size, epCount)
 	c.Assert(err, IsNil)
 
 	for count := uint(0); count < size; count++ {

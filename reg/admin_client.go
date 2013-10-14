@@ -32,12 +32,13 @@ type AdminClient struct {
 func NewAdminClient(
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK, serverSK *rsa.PublicKey,
-	clusterName string, size, epCount int, e []xt.EndPointI) (
+	clusterName string, clusterAttrs uint64, size,
+	epCount int, e []xt.EndPointI) (
 	ac *AdminClient, err error) {
 
 	cn, err := NewClientNode("admin", "", ATTR_ADMIN, // lfs , attrs
 		serverName, serverID, serverEnd, serverCK, serverSK,
-		clusterName, nil, size, epCount, e)
+		clusterName, clusterAttrs, nil, size, epCount, e)
 
 	if err == nil {
 		// Run() fills in clusterID

@@ -52,11 +52,12 @@ func (s *XLSuite) TestServer(c *C) {
 
 	// 2. create a random cluster name and size ---------------------
 	clusterName := rng.NextFileName(8)
+	clusterAttrs := uint64(rng.Int63())
 	K := 2 + rng.Intn(6) // so the size is 2 .. 7
 
 	// 3. create an AdminClient, use it to get the clusterID
 	an, err := NewAdminClient(serverName, serverID, serverEnd,
-		serverCK, serverSK, clusterName, K, 1, nil)
+		serverCK, serverSK, clusterName, clusterAttrs, K, 1, nil)
 	c.Assert(err, IsNil)
 
 	// DEBUG
@@ -89,7 +90,7 @@ func (s *XLSuite) TestServer(c *C) {
 		ucNames[i] = rng.NextFileName(8) // not guaranteed to be unique
 		uc[i], err = NewUserClient(ucNames[i], "",
 			serverName, serverID, serverEnd, serverCK, serverSK,
-			clusterName, cn.clusterID,
+			clusterName, cn.clusterAttrs, cn.clusterID,
 			K, 1, e) //1 is endPoint count
 		c.Assert(err, IsNil)
 		c.Assert(uc[i], NotNil)

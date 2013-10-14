@@ -37,7 +37,7 @@ func NewUserClient(
 	name, lfs string,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK, serverSK *rsa.PublicKey,
-	clusterName string, clusterID *xi.NodeID, size int,
+	clusterName string, clusterAttrs uint64, clusterID *xi.NodeID, size int,
 	epCount int, e []xt.EndPointI) (ac *UserClient, err error) {
 
 	var attrs uint64
@@ -48,7 +48,7 @@ func NewUserClient(
 	cn, err := NewClientNode(name, lfs, attrs,
 		serverName, serverID, serverEnd,
 		serverCK, serverSK, //  *rsa.PublicKey,
-		clusterName, clusterID, size,
+		clusterName, clusterAttrs, clusterID, size,
 		epCount, e)
 
 	if err == nil {

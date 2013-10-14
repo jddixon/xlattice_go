@@ -26,7 +26,7 @@ message XLRegMsg {
 
         // Response to Join is clusterID + size + epCount -OR- error
         Join        	= 7;    // clusterName or clusterID
-        JoinReply   	= 8;    // clusterID, size, epCount
+        JoinReply   	= 8;    // clusterID, attrs, size, epCount
 
         GetCluster  	= 9;    // clusterID, which = bit vector; -1 = all
         // Response to Get is a list of known members -OR- error

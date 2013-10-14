@@ -1,28 +1,41 @@
 xlattice_go/reg/TODO
 
+2013-10-14
+    * clusterAttrs must have some significance
+    * verify that clusterAtrrs assigned are actually visible to
+        joining clients
+        - tests assign a random 64-bit value to cluster attrs, but
+            this is never tested or otherwise used
+        - will cause problems once clusterAttrs has meaning
+
+2013-10-13
+    * ClientNode must be able to read config from LFS
+    * CHANGE Client/ClientOK to expect either
+        - token without name but with digSig OR
+        - clientID plus digSig
+    *ClientNode Node is created after keys are created and ID is known
+
+    CLUSTER ATTRS
+    * add cluster attrs (already present in RegCluster struct as Attrs)
+        - to protocol                                                   * DONE
+        - to const in reg_cluster.go                                    * DONE
+        - in ClientNode struct and NewClientNode                        * DONE
+        - to client CreateMsg                                           * DONE
+        - to server CreateReply                                         * DONE
+        - NOT to client Join,                                           * SO
+        - to server JoinReply                                           * DONE
+        - to ClientNode struct                                          * DONE
+
+    CLIENT ATTRS (proposedAttrs/decidedAttrs in ClientNode struct)
+
+
 2013-10-12
     * need clear decision: does UserClient get clusterName?
     * use BloomSHA3 to handle registry ID map?  about 300 SLOC
         in Java (as implemented in xlattice_j)
-    * drop old*.go, which should include all files containing "Old"     * DONE
     * get ready to drop crypto_test.go
 
-    EP_COUNT
-    * add to RegCluster struct                                          * DONE
-    * and NewRegCluster                                                 * DONE
-    * and Equal()                                                       * DONE
-    * add Register.EpCount()                                            * DONE
-    * and to serialization                                              * DONE
-    * and to reg_cluster_test.go                                        * DONE
-    * and to msg_handler Create                                         * DONE
-    * and to msg_handler JoinReply                                      * DONE
-
-    CLUSTER ATTRS
-
 2013-10-11
-    * in mock_server_test.go				                            * DONE
-        - REPLACE NewMockClient BY NewUserClient, about line 53			* DONE
-        - REPLACE MockClient BY UserClient, about line 74		        * DONE
     * msg_handlers doClientMsg about line 70 sets all generated
         IDs to 32 bytes (SHA3)
     * doClientMsg assigns an ID if nil but just uses the SHA3 
@@ -31,12 +44,6 @@ xlattice_go/reg/TODO
         - unique clientID (both user and admin)
         - unique clusterID
     * so registry must have a map of all IDs used
-    * add cluster attrs (already present in RegCluster struct as Attrs)
-        - to protocol                                                   * DONE
-        - to const in reg_cluster.go                                    * DONE
-        - to client CreateMsg
-        - to server CreateReply
-    * IMPLEMENT USER CLIENT                                             * DONE
 
 2013-10-10
     * msg_handlers.go doClientMsg: change to either 
@@ -45,29 +52,6 @@ xlattice_go/reg/TODO
             * in this case it generates a new and unique ID
         - old tests must continue to run at least until new
             code is stable
-
-    * reorganize client code to give us a base class ClientNode         * DONE
-        with subclasses UserClient and AdminClient                      * DOND
-        - rename the old files and types to reduce confusion            * DONE
-            * client.go becomes old_client.go (so OldClient)            * DONE
-            * mock_client.go reappears (was briefly client_node.go)     * DONE
-            * client_run.go becomes old_client_run.go                   * DONE
-            * mock_server_test.go becomes old_server_test.gon           * DONE
-        - copy old_client.go as client_node.go                          * DONE
-            - this is the base class                                    * DONE
-            - either creates keys on the fly                            * DONE
-            - or reads config from LFS
-            - gets unique nodeID from the server
-                * CHANGE Client/ClientOK to expect either
-                    - token without name but with digSig OR
-                    - clientID plus digSig
-            - node is created after keys are created and ID is known
-            - Node is part of ClientNode struct
-    * Run() is defined differently for user and admin clients           * DONE
-    * user_client.go                                                    * DONE
-    * admin_client.go                                                   * DONE
-    * new eph_server_test.go is old code with a few changes             * DONE
-        - incorporates an admin client                                  * DONE
 
 2013-10-09
     PROTOCOL
@@ -80,11 +64,6 @@ xlattice_go/reg/TODO
 
 2013-10-02
     CLIENT, MOCK_CLIENT
-    * mock_client renamed client_node.go                                * DONE
-    * MockClient becomes ClientNode                                     * DONE
-    * client.go reorganized a bit so that it either loads or
-        creates a ClientNode
-    
     * change protocol so that nodeID is assigned by server (to
         avoid Douceur's Sybil Attack)
         - so first variant of Client message has token + digSig
@@ -94,7 +73,6 @@ xlattice_go/reg/TODO
         - second version of Client message has only clientID + digSig
         - either attaches client's full token to the connection
             * this includes nodeID
-    * move Node into Client struct 
     * code up the usual serialization/deserialization 
         * ParseClient
         * Client.String()
@@ -115,19 +93,13 @@ xlattice_go/reg/TODO
             of the current directory
     
     SERVER, CLIENT/SERVER MESSAGING
-    * it must be possible for a Client to create a Cluster (by name)
+    * it must be possible for a Client to create a Cluster (by name)    * DONE
         and set its size without joining it
         - ah: it must be possible for a Client to create a Cluster
             without a name and get its assigned name and ID back
-    * equally it must be possible for a client to join a cluster 
+    * equally it must be possible for a client to join a cluster        * DONE
         using its name and get its ID back
         - but if its full the client gets a ClusterFull error msg
-
-    * rename Get msg to GetCluster, Members to ClusterMembers           * DONE
-    * code up RegNode serialization in reg/reg_node.go:				    * DONE
-        - ParseRegNode()							                    * DONE
-        - String()						                            	* DONE
-        - Strings()							                            * DONE
 
     * code up Registry serialization in reg/registry.go:
         - ParseRegistry()
@@ -135,7 +107,6 @@ xlattice_go/reg/TODO
         - Strings()
 
     * code up RegServer bits in reg/server.go:
-        - Run()                                                         * DONE
         - ParseRegServer()
         - String()
         - Strings()
@@ -144,10 +115,7 @@ xlattice_go/reg/TODO
 
 2013-10-01
     * need locking for reg_cluster Members 
-        - checking whether client is cluster member by name (read lock) * DONE
-        - adding member to cluster by name (write lock)                 * DONE
         - checking whether client is cluster member by ID (read lock)
-        - adding member to cluster by ID (write lock)                   * DONE
     * registry RegMembersByID should be dropped or used; if used
         - when members added to clusters
             * must read lock reg and check reg.RegMembersByID
@@ -155,9 +123,6 @@ xlattice_go/reg/TODO
         - but need to decide whether this is useful
             * and whether the intention is to prevent clients from
                 belonging to more than one cluster (why??)
-    * move relevant bits of MockServer into reg/server.go               * DONE
-        - implement reg.Server.NewServer(...)                           * DONE
-        - and reg.Server.Run(...)                                       * DONE
     * when this is running, drop into ../cmd/xlReg/xlReg
 
 2013-09-30

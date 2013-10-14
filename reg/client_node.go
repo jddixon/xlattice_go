@@ -52,9 +52,10 @@ type ClientNode struct {
 	// subclasses.  To the user, this is the cluster being joined.
 	// To an admin client, it is a cluster being created.
 
-	clusterName string
-	clusterID   *xi.NodeID
-	clusterSize uint32 // this is a FIXED size, aka MaxSize
+	clusterName  string
+	clusterAttrs uint64
+	clusterID    *xi.NodeID
+	clusterSize  uint32 // this is a FIXED size, aka MaxSize
 
 	// PERSISTED ====================================================
 	// If the ClientNode is not ephemeral, this information is saved
@@ -98,7 +99,7 @@ func NewClientNode(
 	name, lfs string, attrs uint64,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK, serverSK *rsa.PublicKey,
-	clusterName string, clusterID *xi.NodeID, size int,
+	clusterName string, clusterAttrs uint64, clusterID *xi.NodeID, size int,
 	epCount int, e []xt.EndPointI) (
 	cn *ClientNode, err error) {
 
@@ -163,6 +164,7 @@ func NewClientNode(
 			serverCK:      serverCK,
 			serverSK:      serverSK,
 			clusterName:   clusterName,
+			clusterAttrs:  clusterAttrs,
 			clusterID:     clusterID,
 			clusterSize:   uint32(size),
 			h:             cnxHandler,
@@ -332,8 +334,9 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 	request := &XLRegMsg{
 		Op:            &op,
 		ClusterName:   &cn.clusterName,
-		EndPointCount: &cn.epCount,
+		ClusterAttrs:  &cn.clusterAttrs,
 		ClusterSize:   &cn.clusterSize,
+		EndPointCount: &cn.epCount,
 	}
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
@@ -352,9 +355,10 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 		fmt.Printf("    client has received CreateReply; err is %v\n", err)
 		// END
 		if err == nil {
-			cn.clusterSize = response.GetClusterSize()
 			id := response.GetClusterID()
 			cn.clusterID, err = xi.New(id)
+			cn.clusterAttrs = response.GetClusterAttrs()
+			cn.clusterSize = response.GetClusterSize()
 			// XXX no check on err
 		}
 	}

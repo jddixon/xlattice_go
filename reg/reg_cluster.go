@@ -27,19 +27,19 @@ const (
 )
 
 type RegCluster struct {
-	Attrs         uint64 // a field of bit flags
 	Name          string // must be unique
 	ID            []byte // must be unique
-	epCount       uint   // a positive integer, for now is 1 or 2
+	Attrs         uint64 // a field of bit flags
 	maxSize       uint   // a maximum; must be > 1
+	epCount       uint   // a positive integer, for now is 1 or 2
 	members       []*ClusterMember
 	MembersByName map[string]*ClusterMember
 	MembersByID   *xn.BNIMap
 	mu            sync.RWMutex
 }
 
-func NewRegCluster(attrs uint64, name string, id *xi.NodeID,
-	epCount, maxSize uint) (rc *RegCluster, err error) {
+func NewRegCluster(name string, id *xi.NodeID, attrs uint64,
+	maxSize, epCount uint) (rc *RegCluster, err error) {
 
 	if name == "" {
 		name = "xlCluster"
@@ -298,7 +298,7 @@ func ParseRegClusterFromStrings(ss []string) (
 		}
 	}
 	if err == nil {
-		rc, err = NewRegCluster(attrs, name, id, epCount, maxSize)
+		rc, err = NewRegCluster(name, id, attrs, maxSize, epCount)
 	}
 	if err == nil {
 		line = xn.NextNBLine(&rest)
