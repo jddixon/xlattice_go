@@ -56,18 +56,18 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 	// XXX need to devise more reasonable set of checks
 	if m < 2 || m > 20 {
 		err = MOutOfRange
-		// XXX what is this based on??
-		if err == nil && (k < 1 || (k*m > 256)) {
-			// too many hash functions for filter size
-			err = TooManyHashFunctions
-		}
+	}
+	// XXX what is this based on??
+	if err == nil && (k < 1 || (k*m > 256)) {
+		// too many hash functions for filter size
+		err = TooManyHashFunctions
 	}
 	if err == nil {
 		var ks *KeySelector
 
 		filterBits := 1 << m
 		filterWords := (filterBits + 31) / 32 // round up
-		b3 := &BloomSHA3{
+		b3 = &BloomSHA3{
 			m:           m,
 			k:           k,
 			filterBits:  filterBits,
@@ -86,9 +86,9 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 		}
 
 		// DEBUG
-		fmt.Printf(
-			"NewBloomSHA3: m = %d, k = %d, filterBits = %d, filterWords = %d\n",
-			m, k, filterBits, filterWords)
+		//fmt.Printf(
+		//	"NewBloomSHA3: m = %d, k = %d, filterBits = %d, filterWords = %d\n",
+		//	m, k, filterBits, filterWords)
 		// END
 	}
 	return

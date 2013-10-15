@@ -3,7 +3,7 @@ package filters
 // xlattice_go/crypto/filters/key_selector_test.go
 
 import (
-	"fmt"
+	//"fmt"		// DEBUG
 	. "launchpad.net/gocheck"
 )
 
@@ -41,16 +41,13 @@ func (s *XLSuite) TestBitSelection(c *C) {
 	ks, err = NewKeySelector(m, k, bOff, wOff) // default m=20, k=8
 	c.Assert(err, IsNil)
 	for i := uint(0); i < 32; i++ {
-		fmt.Printf("testing, i = %d\n", i) // DEBUG
 		ks.getOffsets(keys[i])
 		for j := uint(0); j < k; j++ {
-			fmt.Printf("        j = %d: (i + j %% 32 = %d, bOff[%d] = %d\n",
-				j, (i+j)%32, j, bOff[j])
+			//fmt.Printf("        j = %d: (i + j %% 32 = %d, bOff[%d] = %d\n",
+			//	j, (i+j)%32, j, bOff[j])
 			c.Assert(byte((i+j)%32), Equals, bOff[j])
 		}
 	}
-
-	_, _, _, _, _, _ = ks, m, k, keys, bOff, wOff
 }
 
 // Set the bit selectors, which are 5-bit values packed at

@@ -1,5 +1,18 @@
 xlattice_go/crypto/TODO
 
+2013-10-15
+    * merge selector.go back into key_selector.go
+
+    TRANSLATE
+    * TestKeySelector.java -> key_selector_test.go                      * DONE
+    * TestBloomSHA1.java   -> bloom_sha3_test.go
+
+    ADJUST FROM 20 BYTE KEYS TO 32
+    * key_selector.go
+    * key_selector_test.go
+    * bloom_sha3.go
+    * bloom_sha3_test.go
+
 2013-10-12
     * implement Bloom filter (xlattice_j/.../crypto/filters)
         for use in ../reg
