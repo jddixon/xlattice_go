@@ -5,15 +5,6 @@ message XLRegMsg {
         // 2013-10-01 dropped Hello and HelloReply; using ../msg/HelloAndReply 
         // functions instead
 
-        // NOW-OBSOLETE CODE ----------------------------------------
-        // This message is RSA-encrypted using the server's public key.
-        // Hello    = 1;    // (one-shot)KeyIV, salt, version; init comms cycle
-        // Response to Hello is silent close OR error OR reply. 
-        // The server's reply is encrypted using the client's IV + key
-        // and PKCS7-padded
-        // HelloReply= 2;    // (session) KeyIV2, salt, salt2, version2
-        // END NOW-OBSOLETE CODE ------------------------------------
-    
         // All messages are encrypted using the server-provided
         // session key and PKCS7-padded.
         Client      	= 3;    // token OR clientID, digSig

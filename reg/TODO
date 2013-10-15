@@ -1,5 +1,35 @@
 xlattice_go/reg/TODO
 
+2013-10-15
+    BLOOM FILTERS
+    * integrate Bloom filter, to be referenced wherever IDs are
+        assigned
+        - RegNode itself has an ID
+        - all clients have IDs
+        - all clusters have IDs
+
+    SOLO CLIENT
+    * we need a registry client which simply obtains a unique ID,
+        generates other credentials, and then saves its configuration 
+        in its LFS
+        - call this a solo client, one which has no associated cluster
+        - a solo client is a simple way to create a Node with a unique
+            nodeID, keys, and an initialized configuration file in 
+            LFS/.xlattice/node.config, where the default mode is 0400
+            * that is, we have a mode parameter which is ORed into this
+    * this is solo_client.go, SoloClient
+    * need solo_client_test.go
+
+    CLIENT ATTRS (proposedAttrs/decidedAttrs in ClientNode struct)
+    * AdminClient should be ATTR_ADMIN | ATTR_EPHEMERAL | ATTR_SOLO     * DONE
+    * SoloClient should be ATTR_SOLO.  An ephemeral SoloClient is
+        a nonsense (if it's ephemeral you don't persist its config)
+    * UserClient cannot be ATTR_SOLO (it has an associated cluster)
+        but should optionally be ephemeral, and so | ATTR_EPHEMERAL
+
+    * if a ClientNode does NOT have the EPHEMERAL bit set, it is 
+        persisted to LFS/.xlattice/node.config
+
 2013-10-14
     * clusterAttrs must have some significance
     * verify that clusterAtrrs assigned are actually visible to
@@ -25,9 +55,6 @@ xlattice_go/reg/TODO
         - NOT to client Join,                                           * SO
         - to server JoinReply                                           * DONE
         - to ClientNode struct                                          * DONE
-
-    CLIENT ATTRS (proposedAttrs/decidedAttrs in ClientNode struct)
-
 
 2013-10-12
     * need clear decision: does UserClient get clusterName?
