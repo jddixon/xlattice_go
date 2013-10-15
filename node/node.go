@@ -10,7 +10,7 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
-	xu "github.com/jddixon/xlattice_go/util"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"hash"
 	"strings"
 )
@@ -50,7 +50,7 @@ func New(name string, id *xi.NodeID, lfs string,
 
 	// lfs should be a well-formed POSIX path; if the directory does
 	// not exist we should create it.
-	err = xu.CheckLFS(lfs)
+	err = xf.CheckLFS(lfs)
 
 	// The commsKey is an RSA key used to encrypt short messages.
 	if err == nil {
@@ -360,7 +360,7 @@ func (n *Node) setLFS(val string) (err error) {
 	if val == "" {
 		err = NilLFS
 	} else {
-		err = xu.CheckLFS(val)
+		err = xf.CheckLFS(val)
 	}
 	if err == nil {
 		n.lfs = val

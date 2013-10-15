@@ -7,7 +7,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	//xu "github.com/jddixon/xlattice_go/util"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"hash"
 	"io/ioutil"
 	"os"
@@ -265,7 +265,7 @@ func CreateMerkleTreeFromFileSystem(pathToDir string, usingSHA1 bool,
 		dirName string
 		files   []os.FileInfo
 	)
-	found, err := PathExists(pathToDir)
+	found, err := xf.PathExists(pathToDir)
 	if err == nil && !found {
 		err = FileNotFound
 	}

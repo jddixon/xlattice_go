@@ -1,7 +1,8 @@
 package rnglib
 
-import "os"
-import "strings"
+import (
+	"strings"
+)
 
 // Version number tracked in ../CHANGES
 func Version() (string, string) {
@@ -23,14 +24,3 @@ func FILE_NAME_CHARS() []string {
 	return _FILE_NAME_CHARS
 }
 
-/* XXX this should be in another package */
-func PathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
-}

@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt" // DEBUG
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"github.com/jddixon/xlattice_go/rnglib"
 	"io"
 	"io/ioutil"
@@ -54,12 +55,15 @@ func CopyFile(destName, srcName string) (written int64, err error) {
 // - FileSHA1 --------------------------------------------------------
 // returns the SHA1 hash of the contents of a file
 func FileSHA1(path string) (hash string, err error) {
+	var data2 []byte
 	hash = SHA1_NONE
-	if (path == "") || !PathExists(path) {
+	found, err := xf.PathExists(path)
+	if err == nil  && !found{
 		err = errors.New("IllegalArgument: empty path or non-existent file")
-		return
 	}
-	data2, err := ioutil.ReadFile(path)
+	if err == nil {
+		data2, err = ioutil.ReadFile(path)
+	}
 	if err == nil {
 		d2 := sha1.New()
 		d2.Write(data2)
@@ -72,10 +76,12 @@ func FileSHA1(path string) (hash string, err error) {
 // - FileSHA3 --------------------------------------------------------
 // returns the SHA3 hash of the contents of a file
 func FileSHA3(path string) (hash string, err error) {
+	var data2 []byte
+
 	hash = SHA3_NONE
-	if (path == "") || !PathExists(path) {
+	found, err := xf.PathExists(path) 
+	if err == nil && ! found {
 		err = errors.New("IllegalArgument: empty path or non-existent file")
-		return
 	}
 
 	// THIS METHOD DID NOT RETURN CORRECT RESULTS
@@ -105,7 +111,9 @@ func FileSHA3(path string) (hash string, err error) {
 	//	hash = hex.EncodeToString(digest)
 
 	// METHOD 2
-	data2, err := ioutil.ReadFile(path)
+	if err == nil {
+		data2, err = ioutil.ReadFile(path)
+	}
 	if err == nil {
 		d2 := sha3.NewKeccak256()
 		d2.Write(data2)
@@ -113,13 +121,6 @@ func FileSHA3(path string) (hash string, err error) {
 		hash = hex.EncodeToString(digest2)
 	}
 	return
-}
-
-func PathExists(fName string) bool {
-	if _, err := os.Stat(fName); os.IsNotExist(err) {
-		return false
-	}
-	return true
 }
 
 // CLASS, so to speak ///////////////////////////////////////////////
@@ -142,7 +143,8 @@ func New(path string) *U256x256 {
 // - Exists ---------------------------------------------------------
 func (u *U256x256) Exists(key string) bool {
 	path := u.GetPathForKey(key)
-	return PathExists(path)
+	found, _ := xf.PathExists(path)		// err ignored
+	return found
 }
 
 // - FileLen --------------------------------------------------------
@@ -175,8 +177,10 @@ func (u *U256x256) CopyAndPut3(path, key string) (
 	// the temporary file MUST be created on the same device
 	// xxx POSSIBLE RACE CONDITION
 	tmpFileName := filepath.Join(u.tmpDir, u.rng.NextFileName(16))
-	for PathExists(tmpFileName) {
+	found, _ := xf.PathExists(tmpFileName)	// XXX error ignored
+	for found  {
 		tmpFileName = filepath.Join(u.tmpDir, u.rng.NextFileName(16))
+		found, _ = xf.PathExists(tmpFileName)
 	}
 	written, err = CopyFile(tmpFileName, path) // dest <== src
 	if err == nil {
@@ -189,11 +193,11 @@ func (u *U256x256) CopyAndPut3(path, key string) (
 func (u *U256x256) GetData3(key string) (data []byte, err error) {
 	var path string
 	path = u.GetPathForKey(key)
-	if !PathExists(path) {
-		// XXX SHOULD BE PREDEFINED ERROR
-		err = errors.New("IllegalArgument: file does not exist")
-		return
-	} else {
+	found, err := xf.PathExists(path)
+	if err == nil && !found {
+		err = FileNotFound
+	}
+	if err == nil {
 		var src *os.File
 		if src, err = os.Open(path); err != nil {
 			return
@@ -206,8 +210,8 @@ func (u *U256x256) GetData3(key string) (data []byte, err error) {
 		count, err = src.Read(data)
 		// XXX COUNT IS IGNORED
 		_ = count
-		return
 	}
+	return
 }
 
 // - Put3 ------------------------------------------------------------
@@ -218,7 +222,11 @@ func (u *U256x256) GetData3(key string) (data []byte, err error) {
 // If the operation succeeds we return the length of the file (which must
 // not be zero.  Otherwise we return 0.
 // we don't do much checking
-func (u *U256x256) Put3(inFile, key string) (length int64, hash string, err error) {
+func (u *U256x256) Put3(inFile, key string) (
+	length int64, hash string, err error) {
+
+	var fullishPath string
+
 	hash, err = FileSHA3(inFile)
 	if err != nil {
 		fmt.Printf("DEBUG: FileSHA3 returned error %v\n", err)
@@ -238,27 +246,27 @@ func (u *U256x256) Put3(inFile, key string) (length int64, hash string, err erro
 	topSubDir := hash[0:2]
 	lowerDir := hash[2:4]
 	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
-	if !PathExists(targetDir) {
-		// XXX ERROR NOT HANDLED; MODE IS SUSPECT
+	found, err := xf.PathExists(targetDir) 
+	if err == nil && !found {
+		// XXX MODE IS SUSPECT
 		err = os.MkdirAll(targetDir, 0775)
-		if err != nil {
-			return
-		}
-
 	}
-	fullishPath := filepath.Join(targetDir, key[4:])
-	if PathExists(fullishPath) {
-		// drop the temporary input file
-		// XXX ERROR NOT HANDLED
-		err = os.Remove(inFile)
-	} else {
-		// rename the temporary file into U
-		// XXX ERROR NOT HANDLED
-		err = os.Rename(inFile, fullishPath)
-		if err != nil {
-			return
+	if err == nil {
+		var found bool
+		
+		fullishPath = filepath.Join(targetDir, key[4:])
+		found, err = xf.PathExists(fullishPath)
+		if err == nil {
+			if found {
+				// drop the temporary input file
+				err = os.Remove(inFile)
+			} else {
+		    	// rename the temporary file into U
+				err = os.Rename(inFile, fullishPath)
+			}
 		}
-		// XXX ERROR NOT HANDLED
+	}
+	if err == nil {
 		err = os.Chmod(fullishPath, 0444)
 	}
 	return
@@ -279,21 +287,23 @@ func (u *U256x256) PutData3(data []byte, key string) (length int64, hash string,
 	topSubDir := hash[0:2]
 	lowerDir := hash[2:4]
 	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
-	if !PathExists(targetDir) {
-		// XXX ERROR NOT HANDLED; MODE QUESTIONABLE
-		_ = os.MkdirAll(targetDir, 0775)
+	found, err := xf.PathExists(targetDir) 
+	if err == nil && !found{
+		err = os.MkdirAll(targetDir, 0775)
 	}
 	fullishPath := filepath.Join(targetDir, key[4:])
-	if !PathExists(fullishPath) {
+	found, err = xf.PathExists(fullishPath)
+	if ! found {
 		var dest *os.File
-		if dest, err = os.Create(fullishPath); err != nil {
-			return
+		dest, err = os.Create(fullishPath)
+		if err == nil {
+			var count int
+			defer dest.Close()
+			count, err = dest.Write(data)
+			if err == nil {
+				length = int64(count)
+			}
 		}
-		var count int
-		defer dest.Close()
-		// XXX ERROR NOT HANDLED
-		count, err = dest.Write(data)
-		length = int64(count)
 	}
 	return
 }
@@ -301,13 +311,16 @@ func (u *U256x256) PutData3(data []byte, key string) (length int64, hash string,
 // SHA1 CODE ========================================================
 
 // CopyAndPut1 ------------------------------------------------------
+// XXX SHOULD RETURN ERROR
 func (u *U256x256) CopyAndPut1(path, key string) (
 	written int64, hash string, err error) {
 	// the temporary file MUST be created on the same device
 	// xxx POSSIBLE RACE CONDITION
 	tmpFileName := filepath.Join(u.tmpDir, u.rng.NextFileName(16))
-	for PathExists(tmpFileName) {
+	found, err := xf.PathExists(tmpFileName) 
+	for found {
 		tmpFileName = filepath.Join(u.tmpDir, u.rng.NextFileName(16))
+		found, err = xf.PathExists(tmpFileName) 
 	}
 	written, err = CopyFile(tmpFileName, path) // dest <== src
 	if err == nil {
@@ -318,17 +331,20 @@ func (u *U256x256) CopyAndPut1(path, key string) (
 
 // - GetData1 --------------------------------------------------------
 func (u *U256x256) GetData1(key string) (data []byte, err error) {
-	var path string
+
+	var ( 
+		path string
+		src *os.File
+	)
 	path = u.GetPathForKey(key)
-	if !PathExists(path) {
-		// XXX SHOULD BE PREDEFINED ERROR
-		err = errors.New("IllegalArgument: file does not exist")
-		return
-	} else {
-		var src *os.File
-		if src, err = os.Open(path); err != nil {
-			return
-		}
+	found, err := xf.PathExists(path) 
+	if err == nil && ! found {
+		err = FileNotFound
+	}
+	if err == nil {
+		src, err = os.Open(path)
+	}
+	if err == nil {
 		defer src.Close()
 		var count int
 		// XXX THIS WILL NOT WORK FOR LARGER FILES!  It will ignore
@@ -337,8 +353,8 @@ func (u *U256x256) GetData1(key string) (data []byte, err error) {
 		count, err = src.Read(data)
 		// XXX COUNT IS IGNORED
 		_ = count
-		return
 	}
+	return
 }
 
 // - Put1 ------------------------------------------------------------
@@ -349,7 +365,14 @@ func (u *U256x256) GetData1(key string) (data []byte, err error) {
 // If the operation succeeds we return the length of the file (which must
 // not be zero.  Otherwise we return 0.
 // we don't do much checking
-func (u *U256x256) Put1(inFile, key string) (length int64, hash string, err error) {
+func (u *U256x256) Put1(inFile, key string) (
+	length int64, hash string, err error) {
+
+	var (
+		found	bool
+		fullishPath string
+		topSubDir, lowerDir, targetDir string
+	)
 	hash, err = FileSHA1(inFile)
 	if err != nil {
 		fmt.Printf("DEBUG: FileSHA1 returned error %v\n", err)
@@ -366,41 +389,42 @@ func (u *U256x256) Put1(inFile, key string) (length int64, hash string, err erro
 		return
 	}
 	length = info.Size()
-	topSubDir := hash[0:2]
-	lowerDir := hash[2:4]
-	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
-	if !PathExists(targetDir) {
+	topSubDir = hash[0:2]
+	lowerDir = hash[2:4]
+	targetDir = filepath.Join(u.path, topSubDir, lowerDir)
+	found, err = xf.PathExists(targetDir) 
+	if err == nil && ! found {
 		// XXX MODE IS SUSPECT
 		err = os.MkdirAll(targetDir, 0775)
-		if err != nil {
-			return
-		}
 
 	}
-	fullishPath := filepath.Join(targetDir, key[4:])
-	if PathExists(fullishPath) {
-		// drop the temporary input file
-		err = os.Remove(inFile)
-		if err != nil {
-			return
-		}
-	} else {
-		// rename the temporary file into U
-		err = os.Rename(inFile, fullishPath)
-		if err != nil {
-			return
-		}
-		err = os.Chmod(fullishPath, 0444)
-		if err != nil {
-			return
+	if err == nil {
+		fullishPath = filepath.Join(targetDir, key[4:])
+		found, err = xf.PathExists(fullishPath)
+	}
+	if err == nil {
+		if  found {
+			// drop the temporary input file
+	    	err = os.Remove(inFile)
+		} else {
+			// rename the temporary file into U
+			err = os.Rename(inFile, fullishPath)
+			if err == nil {
+				err = os.Chmod(fullishPath, 0444)
+			}
 		}
 	}
 	return
 }
 
 // PutData1 ---------------------------------------------------------
+// XXX SHOULD RETURN ERROR
 func (u *U256x256) PutData1(data []byte, key string) (
 	length int64, hash string, err error) {
+	
+	var fullishPath string
+	var found bool
+
 	s := sha1.New()
 	s.Write(data)
 	hash = hex.EncodeToString(s.Sum(nil))
@@ -414,21 +438,26 @@ func (u *U256x256) PutData1(data []byte, key string) (
 	topSubDir := hash[0:2]
 	lowerDir := hash[2:4]
 	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
-	if !PathExists(targetDir) {
-		// XXX ERROR NOT HANDLED; MODE QUESTIONABLE
-		_ = os.MkdirAll(targetDir, 0775)
+	found, err = xf.PathExists(targetDir)
+	if err == nil && ! found {
+		// MODE QUESTIONABLE
+		err = os.MkdirAll(targetDir, 0775)
 	}
-	fullishPath := filepath.Join(targetDir, key[4:])
-	if !PathExists(fullishPath) {
-		var dest *os.File
-		if dest, err = os.Create(fullishPath); err != nil {
-			return
+	if err == nil {
+		fullishPath = filepath.Join(targetDir, key[4:])
+		found, err = xf.PathExists(fullishPath)
+		if err == nil && ! found {
+			var dest *os.File
+			dest, err = os.Create(fullishPath)
+			if err == nil {
+				var count int
+				defer dest.Close()
+				count, err = dest.Write(data)
+				if err == nil {
+					length = int64(count)
+				}
+			}
 		}
-		var count int
-		defer dest.Close()
-		// XXX ERROR NOT HANDLED
-		count, err = dest.Write(data)
-		length = int64(count)
 	}
 	return
 }

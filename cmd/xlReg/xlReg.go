@@ -9,7 +9,7 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/reg"
 	xt "github.com/jddixon/xlattice_go/transport"
-	xu "github.com/jddixon/xlattice_go/util"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"log"
 	"os"
 	"path"
@@ -89,7 +89,7 @@ func main() {
 	}
 	// SANITY CHECKS ////////////////////////////////////////////////
 	if err == nil {
-		err = xu.CheckLFS(*lfs) // tries to create if it doesn't exist
+		err = xf.CheckLFS(*lfs) // tries to create if it doesn't exist
 		if err == nil {
 			if *logFile != "" {
 				*logFile = path.Join(*lfs, *logFile)

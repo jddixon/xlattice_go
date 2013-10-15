@@ -5,6 +5,7 @@ package u256x256
 import (
 	"encoding/hex"
 	"fmt"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"hash"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
@@ -33,25 +34,30 @@ var (
 // SETUP AND TEARDOWN ///////////////////////////////////////////////
 func (s *XLSuite) setUpHashTest() {
 	var err error
-	if !PathExists(dataPath) {
+	found, err := xf.PathExists(dataPath) 
+	if !found {
 		// MODE SUSPECT
 		if err = os.MkdirAll(dataPath, 0775); err != nil {
 			fmt.Printf("error creating %s: %v\n", dataPath, err)
 		}
 	}
-	if !PathExists(uPath) {
+	found, err = xf.PathExists(uPath) 
+	if !found {
 		// MODE SUSPECT
 		if err = os.MkdirAll(uPath, 0775); err != nil {
 			fmt.Printf("error creating %s: %v\n", uPath, err)
 		}
 	}
-	if !PathExists(uInDir) {
+	found, err = xf.PathExists(uInDir) 
+	if !found {
 		// MODE SUSPECT
 		if err = os.MkdirAll(uInDir, 0775); err != nil {
 			fmt.Printf("error creating %s: %v\n", uInDir, err)
 		}
 	}
-	if !PathExists(uTmpDir) {
+	found, err = xf.PathExists(uTmpDir) 
+	if !found {
+
 		// MODE SUSPECT
 		if err = os.MkdirAll(uTmpDir, 0775); err != nil {
 			fmt.Printf("error creating %s: %v\n", uTmpDir, err)
@@ -91,9 +97,13 @@ func (s *XLSuite) doTestCopyAndPut(
 	c.Assert(dKey, Equals, uKey)
 
 	// verify that original and copy both exist
-	c.Assert(PathExists(dPath), Equals, true)
+	found, err := xf.PathExists(dPath)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
 	xPath := u.GetPathForKey(uKey)
-	c.Assert(PathExists(xPath), Equals, true)
+	found, err = xf.PathExists(xPath)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
 
 	// HACK - SIMPLEST Keccak TEST VECTOR
 	if !usingSHA1 {
@@ -124,10 +134,15 @@ func (s *XLSuite) doTestExists(c *C, u *U256x256, digest hash.Hash) {
 	c.Assert(err, Equals, nil)
 	c.Assert(dLen, Equals, uLen)
 	kPath := u.GetPathForKey(uKey)
-	c.Assert(true, Equals, PathExists(kPath))
+	found, err := xf.PathExists(kPath)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
+
 	c.Assert(true, Equals, u.Exists(uKey))
 	os.Remove(kPath)
-	c.Assert(false, Equals, PathExists(kPath))
+	found, err = xf.PathExists(kPath)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, false)
 	c.Assert(false, Equals, u.Exists(uKey))
 }
 func (s *XLSuite) doTestFileLen(c *C, u *U256x256, digest hash.Hash) {
@@ -236,7 +251,9 @@ func (s *XLSuite) doTestPut(c *C, u *U256x256, digest hash.Hash) {
 	_ = kPath // NOT USED
 
 	// inFile is renamed
-	c.Assert(false, Equals, PathExists(dPath))
+	found, err := xf.PathExists(dPath)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, false)
 	c.Assert(true, Equals, u.Exists(uKey))
 	var dupeLen int64
 	var dupeKey string
@@ -250,8 +267,10 @@ func (s *XLSuite) doTestPut(c *C, u *U256x256, digest hash.Hash) {
 	c.Assert(uLen, Equals, dupeLen)
 	// dupe file is deleted'
 	c.Assert(uKey, Equals, dupeKey)
-	c.Assert(false, Equals, PathExists(dupePath))
-	c.Assert(true, Equals, u.Exists(uKey)) // GEEP
+	found, err = xf.PathExists(dupePath)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, false)
+	c.Assert(true, Equals, u.Exists(uKey)) 
 }
 
 func (s *XLSuite) doTestPutData(c *C, u *U256x256, digest hash.Hash) {
@@ -282,5 +301,7 @@ func (s *XLSuite) doTestPutData(c *C, u *U256x256, digest hash.Hash) {
 	c.Assert(dKey, Equals, uKey)
 	c.Assert(true, Equals, u.Exists(uKey))
 	xPath := u.GetPathForKey(uKey)
-	c.Assert(true, Equals, PathExists(xPath))
+	found, err := xf.PathExists(xPath)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
 }

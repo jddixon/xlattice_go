@@ -2,6 +2,7 @@ package rnglib
 
 import (
 	"fmt"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	. "launchpad.net/gocheck"
 	"os"
 	"strings"
@@ -88,9 +89,9 @@ func (s *XLSuite) doTestNextDataFile(c *C, rng *PRNG) {
 func (s *XLSuite) doNextDataDirTest(c *C, rng *PRNG, width int, depth int) {
 	dirName := rng.NextFileName(8)
 	dirPath := TMP_DIR + "/" + dirName
-	pathExists, err := PathExists(dirPath)
+	pathExists, err := xf.PathExists(dirPath)
 	if err != nil {
-		panic("error invoking PathExists on " + dirPath)
+		panic("error invoking xf.PathExists on " + dirPath)
 	}
 	if pathExists {
 		if strings.HasPrefix(dirPath, "/") {

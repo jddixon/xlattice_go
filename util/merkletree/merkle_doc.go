@@ -8,8 +8,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	xu "github.com/jddixon/xlattice_go/util"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"hash"
-	"os"
 	"path"
 	re "regexp"
 	"strings"
@@ -28,18 +28,6 @@ type MerkleDoc struct {
 	path      string
 	hash      []byte
 	usingSHA1 bool
-}
-
-// This belongs in ../, in the utilities directory.
-
-func PathExists(path string) (whether bool, err error) {
-	_, err = os.Stat(path)
-	if err == nil {
-		whether = true
-	} else if os.IsNotExist(err) {
-		err = nil
-	}
-	return
 }
 
 // XXX "MUST ADD matchRE and exRE and test on their values at this level."
@@ -69,7 +57,7 @@ func NewMerkleDoc(pathToDir string, usingSHA1, binding bool, tree *MerkleTree,
 		if err == nil && binding {
 			var whether bool
 			fullerPath := path.Join(pathToDir, tree.name)
-			whether, err = PathExists(fullerPath)
+			whether, err = xf.PathExists(fullerPath)
 			if err == nil && !whether {
 				err = DirectoryNotFound
 			}
@@ -181,7 +169,7 @@ func CreateMerkleDocFromFileSystem(pathToDir string, usingSHA1 bool,
 	}
 	if err == nil {
 		var found bool
-		found, err = PathExists(pathToDir)
+		found, err = xf.PathExists(pathToDir)
 		if err == nil && !found {
 			err = FileNotFound
 		}

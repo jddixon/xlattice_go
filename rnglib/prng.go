@@ -1,9 +1,12 @@
 // xlattice_go/prng.go
 package rnglib
 
-import "os"
-import "math/rand"
-import "strings"
+import (
+	xf "github.com/jddixon/xlattice_go/util/lfs"
+	"os"
+	"math/rand"
+	"strings"
+)
 
 type PRNG struct {
 	rng *rand.Rand
@@ -113,7 +116,7 @@ func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int64, stri
 	}
 
 	// create the data directory if it does not exist
-	dirExists, err := PathExists(dirName)
+	dirExists, err := xf.PathExists(dirName)
 	if err != nil {
 		panic(err)
 	}
@@ -123,13 +126,13 @@ func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int64, stri
 
 	// loop until the file does not exist
 	pathToFile := dirName + "/" + s.NextFileName(16)
-	pathExists, err := PathExists(pathToFile)
+	pathExists, err := xf.PathExists(pathToFile)
 	if err != nil {
 		panic(err)
 	}
 	for pathExists {
 		pathToFile := dirName + "/" + s.NextFileName(16)
-		pathExists, err = PathExists(pathToFile)
+		pathExists, err = xf.PathExists(pathToFile)
 		if err != nil {
 			panic(err)
 		}
@@ -176,7 +179,7 @@ func (s *PRNG) NextDataDir(pathToDir string, depth int, width int,
 		width = 1
 	}
 	// XXX may panic
-	pathExists, err := PathExists(pathToDir)
+	pathExists, err := xf.PathExists(pathToDir)
 	if err != nil {
 		panic(err)
 	}

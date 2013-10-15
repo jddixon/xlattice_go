@@ -9,6 +9,7 @@ import (
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	xu "github.com/jddixon/xlattice_go/util"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"hash"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
@@ -76,7 +77,7 @@ func (s *XLSuite) verifyLeafSHA(c *C, rng *xr.PRNG,
 	node MerkleNodeI, pathToFile string, usingSHA1 bool) {
 
 	c.Assert(node.IsLeaf(), Equals, true)
-	found, err := PathExists(pathToFile)
+	found, err := xf.PathExists(pathToFile)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
 	data, err := ioutil.ReadFile(pathToFile)

@@ -7,7 +7,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	//xu "github.com/jddixon/xlattice_go/util"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
 	//"hash"
 	"io/ioutil"
 	//"os"
@@ -104,7 +104,7 @@ func (ml *MerkleLeaf) ToStrings(indent string, ss *[]string) (err error) {
 
 func SHA1File(pathToFile string) (hash []byte, err error) {
 	var data []byte
-	found, err := PathExists(pathToFile)
+	found, err := xf.PathExists(pathToFile)
 	if err == nil && !found {
 		err = FileNotFound
 	}
@@ -123,7 +123,7 @@ func SHA1File(pathToFile string) (hash []byte, err error) {
 
 func SHA3File(pathToFile string) (hash []byte, err error) {
 	var data []byte
-	found, err := PathExists(pathToFile)
+	found, err := xf.PathExists(pathToFile)
 	if err == nil && !found {
 		err = FileNotFound
 	}
