@@ -30,14 +30,14 @@ import (
 )
 
 type BloomSHA3 struct {
-    m	int		// protected final int m
-    k	int		// protected final int k
-    count nt
+    m	uint		// protected final int m
+    k	uint		// protected final int k
+    count uint
 
 	Filter	[]uint64
-	ks		KeySelector
-	wordOffset	[]uint64
-	bitOffset	[]uint64
+	ks		*KeySelector
+	wordOffset	[]uint
+	bitOffset	[]byte
 
     // convenience variables
     filterBits	int
@@ -51,7 +51,7 @@ type BloomSHA3 struct {
 
  // @param m determines number of bits in filter, defaults to 20
  //  @param k number of hash functions, defaults to 8
-func NewBloomSHA3( m, k int) (b3 *BloomSHA3, err error) {
+func NewBloomSHA3( m, k uint) (b3 *BloomSHA3, err error) {
 
     // XXX need to devise more reasonable set of checks
     if  m < 2 || m > 20 {
@@ -62,33 +62,48 @@ func NewBloomSHA3( m, k int) (b3 *BloomSHA3, err error) {
 			err = TooManyHashFunctions
 		}
     }
-    count := 0
-    filterBits := 1 << m
-    filterWords := (filterBits + 31)/32;     // round up
-    filter = make([]uint64, filterWords)
-    doClear()									// no lock
-    // offsets into the filter
-    wordOffset = make([]uint64, k)
-    bitOffset  = make([]uint64, k)
-    ks = NewKeySelector(m, k, bitOffset, wordOffset)
+	if err == nil {
+		var ks *KeySelector
 
-    // DEBUG
-    fmt.Printf(
+		filterBits := 1 << m
+		filterWords :=  (filterBits + 31)/32     // round up
+		b3 := &BloomSHA3 {
+			m:	m,
+			k:	k,
+			filterBits : filterBits,
+			filterWords : filterWords,
+			Filter : make([]uint64, filterWords),
+			wordOffset : make([]uint, k),
+			bitOffset  : make([]byte, k),
+		}
+		b3. doClear()									// no lock
+		// offsets into the filter
+		ks, err = NewKeySelector(m, k, b3.bitOffset, b3.wordOffset)
+		if err == nil {
+			b3.ks = ks
+		} else {
+			b3 = nil 
+		}
+			
+		// DEBUG
+		fmt.Printf(
 		"NewBloomSHA3: m = %d, k = %d, filterBits = %d, filterWords = %d\n", 
-		m, k, filterBits, filterWords)
-    // END
+			m, k, filterBits, filterWords)
+		// END
+	}
+	return
 }
 
 // Creates a filter of 2^m bits, with the number of 'hash functions"
 // k defaulting to 8.
-func NewNewBloomSHA3 (int m) (*BloomSHA3, error) {
+func NewNewBloomSHA3 (m uint) (*BloomSHA3, error) {
     return NewBloomSHA3 (m, 8)
 }
 
 // Creates a filter of 2^20 bits with k defaulting to 8.
 // XXX Doubtful that this makes sense with 256 bit hash!
  
-func NewNewNewBloomSHA3 () {
+func NewNewNewBloomSHA3 () (*BloomSHA3, error){
     return NewBloomSHA3(20, 8)
 }
 // Clear the filter, unsynchronized 
@@ -108,7 +123,7 @@ func (b3 *BloomSHA3) Clear() {
 // class (BloomSHA3) does not guarantee uniqueness in any sense; if the
 // same key is added N times, the number of set members reported
 // will increase by N.
-func (b3 *BloomSHA3) Size() int {
+func (b3 *BloomSHA3) Size() uint {
 	b3.mu.Lock()
 	defer b3.mu.Unlock()
     return b3.count
@@ -128,9 +143,9 @@ func (b3 *BloomSHA3) Insert (b []byte) {
 	b3.mu.Lock()
 	defer b3.mu.Unlock()
     
-	b3.ks.GetOffsets(b)
-    for i := 0; i < k; i++ {
-        Filter[wordOffset[i]] |=  1 << bitOffset[i]
+	b3.ks.getOffsets(b)
+    for i := uint(0); i < b3.k; i++ {
+        b3.Filter[b3.wordOffset[i]] |=  1 << b3.bitOffset[i]
     }
     b3.count++
 }
@@ -142,9 +157,9 @@ func (b3 *BloomSHA3) Insert (b []byte) {
 // @param b byte array representing a key (SHA3 digest)
 // @return true if b is in the filter
 func (b3 *BloomSHA3) isMember(b []byte) bool {
-    ks.getOffsets(b)
-    for i := 0; i < k; i++ {
-        if ! ((filter[wordOffset[i]] & (1 << bitOffset[i])) != 0)  {
+    b3.ks.getOffsets(b)
+    for i := uint(0); i < b3.k; i++ {
+        if ! ((b3.Filter[b3.wordOffset[i]] & (1 << b3.bitOffset[i])) != 0)  {
             return false
         }
     }
@@ -159,19 +174,22 @@ func (b3 *BloomSHA3) Member(b []byte) bool {
 	b3.mu.Lock()
 	defer b3.mu.Unlock()
     
-    return isMember(b)
+    return b3.isMember(b)
 }
 
 // For n the number of set members, return approximate false positive rate.
- 
-func (b3 *BloomSHA3) falsePositives(n int) float64 {
+// XXX why two functions?? 
+func (b3 *BloomSHA3) falsePositives(n uint) float64 {
     // (1 - e(-kN/M))^k
-    return math.Pow (
-            (1 - math.Exp( -float64(b3.k) * n / b3.filterBits)), b3.k)
+
+	fK := float64( b3.k )
+	fN := float64(n)
+	fB := float64(b3.filterBits)
+    return math.Pow ( (1.0 - math.Exp( -fK * fN / fB)), fK)
 }
 
 func (b3 *BloomSHA3) FalsePositives() float64 {
-    return FalsePositives(b3.count)
+    return b3.falsePositives(b3.count)
 }
 // DEBUG METHODS 
 func  KeyToString(key []byte) string {
