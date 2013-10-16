@@ -1,5 +1,5 @@
-// A Bloom filter for sets of SHA3 digests.  A Bloom filter uses a set
-// of k hash functions to determine set membership.  Each hash function
+// A Bloom filter for sets of SHA1 and SHA3 digests.  A Bloom filter uses
+// a set of k hash functions to determine set membership.  Each hash function
 // produces a value in the range 0..M-1.  The filter is of size M.  To
 // add a member to the set, apply each function to the new member and
 // set the corresponding bit in the filter.  For M very large relative
@@ -10,11 +10,11 @@
 // may be a member.  The probability of error (the false positive rate)
 // is f = (1 - e^(-kN/M))^k, where N is the number of set members.
 //
-// This class takes advantage of the fact that SHA3 digests are good-
+// This class takes advantage of the fact that SHA1/3 digests are good-
 // quality pseudo-random numbers.  The k hash functions are the values
-// of distinct sets of bits taken from the 20-byte SHA3 hash.  The
-// number of bits in the filter, M, is constrained to be a power of
-// 2; M == 2^m.  The number of bits in each hash function may not
+// of distinct sets of bits taken from the 20-byte SHA1 or 32-byte SHA3
+// hash.  The number of bits in the filter, M, is constrained to be a power
+// of 2; M == 2^m.  The number of bits in each hash function may not
 // exceed floor(m/k).
 //
 // This class is designed to be thread-safe, but this has not been
@@ -22,9 +22,6 @@
 package filters
 
 import (
-	// "code.google.com/p/go.crypto/sha3"
-	"encoding/hex"
-	"fmt" // DEBUG
 	"math"
 	"sync"
 )
@@ -40,14 +37,14 @@ type BloomSHA3 struct {
 	bitOffset  []byte
 
 	// convenience variables
-	filterBits  int
-	filterWords int
+	filterBits  uint
+	filterWords uint
 
 	mu sync.Mutex
 }
 
 // Creates a filter with 2^m bits and k 'hash functions', where
-//each hash function is a portion of the 256-bit SHA3 hash.
+//each hash function is a portion of the 160- or 256-bit SHA hash.
 
 // @param m determines number of bits in filter, defaults to 20
 //  @param k number of hash functions, defaults to 8
@@ -65,7 +62,7 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 	if err == nil {
 		var ks *KeySelector
 
-		filterBits := 1 << m
+		filterBits := uint(1) << m
 		filterWords := (filterBits + 31) / 32 // round up
 		b3 = &BloomSHA3{
 			m:           m,
@@ -101,7 +98,6 @@ func NewNewBloomSHA3(m uint) (*BloomSHA3, error) {
 }
 
 // Creates a filter of 2^20 bits with k defaulting to 8.
-// XXX Doubtful that this makes sense with 256 bit hash!
 
 func NewNewNewBloomSHA3() (*BloomSHA3, error) {
 	return NewBloomSHA3(20, 8)
@@ -109,7 +105,7 @@ func NewNewNewBloomSHA3() (*BloomSHA3, error) {
 
 // Clear the filter, unsynchronized
 func (b3 *BloomSHA3) doClear() {
-	for i := 0; i < b3.filterWords; i++ {
+	for i := uint(0); i < b3.filterWords; i++ {
 		b3.Filter[i] = 0
 	}
 }
@@ -134,7 +130,7 @@ func (b3 *BloomSHA3) Size() uint {
 
 // Capacity returns the number of bits in the filter.
 
-func (b3 *BloomSHA3) Capacity() int {
+func (b3 *BloomSHA3) Capacity() uint {
 	return b3.filterBits
 }
 
@@ -182,8 +178,7 @@ func (b3 *BloomSHA3) Member(b []byte) bool {
 }
 
 // For n the number of set members, return approximate false positive rate.
-// XXX why two functions??
-func (b3 *BloomSHA3) falsePositives(n uint) float64 {
+func (b3 *BloomSHA3) FalsePositivesN(n uint) float64 {
 	// (1 - e(-kN/M))^k
 
 	fK := float64(b3.k)
@@ -193,25 +188,25 @@ func (b3 *BloomSHA3) falsePositives(n uint) float64 {
 }
 
 func (b3 *BloomSHA3) FalsePositives() float64 {
-	return b3.falsePositives(b3.count)
+	return b3.FalsePositivesN(b3.count)
 }
 
-// DEBUG METHODS
-func KeyToString(key []byte) string {
-	return hex.EncodeToString(key)
-}
-
-// convert 64-bit integer to hex String */
-func ltoh(i uint64) string {
-	return fmt.Sprintf("#%x", i)
-}
-
-// convert 32-bit integer to String */
-func itoh(i uint32) string {
-	return fmt.Sprintf("#%x", i)
-}
-
-// convert single byte to String */
-func btoh(b byte) string {
-	return fmt.Sprintf("#%x", b)
-}
+//// DEBUG METHODS - these are left over from the Java version of the code.
+//func KeyToString(key []byte) string {
+//	return hex.EncodeToString(key)
+//}
+//
+//// convert 64-bit integer to hex String */
+//func ltoh(i uint64) string {
+//	return fmt.Sprintf("#%x", i)
+//}
+//
+//// convert 32-bit integer to String */
+//func itoh(i uint32) string {
+//	return fmt.Sprintf("#%x", i)
+//}
+//
+//// convert single byte to String */
+//func btoh(b byte) string {
+//	return fmt.Sprintf("#%x", b)
+//}

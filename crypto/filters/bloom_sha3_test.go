@@ -28,7 +28,7 @@ func (s *XLSuite) TestEmptyFilter(c *C) {
 	c.Assert(filter, NotNil)
 
 	c.Assert(filter.Size(), Equals, uint(0))
-	c.Assert(filter.Capacity(), Equals, 2<<(m-1))
+	c.Assert(filter.Capacity(), Equals, uint(2<<(m-1)))
 
 	_, _, _ = filter, n, keys
 }
