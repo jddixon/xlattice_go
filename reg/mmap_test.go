@@ -1,6 +1,6 @@
-package db
+package reg
 
-// xlattice_go/db/mmap_test.go
+// xlattice_reg/db/mmap_test.go
 
 import (
 	"fmt"
@@ -11,11 +11,10 @@ import (
 	gm "launchpad.net/gommap"
 	"os"
 	"strings"
-	"time"
 )
 
 // XXX should be a utility routine
-func (s *XLSuite) ScratchFileName(c *C, rng *xr.PRNG, dirName string) (fileName string) {
+func (s *XLSuite) scratchFileName(c *C, rng *xr.PRNG, dirName string) (fileName string) {
 	length := len(dirName)
 	c.Assert(length > 0, Equals, true)
 	if strings.HasSuffix(dirName, "/") {
@@ -42,68 +41,55 @@ func (s *XLSuite) TestMmap(c *C) {
 	}
 
 	rng := xr.MakeSimpleRNG()
-	pathToFile := s.ScratchFileName(c, rng, "tmp")
+	pathToFile := s.scratchFileName(c, rng, "tmp")
 	fmt.Printf("FILE: %s\n", pathToFile)
 
 	_ = pathToFile
 
 	data := make([]byte, BLOCK_SIZE)
 	rng.NextBytes(&data)
-	lastByte := data[BLOCK_SIZE-1]
 	err := ioutil.WriteFile(pathToFile, data, 0644)
 	c.Assert(err, IsNil)
 
-	f, err := os.Open(pathToFile)
+	f, err := os.OpenFile(pathToFile, os.O_CREATE | os.O_RDWR, 0640)
 	c.Assert(err, IsNil)
+
+	// XXX Changing this from gm.MAP_PRIVATE to gm.MAP_SHARED made
+	// the tests at the bottom succeed.  That is, changes made to 
+	// memory were written to disk by the Sync.
 	inCore, err := gm.MapAt(0, f.Fd(), 0, 2*BLOCK_SIZE,
-		gm.PROT_READ|gm.PROT_WRITE,
-		gm.MAP_PRIVATE)
+		gm.PROT_READ|gm.PROT_WRITE,   gm.MAP_SHARED)
 	c.Assert(err, IsNil)
 	c.Assert(inCore, Not(IsNil))
 	// The next succeeds, so it has grabbed that much memory ...
 	c.Assert(len(inCore), Equals, 2*BLOCK_SIZE)
 
+	// these are per-block flags
 	boolz, err := inCore.IsResident()
 	c.Assert(err, IsNil)
 	c.Assert(boolz[0], Equals, true)
 
 	// This succeeds, so the mapping from disk succeeded.
-	// Actually the DeepEquals test FAILS because of trivial type
-	// differences; SameBytes() handles this correctly.
-	// c.Assert(inCore[0:BLOCK_SIZE], DeepEquals, data)
 	c.Assert(xu.SameBytes(inCore[0:BLOCK_SIZE], data), Equals, true)
 
 	const (
 		ASCII_A = byte(64)
-		ASCII_B = byte(65)
 	)
 	inCore[BLOCK_SIZE-1] = ASCII_A
 	inCore.Sync(gm.MS_SYNC)                          // should block
-	fmt.Println("Sync after first write succeeds\n") // DEBUG
 
-	// XXX Adding this has no apparent effect; the A still doesn't
-	// get back to the disk.
-	err = inCore.Protect(gm.PROT_READ | gm.PROT_WRITE)
-	c.Assert(err, IsNil)
-
-	// XXX This faults; ie we get a "fatal error: fault", so though
-	// the memory has been grabbed, you must not write to it!
-	// inCore[ 2 * BLOCK_SIZE - 1] = ASCII_B
+	// With the change to gm.MAP_SHARED, this does not seem to be 
+	// necessary:
+	//
+	// if the Sync didn't flush the ASCII_A to disk, this should do it.
+	//err = inCore.UnsafeUnmap()
 	// c.Assert(err, IsNil)
 
-	// if the Sync didn't flush the ASCII_A to disk, this should do it.
-	err = inCore.UnsafeUnmap()
-	c.Assert(err, IsNil)
-
 	f.Close()
-	time.Sleep(100 * time.Millisecond) // doesn't help
 
 	data2, err := ioutil.ReadFile(pathToFile)
 	c.Assert(err, IsNil)
-	c.Assert(data[:BLOCK_SIZE], DeepEquals, data2[:BLOCK_SIZE])
 
-	// this succeeds, but shouldn't
-	c.Assert(data2[BLOCK_SIZE-1], Equals, lastByte)
-	// this fails, so the flush back to disk failed
+	// if this succeeds, then the flush to disk succeeded
 	c.Assert(data2[BLOCK_SIZE-1], Equals, ASCII_A)
 }

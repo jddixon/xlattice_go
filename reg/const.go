@@ -11,6 +11,8 @@ const (
 	// into a uint32 in in_handler.go init()
 	VERSION      = "0.1.1"
 	VERSION_DATE = "2013-10-10"
+
+	BLOCK_SIZE = 4096
 )
 
 // client attrs bits, also used for member attrs
