@@ -1,22 +1,30 @@
 xlattice_go/crypto/TODO
 
 2013-10-15
-    * merge selector.go back into key_selector.go
+    * merge selector.go back into key_selector.go                       * DONE
 
     TRANSLATE
     * TestKeySelector.java -> key_selector_test.go                      * DONE
-    * TestBloomSHA1.java   -> bloom_sha3_test.go
+    * TestBloomSHA1.java   -> bloom_sha3_test.go                        * DONE
 
-    ADJUST FROM 20 BYTE KEYS TO 32
-    * key_selector.go
-    * key_selector_test.go
-    * bloom_sha3.go
-    * bloom_sha3_test.go
+    * ADJUST FROM 20 BYTE KEYS TO 32
+        - no, don't.  We will use with a mix of SHA1 and SHA3 keys
+        - but think about this
+
+    * need to be able to serialize Bloom filters, which can be
+        expressed as a need for 
+        - BloomSHA3.String()
+        - BloomSHA3.Parse()
+    * this suggests a need for
+        - func (b3 *BloomSHA3) Union(*BloomSHA3) error
+        - where the obvious error is that m and k differ
+        - this is presumably a merge in place
 
 2013-10-12
-    * implement Bloom filter (xlattice_j/.../crypto/filters)
+    * implement Bloom filter (xlattice_j/.../crypto/filters)            * DONE
         for use in ../reg
         - about 750 SLOC, of which about 450 test
+            * but counting bloom not yet translated to GO
     * then look at Wikipedia article
     * and google on "golang bloom filter"
 
@@ -29,6 +37,6 @@ xlattice_go/crypto/TODO
         - do something to scramble the bits ?
 
 2013-08-27
-    * IMPLEMENT rsa private key to/from wire 
-        - pubkey to/from coded and tested
+    * IMPLEMENT rsa private key to/from wire                            * DONE
+        - pubkey to/from coded and tested                               * DONE
 
