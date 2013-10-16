@@ -14,7 +14,10 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
-	// "io"
+	xf "github.com/jddixon/xlattice_go/util/lfs"
+	"io/ioutil"
+	"os"
+	"path"
 	"time"
 )
 
@@ -91,6 +94,34 @@ type ClientNode struct {
 	xn.Node
 }
 
+func (cn *ClientNode) Persist() (err error) {
+
+	var (
+		config string
+		node   *xn.Node
+	)
+
+	// XXX check attrs, etc
+	pathToCfgDir := path.Join(cn.lfs, ".xlattice")
+	pathToCfgFile := path.Join(pathToCfgDir, "node.config")
+	found, err := xf.PathExists(pathToCfgDir)
+	if err == nil && !found {
+		err = os.MkdirAll(pathToCfgDir, 0740)
+	}
+	if err == nil {
+		node, err = xn.New(cn.name, cn.clientID, cn.lfs,
+			cn.ckPriv, cn.skPriv, nil, cn.endPoints, nil)
+	}
+	if err == nil {
+		cn.Node = *node
+		config = node.String()
+	}
+	if err == nil {
+		err = ioutil.WriteFile(pathToCfgFile, []byte(config), 0600)
+	}
+	return
+}
+
 // Given contact information for a registry and the name of a cluster,
 // the client joins the cluster, collects information on the other members,
 // and terminates when it has info on the entire membership.
@@ -115,11 +146,13 @@ func NewClientNode(
 
 		err = MissingServerInfo
 	}
-	if err == nil && clusterName == "" {
-		err = MissingClusterNameOrID
-	}
-	if err == nil && size < 2 {
-		err = ClusterMustHaveTwo
+	if attrs&ATTR_SOLO == uint64(0) {
+		if err == nil && clusterName == "" {
+			err = MissingClusterNameOrID
+		}
+		if err == nil && size < 2 {
+			err = ClusterMustHaveTwo
+		}
 	}
 	if err == nil {
 		// if the client is an admin client epCount applies to the cluster
@@ -140,7 +173,8 @@ func NewClientNode(
 		// this is an ephemeral node.  If lfs IS specified and
 		// configuration files are present, we should deserialize the
 		// configuration files, which creates the node.
-		if lfs == "" {
+
+		if attrs&ATTR_EPHEMERAL != uint64(0) || attrs&ATTR_SOLO != uint64(0) {
 			ckPriv, err = rsa.GenerateKey(rand.Reader, 2048)
 			if err == nil {
 				skPriv, err = rsa.GenerateKey(rand.Reader, 2048)

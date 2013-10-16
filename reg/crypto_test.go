@@ -15,6 +15,12 @@ import (
 	. "launchpad.net/gocheck"
 )
 
+/////////////////////////////////////////////////////////////////////
+// OBSOLETE.  This was written to verify that various parts of the
+// then-current protocol would work.  The protocol has changed and
+// all of this is in any case now tested elsewhere.
+/////////////////////////////////////////////////////////////////////
+
 func (s *XLSuite) TestCrytpo(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_CRYPTO")

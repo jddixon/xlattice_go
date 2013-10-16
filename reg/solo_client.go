@@ -27,7 +27,6 @@ type SoloClient struct {
 func NewSoloClient(name, lfs string,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK, serverSK *rsa.PublicKey,
-	clusterName string, clusterAttrs uint64, size, epCount int,
 	e []xt.EndPointI) (
 	sc *SoloClient, err error) {
 
@@ -67,13 +66,13 @@ func (sc *SoloClient) Run() (err error) {
 		}
 		// END OF RUN ===============================================
 
-		// THIS IS NOT APPROPRIATE FOR A SoloClient
-
 		if cnx != nil {
 			cnx.Close()
 		}
+		err = cn.Persist()
+
 		// DEBUG
-		fmt.Printf("user client %s run complete ", clientName)
+		fmt.Printf("SoloClient %s run complete; err is %v\n", clientName, err)
 		if err != nil && err != io.EOF {
 			fmt.Printf("- ERROR: %v", err)
 		}
