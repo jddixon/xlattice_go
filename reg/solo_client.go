@@ -16,7 +16,8 @@ var _ = fmt.Print
 // create an XLattice Node with a unique NodeID, private RSA keys,
 // and an initialized LFS with the configuration stored in
 // LFS/.xlattice/node.config with a default mode of 0400.
-
+//
+// It requires a registry to give it its NodeID.
 type SoloClient struct {
 	// In this implementation, SoloClient is a one-shot, launched
 	// to create a single cluster

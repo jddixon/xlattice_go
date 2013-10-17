@@ -13,6 +13,9 @@ const (
 	VERSION_DATE = "2013-10-10"
 
 	BLOCK_SIZE = 4096
+
+	DEFAULT_M = uint(20)
+	DEFAULT_K = uint(8)
 )
 
 // client attrs bits, also used for member attrs

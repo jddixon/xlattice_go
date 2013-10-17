@@ -11,27 +11,11 @@ import (
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xm "github.com/jddixon/xlattice_go/msg"
 	xn "github.com/jddixon/xlattice_go/node"
-	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
-	"log"
 	"strings"
 )
 
 var _ = fmt.Print
-
-// options normally set from the command line or derived from those
-
-type RegOptions struct {
-	Address  string
-	EndPoint xt.EndPointI // derived from Address, Port
-	ID       *xi.NodeID
-	Lfs      string
-	Logger   *log.Logger
-	Name     string
-	Port     int
-	Testing  bool
-	Verbose  bool
-}
 
 type RegNode struct {
 	Acc       xt.AcceptorI    // a convenience here, so not serialized

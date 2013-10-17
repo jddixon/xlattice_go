@@ -74,7 +74,7 @@ func (s *XLSuite) TestServer(c *C) {
 	c.Assert(cn.epCount, Equals, uint32(1)) // FAILS
 
 	// DEBUG
-	fmt.Printf("AdmnClient has registered a cluster of size %d\n    cluster ID is %s\n",
+	fmt.Printf("AdminClient has registered a cluster of size %d\n    cluster ID is %s\n",
 		K, hex.EncodeToString(cn.clusterID.Value()))
 	// END
 

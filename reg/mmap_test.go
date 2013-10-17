@@ -51,14 +51,14 @@ func (s *XLSuite) TestMmap(c *C) {
 	err := ioutil.WriteFile(pathToFile, data, 0644)
 	c.Assert(err, IsNil)
 
-	f, err := os.OpenFile(pathToFile, os.O_CREATE | os.O_RDWR, 0640)
+	f, err := os.OpenFile(pathToFile, os.O_CREATE|os.O_RDWR, 0640)
 	c.Assert(err, IsNil)
 
 	// XXX Changing this from gm.MAP_PRIVATE to gm.MAP_SHARED made
-	// the tests at the bottom succeed.  That is, changes made to 
+	// the tests at the bottom succeed.  That is, changes made to
 	// memory were written to disk by the Sync.
 	inCore, err := gm.MapAt(0, f.Fd(), 0, 2*BLOCK_SIZE,
-		gm.PROT_READ|gm.PROT_WRITE,   gm.MAP_SHARED)
+		gm.PROT_READ|gm.PROT_WRITE, gm.MAP_SHARED)
 	c.Assert(err, IsNil)
 	c.Assert(inCore, Not(IsNil))
 	// The next succeeds, so it has grabbed that much memory ...
@@ -76,9 +76,9 @@ func (s *XLSuite) TestMmap(c *C) {
 		ASCII_A = byte(64)
 	)
 	inCore[BLOCK_SIZE-1] = ASCII_A
-	inCore.Sync(gm.MS_SYNC)                          // should block
+	inCore.Sync(gm.MS_SYNC) // should block
 
-	// With the change to gm.MAP_SHARED, this does not seem to be 
+	// With the change to gm.MAP_SHARED, this does not seem to be
 	// necessary:
 	//
 	// if the Sync didn't flush the ASCII_A to disk, this should do it.

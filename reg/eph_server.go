@@ -56,7 +56,8 @@ func NewEphServer() (ms *EphServer, err error) {
 		if err == nil {
 			node, err = xn.New(name, id, lfs, ckPriv, skPriv, nil, eps, nil)
 			// a registry with no clusters and no logger
-			reg, err = NewRegistry(nil, node, ckPriv, skPriv, nil)
+			reg, err = NewRegistry(nil, node, ckPriv, skPriv, nil,
+				DEFAULT_M, DEFAULT_K)
 		}
 	}
 	// DEBUG

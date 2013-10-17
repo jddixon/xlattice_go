@@ -22,6 +22,7 @@ type Registry struct {
 	Logger  *log.Logger // volatile, not serialized
 
 	// registry data
+	m, k           uint                   // serialized
 	Clusters       []*RegCluster          // serialized
 	ClustersByName map[string]*RegCluster // volatile, not serialized
 	ClustersByID   *xn.BNIMap             // -ditto-
@@ -33,7 +34,7 @@ type Registry struct {
 }
 
 func NewRegistry(clusters []*RegCluster, node *xn.Node,
-	ckPriv, skPriv *rsa.PrivateKey, logger *log.Logger) (
+	ckPriv, skPriv *rsa.PrivateKey, logger *log.Logger, m, k uint) (
 	reg *Registry, err error) {
 
 	rn, err := NewRegNode(node, ckPriv, skPriv)

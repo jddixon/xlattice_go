@@ -10,6 +10,7 @@ type RegServer struct {
 	acc       xt.AcceptorI // volatile, not serialized
 	Testing   bool         // serialized
 	Verbosity int          // serialized
+	DoneCh    chan (bool)
 	Registry
 }
 
@@ -25,6 +26,7 @@ func NewRegServer(reg *Registry, testing bool, verbosity int) (
 			Testing:   testing,
 			Verbosity: verbosity,
 			Registry:  *reg,
+			DoneCh:    make(chan bool, 1),
 		}
 	}
 	return
@@ -62,6 +64,7 @@ func (rs *RegServer) Run() (err error) {
 				// XXX notice the error has no effect
 			}()
 		}
+		rs.DoneCh <- true
 	}()
 	return
 }
