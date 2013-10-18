@@ -7,5 +7,6 @@ import (
 )
 
 var (
-	invalidName = errors.New("not a valid entity name")
+	InvalidName           = errors.New("not a valid entity name")
+	TooManyPartsInVersion = errors.New("too many parts in version")
 )

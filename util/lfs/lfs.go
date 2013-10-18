@@ -29,7 +29,7 @@ func MkdirsToFile(pathToFile string, perm os.FileMode) (err error) {
 			// just drop the file name
 			pathToDir = parts[0]
 		} else {
-			pathToDir = strings.Join( parts[:len(parts)-1], "/")
+			pathToDir = strings.Join(parts[:len(parts)-1], "/")
 		}
 		err = os.MkdirAll(pathToDir, perm)
 	}
