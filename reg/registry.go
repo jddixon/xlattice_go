@@ -8,7 +8,9 @@ package reg
 import (
 	"crypto/rsa"
 	"fmt"
+	xf "github.com/jddixon/xlattice_go/crypto/filters"
 	xn "github.com/jddixon/xlattice_go/node"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	"log"
 	"os"
 	"strings"
@@ -22,8 +24,11 @@ type Registry struct {
 	Logger  *log.Logger // volatile, not serialized
 
 	// registry data
-	m, k           uint                   // serialized
-	Clusters       []*RegCluster          // serialized
+	m, k     uint          // serialized
+	Clusters []*RegCluster // serialized
+
+	idFilter *xf.BloomSHA3
+
 	ClustersByName map[string]*RegCluster // volatile, not serialized
 	ClustersByID   *xn.BNIMap             // -ditto-
 	RegMembersByID *xn.BNIMap             // -ditto-
@@ -37,13 +42,23 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 	ckPriv, skPriv *rsa.PrivateKey, logger *log.Logger, m, k uint) (
 	reg *Registry, err error) {
 
+	var idFilter *xf.BloomSHA3
 	rn, err := NewRegNode(node, ckPriv, skPriv)
 	if err == nil {
+		idFilter, err = xf.NewBloomSHA3(m, k)
+		// DEBUG
+		fmt.Printf("idFilter created: m = %d, k = %d\n", m, k)
+		// END
+	}
+	if err == nil {
+		idFilter.Insert(node.GetNodeID().Value())
+
 		var bniMap xn.BNIMap
 		if logger == nil {
 			logger = log.New(os.Stderr, "", log.Ldate|log.Ltime)
 		}
 		reg = &Registry{
+			idFilter:       idFilter,
 			Clusters:       clusters,
 			ClustersByName: make(map[string]*RegCluster),
 			ClustersByID:   &bniMap,
@@ -55,6 +70,23 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 		}
 	}
 	return
+}
+
+func (reg *Registry) ContainsID(n *xi.NodeID) bool {
+	return reg.idFilter.Member(n.Value())
+}
+func (reg *Registry) InsertID(n *xi.NodeID) (err error) {
+	b := n.Value()
+	if reg.idFilter.Member(b) {
+		err = IDAlreadyInUse
+	}
+	if err == nil {
+		reg.idFilter.Insert(b)
+	}
+	return
+}
+func (reg *Registry) IDCount() uint {
+	return reg.idFilter.Size()
 }
 
 // XXX RegMembersByID is not being updated!  This is the redundant and so
@@ -85,6 +117,21 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 	}
 	if err != nil {
 		index = -1
+	}
+	return
+}
+
+// This function generates a good-quality random NodeID (a 32-byte
+// value) that is not already known to the registry and then adds
+// the new NodeID to the registry.
+func (reg *Registry) UniqueNodeID() (nodeID *xi.NodeID, err error) {
+
+	nodeID, err = xi.New(nil)
+	for err == nil && reg.ContainsID(nodeID) {
+		nodeID, err = xi.New(nil)
+	}
+	if err == nil {
+		reg.idFilter.Insert(nodeID.Value())
 	}
 	return
 }

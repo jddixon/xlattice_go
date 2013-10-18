@@ -16,6 +16,8 @@ var _ = math.Inf
 type XLRegMsg_Tag int32
 
 const (
+	XLRegMsg_RegCredRequest XLRegMsg_Tag = 1
+	XLRegMsg_RegCredReply   XLRegMsg_Tag = 2
 	XLRegMsg_Client         XLRegMsg_Tag = 3
 	XLRegMsg_ClientOK       XLRegMsg_Tag = 4
 	XLRegMsg_Create         XLRegMsg_Tag = 5
@@ -30,6 +32,8 @@ const (
 )
 
 var XLRegMsg_Tag_name = map[int32]string{
+	1:  "RegCredRequest",
+	2:  "RegCredReply",
 	3:  "Client",
 	4:  "ClientOK",
 	5:  "Create",
@@ -43,6 +47,8 @@ var XLRegMsg_Tag_name = map[int32]string{
 	13: "Error",
 }
 var XLRegMsg_Tag_value = map[string]int32{
+	"RegCredRequest": 1,
+	"RegCredReply":   2,
 	"Client":         3,
 	"ClientOK":       4,
 	"Create":         5,

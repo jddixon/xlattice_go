@@ -31,5 +31,6 @@ var (
 	RcvdInvalidMsgForState         = errors.New("invalid msg type for current state")
 	TagOutOfRange                  = errors.New("message tag of of range")
 	UnexpectedMsgType              = errors.New("unexpected message type")
+	UnknownClient                  = errors.New("client unknown, not in registry")
 	WrongNumberOfBytesInAttrs      = errors.New("wrong number of bytes in attrs")
 )

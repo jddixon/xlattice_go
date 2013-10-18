@@ -4,6 +4,8 @@ message XLRegMsg {
     enum Tag {
         // 2013-10-01 dropped Hello and HelloReply; using ../msg/HelloAndReply 
         // functions instead
+        RegCredRequest  = 1;   
+        RegCredReply    = 2;    // token (contains registry credentials)
 
         // All messages are encrypted using the server-provided
         // session key and PKCS7-padded.
@@ -66,5 +68,6 @@ message XLRegMsg {
     optional bytes  DigSig          = 22;
 
     optional string ErrDesc         = 23;
+
 }
 

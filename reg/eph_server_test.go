@@ -49,6 +49,14 @@ func (s *XLSuite) TestServer(c *C) {
 	// start the mock server ------------------------------
 	err = es.Run()
 	c.Assert(err, IsNil)
+	defer es.Close() // stop the server by closing its acceptor
+
+	// verify Bloom filter is running
+	reg := es.Server.Registry
+	c.Assert(reg, NotNil)
+	regID := reg.GetNodeID()
+	c.Assert(reg.IDCount(), Equals, uint(1)) // the registry's own ID
+	c.Assert(reg.ContainsID(regID), Equals, true)
 
 	// 2. create a random cluster name and size ---------------------
 	clusterName := rng.NextFileName(8)
@@ -67,11 +75,17 @@ func (s *XLSuite) TestServer(c *C) {
 	// END
 
 	an.Run()
+
 	cn := &an.ClientNode // a bit ugly, this ...
 	<-cn.doneCh
 
-	c.Assert(cn.clusterID, NotNil)          // the purpose of the exercise
-	c.Assert(cn.epCount, Equals, uint32(1)) // FAILS
+	c.Assert(cn.clusterID, NotNil) // the purpose of the exercise
+	c.Assert(cn.epCount, Equals, uint32(1))
+
+	anID := reg.GetNodeID()
+	c.Assert(reg.IDCount(), Equals, uint(3)) // regID + anID + clusterID
+	c.Assert(reg.ContainsID(anID), Equals, true)
+	c.Assert(reg.ContainsID(cn.clusterID), Equals, true)
 
 	// DEBUG
 	fmt.Printf("AdminClient has registered a cluster of size %d\n    cluster ID is %s\n",
@@ -94,7 +108,7 @@ func (s *XLSuite) TestServer(c *C) {
 			K, 1, e) //1 is endPoint count
 		c.Assert(err, IsNil)
 		c.Assert(uc[i], NotNil)
-		c.Assert(uc[i].clusterID, NotNil) // FAILS :-)
+		c.Assert(uc[i].clusterID, NotNil)
 	}
 
 	// 5. start the K clients, each in a separate goroutine ---------
@@ -106,10 +120,15 @@ func (s *XLSuite) TestServer(c *C) {
 	// wait until all clients are done ------------------------------
 	for i := 0; i < K; i++ {
 		<-uc[i].ClientNode.doneCh
+
+		// XXX NEXT LINE APPARENTLY DOES NOT WORK
+		// nodeID := uc[i].ClientNode.GetNodeID()
+		nodeID := uc[i].clientID
+		c.Assert(nodeID, NotNil)
+		c.Assert(reg.ContainsID(nodeID), Equals, true)
 	}
-	//
-	// stop the server by closing its acceptor ----------------------
-	es.Close()
+	c.Assert(reg.IDCount(), Equals, uint(3+K)) // regID + anID + clusterID + K
+
 	//
 	// verify that results are as expected --------------------------
 	//

@@ -3,7 +3,6 @@ package reg
 // xlattice_go/reg/msg_handlers.go
 
 import (
-	"code.google.com/p/go.crypto/sha3"
 	"crypto/rsa"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
@@ -69,13 +68,14 @@ func doClientMsg(h *InHandler) {
 	if err == nil {
 		id := clientSpecs.GetID()
 		if id == nil {
-			sha := sha3.NewKeccak256()
-			sha.Write(ckBytes)
-			sha.Write(skBytes)
-			// XXX WE NEED SOME RANDOMNESS HERE!
-			id = sha.Sum(nil)
+			nodeID, err = h.reg.UniqueNodeID()
+		} else {
+			// must be known to the registry
+			nodeID, err = xi.New(id)
+			if err == nil && !h.reg.ContainsID(nodeID) {
+				err = UnknownClient
+			}
 		}
-		nodeID, err = xi.New(id)
 	}
 	// Take appropriate action --------------------------------------
 	if err == nil {
@@ -151,10 +151,12 @@ func doCreateMsg(h *InHandler) {
 		} else if clusterSize > 64 {
 			clusterSize = 64
 		}
-		// Assign a quasi-random cluster ID
-		clusterID, _ = xi.New(nil)
-		cluster, err = NewRegCluster(clusterName, clusterID, attrs,
-			uint(clusterSize), uint(endPointCount))
+		// Assign a quasi-random cluster ID, adding it to the registry
+		clusterID, err = h.reg.UniqueNodeID()
+		if err == nil {
+			cluster, err = NewRegCluster(clusterName, clusterID, attrs,
+				uint(clusterSize), uint(endPointCount))
+		}
 		if err == nil {
 			h.cluster = cluster
 			index, err = h.reg.AddCluster(cluster)

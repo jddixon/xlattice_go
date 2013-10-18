@@ -1,10 +1,57 @@
 xlattice_go/reg/TODO
 
+2013-10-17
+    * FIX: eph_server_test failure about line 126 suggests that Node
+        is not being written back into ClientNode
+    * determine what LFS is being used and whether the node is
+        being serialized to LFS/.xlattice/node.config
+    * verify Bloom filter being memory-mapped
+    * determine where the file is 
+
+2013-10-17
+    * NewSoloClient needs mode parameter which is ORed into default
+        0600 on LFS/.lattice/node.config
+
+    * FIX: InHandler.doCreateMsg() treatment of existing clusters
+        doesn't make any sense
+
+    REGISTRY SERVER
+    * add RegCred message, which of course can't be used without
+        knowing the registry's comms public key
+    * need RegCred data type with String() and Parse() methods
+
+    * a new server's first act is to create its own NodeID and          * DONE
+        register it                                                     * DONE
+    * it then writes regCred to the log and to its own
+        LFS/.xlattice/reg.cred
+
+    * the server generates new nodeIDs on request, but uses Bloom
+        filter to make sure that any candidate ID has not been used
+        before (ie, we generate new NodeID, then loop and regenerate
+        if it's in the filter)
+
+        * verify registry ID added to Bloom filter                      * DONE
+        * verify adminClient ID added                                   * DONE
+        * verify cluster ID added to Bloom filter                       * DONE
+        * verify member IDs added to Bloom filter                       * DONE
+
+        * nil client IDS must be replaced by unique IDs                 * DONE
+
+    * ephemeral admin client unique ID should be itself ephemeral 
+
+    UTILITIES
+    * xlClusterReg -e -s K -o FILE CLUSTER_NAME -p PERM
+        where K is cluster size, FILE defaults to ./reg.cred
+    * xlRegCred -o FILE IP_ADDR:PORT
+        where FILE defaults to ./cluster.cred, PERM to 0640
+    utility which retrieves regCred, displays and/or
+        writes to LFS/.xlattice/reg.cred perm 0444
+
 2013-10-15
-    * FIX: xlReg no longer compiles because NewRegistry API 
-        has changed
-    * drop crypto_test.go
-    
+    * FIX: xlReg no longer compiles because NewRegistry API             * DONE
+        has changed                                                     * DONE
+    * drop crypto_test.go                                               * DONE
+
     BLOOM FILTERS
     * integrate Bloom filter, to be referenced wherever IDs are
         assigned
@@ -13,42 +60,9 @@ xlattice_go/reg/TODO
         - all clusters have IDs
 
     SOLO CLIENT
-    * we need a registry client which simply obtains a unique ID,		* DONE
-        generates other credentials, and then saves its configuration 	* DONE
-        in its LFS		                                                * DONE
-        - call this a solo client, one which has no associated cluster	* DONE
-        - a solo client is a simple way to create a Node with a unique	* DONE
-            nodeID, keys, and an initialized configuration file in 		* DONE
-            LFS/.xlattice/node.config, where the default mode is 0600	* DONE
-            * that is, we have a mode parameter which is ORed into this	
-    * this is solo_client.go, SoloClient		                        * DONE
-    * need solo_client_test.go		                                    * DONE
-    * for SoloClient, ClientNode must creating LFS, the root of the 	* DONE
-        local file system		                                        * DONE
-        - this must precede creating xn.Node		                    * DONE
-
-    * have test serialize soloClient, verify that the serialization is
-        the same as what is in the config file
-        - serialization will be that of xn.Node, not reg.SoloClient
-
-    CLIENT ATTRS (proposedAttrs/decidedAttrs in ClientNode struct)		* DONE
-    * AdminClient should be ATTR_ADMIN | ATTR_EPHEMERAL | ATTR_SOLO     * DONE		* DONE
-    * SoloClient should be ATTR_SOLO.  An ephemeral SoloClient is       * DONE		* DONE
-        a nonsense (if it's ephemeral you don't persist its config)		* DONE
-    * UserClient cannot be ATTR_SOLO (it has an associated cluster)		* DONE
-        but should optionally be ephemeral, and so | ATTR_EPHEMERAL		* DONE
-		* DONE
-    * if a ClientNode does NOT have the EPHEMERAL bit set, it is 		* DONE
-        persisted to LFS/.xlattice/node.config after configuration		* DONE
-        - it can't be configured until it has a NodeID		* DONE
-		* DONE
-2013-10-14		* DONE
-    * clusterAttrs must have some significance		* DONE
-    * verify that clusterAtrrs assigned are actually visible to		* DONE
-        joining clients		* DONE
-        - tests assign a random 64-bit value to cluster attrs, but		* DONE
-            this is never tested or otherwise used
-        - will cause problems once clusterAttrs has meaning
+    * have test serialize soloClient, verify that the serialization is  * SKIP
+        the same as what is in the config file                          * SKIP
+        - serialization will be that of xn.Node, not reg.SoloClient     * SKIP
 
 2013-10-13
     * ClientNode must be able to read config from LFS
@@ -57,35 +71,23 @@ xlattice_go/reg/TODO
         - clientID plus digSig
     *ClientNode Node is created after keys are created and ID is known
 
-    CLUSTER ATTRS
-    * add cluster attrs (already present in RegCluster struct as Attrs)
-        - to protocol                                                   * DONE
-        - to const in reg_cluster.go                                    * DONE
-        - in ClientNode struct and NewClientNode                        * DONE
-        - to client CreateMsg                                           * DONE
-        - to server CreateReply                                         * DONE
-        - NOT to client Join,                                           * SO
-        - to server JoinReply                                           * DONE
-        - to ClientNode struct                                          * DONE
-
 2013-10-12
     * need clear decision: does UserClient get clusterName?
     * use BloomSHA3 to handle registry ID map?  about 300 SLOC
         in Java (as implemented in xlattice_j)
-    * get ready to drop crypto_test.go                                  * DONE
 
 2013-10-11
     * msg_handlers doClientMsg about line 70 sets all generated
         IDs to 32 bytes (SHA3)
-    * doClientMsg assigns an ID if nil but just uses the SHA3 
+    * doClientMsg assigns an ID if nil but just uses the SHA3
         of ckPriv and skPriv; need to add some randomness!
-    * server must guarantee uniqueness of all IDs, including 
+    * server must guarantee uniqueness of all IDs, including
         - unique clientID (both user and admin)
         - unique clusterID
     * so registry must have a map of all IDs used
 
 2013-10-10
-    * msg_handlers.go doClientMsg: change to either 
+    * msg_handlers.go doClientMsg: change to either
         - accept ID, which must be known, plus digsig
         - or to accept token without ID plus digsig
             * in this case it generates a new and unique ID
@@ -99,7 +101,7 @@ xlattice_go/reg/TODO
 
 2013-10-03
     * verify that mock_server_test considers it an error when
-        not all members are returned 
+        not all members are returned
 
 2013-10-02
     CLIENT, MOCK_CLIENT
@@ -112,16 +114,16 @@ xlattice_go/reg/TODO
         - second version of Client message has only clientID + digSig
         - either attaches client's full token to the connection
             * this includes nodeID
-    * code up the usual serialization/deserialization 
+    * code up the usual serialization/deserialization
         * ParseClient
         * Client.String()
         * Client.Strings()
         * Client.Run()
-    * when a Client is run, 
-        - if it has a configuration in its lfs, it loads = does a 
+    * when a Client is run,
+        - if it has a configuration in its lfs, it loads = does a
             ParseClient on its configuration file; this returns
             a Client with a *xn.Node field
-        - otherwise it starts talking to the server (does a 
+        - otherwise it starts talking to the server (does a
             Hello/Reply to get a session key) and then sends a
             Client message without a nodeID; the nodeID returned
             is used to build its *xn.Node
@@ -130,7 +132,7 @@ xlattice_go/reg/TODO
     * otherwise default lfs is ./lfs
         - so there is one obvious configuration file in a subdirectory
             of the current directory
-    
+
     SERVER, CLIENT/SERVER MESSAGING
     * it must be possible for a Client to create a Cluster (by name)    * DONE
         and set its size without joining it
@@ -153,7 +155,7 @@ xlattice_go/reg/TODO
     * any errors found by InHandler should be logged
 
 2013-10-01
-    * need locking for reg_cluster Members 
+    * need locking for reg_cluster Members
         - checking whether client is cluster member by ID (read lock)
     * registry RegMembersByID should be dropped or used; if used
         - when members added to clusters
@@ -171,22 +173,22 @@ xlattice_go/reg/TODO
 2013-09-29
     * improve RegCluster.AddMember handling of dupe names
 2013-09-24
-    * packets.go readData should handle partial reads, looping on count 
+    * packets.go readData should handle partial reads, looping on count
         until all bytes have been received
-    * packets.go writeData should handle partial writes, looping on count 
+    * packets.go writeData should handle partial writes, looping on count
         until all bytes have gone
 2013-09-20
-    * several tests could obviously benefit from parallelizing: 
+    * several tests could obviously benefit from parallelizing:
         they run one CPU at 100% while the others are more or less idle
         - look at cluster_member_test
-        - also reg_cluster_test 
+        - also reg_cluster_test
 2013-09-16
     * regNode serialization follows practice in ../node: we first
-        serialize BaseNode, then rest of Node, then fields of 
+        serialize BaseNode, then rest of Node, then fields of
         RegNode
         - need Strings(), String(), Parse()
 2013-09-13
-    * URGENT FIX: ClientMsg does NOT include digsig, so server cannot 
+    * URGENT FIX: ClientMsg does NOT include digsig, so server cannot
         verify that the client knows skPriv
     * longer term xlReg needs to be distributed, using Paxos for
         consensus
@@ -195,8 +197,8 @@ xlattice_go/reg/TODO
     * this stays on main branch
     * deploy on test:44444 as service
 
-    * on regBeta branch figure out how to persist the registry in 
-        such a way this it easily loads itself from disk after a 
+    * on regBeta branch figure out how to persist the registry in
+        such a way this it easily loads itself from disk after a
         crash or reboot
     * when this is stable, merge back into main branch
         - and deploy on test:44444
