@@ -38,6 +38,7 @@ func (dv DecimalVersion) String() (s string) {
 func ParseDecimalVersion(s string) (dv DecimalVersion, err error) {
 
 	var val uint32
+	s = strings.TrimSpace(s)
 	parts := strings.Split(s, `.`)
 	if len(parts) > 4 {
 		err = TooManyPartsInVersion
