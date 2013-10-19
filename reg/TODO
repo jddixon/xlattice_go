@@ -1,12 +1,27 @@
 xlattice_go/reg/TODO
 
+2013-10-18
+    * Whatever is using BadVersion should be using the DecimalVersion
+        type
+        - This is in reg/in_handler.go init() and references VERSION in
+            const.go.  
+        - That VERSION should be explicitly of type xu.DecimalVersion;
+            VERSION_DATE could also be typed.
+        - Note that VERSION is 0.1.1 in that file.
+
+    MEMORY-MAPPED BLOOM FILTER
+    * memory-map Bloom filter 
+       - backing file is LFS/idFilter.dat
+       - size is 2^m bytes
+       - a block is 2^12 bytes, so the backing file has 2^(m-12) blocks
+       - the memory-mapping has to be implemented int crypto/xf
+            * NewBloomSHA3 needs a (backingFile string) parameter
+
 2013-10-17
     * FIX: eph_server_test failure about line 126 suggests that Node
         is not being written back into ClientNode
     * determine what LFS is being used and whether the node is
         being serialized to LFS/.xlattice/node.config
-    * verify Bloom filter being memory-mapped
-    * determine where the file is 
 
 2013-10-17
     * NewSoloClient needs mode parameter which is ORed into default
@@ -16,6 +31,11 @@ xlattice_go/reg/TODO
         doesn't make any sense
 
     REGISTRY SERVER
+    * (short run) verify that xlReg can set a specifc IP address
+        to listen on, such as 192.168.152.10:44444
+    * (longer run) verify that xlReg can be configured to listen on
+        either ALL IP addresses or on more than one IP address,
+        such as {192.168.152.10.44444, 192.168.136.10.44444}
     * add RegCred message, which of course can't be used without
         knowing the registry's comms public key
     * need RegCred data type with String() and Parse() methods
@@ -25,11 +45,11 @@ xlattice_go/reg/TODO
     * it then writes regCred to the log and to its own
         LFS/.xlattice/reg.cred
 
-    * the server generates new nodeIDs on request, but uses Bloom
-        filter to make sure that any candidate ID has not been used
-        before (ie, we generate new NodeID, then loop and regenerate
-        if it's in the filter)
-
+    * the server generates new nodeIDs on request, but usesBloom        * DONE
+        filter to make sure that any candidate ID has not been used     * DONE
+        before (ie, we generate new NodeID, then loop and regenerate    * DONE
+        if it's in the filter)                                          * DONE
+ 
         * verify registry ID added to Bloom filter                      * DONE
         * verify adminClient ID added                                   * DONE
         * verify cluster ID added to Bloom filter                       * DONE
@@ -44,7 +64,7 @@ xlattice_go/reg/TODO
         where K is cluster size, FILE defaults to ./reg.cred
     * xlRegCred -o FILE IP_ADDR:PORT
         where FILE defaults to ./cluster.cred, PERM to 0640
-    utility which retrieves regCred, displays and/or
+        utility which retrieves regCred, displays and/or
         writes to LFS/.xlattice/reg.cred perm 0444
 
 2013-10-15
@@ -167,7 +187,7 @@ xlattice_go/reg/TODO
     * when this is running, drop into ../cmd/xlReg/xlReg
 
 2013-09-30
-    * xlReg loads from/saves to lfs (see 09-16 TODO)
+    * xlReg loads from/saves to lfs (see 09-16 TODO)                    * DONE
     * xlReg 0.2.0 must have lfs, logging, load/save
     * deploy xlReg 0.2.0 on salinas:55555
 2013-09-29
@@ -198,7 +218,7 @@ xlattice_go/reg/TODO
     * deploy on test:44444 as service
 
     * on regBeta branch figure out how to persist the registry in
-        such a way this it easily loads itself from disk after a
+        such a way it easily loads itself from disk after a
         crash or reboot
     * when this is stable, merge back into main branch
         - and deploy on test:44444

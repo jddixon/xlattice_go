@@ -215,10 +215,7 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 	if err == nil {
 		var r *reg.Registry
 		r, err = reg.NewRegistry(nil, // nil = clusters so far
-			// opt.Name, opt.ID, opt.Lfs,
 			node, ckPriv, skPriv,
-			// nil, // overlays
-			// opt.EndPoint,
 			opt.Logger, opt.M, opt.K)
 		if err == nil {
 			// DEBUG

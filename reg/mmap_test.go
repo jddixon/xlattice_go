@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_reg/db/mmap_test.go
+// xlattice_go/reg/mmap_test.go
 
 import (
 	"fmt"

@@ -5,7 +5,7 @@ message XLRegMsg {
         // 2013-10-01 dropped Hello and HelloReply; using ../msg/HelloAndReply 
         // functions instead
         RegCredRequest  = 1;   
-        RegCredReply    = 2;    // token (contains registry credentials)
+        RegCredReply    = 2;    // version, token (other registry credentials)
 
         // All messages are encrypted using the server-provided
         // session key and PKCS7-padded.

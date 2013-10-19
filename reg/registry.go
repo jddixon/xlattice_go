@@ -123,7 +123,7 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 
 // This function generates a good-quality random NodeID (a 32-byte
 // value) that is not already known to the registry and then adds
-// the new NodeID to the registry.
+// the new NodeID to the registry's Bloom filter.
 func (reg *Registry) UniqueNodeID() (nodeID *xi.NodeID, err error) {
 
 	nodeID, err = xi.New(nil)
