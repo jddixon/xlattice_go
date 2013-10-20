@@ -34,8 +34,10 @@ func (s *XLSuite) TestBitSelection(c *C) {
 	// set up 32 test keys
 	for i := 0; i < 32; i++ {
 		bitOffsets := []byte{
-			byte(i % 32), byte(i + 1%32), byte(i + 2%32), byte(i + 3%32),
-			byte(i + 4%32), byte(i + 5%32), byte(i + 6%32), byte(i + 7%32)}
+			byte(i % 32), byte((i + 1)%32), 
+			byte((i + 2)%32), byte((i + 3)%32),
+			byte((i + 4)%32), byte((i + 5)%32), 
+			byte((i + 6)%32), byte((i + 7)%32)}
 		s.setBitOffsets(c, keys[i], bitOffsets)
 	}
 	ks, err = NewKeySelector(m, k, bOff, wOff) // default m=20, k=8

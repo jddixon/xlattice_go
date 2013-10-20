@@ -10,4 +10,6 @@ const (
 
 	// ostensibly "too many hash functions for filter size"
 	MAX_MK_PRODUCT	= 256
+
+	SIZEOF_UINT64 = 8		// bytes
 )

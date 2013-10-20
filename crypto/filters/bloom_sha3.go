@@ -22,9 +22,12 @@
 package filters
 
 import (
+	"fmt"		// DEBUG
 	"math"
 	"sync"
 )
+
+var _ = fmt.Print
 
 type BloomSHA3 struct {
 	m     uint // protected final int m
@@ -63,8 +66,7 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 		var ks *KeySelector
 
 		filterBits := uint(1) << m
-		// XXX SHOULD BE 64, but it panics if that change is made
-		filterWords := filterBits / 32	
+		filterWords := filterBits / 32 // XXX SHOULD BE 64	
 		b3 = &BloomSHA3{
 			m:           m,
 			k:           k,
@@ -74,6 +76,9 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 			wordOffset:  make([]uint, k),
 			bitOffset:   make([]byte, k),
 		}
+		// DEBUG
+		//fmt.Printf("BloomSHA3 invoking doClear; %d filterWords\n", filterWords)
+		// END
 		b3.doClear() // no lock
 		// offsets into the filter
 		ks, err = NewKeySelector(m, k, b3.bitOffset, b3.wordOffset)
@@ -101,6 +106,9 @@ func NewNewNewBloomSHA3() (*BloomSHA3, error) {
 // Clear the filter, unsynchronized
 func (b3 *BloomSHA3) doClear() {
 	for i := uint(0); i < b3.filterWords; i++ {
+		// DEBUG
+		// fmt.Printf("doClear(), word %d\n", i)
+		// END
 		b3.Filter[i] = 0
 	}
 }
@@ -139,6 +147,9 @@ func (b3 *BloomSHA3) Insert(b []byte) {
 
 	b3.ks.getOffsets(b)
 	for i := uint(0); i < b3.k; i++ {
+		// DEBUG
+		// fmt.Printf("%d : wordOffset %d\n", i, b3.wordOffset[i])
+		// END
 		b3.Filter[b3.wordOffset[i]] |= 1 << b3.bitOffset[i]
 	}
 	b3.count++

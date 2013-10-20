@@ -6,15 +6,16 @@ import (
 
 // Go won't let these be constants
 var (
-	// XXX The Java original defined 16 of these.  Since there are only
-	// 8 bits in a byte, I dropped half the values and changed the type
-	// from int to byte.
-
 	// AND with byte to expose index-many bits */
-	//              0  1  2  3   4   5   6    7    8
-	UNMASK = []byte{0, 1, 3, 7, 15, 31, 63, 127, 255}
+	UNMASK = []byte{
+	  //0  1  2  3   4   5   6    7    8
+		0, 1, 3, 7, 15, 31, 63, 127, 255, 
+	  //9,   10,   11,   12,  13,   14,    15	
+	  //511, 1023, 2047, 405, 8191, 16383, 32767
+	  }
 	// AND with byte to zero out index-many bits */
-	MASK = []byte{255, 254, 252, 248, 240, 224, 192, 128, 0}
+	MASK = []byte{
+		255, 254, 252, 248, 240, 224, 192, 128, 0}
 )
 
 const (
