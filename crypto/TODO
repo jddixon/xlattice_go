@@ -1,5 +1,17 @@
 xlattice_go/crypto/TODO
 
+2013-10-10
+    * filters/bloom_sha3_test.go fails if INCORRECT word size 32
+        is replaced with correct word size 64, about line 63
+        bloom_sha3.go
+
+2013-10-18
+    * add backingFile string parameter to NewBloomSHA3
+        - alternatively this is NewMappedBloomSHA3
+        - size is 2^m bytes = 2^(m-12) blocks
+            * so m must be >= 12
+        - if parameter is "", not memory-mapped
+
 2013-10-15
     * merge selector.go back into key_selector.go                       * DONE
 

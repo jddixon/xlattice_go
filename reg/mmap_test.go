@@ -10,7 +10,9 @@ import (
 	. "launchpad.net/gocheck"
 	gm "launchpad.net/gommap"
 	"os"
+	"reflect"
 	"strings"
+	"unsafe"
 )
 
 // XXX should be a utility routine
@@ -46,6 +48,7 @@ func (s *XLSuite) TestMmap(c *C) {
 
 	_ = pathToFile
 
+	// XXX take care: this is ONE block
 	data := make([]byte, BLOCK_SIZE)
 	rng.NextBytes(&data)
 	err := ioutil.WriteFile(pathToFile, data, 0644)
@@ -69,8 +72,40 @@ func (s *XLSuite) TestMmap(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(boolz[0], Equals, true)
 
+	// HACKING ABOUT ////////////////////////////////////////////////
+	//for i := 0; i < BLOCK_SIZE; i++ {
+	//	inCore[i] = byte(0)
+	//}
+
+	// inCore is an MMap
+	mh := (*reflect.SliceHeader)(unsafe.Pointer(&inCore))
+	mAddr := mh.Data
+	mLength := mh.Len
+	mCap := mh.Cap
+	fmt.Printf("inCore data, length, and cap: %v, %d, %d\n",
+		mAddr, mLength, mCap)
+
+	const SIZEOF_UINT64 = 8 // bytes
+
+	type MMap64 []uint64
+	var inCore64 MMap64
+	ih := (*reflect.SliceHeader)(unsafe.Pointer(&inCore64))
+	iAddr := ih.Data
+	iLength := ih.Len
+	iCap := ih.Cap
+	fmt.Printf("inCore64 data, length, and cap: %v, %d, %d\n",
+		iAddr, iLength, iCap)
+
+	ih.Data = mh.Data
+	ih.Len = mh.Len / SIZEOF_UINT64
+	ih.Cap = mh.Cap / SIZEOF_UINT64
+
+	inCore[0] = 0x7f
+	fmt.Printf("after fiddling inCore64[0] is 0x%x\n", inCore64[0])
+	// END HACKING //////////////////////////////////////////////////
+
 	// This succeeds, so the mapping from disk succeeded.
-	c.Assert(xu.SameBytes(inCore[0:BLOCK_SIZE], data), Equals, true)
+	c.Assert(xu.SameBytes(inCore[1:BLOCK_SIZE], data[1:]), Equals, true)
 
 	const (
 		ASCII_A = byte(64)

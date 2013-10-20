@@ -44,18 +44,18 @@ type BloomSHA3 struct {
 }
 
 // Creates a filter with 2^m bits and k 'hash functions', where
-//each hash function is a portion of the 160- or 256-bit SHA hash.
+// each hash function is a portion of the 160- or 256-bit SHA hash.
 
 // @param m determines number of bits in filter, defaults to 20
 //  @param k number of hash functions, defaults to 8
 func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 
 	// XXX need to devise more reasonable set of checks
-	if m < 2 || m > 20 {
+	if m < MIN_M || m > MAX_M {
 		err = MOutOfRange
 	}
 	// XXX what is this based on??
-	if err == nil && (k < 1 || (k*m > 256)) {
+	if err == nil && (k < MIN_K || (k*m > MAX_MK_PRODUCT)) {
 		// too many hash functions for filter size
 		err = TooManyHashFunctions
 	}
@@ -63,7 +63,8 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 		var ks *KeySelector
 
 		filterBits := uint(1) << m
-		filterWords := (filterBits + 31) / 32 // round up
+		// XXX SHOULD BE 64, but it panics if that change is made
+		filterWords := filterBits / 32	
 		b3 = &BloomSHA3{
 			m:           m,
 			k:           k,
@@ -81,12 +82,6 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 		} else {
 			b3 = nil
 		}
-
-		// DEBUG
-		//fmt.Printf(
-		//	"NewBloomSHA3: m = %d, k = %d, filterBits = %d, filterWords = %d\n",
-		//	m, k, filterBits, filterWords)
-		// END
 	}
 	return
 }
@@ -191,22 +186,3 @@ func (b3 *BloomSHA3) FalsePositives() float64 {
 	return b3.FalsePositivesN(b3.count)
 }
 
-//// DEBUG METHODS - these are left over from the Java version of the code.
-//func KeyToString(key []byte) string {
-//	return hex.EncodeToString(key)
-//}
-//
-//// convert 64-bit integer to hex String */
-//func ltoh(i uint64) string {
-//	return fmt.Sprintf("#%x", i)
-//}
-//
-//// convert 32-bit integer to String */
-//func itoh(i uint32) string {
-//	return fmt.Sprintf("#%x", i)
-//}
-//
-//// convert single byte to String */
-//func btoh(b byte) string {
-//	return fmt.Sprintf("#%x", b)
-//}
