@@ -1,25 +1,26 @@
 package filters
 
 import (
+	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
+)
+
+var _ = fmt.Print
+
+const (
+	BITS_PER_WORD = uint(64)
+	KEY_SEL_BITS  = uint(6)
 )
 
 // Go won't let these be constants
 var (
 	// AND with byte to expose index-many bits */
 	UNMASK = []byte{
-	  //0  1  2  3   4   5   6    7    8
-		0, 1, 3, 7, 15, 31, 63, 127, 255, 
-	  //9,   10,   11,   12,  13,   14,    15	
-	  //511, 1023, 2047, 405, 8191, 16383, 32767
-	  }
+		//0  1  2  3   4   5   6    7    8
+		0, 1, 3, 7, 15, 31, 63, 127, 255}
 	// AND with byte to zero out index-many bits */
 	MASK = []byte{
 		255, 254, 252, 248, 240, 224, 192, 128, 0}
-)
-
-const (
-	TWO_UP_15 = 32 * 1024 // XXX NEVER USED
 )
 
 // Given a key, populates arrays determining word and bit offsets into
@@ -72,10 +73,6 @@ func (ks *KeySelector) getOffsets(key []byte) (err error) {
 		}
 	}
 	ks.b = key
-	//  // DEBUG
-	//  System.out.println("KeySelector.getOffsets for "
-	//                                      + BloomSHA3.keyToString(b))
-	//  // END
 	if err == nil {
 		ks.GetBitSelectors()
 		ks.GetWordSelectors()
@@ -97,27 +94,41 @@ func (ks *KeySelector) GetBitSelectors() {
 		//fmt.Printf("    this byte 0x%x, next byte 0x%x; bitsUnused %d\n",
 		//	ks.b[curByte], ks.b[curByte+1], bitsUnused)
 		// END
-		if bitsUnused > 5 {
+
+		if bitsUnused > KEY_SEL_BITS {
 			// Both Java and  >> sign-extend to the right, hence the 0xff.
 			// However, b is a slice of (unsigned) bytes.
-			ks.bitOffset[j] = ((0xff & ks.b[curByte]) >>
-				(bitsUnused - 5)) & UNMASK[5]
+
 			// DEBUG
-			//fmt.Printf("    case %d > 5 unused bits\n", bitsUnused)
+			// fmt.Printf("    case %d > KEY_SEL_BITS unused bits\n", bitsUnused)
+			// END
+			ks.bitOffset[j] = ((0xff & ks.b[curByte]) >>
+				(bitsUnused - KEY_SEL_BITS)) & UNMASK[KEY_SEL_BITS]
+
+			// DEBUG
 			//fmt.Printf("        before shifting: 0x%x\n"+
 			//	"        after shifting:  0x%x\n"+
 			//	"        mask:            0x%x\n",
 			//	ks.b[curByte],
-			//	(0xff&ks.b[curByte])>>(bitsUnused-5),
-			//	UNMASK[5])
+			//	(0xff&ks.b[curByte])>>(bitsUnused-KEY_SEL_BITS),
+			//	UNMASK[KEY_SEL_BITS])
 			// END
-		} else if bitsUnused == 5 {
-			// fmt.Printf("    case %d = 5 unused bits\n", bitsUnused) // DEBUG
-			ks.bitOffset[j] = ks.b[curByte] & UNMASK[5]
+
+		} else if bitsUnused == KEY_SEL_BITS {
+			// DEBUG
+			// fmt.Printf("    case %d = KEY_SEL_BITS unused bits\n", bitsUnused)
+			// END
+			ks.bitOffset[j] = ks.b[curByte] & UNMASK[KEY_SEL_BITS]
+
 		} else {
-			// fmt.Printf("    case %d < 5 unused bits\n", bitsUnused) // DEBUG
+			// DEBUB
+			// fmt.Printf("    case %d < KEY_SEL_BITS unused bits\n", bitsUnused)
+			// END
+
 			ks.bitOffset[j] = (ks.b[curByte] & UNMASK[bitsUnused]) |
-				(((0xff & ks.b[curByte+1]) >> 3) & MASK[bitsUnused])
+				(((0xff & ks.b[curByte+1]) >> (8 - KEY_SEL_BITS)) &
+					MASK[bitsUnused])
+
 			//              // DEBUG
 			//              fmt.Println(
 			//                "    contribution from first byte:  "
@@ -135,7 +146,7 @@ func (ks *KeySelector) GetBitSelectors() {
 		//          // DEBUG
 		//          fmt.Println ("    ks.bitOffset[j] = " + ks.bitOffset[j])
 		//          // END
-		curBit += 5
+		curBit += KEY_SEL_BITS
 	}
 }
 
@@ -144,9 +155,9 @@ func (ks *KeySelector) GetBitSelectors() {
 
 // Extract the k offsets into the word offset array */
 func (ks *KeySelector) GetWordSelectors() {
-	stride := ks.m - 5
+	stride := ks.m - KEY_SEL_BITS
 	//assert true: stride<16
-	curBit := ks.k * 5
+	curBit := ks.k * KEY_SEL_BITS
 	for j := uint(0); j < ks.k; j++ {
 		curByte := curBit / 8
 		bitsUnused := ((curByte + 1) * 8) - curBit // left in byte

@@ -22,7 +22,7 @@
 package filters
 
 import (
-	"fmt"		// DEBUG
+	"fmt" // DEBUG
 	"math"
 	"sync"
 )
@@ -66,7 +66,7 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 		var ks *KeySelector
 
 		filterBits := uint(1) << m
-		filterWords := filterBits / 32 // XXX SHOULD BE 64	
+		filterWords := filterBits / BITS_PER_WORD
 		b3 = &BloomSHA3{
 			m:           m,
 			k:           k,
@@ -196,4 +196,3 @@ func (b3 *BloomSHA3) FalsePositivesN(n uint) float64 {
 func (b3 *BloomSHA3) FalsePositives() float64 {
 	return b3.FalsePositivesN(b3.count)
 }
-
