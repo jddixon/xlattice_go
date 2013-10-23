@@ -1,9 +1,13 @@
 xlattice_go/crypto/TODO
 
-2013-10-10
-    * filters/bloom_sha3_test.go fails if INCORRECT word size 32
-        is replaced with correct word size 64, about line 63
-        bloom_sha3.go
+2013-10-21
+    * rework key_selector_64_test.go to pack key selectors at
+        front of key
+
+2013-10-20
+    * filters/bloom_sha3_test.go fails if INCORRECT word size 32        * FIXED
+        is replaced with correct word size 64, about line 63            * FIXED
+        bloom_sha3.go                                                   * FIXED
 
 2013-10-18
     * add backingFile string parameter to NewBloomSHA3

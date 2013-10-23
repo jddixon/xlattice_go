@@ -53,6 +53,11 @@ type BloomSHA3 struct {
 //  @param k number of hash functions, defaults to 8
 func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 
+	// DEBUG
+	fmt.Printf("NewBloomSHA3: m = %d, k = %d, m*k = %d\n",
+		m, k, m*k)
+	// END
+
 	// XXX need to devise more reasonable set of checks
 	if m < MIN_M || m > MAX_M {
 		err = MOutOfRange
@@ -148,9 +153,10 @@ func (b3 *BloomSHA3) Insert(b []byte) {
 	b3.ks.getOffsets(b)
 	for i := uint(0); i < b3.k; i++ {
 		// DEBUG
-		// fmt.Printf("%d : wordOffset %d\n", i, b3.wordOffset[i])
+		fmt.Printf("Insert k %d: wordSel 0x%05x (%6d), bitSel %2d\n",
+			i, b3.wordOffset[i], b3.wordOffset[i], b3.bitOffset[i])
 		// END
-		b3.Filter[b3.wordOffset[i]] |= 1 << b3.bitOffset[i]
+		b3.Filter[b3.wordOffset[i]] |= uint64(1) << b3.bitOffset[i]
 	}
 	b3.count++
 }

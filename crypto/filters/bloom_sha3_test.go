@@ -43,8 +43,8 @@ func (s *XLSuite) TestParamExceptions(c *C) {
 	_, err := NewBloomSHA3(0, 8)
 	c.Assert(err, NotNil)
 
-	// zero filter size exponent
-	_, err = NewBloomSHA3(21, 8)
+	// filter size exponent too large
+	_, err = NewBloomSHA3(25, 8)
 	c.Assert(err, NotNil)
 
 	// checks on k
@@ -94,19 +94,19 @@ func (s *XLSuite) TestInserts(c *C) {
 	k := uint(8)
 
 	s.doTestInserts(c, m, k, 16)  // default values
-	s.doTestInserts(c, 14, 8, 16) // stride = 9
-	s.doTestInserts(c, 13, 8, 16) // stride = 8
-	s.doTestInserts(c, 12, 8, 16) // stride = 7
+	s.doTestInserts(c, 14, 8, 16) // stride = 8
+	s.doTestInserts(c, 13, 8, 16) // stride = 7
+	s.doTestInserts(c, 12, 8, 16) // stride = 6
 
-	s.doTestInserts(c, 14, 7, 16) // stride = 9
-	s.doTestInserts(c, 13, 7, 16) // stride = 8
-	s.doTestInserts(c, 12, 7, 16) // stride = 7
+	s.doTestInserts(c, 14, 7, 16) // stride = 8
+	s.doTestInserts(c, 13, 7, 16) // stride = 7
+	s.doTestInserts(c, 12, 7, 16) // stride = 6
 
-	s.doTestInserts(c, 14, 6, 16) // stride = 9
-	s.doTestInserts(c, 13, 6, 16) // stride = 8
-	s.doTestInserts(c, 12, 6, 16) // stride = 7
+	s.doTestInserts(c, 14, 6, 16) // stride = 8
+	s.doTestInserts(c, 13, 6, 16) // stride = 7
+	s.doTestInserts(c, 12, 6, 16) // stride = 6
 
-	s.doTestInserts(c, 14, 5, 16) // stride = 9
-	s.doTestInserts(c, 13, 5, 16) // stride = 8
-	s.doTestInserts(c, 12, 5, 16) // stride = 7
+	s.doTestInserts(c, 14, 5, 16) // stride = 8
+	s.doTestInserts(c, 13, 5, 16) // stride = 7
+	s.doTestInserts(c, 12, 5, 16) // stride = 6
 }

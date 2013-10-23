@@ -27,7 +27,7 @@ var (
 // a Bloom filter.
 type KeySelector struct {
 	m, k       uint
-	b          []byte
+	b          []byte // key that we are inserting into the filter
 	bitOffset  []byte
 	wordOffset []uint
 }
@@ -44,7 +44,7 @@ type KeySelector struct {
 func NewKeySelector(m, k uint, bitOffset []byte, wordOffset []uint) (
 	ks *KeySelector, err error) {
 
-	if (m < 2) || (m > 20) || (k < 1) || (bitOffset == nil) ||
+	if (m < MIN_M) || (m > MAX_M) || (k < MIN_K) || (bitOffset == nil) ||
 		(wordOffset == nil) {
 
 		err = KeySelectorArgOutOfRange
@@ -155,87 +155,81 @@ func (ks *KeySelector) GetBitSelectors() {
 
 // Extract the k offsets into the word offset array */
 func (ks *KeySelector) GetWordSelectors() {
-	stride := ks.m - KEY_SEL_BITS
-	//assert true: stride<16
+	// the word selectors being created
+	selBits := ks.m - uint(6)
+	selBytes := (selBits + uint(7)) / uint(8)
+	bitsLastByte := selBits - uint(8)*(selBytes-uint(1))
+
+	// DEBUG
+	fmt.Printf("k %d, selBits %d, selBytes %d, bitsLastByte %d, mask 0x%x\n",
+		ks.k, selBits, selBytes, bitsLastByte, UNMASK[bitsLastByte])
+	// END
+
+	// these describe the key being inserted into the filter
+	lenB := len(ks.b)
 	curBit := ks.k * KEY_SEL_BITS
-	for j := uint(0); j < ks.k; j++ {
+
+	for i := uint(0); i < ks.k; i++ {
 		curByte := curBit / 8
-		bitsUnused := ((curByte + 1) * 8) - curBit // left in byte
+		var wordSel uint // accumulate selector bits here
 
-		//          // DEBUG
-		//          fmt.Println (
-		//              "curr 3 bytes: " + btoh(b[curByte])
-		//              + (curByte < 19 ?
-		//                  " " + btoh(b[curByte + 1]) : "")
-		//              + (curByte < 18 ?
-		//                  " " + btoh(b[curByte + 2]) : "")
-		//              + "; curBit=" + curBit + ", curByte= " + curByte
-		//              + ", bitsUnused=" + bitsUnused)
-		//          // END
+		if curBit%8 == 0 {
+			// DEBUG
+			for j := uint(0); j < selBytes; j++ {
+				fmt.Printf("0x%02x ", ks.b[curByte+j])
+			}
+			fmt.Println()
+			// END
 
-		if bitsUnused > stride {
+			// byte-aligned, life is easy
+			for j := uint(0); j < selBytes-1; j++ {
+				wordSel |= uint(ks.b[curByte]) << (j * 8)
+				// DEBUG
+				fmt.Printf("%d:%d 0x%02x => wordSel = 0x%06x\n",
+					i, j, ks.b[curByte], wordSel)
+				// END
+				curByte++
+			}
+			// DEBUG
+			lastByte := ks.b[curByte]
+			maskedLastByte := lastByte & UNMASK[bitsLastByte]
+			shiftedLastByte := uint(maskedLastByte) << ((selBytes - 1) * 8)
+			fmt.Printf("%02x => %02x => %05x\n",
+				lastByte, maskedLastByte, shiftedLastByte)
+			// END
+			wordSel |= (uint(ks.b[curByte] & UNMASK[bitsLastByte])) <<
+				((selBytes - 1) * 8)
+			// DEBUG
+			fmt.Printf("%d:%d 0x%02x => wordSel = 0x%06x\n",
+				i, selBytes-1, ks.b[curByte], wordSel)
+			// END
+		} else {
+			fmt.Printf("extracting selector %d; curBit %d, curByte %d\n", curBit, curByte)
+			endBit := curBit + selBits
 
-			// XXX TRANSLATION FROM JAVA QUESTIONABLE: the ^ was &
+			// first byte in b has bits on right
+			bitsLeftByte := (8 * curByte) - curBit
+			wordSel = uint(ks.b[curByte]) >> (8 - bitsLeftByte)
+			curBit += bitsLeftByte
+			wordSelBit := bitsLeftByte
 
-			// the value is entirely within the current byte
-			ks.wordOffset[j] = (uint(^ks.b[curByte]) >>
-				(bitsUnused - stride)) & uint(UNMASK[stride])
-		} else if bitsUnused == stride {
-			// the value fills the current byte
-			ks.wordOffset[j] = uint(ks.b[curByte] & UNMASK[stride])
-		} else { // bitsUnused < stride
-			// value occupies more than one byte
-			// bits from first byte, right-aligned in result
-			ks.wordOffset[j] = uint(ks.b[curByte] & UNMASK[bitsUnused])
-			//              // DEBUG
-			//              fmt.Println("    first byte contributes "
-			//                      + itoh(ks.wordOffset[j]))
-			//              // END
-			// bits from second byte
-			bitsToGet := stride - bitsUnused
-			if bitsToGet >= 8 {
-				// 8 bits from second byte
-				ks.wordOffset[j] |= uint(0xff&ks.b[curByte+1]) << bitsUnused
-				//                  // DEBUG
-				//                  fmt.Println("    second byte contributes "
-				//                      + itoh(
-				//                      (0xff & b[curByte + 1]) << bitsUnused
-				//                  ))
-				//                  // END
-
-				// bits from third byte
-				bitsToGet -= 8
-				if bitsToGet > 0 {
-					ks.wordOffset[j] |=
-						(uint(0xff&ks.b[curByte+2]) >> (8 - bitsToGet)) << (stride - bitsToGet)
-					//                      // DEBUG
-					//                      fmt.Println("    third byte contributes "
-					//                          + itoh(
-					//                          (((0xff & b[curByte + 2]) >> (8 - bitsToGet))
-					//                                              << (stride - bitsToGet))
-					//                          ))
-					//                      // END
+			for curBit < endBit {
+				curByte = curBit / 8
+				var bitsThisByte uint
+				if endBit-curBit >= 8 {
+					bitsThisByte = 8
+				} else {
+					bitsThisByte = endBit - curBit
 				}
-			} else {
-				// all remaining bits are within second byte
-				ks.wordOffset[j] |= (uint(ks.b[curByte+1]) >> uint((8-bitsToGet)&uint(UNMASK[bitsToGet]))) << bitsUnused
-
-				//                  // DEBUG
-				//                  fmt.Println("    second byte contributes "
-				//                      + itoh(
-				//                      ((ks.b[curByte + 1] >> (8 - bitsToGet))
-				//                          & UNMASK[bitsToGet])
-				//                                  << bitsUnused
-				//                      ))
-				//                  // END
+				val := uint(ks.b[curByte] & UNMASK[bitsThisByte])
+				wordSel |= val << wordSelBit
+				wordSelBit += bitsThisByte
+				curBit += bitsThisByte
 			}
 		}
-		//          // DEBUG
-		//          fmt.Println (
-		//              "    ks.wordOffset[" + j + "] = " + ks.wordOffset[j]
-		//              + ", "                     + itoh(ks.wordOffset[j])
-		//          )
-		//          // END
-		curBit += stride
+		ks.wordOffset[i] = wordSel
+
+		curBit += selBits
 	}
+	_ = lenB
 }
