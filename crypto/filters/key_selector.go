@@ -74,78 +74,40 @@ func (ks *KeySelector) getOffsets(key []byte) (err error) {
 	}
 	ks.b = key
 	if err == nil {
-		ks.GetBitSelectors()
-		ks.GetWordSelectors()
+		ks.getBitSelectors()
+		ks.getWordSelectors()
 	}
 	return
 }
 
 // Extracts the k bit offsets from a key, suitable for general values
 // of m and k.
-func (ks *KeySelector) GetBitSelectors() {
+func (ks *KeySelector) getBitSelectors() {
 
 	var curBit, curByte uint
 	for j := uint(0); j < ks.k; j++ {
+		var keySel byte
 		curByte = curBit / 8
-		bitsUnused := ((curByte + 1) * 8) - curBit // left in byte
+		tBit := curBit - 8*curByte // bit offset this byte
+		uBits := 8 - tBit          // unused, left in byte
 
-		// DEBUG
-		//fmt.Printf("GBS: curByte %d, curBit %d\n", curByte, curBit)
-		//fmt.Printf("    this byte 0x%x, next byte 0x%x; bitsUnused %d\n",
-		//	ks.b[curByte], ks.b[curByte+1], bitsUnused)
-		// END
-
-		if bitsUnused > KEY_SEL_BITS {
-			// Both Java and  >> sign-extend to the right, hence the 0xff.
-			// However, b is a slice of (unsigned) bytes.
-
-			// DEBUG
-			// fmt.Printf("    case %d > KEY_SEL_BITS unused bits\n", bitsUnused)
-			// END
-			ks.bitOffset[j] = ((0xff & ks.b[curByte]) >>
-				(bitsUnused - KEY_SEL_BITS)) & UNMASK[KEY_SEL_BITS]
-
-			// DEBUG
-			//fmt.Printf("        before shifting: 0x%x\n"+
-			//	"        after shifting:  0x%x\n"+
-			//	"        mask:            0x%x\n",
-			//	ks.b[curByte],
-			//	(0xff&ks.b[curByte])>>(bitsUnused-KEY_SEL_BITS),
-			//	UNMASK[KEY_SEL_BITS])
-			// END
-
-		} else if bitsUnused == KEY_SEL_BITS {
-			// DEBUG
-			// fmt.Printf("    case %d = KEY_SEL_BITS unused bits\n", bitsUnused)
-			// END
-			ks.bitOffset[j] = ks.b[curByte] & UNMASK[KEY_SEL_BITS]
-
+		if curBit%8 == 0 {
+			keySel = ks.b[curByte] & UNMASK[KEY_SEL_BITS]
+		} else if uBits >= KEY_SEL_BITS {
+			// it's all in this byte
+			keySel = (ks.b[curByte] >> tBit) & UNMASK[KEY_SEL_BITS]
 		} else {
-			// DEBUB
-			// fmt.Printf("    case %d < KEY_SEL_BITS unused bits\n", bitsUnused)
+			// the selector spans two bytes
+			rBits := KEY_SEL_BITS - uBits
+			lSide := (ks.b[curByte] >> tBit) & UNMASK[uBits]
+			rSide := (ks.b[curByte+1] & UNMASK[rBits]) << uBits
+			keySel = lSide | rSide
+			// DEBUG
+			fmt.Printf("getBitSel %d extracted %x + %x => %02x\n",
+				j, lSide, rSide, keySel)
 			// END
-
-			ks.bitOffset[j] = (ks.b[curByte] & UNMASK[bitsUnused]) |
-				(((0xff & ks.b[curByte+1]) >> (8 - KEY_SEL_BITS)) &
-					MASK[bitsUnused])
-
-			//              // DEBUG
-			//              fmt.Println(
-			//                "    contribution from first byte:  "
-			//                + itoh(b[curByte] & UNMASK[bitsUnused])
-			//            + "\n    second byte: " + btoh(b[curByte + 1])
-			//            + "\n    shifted:     " + itoh((0xff & b[curByte + 1]) >> 3)
-			//            + "\n    mask:        " + itoh(MASK[bitsUnused])
-			//            + "\n    contribution from second byte: "
-			//                + itoh((0xff & b[curByte + 1] >> 3) & MASK[bitsUnused]))
-			//              // END
 		}
-		// DEBUG
-		//fmt.Printf("    ks.bitOffset[%d] = 0x%x\n", j, ks.bitOffset[j])
-		// END
-		//          // DEBUG
-		//          fmt.Println ("    ks.bitOffset[j] = " + ks.bitOffset[j])
-		//          // END
+		ks.bitOffset[j] = keySel
 		curBit += KEY_SEL_BITS
 	}
 }
@@ -154,57 +116,42 @@ func (ks *KeySelector) GetBitSelectors() {
 // values of m and k.
 
 // Extract the k offsets into the word offset array */
-func (ks *KeySelector) GetWordSelectors() {
+func (ks *KeySelector) getWordSelectors() {
 	// the word selectors being created
 	selBits := ks.m - uint(6)
 	selBytes := (selBits + uint(7)) / uint(8)
 	bitsLastByte := selBits - uint(8)*(selBytes-uint(1))
 
-	// DEBUG
-	fmt.Printf("k %d, selBits %d, selBytes %d, bitsLastByte %d, mask 0x%x\n",
-		ks.k, selBits, selBytes, bitsLastByte, UNMASK[bitsLastByte])
-	// END
-
 	// these describe the key being inserted into the filter
-	lenB := len(ks.b)
 	curBit := ks.k * KEY_SEL_BITS
+
+	// DEBUG
+	lenB := len(ks.b)
+	fmt.Printf("m %d, k %d, selBits %d, selBytes %d, bitsLastByte %d, mask 0x%x, lenB %d\n",
+		ks.m, ks.k, selBits, selBytes, bitsLastByte, UNMASK[bitsLastByte], lenB)
+	// END
 
 	for i := uint(0); i < ks.k; i++ {
 		curByte := curBit / 8
+
+		//fmt.Printf("extracting selector %d; curBit %d, curByte %d\n",
+		//	i, curBit, curByte)
+
 		var wordSel uint // accumulate selector bits here
 
 		if curBit%8 == 0 {
-			// DEBUG
-			for j := uint(0); j < selBytes; j++ {
-				fmt.Printf("0x%02x ", ks.b[curByte+j])
-			}
-			fmt.Println()
-			// END
-
 			// byte-aligned, life is easy
 			for j := uint(0); j < selBytes-1; j++ {
 				wordSel |= uint(ks.b[curByte]) << (j * 8)
-				// DEBUG
-				fmt.Printf("%d:%d 0x%02x => wordSel = 0x%06x\n",
-					i, j, ks.b[curByte], wordSel)
-				// END
 				curByte++
 			}
-			// DEBUG
-			lastByte := ks.b[curByte]
-			maskedLastByte := lastByte & UNMASK[bitsLastByte]
-			shiftedLastByte := uint(maskedLastByte) << ((selBytes - 1) * 8)
-			fmt.Printf("%02x => %02x => %05x\n",
-				lastByte, maskedLastByte, shiftedLastByte)
-			// END
 			wordSel |= (uint(ks.b[curByte] & UNMASK[bitsLastByte])) <<
 				((selBytes - 1) * 8)
 			// DEBUG
-			fmt.Printf("%d:%d 0x%02x => wordSel = 0x%06x\n",
-				i, selBytes-1, ks.b[curByte], wordSel)
+			fmt.Printf("%dE wordSel = 0x%06x\n", i, wordSel)
 			// END
+			curBit += selBits
 		} else {
-			fmt.Printf("extracting selector %d; curBit %d, curByte %d\n", curBit, curByte)
 			endBit := curBit + selBits
 
 			// first byte in b has bits on right
@@ -226,10 +173,12 @@ func (ks *KeySelector) GetWordSelectors() {
 				wordSelBit += bitsThisByte
 				curBit += bitsThisByte
 			}
+			// DEBUG
+			fmt.Printf("%d: wordSel = 0x%06x\n", i, wordSel)
+			// END
+
 		}
 		ks.wordOffset[i] = wordSel
 
-		curBit += selBits
 	}
-	_ = lenB
 }

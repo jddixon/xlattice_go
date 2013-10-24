@@ -153,7 +153,7 @@ func (b3 *BloomSHA3) Insert(b []byte) {
 	b3.ks.getOffsets(b)
 	for i := uint(0); i < b3.k; i++ {
 		// DEBUG
-		fmt.Printf("Insert k %d: wordSel 0x%05x (%6d), bitSel %2d\n",
+		fmt.Printf("Insert k %d: wordSel 0x%05x (%6d), bitSel 0x%02x\n",
 			i, b3.wordOffset[i], b3.wordOffset[i], b3.bitOffset[i])
 		// END
 		b3.Filter[b3.wordOffset[i]] |= uint64(1) << b3.bitOffset[i]
