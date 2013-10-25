@@ -42,12 +42,15 @@ func setUpTestKS() (
 	return
 }
 
+// DEBUG
 func (s *XLSuite) dumpB(c *C, b []byte) {
 	for i := uint(0); i < uint(len(b)); i++ {
 		fmt.Printf("%02x", b[i])
 	}
 	fmt.Println()
-} // GEEP
+}
+
+// END
 func (s *XLSuite) TestBitSelection(c *C) {
 
 	var err error
@@ -65,28 +68,12 @@ func (s *XLSuite) TestBitSelection(c *C) {
 	ks, err = NewKeySelector(m, k, bOff, wOff)
 	c.Assert(err, IsNil)
 
-	// DEBUG
-	for i := uint(0); i < NUM_TEST_KEYS; i++ {
-		ks.getOffsets(keys[i])
-		for j := uint(0); j < k; j++ {
-			fmt.Printf("key %d, bitSel %d, actual %02x, expected %02x\n",
-				i, j, bOff[j], byte((j*k+j)%8))
-		}
-	}
-	// END
 	for i := uint(0); false && i < NUM_TEST_KEYS; i++ {
 		ks.getOffsets(keys[i])
 		for j := uint(0); j < k; j++ {
-			// DEBUG
-			if bOff[j] != byte((j*k+j)%8) {
-				fmt.Printf("i = %d, j = %d, actual %02x, expected %02x\n",
-					i, j, bOff[j], byte((j*k+j)%8))
-			}
-			// END
 			c.Assert(bOff[j], Equals, byte((j*k+j)%8))
 		}
 	}
-
 	_ = v
 }
 
@@ -122,17 +109,10 @@ func (s *XLSuite) setBitOffsets(c *C, b *[]byte, val []byte) {
 
 			valNextByte := (unVal >> uBits)
 			(*b)[curByte+1] |= valNextByte
-
-			fmt.Printf("  %d val %02x tBit %d this %02x next %02x\n",
-				i, unVal, tBit, valThisByte, valNextByte)
-
 		}
 		curBit += KEY_SEL_BITS
-
-		fmt.Printf("%02x => ", unVal)
-		s.dumpB(c, *b) // DEBUG
 	}
-} // GEEP
+}
 
 // Set the word selectors, which are the k wordSelBits-bit values
 // following the bit sectors in the key.
@@ -147,10 +127,6 @@ func (s *XLSuite) setWordOffsets(c *C, b *[]byte, val []uint, m, k uint) {
 	} else {
 		bitsLastByte = wordSelBits - (bytesInV-1)*8
 	}
-
-	fmt.Printf("bytesInV %d, wordSelBits %d, bitsLastByte %d\n",
-		bytesInV, wordSelBits, bitsLastByte)
-
 	vLen := uint(len(val))
 
 	var curTByte uint           // byte offset in b
@@ -161,14 +137,8 @@ func (s *XLSuite) setWordOffsets(c *C, b *[]byte, val []uint, m, k uint) {
 
 		// be paranoid: mask test value to wordSelBits bits
 		maskedVal := val[i] & wordSelMask
-
-		fmt.Printf("\nval[%d] = 0x%05x => 0x%05x (%6d)\n",
-			i, val[i], maskedVal, maskedVal)
-
 		for j := uint(0); j < bytesInV; j++ {
 			thisVByte := byte(maskedVal >> (j * uint(8)))
-
-			fmt.Printf("  thisVByte %d = 0x%02x", j, thisVByte)
 
 			bitsThisVByte := uint(8)
 			if j == (bytesInV - 1) {
@@ -177,14 +147,11 @@ func (s *XLSuite) setWordOffsets(c *C, b *[]byte, val []uint, m, k uint) {
 			// these point into the target, b
 			curTByte = curTBit / 8
 			tBit := curTBit - (curTByte * 8) // bit offset
-			fmt.Printf("  tBit %3d, tByte %3d\n", curTBit, curTByte)
 
 			if tBit == 0 {
 				// we just assign it in, trusting b was all zeroes
 				(*b)[curTByte] = byte(thisVByte)
 
-				fmt.Printf("= ")
-				s.dumpB(c, *b)
 			} else {
 				// we have to shift
 				fBits := 8 - tBit // unused bits this byte
@@ -193,23 +160,13 @@ func (s *XLSuite) setWordOffsets(c *C, b *[]byte, val []uint, m, k uint) {
 					value := thisVByte << tBit
 					(*b)[curTByte] |= value
 
-					fmt.Printf("  ")
-					s.dumpB(c, *b)
 				} else {
 					// we have to split it over two target bytes
 					lValue := (thisVByte & UNMASK[fBits]) << tBit
 					(*b)[curTByte] |= lValue
 
-					fmt.Printf("L ")
-					s.dumpB(c, *b)
-
 					rValue := thisVByte >> fBits
 					(*b)[curTByte+1] |= rValue
-					fmt.Printf("R ")
-					s.dumpB(c, *b)
-
-					fmt.Printf("   lValue %02x rVaue %02x\n",
-						lValue, rValue)
 				}
 			}
 			curTBit += bitsThisVByte
@@ -233,10 +190,6 @@ func (s *XLSuite) doTestKeySelector64(c *C, rng *xr.PRNG, usingSHA1 bool, m uint
 	// 2^6 is 64, number of bits in a uint64
 	wordsInFilter := 1 << (m - uint(6))
 
-	// DEBUG
-	fmt.Printf("usingSHA1 = %v, wordsInFilter = %d, v = %d, m = %d\n",
-		usingSHA1, wordsInFilter, v, m)
-	// END
 	for i := uint(0); i < k; i++ {
 		bitSel[i] = byte(rng.Intn(64))
 		wordSel[i] = uint(rng.Intn(wordsInFilter))
@@ -244,17 +197,9 @@ func (s *XLSuite) doTestKeySelector64(c *C, rng *xr.PRNG, usingSHA1 bool, m uint
 
 	// concatenate the key selectors at the front
 	s.setBitOffsets(c, &b, bitSel)
-	// DEBUG
-	fmt.Printf("\nPopulated b, keySels set,  k = %d:\n    ", k)
-	s.dumpB(c, b)
-	// END
 
 	// append the word selectors
 	s.setWordOffsets(c, &b, wordSel, m, k)
-	// DEBUG
-	fmt.Printf("\nPopulated b, wordSels set, k = %d:\n    ", k)
-	s.dumpB(c, b)
-	// END
 
 	// create an m,k filter
 	filter, err := NewBloomSHA3(m, k)
@@ -262,11 +207,6 @@ func (s *XLSuite) doTestKeySelector64(c *C, rng *xr.PRNG, usingSHA1 bool, m uint
 
 	// verify that the expected bits are NOT set
 	for i := uint(0); i < k; i++ {
-		// DEBUG
-		fmt.Printf("k = %d, wordSel = 0x%05x (%6d), bitSel = %02x, ",
-			i, wordSel[i], wordSel[i], bitSel[i])
-		fmt.Printf("word val = 0x%x\n", filter.Filter[wordSel[i]])
-		// END
 		filterWord := filter.Filter[wordSel[i]]
 		bitSelector := uint64(1) << bitSel[i]
 		bitVal := filterWord & bitSelector
@@ -276,29 +216,12 @@ func (s *XLSuite) doTestKeySelector64(c *C, rng *xr.PRNG, usingSHA1 bool, m uint
 	// insert the value b
 	filter.Insert(b)
 
-	// -- NEW TEST --------------------------------------------------
-	// compare key and word selectors in filter with those
-	// calculated
-	fmt.Printf("\nCOMPARING SELECTORS\n")
-	for i := uint(0); i < k; i++ {
-		fmt.Printf("k = %d: actual bitSel %02x expected %02x\n",
-			i, filter.ks.bitOffset[i], bitSel[i])
-	}
-	fmt.Println()
-	// -- END NEW TEST ----------------------------------------------
-
 	// verify that all of the expected bits are set
 	for i := uint(0); i < k; i++ {
-		// DEBUG
-		fmt.Printf("k = %d, wordSel = 0x%05x (%6d), bitSel = %02x, ",
-			i, wordSel[i], wordSel[i], bitSel[i])
-		fmt.Printf("word val = 0x%x\n", filter.Filter[wordSel[i]])
-		// END
 		filterWord := filter.Filter[wordSel[i]]
 		bitSelector := uint64(1) << bitSel[i]
 		bitVal := filterWord & bitSelector
-		c.Assert(bitVal == 0, Equals, false) // FAILS
-		_ = bitVal
+		c.Assert(bitVal == 0, Equals, false)
 	}
 }
 func (s *XLSuite) TestKeySelector64(c *C) {

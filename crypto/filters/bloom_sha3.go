@@ -53,11 +53,6 @@ type BloomSHA3 struct {
 //  @param k number of hash functions, defaults to 8
 func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 
-	// DEBUG
-	fmt.Printf("NewBloomSHA3: m = %d, k = %d, m*k = %d\n",
-		m, k, m*k)
-	// END
-
 	// XXX need to devise more reasonable set of checks
 	if m < MIN_M || m > MAX_M {
 		err = MOutOfRange
@@ -81,9 +76,6 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 			wordOffset:  make([]uint, k),
 			bitOffset:   make([]byte, k),
 		}
-		// DEBUG
-		//fmt.Printf("BloomSHA3 invoking doClear; %d filterWords\n", filterWords)
-		// END
 		b3.doClear() // no lock
 		// offsets into the filter
 		ks, err = NewKeySelector(m, k, b3.bitOffset, b3.wordOffset)
@@ -111,9 +103,6 @@ func NewNewNewBloomSHA3() (*BloomSHA3, error) {
 // Clear the filter, unsynchronized
 func (b3 *BloomSHA3) doClear() {
 	for i := uint(0); i < b3.filterWords; i++ {
-		// DEBUG
-		// fmt.Printf("doClear(), word %d\n", i)
-		// END
 		b3.Filter[i] = 0
 	}
 }
@@ -152,10 +141,6 @@ func (b3 *BloomSHA3) Insert(b []byte) {
 
 	b3.ks.getOffsets(b)
 	for i := uint(0); i < b3.k; i++ {
-		// DEBUG
-		fmt.Printf("Insert k %d: wordSel 0x%05x (%6d), bitSel 0x%02x\n",
-			i, b3.wordOffset[i], b3.wordOffset[i], b3.bitOffset[i])
-		// END
 		b3.Filter[b3.wordOffset[i]] |= uint64(1) << b3.bitOffset[i]
 	}
 	b3.count++
