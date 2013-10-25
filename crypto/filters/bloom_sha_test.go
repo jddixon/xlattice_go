@@ -9,7 +9,7 @@ import (
 
 // Bloom filters for sets whose members are SHA3 digests.
 
-func setUpB3() (filter *BloomSHA3, n, m, k uint, keys [][]byte) {
+func setUpB3() (filter *BloomSHA, n, m, k uint, keys [][]byte) {
 	m = 20
 	k = 8
 	keys = make([][]byte, 100)
@@ -26,7 +26,7 @@ func (s *XLSuite) TestEmptyFilter(c *C) {
 
 	filter, n, m, k, keys := setUpB3()
 
-	filter, err := NewBloomSHA3(m, k)
+	filter, err := NewBloomSHA(m, k)
 	c.Assert(err, IsNil)
 	c.Assert(filter, NotNil)
 
@@ -46,21 +46,21 @@ func (s *XLSuite) TestParamExceptions(c *C) {
 	// m checks
 
 	// zero filter size exponent
-	_, err := NewBloomSHA3(0, 8)
+	_, err := NewBloomSHA(0, 8)
 	c.Assert(err, NotNil)
 
 	// filter size exponent too large
-	_, err = NewBloomSHA3(25, 8)
+	_, err = NewBloomSHA(25, 8)
 	c.Assert(err, NotNil)
 
 	// checks on k
 
 	// zero hash function count
-	_, err = NewBloomSHA3(20, 0)
+	_, err = NewBloomSHA(20, 0)
 	c.Assert(err, NotNil)
 
 	// invalid hash function count (k*m>256)
-	_, err = NewBloomSHA3(20, 13)
+	_, err = NewBloomSHA(20, 13)
 	c.Assert(err, NotNil)
 }
 
@@ -80,7 +80,7 @@ func (s *XLSuite) doTestInserts(c *C, m, k, numKey uint) {
 			keys[i][j] = byte(0xff & (i + j + 100))
 		}
 	}
-	filter, err = NewBloomSHA3(m, k) // default m=20, k=8
+	filter, err = NewBloomSHA(m, k) // default m=20, k=8
 	c.Assert(err, IsNil)
 	c.Assert(filter, NotNil)
 	for i := uint(0); i < numKey; i++ {

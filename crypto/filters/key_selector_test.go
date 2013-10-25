@@ -204,7 +204,7 @@ func (s *XLSuite) doTestKeySelector64(c *C, rng *xr.PRNG, usingSHA1 bool, m uint
 	s.setWordOffsets(c, &b, wordSel, m, k)
 
 	// create an m,k filter
-	filter, err := NewBloomSHA3(m, k)
+	filter, err := NewBloomSHA(m, k)
 	c.Assert(err, IsNil)
 
 	// verify that the expected bits are NOT set

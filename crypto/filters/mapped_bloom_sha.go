@@ -3,31 +3,39 @@ package filters
 import (
 	"fmt" // DEBUG
 	xf "github.com/jddixon/xlattice_go/util/lfs"
+	"io/ioutil"
 	gm "launchpad.net/gommap"
 	"os"
 	"reflect"
 	"unsafe"
 )
 
-type MappedBloomSHA3 struct {
+var _ = fmt.Print
+
+type MappedBloomSHA struct {
 	backingFile string
 	f           *os.File
-	BloomSHA3
+	BloomSHA
 }
 
-func NewMappedBloomSHA3(m, k uint, backingFile string) (
-	mb3 *MappedBloomSHA3, err error) {
+func NewMappedBloomSHA(m, k uint, backingFile string) (
+	mb3 *MappedBloomSHA, err error) {
 
 	var (
 		f           *os.File
 		filterBits  uint
 		filterWords uint
+		size        int64
 		Filter      []uint64
 		inCore      []byte
-		b3          *BloomSHA3
+		b3          *BloomSHA
 	)
 	if m < MIN_M || m > MAX_M {
 		err = MOutOfRange
+	} else {
+		filterBits = uint(1) << m
+		filterWords = filterBits / 64
+		size = int64(filterBits / 8) // bytes
 	}
 	if err == nil && (k < MIN_K || (k*m > MAX_MK_PRODUCT)) {
 		err = TooManyHashFunctions
@@ -53,17 +61,14 @@ func NewMappedBloomSHA3(m, k uint, backingFile string) (
 				// ! found {
 				f, err = os.OpenFile(backingFile,
 					os.O_CREATE|os.O_RDWR, 0640)
+
+				// XXX should write blocks in a loop
+				zeroes := make([]byte, size)
+				err = ioutil.WriteFile(backingFile, zeroes, 0640)
 			}
 		}
 	}
 	if err == nil {
-		filterBits = uint(1) << m
-		filterWords = filterBits / 64
-		size := int64(filterBits / 8) // bytes
-		// DEBUG
-		fmt.Printf("m = %d, mapping %d (0x%0x) bytes as %d words\n",
-			m, size, size, filterWords)
-		// END
 		inCore, err = gm.MapAt(0, f.Fd(), 0, size,
 			gm.PROT_READ|gm.PROT_WRITE, gm.MAP_SHARED)
 	}
@@ -74,13 +79,9 @@ func NewMappedBloomSHA3(m, k uint, backingFile string) (
 		fh.Len = ih.Len / SIZEOF_UINT64 // length suitably modified
 		fh.Cap = ih.Cap / SIZEOF_UINT64 // likewise for capacity
 
-		// DEBUG
-		fmt.Printf("inCore: addr %v, len %d, cap %d\n", ih.Data, ih.Len, ih.Cap)
-		fmt.Printf("Filter: addr %v, len %d, cap %d\n", fh.Data, fh.Len, fh.Cap)
-		// END
 		var ks *KeySelector
 
-		b3 = &BloomSHA3{
+		b3 = &BloomSHA{
 			m:          m,
 			k:          k,
 			Filter:     Filter,
@@ -92,9 +93,6 @@ func NewMappedBloomSHA3(m, k uint, backingFile string) (
 			filterBits:  filterBits,
 			filterWords: filterWords,
 		}
-		// DEBUG
-		fmt.Printf("MappedBloom.doClear; %d filterWords\n", filterWords)
-		// END
 		b3.doClear() // no lock
 		// offsets into the filter
 		ks, err = NewKeySelector(m, k, b3.bitOffset, b3.wordOffset)
@@ -105,10 +103,10 @@ func NewMappedBloomSHA3(m, k uint, backingFile string) (
 		}
 	}
 	if err == nil {
-		mb3 = &MappedBloomSHA3{
+		mb3 = &MappedBloomSHA{
 			backingFile: backingFile,
 			f:           f,
-			BloomSHA3:   *b3,
+			BloomSHA:    *b3,
 		}
 	}
 	return

@@ -1,18 +1,11 @@
 xlattice_go/crypto/TODO
 
 2013-10-24
-    * write NewMappedBloomSHA3 instead of adding parameter to
-        NewBloomSHA3
-    * consider renaming both to drop the '3', since neither has
-        anything much to do with SHA3
+    * write NewMappedBloomSHA3 instead of adding parameter to           * DONE
+        NewBloomSHA3                                            		* DONE
+    * consider renaming both to drop the '3', since neither has 		* DONE
+        anything much to do with SHA3                           		* DONE
 
-2013-10-21
-    * rework key_selector_64_test.go to pack key selectors at           * SKIP
-        front of key                                                    * SKIP
-2013-10-20
-    * filters/bloom_sha3_test.go fails if INCORRECT word size 32        * FIXED
-        is replaced with correct word size 64, about line 63            * FIXED
-        bloom_sha3.go                                                   * FIXED
 2013-10-18
     * add backingFile string parameter to NewBloomSHA3
         - alternatively this is NewMappedBloomSHA3
@@ -20,11 +13,7 @@ xlattice_go/crypto/TODO
             * so m must be >= 12
         - if parameter is "", not memory-mapped
 2013-10-15
-    * merge selector.go back into key_selector.go                       * DONE
-    * ADJUST FROM 20 BYTE KEYS TO 32                                    * SKIP
-        - no, don't.  We will use with a mix of SHA1 and SHA3 keys      * SKIP
-        - but think about this                                          * DONE
-    * need to be able to serialize Bloom filters, which can be
+    * need to be able to serialize Bloom filters, which can be          * DROP
         expressed as a need for 
         - BloomSHA3.String()
         - BloomSHA3.Parse()
@@ -32,6 +21,8 @@ xlattice_go/crypto/TODO
         - func (b3 *BloomSHA3) Union(*BloomSHA3) error
         - where the obvious error is that m and k differ
         - this is presumably a merge in place
+    * DROP THE ABOVE; memory-mapped filters serve the same purpose
+
 2013-10-12
     * implement Bloom filter (xlattice_j/.../crypto/filters)            * DONE
       ...`

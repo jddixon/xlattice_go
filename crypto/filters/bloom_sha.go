@@ -29,7 +29,7 @@ import (
 
 var _ = fmt.Print
 
-type BloomSHA3 struct {
+type BloomSHA struct {
 	m     uint // protected final int m
 	k     uint // protected final int k
 	count uint
@@ -51,7 +51,7 @@ type BloomSHA3 struct {
 
 // @param m determines number of bits in filter, defaults to 20
 //  @param k number of hash functions, defaults to 8
-func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
+func NewBloomSHA(m, k uint) (b3 *BloomSHA, err error) {
 
 	// XXX need to devise more reasonable set of checks
 	if m < MIN_M || m > MAX_M {
@@ -67,7 +67,7 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 
 		filterBits := uint(1) << m
 		filterWords := filterBits / BITS_PER_WORD
-		b3 = &BloomSHA3{
+		b3 = &BloomSHA{
 			m:           m,
 			k:           k,
 			filterBits:  filterBits,
@@ -90,29 +90,25 @@ func NewBloomSHA3(m, k uint) (b3 *BloomSHA3, err error) {
 
 // Creates a filter of 2^m bits, with the number of 'hash functions"
 // k defaulting to 8.
-func NewNewBloomSHA3(m uint) (*BloomSHA3, error) {
-	return NewBloomSHA3(m, 8)
+func NewNewBloomSHA(m uint) (*BloomSHA, error) {
+	return NewBloomSHA(m, 8)
 }
 
 // Creates a filter of 2^20 bits with k defaulting to 8.
 
-func NewNewNewBloomSHA3() (*BloomSHA3, error) {
-	return NewBloomSHA3(20, 8)
+func NewNewNewBloomSHA() (*BloomSHA, error) {
+	return NewBloomSHA(20, 8)
 }
 
 // Clear the filter, unsynchronized
-func (b3 *BloomSHA3) doClear() {
-	// DEBUG
-	fmt.Printf("entering doClear() with filterWords = %d\n",
-		b3.filterWords)
-	// END
+func (b3 *BloomSHA) doClear() {
 	for i := uint(0); i < b3.filterWords; i++ {
 		b3.Filter[i] = 0
 	}
 }
 
 // Synchronized version */
-func (b3 *BloomSHA3) Clear() {
+func (b3 *BloomSHA) Clear() {
 	b3.mu.Lock()
 	b3.doClear()
 	b3.count = 0 // jdd added 2005-02-19
@@ -120,10 +116,10 @@ func (b3 *BloomSHA3) Clear() {
 }
 
 // Returns the number of keys which have been inserted.  This
-// class (BloomSHA3) does not guarantee uniqueness in any sense; if the
+// class (BloomSHA) does not guarantee uniqueness in any sense; if the
 // same key is added N times, the number of set members reported
 // will increase by N.
-func (b3 *BloomSHA3) Size() uint {
+func (b3 *BloomSHA) Size() uint {
 	b3.mu.Lock()
 	defer b3.mu.Unlock()
 	return b3.count
@@ -131,7 +127,7 @@ func (b3 *BloomSHA3) Size() uint {
 
 // Capacity returns the number of bits in the filter.
 
-func (b3 *BloomSHA3) Capacity() uint {
+func (b3 *BloomSHA) Capacity() uint {
 	return b3.filterBits
 }
 
@@ -139,7 +135,7 @@ func (b3 *BloomSHA3) Capacity() uint {
 //
 // XXX This version does not maintain 4-bit counters, it is not
 // a counting Bloom filter.
-func (b3 *BloomSHA3) Insert(b []byte) {
+func (b3 *BloomSHA) Insert(b []byte) {
 	b3.mu.Lock()
 	defer b3.mu.Unlock()
 
@@ -156,7 +152,7 @@ func (b3 *BloomSHA3) Insert(b []byte) {
 //
 // @param b byte array representing a key (SHA3 digest)
 // @return true if b is in the filter
-func (b3 *BloomSHA3) isMember(b []byte) bool {
+func (b3 *BloomSHA) isMember(b []byte) bool {
 	b3.ks.getOffsets(b)
 	for i := uint(0); i < b3.k; i++ {
 		if !((b3.Filter[b3.wordOffset[i]] & (1 << b3.bitOffset[i])) != 0) {
@@ -171,7 +167,7 @@ func (b3 *BloomSHA3) isMember(b []byte) bool {
 //
 // @param b byte array representing a key (SHA3 digest)
 // @return true if b is in the filter
-func (b3 *BloomSHA3) Member(b []byte) bool {
+func (b3 *BloomSHA) Member(b []byte) bool {
 	b3.mu.Lock()
 	defer b3.mu.Unlock()
 
@@ -179,7 +175,7 @@ func (b3 *BloomSHA3) Member(b []byte) bool {
 }
 
 // For n the number of set members, return approximate false positive rate.
-func (b3 *BloomSHA3) FalsePositivesN(n uint) float64 {
+func (b3 *BloomSHA) FalsePositivesN(n uint) float64 {
 	// (1 - e(-kN/M))^k
 
 	fK := float64(b3.k)
@@ -188,6 +184,6 @@ func (b3 *BloomSHA3) FalsePositivesN(n uint) float64 {
 	return math.Pow((1.0 - math.Exp(-fK*fN/fB)), fK)
 }
 
-func (b3 *BloomSHA3) FalsePositives() float64 {
+func (b3 *BloomSHA) FalsePositives() float64 {
 	return b3.FalsePositivesN(b3.count)
 }
