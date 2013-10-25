@@ -119,10 +119,10 @@ func (ks *KeySelector) getBitSelectors() {
 func (ks *KeySelector) getWordSelectors() {
 	// the word selectors being created
 	selBits := ks.m - uint(6)
-	selBytes := (selBits + uint(7)) / uint(8)
-	bitsLastByte := selBits - uint(8)*(selBytes-uint(1))
+	selBytes := (selBits + 7) / 8
+	bitsLastByte := selBits - 8*(selBytes-1)
 
-	// these describe the key being inserted into the filter
+	// bit offset into ks.b, the key being inserted into the filter
 	curBit := ks.k * KEY_SEL_BITS
 
 	// DEBUG
@@ -133,9 +133,6 @@ func (ks *KeySelector) getWordSelectors() {
 
 	for i := uint(0); i < ks.k; i++ {
 		curByte := curBit / 8
-
-		//fmt.Printf("extracting selector %d; curBit %d, curByte %d\n",
-		//	i, curBit, curByte)
 
 		var wordSel uint // accumulate selector bits here
 
@@ -151,14 +148,19 @@ func (ks *KeySelector) getWordSelectors() {
 			fmt.Printf("%dE wordSel = 0x%06x\n", i, wordSel)
 			// END
 			curBit += selBits
+
 		} else {
 			endBit := curBit + selBits
 
-			// first byte in b has bits on right
-			bitsLeftByte := (8 * curByte) - curBit
-			wordSel = uint(ks.b[curByte]) >> (8 - bitsLeftByte)
-			curBit += bitsLeftByte
-			wordSelBit := bitsLeftByte
+			usedBits := curBit - (8 * curByte)
+
+			fmt.Printf("%d: curByte %d, curBit %d, usedBits %d, value %02x\n",
+				i, curByte, curBit, usedBits, ks.b[curByte])
+
+			wordSel = uint(ks.b[curByte]) >> usedBits
+			fmt.Printf("  ws0 => %05x\n", wordSel)
+			curBit += (8 - usedBits)
+			wordSelBit := 8 - usedBits
 
 			for curBit < endBit {
 				curByte = curBit / 8
@@ -170,15 +172,14 @@ func (ks *KeySelector) getWordSelectors() {
 				}
 				val := uint(ks.b[curByte] & UNMASK[bitsThisByte])
 				wordSel |= val << wordSelBit
+
+				fmt.Printf("  curBit %d: byte %02x; val %02x; ws => %05x\n",
+					curBit, ks.b[curByte], val, wordSel)
+
 				wordSelBit += bitsThisByte
 				curBit += bitsThisByte
 			}
-			// DEBUG
-			fmt.Printf("%d: wordSel = 0x%06x\n", i, wordSel)
-			// END
-
 		}
 		ks.wordOffset[i] = wordSel
-
 	}
 }

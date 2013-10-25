@@ -4,6 +4,7 @@ package filters
 
 import (
 	"fmt" // DEBUG
+	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
 
@@ -138,26 +139,22 @@ func (s *XLSuite) setBitOffsets(c *C, b *[]byte, val []byte) {
 func (s *XLSuite) setWordOffsets(c *C, b *[]byte, val []uint, m, k uint) {
 	// 2 ^ 6 == 64, number of bits in a uint64
 	wordSelBits := m - 6
-	wordSelMask := ^(uint(1) << wordSelBits)
-	bytesInU := (wordSelBits + 7) / 8
+	wordSelMask := (uint(1) << wordSelBits) - 1
+	bytesInV := (wordSelBits + 7) / 8
 	var bitsLastByte uint
-	if bytesInU*8 == bytesInU {
-		bitsLastByte = uint(8)
+	if bytesInV*8 == wordSelBits {
+		bitsLastByte = 8
 	} else {
-		bitsLastByte = wordSelBits - (bytesInU-1)*uint(8)
+		bitsLastByte = wordSelBits - (bytesInV-1)*8
 	}
 
-	fmt.Printf("bytesInU %d, wordSelBits %d, bitsLastByte %d\n",
-		bytesInU, wordSelBits, bitsLastByte)
+	fmt.Printf("bytesInV %d, wordSelBits %d, bitsLastByte %d\n",
+		bytesInV, wordSelBits, bitsLastByte)
 
 	vLen := uint(len(val))
 
 	var curTByte uint           // byte offset in b
 	curTBit := k * KEY_SEL_BITS // bit offset in b
-
-	// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-	// XXX THIS MANGLES THE LAST NIBBLE OF THE KEY SELECTORS
-	// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 	// iterate through the test values, merging them into target
 	for i := uint(0); i < vLen; i++ {
@@ -168,52 +165,146 @@ func (s *XLSuite) setWordOffsets(c *C, b *[]byte, val []uint, m, k uint) {
 		fmt.Printf("\nval[%d] = 0x%05x => 0x%05x (%6d)\n",
 			i, val[i], maskedVal, maskedVal)
 
-		for j := uint(0); j < bytesInU; j++ {
-			thisUByte := byte(maskedVal >> (j * uint(8)))
+		for j := uint(0); j < bytesInV; j++ {
+			thisVByte := byte(maskedVal >> (j * uint(8)))
 
-			fmt.Printf("  thisUByte %d = 0x%02x", j, thisUByte)
+			fmt.Printf("  thisVByte %d = 0x%02x", j, thisVByte)
 
-			bitsThisUByte := uint(8)
-			if j == (bytesInU - 1) {
-				bitsThisUByte = bitsLastByte
+			bitsThisVByte := uint(8)
+			if j == (bytesInV - 1) {
+				bitsThisVByte = bitsLastByte
 			}
 			// these point into the target, b
 			curTByte = curTBit / 8
-			offsetInTByte := curTBit - (curTByte * uint(8)) // bit offset
+			tBit := curTBit - (curTByte * 8) // bit offset
 			fmt.Printf("  tBit %3d, tByte %3d\n", curTBit, curTByte)
 
-			if offsetInTByte == 0 {
+			if tBit == 0 {
 				// we just assign it in, trusting b was all zeroes
-				(*b)[curTByte] = byte(thisUByte)
+				(*b)[curTByte] = byte(thisVByte)
 
 				fmt.Printf("= ")
 				s.dumpB(c, *b)
 			} else {
 				// we have to shift
-				ususedTBits := uint(8) - offsetInTByte
-				if bitsThisUByte <= ususedTBits {
-					// XXX GOES INTO WRONG BYTE
+				fBits := 8 - tBit // unused bits this byte
+				if bitsThisVByte <= fBits {
 					// it will fit in this byte
-					value := thisUByte << offsetInTByte
+					value := thisVByte << tBit
 					(*b)[curTByte] |= value
 
 					fmt.Printf("  ")
 					s.dumpB(c, *b)
 				} else {
 					// we have to split it over two target bytes
-					lValue := thisUByte >> offsetInTByte
+					lValue := (thisVByte & UNMASK[fBits]) << tBit
 					(*b)[curTByte] |= lValue
 
 					fmt.Printf("L ")
 					s.dumpB(c, *b)
 
-					rValue := thisUByte << (uint(8) - offsetInTByte)
+					rValue := thisVByte >> fBits
 					(*b)[curTByte+1] |= rValue
 					fmt.Printf("R ")
 					s.dumpB(c, *b)
+
+					fmt.Printf("   lValue %02x rVaue %02x\n",
+						lValue, rValue)
 				}
 			}
-			curTBit += bitsThisUByte
+			curTBit += bitsThisVByte
 		}
 	}
+}
+
+func (s *XLSuite) doTestKeySelector64(c *C, rng *xr.PRNG, usingSHA1 bool, m uint) {
+
+	var v uint     // length of byte array
+	if usingSHA1 { //
+		v = uint(20) // bytes
+	} else {
+		v = uint(32)
+	}
+	b := make([]byte, v)   // value being inserted into filter
+	k := uint((v * 8) / m) // number of hash functions
+
+	bitSel := make([]byte, k)
+	wordSel := make([]uint, k)
+	// 2^6 is 64, number of bits in a uint64
+	wordsInFilter := 1 << (m - uint(6))
+
+	// DEBUG
+	fmt.Printf("usingSHA1 = %v, wordsInFilter = %d, v = %d, m = %d\n",
+		usingSHA1, wordsInFilter, v, m)
+	// END
+	for i := uint(0); i < k; i++ {
+		bitSel[i] = byte(rng.Intn(64))
+		wordSel[i] = uint(rng.Intn(wordsInFilter))
+	}
+
+	// concatenate the key selectors at the front
+	s.setBitOffsets(c, &b, bitSel)
+	// DEBUG
+	fmt.Printf("\nPopulated b, keySels set,  k = %d:\n    ", k)
+	s.dumpB(c, b)
+	// END
+
+	// append the word selectors
+	s.setWordOffsets(c, &b, wordSel, m, k)
+	// DEBUG
+	fmt.Printf("\nPopulated b, wordSels set, k = %d:\n    ", k)
+	s.dumpB(c, b)
+	// END
+
+	// create an m,k filter
+	filter, err := NewBloomSHA3(m, k)
+	c.Assert(err, IsNil)
+
+	// verify that the expected bits are NOT set
+	for i := uint(0); i < k; i++ {
+		// DEBUG
+		fmt.Printf("k = %d, wordSel = 0x%05x (%6d), bitSel = %02x, ",
+			i, wordSel[i], wordSel[i], bitSel[i])
+		fmt.Printf("word val = 0x%x\n", filter.Filter[wordSel[i]])
+		// END
+		filterWord := filter.Filter[wordSel[i]]
+		bitSelector := uint64(1) << bitSel[i]
+		bitVal := filterWord & bitSelector
+		c.Assert(bitVal == 0, Equals, true)
+	}
+
+	// insert the value b
+	filter.Insert(b)
+
+	// -- NEW TEST --------------------------------------------------
+	// compare key and word selectors in filter with those
+	// calculated
+	fmt.Printf("\nCOMPARING SELECTORS\n")
+	for i := uint(0); i < k; i++ {
+		fmt.Printf("k = %d: actual bitSel %02x expected %02x\n",
+			i, filter.ks.bitOffset[i], bitSel[i])
+	}
+	fmt.Println()
+	// -- END NEW TEST ----------------------------------------------
+
+	// verify that all of the expected bits are set
+	for i := uint(0); i < k; i++ {
+		// DEBUG
+		fmt.Printf("k = %d, wordSel = 0x%05x (%6d), bitSel = %02x, ",
+			i, wordSel[i], wordSel[i], bitSel[i])
+		fmt.Printf("word val = 0x%x\n", filter.Filter[wordSel[i]])
+		// END
+		filterWord := filter.Filter[wordSel[i]]
+		bitSelector := uint64(1) << bitSel[i]
+		bitVal := filterWord & bitSelector
+		c.Assert(bitVal == 0, Equals, false) // FAILS
+		_ = bitVal
+	}
+}
+func (s *XLSuite) TestKeySelector64(c *C) {
+
+	rng := xr.MakeSimpleRNG()
+	// m := uint(10 + rng.Intn(15))	// so 10..24
+	s.doTestKeySelector64(c, rng, true, 24)
+	s.doTestKeySelector64(c, rng, false, 24)
 }
