@@ -3,7 +3,7 @@ package filters
 // xlattice_go/crypto/filters/bloom_sha3_test.go
 
 import (
-	//"fmt"		// DEBUG
+	"fmt" // DEBUG
 	. "launchpad.net/gocheck"
 )
 
@@ -20,6 +20,9 @@ func setUpB3() (filter *BloomSHA3, n, m, k uint, keys [][]byte) {
 }
 
 func (s *XLSuite) TestEmptyFilter(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_EMPTY_FILTER")
+	}
 
 	filter, n, m, k, keys := setUpB3()
 
@@ -37,6 +40,9 @@ func (s *XLSuite) TestEmptyFilter(c *C) {
 // parameters are caught.
 func (s *XLSuite) TestParamExceptions(c *C) {
 
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_PARAM_EXCEPTIONS")
+	}
 	// m checks
 
 	// zero filter size exponent
@@ -89,7 +95,9 @@ func (s *XLSuite) doTestInserts(c *C, m, k, numKey uint) {
 	}
 }
 func (s *XLSuite) TestInserts(c *C) {
-
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_INSERTS")
+	}
 	m := uint(20)
 	k := uint(8)
 

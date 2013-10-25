@@ -1,32 +1,29 @@
 xlattice_go/crypto/TODO
 
-2013-10-21
-    * rework key_selector_64_test.go to pack key selectors at
-        front of key
+2013-10-24
+    * write NewMappedBloomSHA3 instead of adding parameter to
+        NewBloomSHA3
+    * consider renaming both to drop the '3', since neither has
+        anything much to do with SHA3
 
+2013-10-21
+    * rework key_selector_64_test.go to pack key selectors at           * SKIP
+        front of key                                                    * SKIP
 2013-10-20
     * filters/bloom_sha3_test.go fails if INCORRECT word size 32        * FIXED
         is replaced with correct word size 64, about line 63            * FIXED
         bloom_sha3.go                                                   * FIXED
-
 2013-10-18
     * add backingFile string parameter to NewBloomSHA3
         - alternatively this is NewMappedBloomSHA3
         - size is 2^m bytes = 2^(m-12) blocks
             * so m must be >= 12
         - if parameter is "", not memory-mapped
-
 2013-10-15
     * merge selector.go back into key_selector.go                       * DONE
-
-    TRANSLATE
-    * TestKeySelector.java -> key_selector_test.go                      * DONE
-    * TestBloomSHA1.java   -> bloom_sha3_test.go                        * DONE
-
-    * ADJUST FROM 20 BYTE KEYS TO 32
-        - no, don't.  We will use with a mix of SHA1 and SHA3 keys
-        - but think about this
-
+    * ADJUST FROM 20 BYTE KEYS TO 32                                    * SKIP
+        - no, don't.  We will use with a mix of SHA1 and SHA3 keys      * SKIP
+        - but think about this                                          * DONE
     * need to be able to serialize Bloom filters, which can be
         expressed as a need for 
         - BloomSHA3.String()
@@ -35,15 +32,11 @@ xlattice_go/crypto/TODO
         - func (b3 *BloomSHA3) Union(*BloomSHA3) error
         - where the obvious error is that m and k differ
         - this is presumably a merge in place
-
 2013-10-12
     * implement Bloom filter (xlattice_j/.../crypto/filters)            * DONE
-        for use in ../reg
-        - about 750 SLOC, of which about 450 test
-            * but counting bloom not yet translated to GO
+      ...`
     * then look at Wikipedia article
     * and google on "golang bloom filter"
-
 2013-09-20
     * Supposedly RSA believes dual elliptic curve deterministic 
         random number generation algorithm contains a flaw 
@@ -51,8 +44,4 @@ xlattice_go/crypto/TODO
         (BBC article today)
         - so review the code
         - do something to scramble the bits ?
-
-2013-08-27
-    * IMPLEMENT rsa private key to/from wire                            * DONE
-        - pubkey to/from coded and tested                               * DONE
 

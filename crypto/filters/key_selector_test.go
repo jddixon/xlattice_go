@@ -52,7 +52,9 @@ func (s *XLSuite) dumpB(c *C, b []byte) {
 
 // END
 func (s *XLSuite) TestBitSelection(c *C) {
-
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_BIT_SELECTION")
+	}
 	var err error
 	ks, m, k, v, keys, bOff, wOff := setUpTestKS()
 

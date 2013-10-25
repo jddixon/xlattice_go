@@ -102,6 +102,10 @@ func NewNewNewBloomSHA3() (*BloomSHA3, error) {
 
 // Clear the filter, unsynchronized
 func (b3 *BloomSHA3) doClear() {
+	// DEBUG
+	fmt.Printf("entering doClear() with filterWords = %d\n",
+		b3.filterWords)
+	// END
 	for i := uint(0); i < b3.filterWords; i++ {
 		b3.Filter[i] = 0
 	}
