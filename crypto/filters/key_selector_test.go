@@ -19,9 +19,7 @@ func setUpTestKS() (
 	m,
 	k,
 	v uint, // size of test values (160 = SHA1, 256 = SHA3)
-	keys [][]byte,
-	bOff []byte,
-	wOff []uint) {
+	keys [][]byte) {
 
 	m = 20 // default
 	k = 8
@@ -33,12 +31,6 @@ func setUpTestKS() (
 	for i := 0; i < NUM_TEST_KEYS; i++ {
 		keys[i] = make([]byte, v)
 	}
-	// Each of the k hash functions selects a bit in the filter;
-	// this bit will be located first by its word offset within the
-	// filter of 2 << m bits and then by its bit offset within
-	// that word.
-	bOff = make([]byte, k)
-	wOff = make([]uint, k)
 	return
 }
 
@@ -56,10 +48,10 @@ func (s *XLSuite) TestBitSelection(c *C) {
 		fmt.Println("TEST_BIT_SELECTION")
 	}
 	var err error
-	ks, m, k, v, keys, bOff, wOff := setUpTestKS()
+	ks, m, k, v, keys := setUpTestKS()
 
 	// Set up bit selectors for NUM_TEST_KEYS test keys.  Each
-	// bit selector is populated with a random value.
+	// bit selector is populated with a different value.
 	for i := 0; i < NUM_TEST_KEYS; i++ {
 		bitOffsets := make([]byte, k)
 		for j := uint(0); j < k; j++ {
@@ -67,17 +59,16 @@ func (s *XLSuite) TestBitSelection(c *C) {
 		}
 		s.setBitOffsets(c, &keys[i], bitOffsets)
 	}
-	ks, err = NewKeySelector(m, k, bOff, wOff)
-	c.Assert(err, IsNil)
 
 	for i := uint(0); false && i < NUM_TEST_KEYS; i++ {
-		ks.getOffsets(keys[i])
+		ks, err = NewKeySelector(m, k, keys[i])
+		c.Assert(err, IsNil)
 		for j := uint(0); j < k; j++ {
-			c.Assert(bOff[j], Equals, byte((j*k+j)%8))
+			c.Assert(ks.bitOffset[j], Equals, byte((j*k+j)%8))
 		}
 	}
 	_ = v
-}
+} // GEEP
 
 // Set the bit selectors, which are the k KEY_SEL_BITS-bit values
 // at the beginning of a key.

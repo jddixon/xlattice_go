@@ -56,12 +56,16 @@ func (s *XLSuite) doTestMappedInserts(c *C, m, k, numKey uint) {
 	for i := uint(0); i < numKey; i++ {
 		c.Assert(filter.Size(), Equals, i)
 		// before you insert the key, it's not there
-		c.Assert(filter.Member(keys[i]), Equals, false)
+		found, err := filter.Member(keys[i])
+		c.Assert(err, IsNil)
+		c.Assert(found, Equals, false)
 		filter.Insert(keys[i])
 	}
 	for i := uint(0); i < numKey; i++ {
 		// the keys we just inserted are in the filter
-		c.Assert(filter.Member(keys[i]), Equals, true)
+		found, err := filter.Member(keys[i])
+		c.Assert(err, IsNil)
+		c.Assert(found, Equals, true)
 	}
 }
 func (s *XLSuite) TestMappedInserts(c *C) {

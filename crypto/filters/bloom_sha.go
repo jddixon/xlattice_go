@@ -34,16 +34,16 @@ type BloomSHA struct {
 	k     uint // protected final int k
 	count uint
 
-	Filter     []uint64
-	ks         *KeySelector
-	wordOffset []uint
-	bitOffset  []byte
+	Filter []uint64
+	//ks         *KeySelector
+	//wordOffset []uint
+	//bitOffset  []byte
 
 	// convenience variables
 	filterBits  uint
 	filterWords uint
 
-	mu sync.Mutex
+	mu sync.RWMutex
 }
 
 // Creates a filter with 2^m bits and k 'hash functions', where
@@ -63,8 +63,6 @@ func NewBloomSHA(m, k uint) (b3 *BloomSHA, err error) {
 		err = TooManyHashFunctions
 	}
 	if err == nil {
-		var ks *KeySelector
-
 		filterBits := uint(1) << m
 		filterWords := filterBits / BITS_PER_WORD
 		b3 = &BloomSHA{
@@ -73,17 +71,15 @@ func NewBloomSHA(m, k uint) (b3 *BloomSHA, err error) {
 			filterBits:  filterBits,
 			filterWords: filterWords,
 			Filter:      make([]uint64, filterWords),
-			wordOffset:  make([]uint, k),
-			bitOffset:   make([]byte, k),
 		}
 		b3.doClear() // no lock
 		// offsets into the filter
-		ks, err = NewKeySelector(m, k, b3.bitOffset, b3.wordOffset)
-		if err == nil {
-			b3.ks = ks
-		} else {
-			b3 = nil
-		}
+		//ks, err = NewKeySelector(m, k, b3.bitOffset, b3.wordOffset)
+		//if err == nil {
+		//	b3.ks = ks
+		//} else {
+		//	b3 = nil
+		//}
 	}
 	return
 }
@@ -135,31 +131,33 @@ func (b3 *BloomSHA) Capacity() uint {
 //
 // XXX This version does not maintain 4-bit counters, it is not
 // a counting Bloom filter.
-func (b3 *BloomSHA) Insert(b []byte) {
+func (b3 *BloomSHA) Insert(b []byte) (err error) {
 	b3.mu.Lock()
 	defer b3.mu.Unlock()
 
-	b3.ks.getOffsets(b)
-	for i := uint(0); i < b3.k; i++ {
-		b3.Filter[b3.wordOffset[i]] |= uint64(1) << b3.bitOffset[i]
+	ks, err := NewKeySelector(b3.m, b3.k, b)
+	if err == nil {
+		for i := uint(0); i < b3.k; i++ {
+			b3.Filter[ks.wordOffset[i]] |= uint64(1) << ks.bitOffset[i]
+		}
+		b3.count++
 	}
-	b3.count++
+	return
 }
 
-//
-// Whether a key is in the filter.  Sets up the bit and word offset
-// arrays.
-//
-// @param b byte array representing a key (SHA3 digest)
-// @return true if b is in the filter
-func (b3 *BloomSHA) isMember(b []byte) bool {
-	b3.ks.getOffsets(b)
-	for i := uint(0); i < b3.k; i++ {
-		if !((b3.Filter[b3.wordOffset[i]] & (1 << b3.bitOffset[i])) != 0) {
-			return false
+// Returns whether a key is in the filter.
+func (b3 *BloomSHA) isMember(b []byte) (whether bool, err error) {
+	ks, err := NewKeySelector(b3.m, b3.k, b)
+	if err == nil {
+		whether = true
+		for i := uint(0); i < b3.k; i++ {
+			if !((b3.Filter[ks.wordOffset[i]] & (1 << ks.bitOffset[i])) != 0) {
+				whether = false
+				break
+			}
 		}
 	}
-	return true
+	return
 }
 
 // Whether a key is in the filter.  External interface, internally
@@ -167,9 +165,9 @@ func (b3 *BloomSHA) isMember(b []byte) bool {
 //
 // @param b byte array representing a key (SHA3 digest)
 // @return true if b is in the filter
-func (b3 *BloomSHA) Member(b []byte) bool {
-	b3.mu.Lock()
-	defer b3.mu.Unlock()
+func (b3 *BloomSHA) Member(b []byte) (bool, error) {
+	b3.mu.RLock()
+	defer b3.mu.RUnlock()
 
 	return b3.isMember(b)
 }

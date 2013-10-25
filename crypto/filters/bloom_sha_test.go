@@ -85,13 +85,15 @@ func (s *XLSuite) doTestInserts(c *C, m, k, numKey uint) {
 	c.Assert(filter, NotNil)
 	for i := uint(0); i < numKey; i++ {
 		c.Assert(filter.Size(), Equals, i)
-		// AssertFalse("key " + i + " not yet in set, but found!",
-		c.Assert(filter.Member(keys[i]), Equals, false)
+		isMember, err := filter.Member(keys[i])
+		c.Assert(err, IsNil)
+		c.Assert(isMember, Equals, false)
 		filter.Insert(keys[i])
 	}
 	for i := uint(0); i < numKey; i++ {
-		// c.AssertTrue("key " + i + " has been added but not found in set",
-		c.Assert(filter.Member(keys[i]), Equals, true)
+		isMember, err := filter.Member(keys[i])
+		c.Assert(err, IsNil)
+		c.Assert(isMember, Equals, true)
 	}
 }
 func (s *XLSuite) TestInserts(c *C) {

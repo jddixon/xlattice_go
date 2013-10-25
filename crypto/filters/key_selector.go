@@ -39,23 +39,20 @@ type KeySelector struct {
 //
 // @param m    size of the filter as a power of 2
 // @param k    number of 'hash functions'
-// @param bitOffset array of k bit offsets (offset of flag bit in word)
-// @param wordOffset array of k word offsets (offset of word flag is in)
-func NewKeySelector(m, k uint, bitOffset []byte, wordOffset []uint) (
+func NewKeySelector(m, k uint, b []byte) (
 	ks *KeySelector, err error) {
 
-	if (m < MIN_M) || (m > MAX_M) || (k < MIN_K) || (bitOffset == nil) ||
-		(wordOffset == nil) {
-
-		err = KeySelectorArgOutOfRange
+	if (m < MIN_M) || (m > MAX_M) {
+		err = MOutOfRange
 	}
 	if err == nil {
 		ks = &KeySelector{
 			m:          m,
 			k:          k,
-			bitOffset:  bitOffset,
-			wordOffset: wordOffset,
+			bitOffset:  make([]byte, k),
+			wordOffset: make([]uint, k),
 		}
+		err = ks.getOffsets(b) // validates b
 	}
 	return
 }
@@ -68,7 +65,7 @@ func NewKeySelector(m, k uint, bitOffset []byte, wordOffset []uint) (
 func (ks *KeySelector) getOffsets(key []byte) (err error) {
 	if key == nil {
 		err = NilKey
-		if err == nil && len(key) < xc.SHA3_LEN {
+		if err == nil && len(key) < xc.SHA1_LEN {
 			err = KeyTooShort
 		}
 	}

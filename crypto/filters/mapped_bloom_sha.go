@@ -79,14 +79,10 @@ func NewMappedBloomSHA(m, k uint, backingFile string) (
 		fh.Len = ih.Len / SIZEOF_UINT64 // length suitably modified
 		fh.Cap = ih.Cap / SIZEOF_UINT64 // likewise for capacity
 
-		var ks *KeySelector
-
 		b3 = &BloomSHA{
-			m:          m,
-			k:          k,
-			Filter:     Filter,
-			wordOffset: make([]uint, k),
-			bitOffset:  make([]byte, k),
+			m:      m,
+			k:      k,
+			Filter: Filter,
 
 			// comments say these are convenience variables but they
 			// are actually used
@@ -94,13 +90,6 @@ func NewMappedBloomSHA(m, k uint, backingFile string) (
 			filterWords: filterWords,
 		}
 		b3.doClear() // no lock
-		// offsets into the filter
-		ks, err = NewKeySelector(m, k, b3.bitOffset, b3.wordOffset)
-		if err == nil {
-			b3.ks = ks
-		} else {
-			b3 = nil
-		}
 	}
 	if err == nil {
 		mb3 = &MappedBloomSHA{
