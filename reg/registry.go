@@ -27,7 +27,7 @@ type Registry struct {
 	m, k     uint          // serialized
 	Clusters []*RegCluster // serialized
 
-	idFilter *xf.BloomSHA3
+	idFilter *xf.BloomSHA
 
 	ClustersByName map[string]*RegCluster // volatile, not serialized
 	ClustersByID   *xn.BNIMap             // -ditto-
@@ -42,10 +42,10 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 	ckPriv, skPriv *rsa.PrivateKey, logger *log.Logger, m, k uint) (
 	reg *Registry, err error) {
 
-	var idFilter *xf.BloomSHA3
+	var idFilter *xf.BloomSHA
 	rn, err := NewRegNode(node, ckPriv, skPriv)
 	if err == nil {
-		idFilter, err = xf.NewBloomSHA3(m, k)
+		idFilter, err = xf.NewBloomSHA(m, k)
 		// DEBUG
 		fmt.Printf("idFilter created: m = %d, k = %d\n", m, k)
 		// END
@@ -72,12 +72,13 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 	return
 }
 
-func (reg *Registry) ContainsID(n *xi.NodeID) bool {
+func (reg *Registry) ContainsID(n *xi.NodeID) (bool, error) {
 	return reg.idFilter.Member(n.Value())
 }
 func (reg *Registry) InsertID(n *xi.NodeID) (err error) {
 	b := n.Value()
-	if reg.idFilter.Member(b) {
+	found, err := reg.idFilter.Member(b)
+	if err == nil && found {
 		err = IDAlreadyInUse
 	}
 	if err == nil {
@@ -127,11 +128,13 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 func (reg *Registry) UniqueNodeID() (nodeID *xi.NodeID, err error) {
 
 	nodeID, err = xi.New(nil)
-	for err == nil && reg.ContainsID(nodeID) {
+	found, err := reg.ContainsID(nodeID) 
+	for err == nil && found {
 		nodeID, err = xi.New(nil)
+		found, err = reg.ContainsID(nodeID) 
 	}
 	if err == nil {
-		reg.idFilter.Insert(nodeID.Value())
+		err = reg.idFilter.Insert(nodeID.Value())
 	}
 	return
 }

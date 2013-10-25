@@ -1,5 +1,13 @@
 xlattice_go/reg/TODO
 
+2013-10-25
+    MEMORY-MAPPED BLOOM FILTER (10-18, corrected)
+    * memory-map Bloom filter 
+       - backing file is LFS/idFilter.dat
+       - size is 2^(m-3) bytes
+       - a block is 2^12 bytes, so the backing file has 2^(m-15) blocks
+       - the memory-mapping has to be implemented int crypto/filters
+
 2013-10-18
     * Whatever is using BadVersion should be using the DecimalVersion
         type
@@ -8,14 +16,6 @@ xlattice_go/reg/TODO
         - That VERSION should be explicitly of type xu.DecimalVersion;
             VERSION_DATE could also be typed.
         - Note that VERSION is 0.1.1 in that file.
-
-    MEMORY-MAPPED BLOOM FILTER
-    * memory-map Bloom filter 
-       - backing file is LFS/idFilter.dat
-       - size is 2^m bytes
-       - a block is 2^12 bytes, so the backing file has 2^(m-12) blocks
-       - the memory-mapping has to be implemented int crypto/xf
-            * NewBloomSHA3 needs a (backingFile string) parameter
 
 2013-10-17
     * FIX: eph_server_test failure about line 126 suggests that Node
@@ -45,18 +45,6 @@ xlattice_go/reg/TODO
     * it then writes regCred to the log and to its own
         LFS/.xlattice/reg.cred
 
-    * the server generates new nodeIDs on request, but usesBloom        * DONE
-        filter to make sure that any candidate ID has not been used     * DONE
-        before (ie, we generate new NodeID, then loop and regenerate    * DONE
-        if it's in the filter)                                          * DONE
- 
-        * verify registry ID added to Bloom filter                      * DONE
-        * verify adminClient ID added                                   * DONE
-        * verify cluster ID added to Bloom filter                       * DONE
-        * verify member IDs added to Bloom filter                       * DONE
-
-        * nil client IDS must be replaced by unique IDs                 * DONE
-
     * ephemeral admin client unique ID should be itself ephemeral 
 
     UTILITIES
@@ -68,21 +56,12 @@ xlattice_go/reg/TODO
         writes to LFS/.xlattice/reg.cred perm 0444
 
 2013-10-15
-    * FIX: xlReg no longer compiles because NewRegistry API             * DONE
-        has changed                                                     * DONE
-    * drop crypto_test.go                                               * DONE
-
     BLOOM FILTERS
     * integrate Bloom filter, to be referenced wherever IDs are
         assigned
         - RegNode itself has an ID
         - all clients have IDs
         - all clusters have IDs
-
-    SOLO CLIENT
-    * have test serialize soloClient, verify that the serialization is  * SKIP
-        the same as what is in the config file                          * SKIP
-        - serialization will be that of xn.Node, not reg.SoloClient     * SKIP
 
 2013-10-13
     * ClientNode must be able to read config from LFS
@@ -93,7 +72,7 @@ xlattice_go/reg/TODO
 
 2013-10-12
     * need clear decision: does UserClient get clusterName?
-    * use BloomSHA3 to handle registry ID map?  about 300 SLOC
+    * use BloomSHA to handle registry ID map?  about 300 SLOC
         in Java (as implemented in xlattice_j)
 
 2013-10-11
@@ -187,7 +166,6 @@ xlattice_go/reg/TODO
     * when this is running, drop into ../cmd/xlReg/xlReg
 
 2013-09-30
-    * xlReg loads from/saves to lfs (see 09-16 TODO)                    * DONE
     * xlReg 0.2.0 must have lfs, logging, load/save
     * deploy xlReg 0.2.0 on salinas:55555
 2013-09-29

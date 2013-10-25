@@ -56,7 +56,8 @@ func (s *XLSuite) TestServer(c *C) {
 	c.Assert(reg, NotNil)
 	regID := reg.GetNodeID()
 	c.Assert(reg.IDCount(), Equals, uint(1)) // the registry's own ID
-	c.Assert(reg.ContainsID(regID), Equals, true)
+	found, err := reg.ContainsID(regID)
+	c.Assert(found , Equals, true)
 
 	// 2. create a random cluster name and size ---------------------
 	clusterName := rng.NextFileName(8)
@@ -84,8 +85,17 @@ func (s *XLSuite) TestServer(c *C) {
 
 	anID := reg.GetNodeID()
 	c.Assert(reg.IDCount(), Equals, uint(3)) // regID + anID + clusterID
-	c.Assert(reg.ContainsID(anID), Equals, true)
-	c.Assert(reg.ContainsID(cn.clusterID), Equals, true)
+	
+	found, err = reg.ContainsID(anID)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
+	// may be redundant...
+	found, err = reg.ContainsID(an.clusterID)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
+	found, err = reg.ContainsID(cn.clusterID)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
 
 	// DEBUG
 	fmt.Printf("AdminClient has registered a cluster of size %d\n    cluster ID is %s\n",
@@ -125,7 +135,9 @@ func (s *XLSuite) TestServer(c *C) {
 		// nodeID := uc[i].ClientNode.GetNodeID()
 		nodeID := uc[i].clientID
 		c.Assert(nodeID, NotNil)
-		c.Assert(reg.ContainsID(nodeID), Equals, true)
+		found, err := reg.ContainsID(nodeID)
+		c.Assert(err, IsNil)
+		c.Assert(found, Equals, true)
 	}
 	c.Assert(reg.IDCount(), Equals, uint(3+K)) // regID + anID + clusterID + K
 

@@ -72,8 +72,12 @@ func doClientMsg(h *InHandler) {
 		} else {
 			// must be known to the registry
 			nodeID, err = xi.New(id)
-			if err == nil && !h.reg.ContainsID(nodeID) {
-				err = UnknownClient
+			if err == nil {
+				var found bool
+				found, err = h.reg.ContainsID(nodeID) 
+				if err == nil && !found {
+					err = UnknownClient
+				}
 			}
 		}
 	}
