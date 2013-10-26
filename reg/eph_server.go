@@ -56,13 +56,26 @@ func NewEphServer() (ms *EphServer, err error) {
 		if err == nil {
 			node, err = xn.New(name, id, lfs, ckPriv, skPriv, nil, eps, nil)
 			// a registry with no clusters and no logger
-			reg, err = NewRegistry(nil, node, ckPriv, skPriv, nil,
-				DEFAULT_M, DEFAULT_K)
+			opt := &RegOptions {
+				EndPoint:	ep,		// not used
+				Ephemeral:	true,
+				Lfs:		lfs,	// redundant (is in node's BaseNode)
+				Logger:		nil,
+				K:			DEFAULT_K,
+				M:			DEFAULT_M,
+			}
+			fmt.Println("NewEphServer invoking NewRegistry()")
+			reg, err = NewRegistry(nil, node, ckPriv, skPriv, opt)
+			fmt.Printf("  back from NewRegistry, err is %v\n", err)
 		}
 	}
 	// DEBUG
-	if reg.ClustersByID == nil {
-		fmt.Println("NewEphServer: CLUSTERS_BY_ID IS NIL")
+	if err == nil {
+		if reg.ClustersByID == nil {
+			fmt.Println("NewEphServer: CLUSTERS_BY_ID IS NIL")
+		}
+	} else {
+		fmt.Printf("error creating ephServer: %v\n", err)
 	}
 	// END
 

@@ -57,7 +57,7 @@ func (s *XLSuite) TestServer(c *C) {
 	regID := reg.GetNodeID()
 	c.Assert(reg.IDCount(), Equals, uint(1)) // the registry's own ID
 	found, err := reg.ContainsID(regID)
-	c.Assert(found , Equals, true)
+	c.Assert(found, Equals, true)
 
 	// 2. create a random cluster name and size ---------------------
 	clusterName := rng.NextFileName(8)
@@ -85,7 +85,7 @@ func (s *XLSuite) TestServer(c *C) {
 
 	anID := reg.GetNodeID()
 	c.Assert(reg.IDCount(), Equals, uint(3)) // regID + anID + clusterID
-	
+
 	found, err = reg.ContainsID(anID)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)

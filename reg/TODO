@@ -1,12 +1,11 @@
 xlattice_go/reg/TODO
 
 2013-10-25
-    MEMORY-MAPPED BLOOM FILTER (10-18, corrected)
-    * memory-map Bloom filter 
-       - backing file is LFS/idFilter.dat
-       - size is 2^(m-3) bytes
-       - a block is 2^12 bytes, so the backing file has 2^(m-15) blocks
-       - the memory-mapping has to be implemented int crypto/filters
+    * drop options.Ephemeral, which is implied by empty backing
+        file name
+    * use BloomSHAI interface to let NewRegistry() create               * DONE
+        appropriate type of BloomFilter (Mapped or not) depending       * DONE
+        upon whether backingFile has empty name                         * DONE
 
 2013-10-18
     * Whatever is using BadVersion should be using the DecimalVersion
@@ -18,8 +17,8 @@ xlattice_go/reg/TODO
         - Note that VERSION is 0.1.1 in that file.
 
 2013-10-17
-    * FIX: eph_server_test failure about line 126 suggests that Node
-        is not being written back into ClientNode
+    * FIX: eph_server_test failure about line 126 suggests that Node    * FIXED
+        is not being written back into ClientNode                       * FIXED
     * determine what LFS is being used and whether the node is
         being serialized to LFS/.xlattice/node.config
 
@@ -56,12 +55,12 @@ xlattice_go/reg/TODO
         writes to LFS/.xlattice/reg.cred perm 0444
 
 2013-10-15
-    BLOOM FILTERS
-    * integrate Bloom filter, to be referenced wherever IDs are
-        assigned
-        - RegNode itself has an ID
-        - all clients have IDs
-        - all clusters have IDs
+    BLOOM FILTERS                                   
+    * integrate Bloom filter, to be referenced wherever IDs are         * DONE
+        assigned                                                        * DONE
+        - RegNode itself has an ID                                      * DONE
+        - all clients have IDs                                          * DONE
+        - all clusters have IDs                                         * DONE
 
 2013-10-13
     * ClientNode must be able to read config from LFS

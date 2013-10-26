@@ -33,16 +33,30 @@ const (
 
 var (
 	// these need to be referenced as pointers
-	address  = flag.String("a", DEFAULT_ADDR, "registry IP address")
-	justShow = flag.Bool("j", false, "display option settings and exit")
-	k        = flag.Int("k", int(reg.DEFAULT_K), "number of keys in Bloom filter")
-	lfs      = flag.String("lfs", DEFAULT_LFS, "path to work directory")
-	logFile  = flag.String("l", "log", "path to log file")
-	m        = flag.Int("m", int(reg.DEFAULT_M), "exponent in Bloom filter")
-	name     = flag.String("n", DEFAULT_NAME, "registry name")
-	port     = flag.Int("p", DEFAULT_PORT, "registry listening port")
-	testing  = flag.Bool("T", false, "test run")
-	verbose  = flag.Bool("v", false, "be talkative")
+	address		= flag.String("a", DEFAULT_ADDR, 
+		"registry IP address")
+	clearFilter = flag.Bool("c", false,
+		"clear Bloom filer at beginning of run")
+	ephemeral= flag.Bool("e", false, 
+		"server is ephemeral, does not persist data")
+	justShow = flag.Bool("j", false, 
+		"display option settings and exit")
+	k        = flag.Int("k", int(reg.DEFAULT_K), 
+		"number of hash functions in Bloom filter")
+	lfs      = flag.String("lfs", DEFAULT_LFS, 
+		"path to work directory")
+	logFile  = flag.String("l", "log", 
+		"path to log file")
+	m        = flag.Int("m", int(reg.DEFAULT_M), 
+		"exponent in Bloom filter")
+	name     = flag.String("n", DEFAULT_NAME, 
+		"registry name")
+	port     = flag.Int("p", DEFAULT_PORT, 
+		"registry listening port")
+	testing  = flag.Bool("T", false, 
+		"this is a test run")
+	verbose  = flag.Bool("v", false, 
+		"be talkative")
 )
 
 func init() {
@@ -75,6 +89,10 @@ func main() {
 		}
 	}
 	addrAndPort := fmt.Sprintf("%s:%d", *address, *port)
+	var backingFile string 
+	if !*ephemeral {
+		backingFile = path.Join(*lfs, "idFilter.dat")
+	}
 	endPoint, err := xt.NewTcpEndPoint(addrAndPort)
 	if err != nil {
 		fmt.Printf("not a valid endPoint: %s\n", addrAndPort)
@@ -98,7 +116,10 @@ func main() {
 	// DISPLAY STUFF ////////////////////////////////////////////////
 	if *verbose || *justShow {
 		fmt.Printf("address      = %v\n", *address)
+		fmt.Printf("backingFile  = %v\n", backingFile)
+		fmt.Printf("clearFilter  = %v\n", *clearFilter)
 		fmt.Printf("endPoint     = %v\n", endPoint)
+		fmt.Printf("ephemeral    = %v\n", *ephemeral)
 		fmt.Printf("justShow     = %v\n", *justShow)
 		fmt.Printf("k            = %d\n", *k)
 		fmt.Printf("lfs          = %s\n", *lfs)
@@ -130,6 +151,9 @@ func main() {
 	}
 	if err == nil {
 		opt.Address = *address
+		opt.BackingFile = backingFile
+		opt.ClearFilter = *clearFilter
+		opt.Ephemeral = *ephemeral
 		opt.K = uint(*k)
 		opt.Lfs = *lfs
 		opt.Logger = logger
@@ -215,8 +239,7 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 	if err == nil {
 		var r *reg.Registry
 		r, err = reg.NewRegistry(nil, // nil = clusters so far
-			node, ckPriv, skPriv,
-			opt.Logger, opt.M, opt.K)
+			node, ckPriv, skPriv, opt)
 		if err == nil {
 			// DEBUG
 			fmt.Printf("Registry name: %s\n", node.GetName())

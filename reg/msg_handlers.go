@@ -74,7 +74,7 @@ func doClientMsg(h *InHandler) {
 			nodeID, err = xi.New(id)
 			if err == nil {
 				var found bool
-				found, err = h.reg.ContainsID(nodeID) 
+				found, err = h.reg.ContainsID(nodeID)
 				if err == nil && !found {
 					err = UnknownClient
 				}
