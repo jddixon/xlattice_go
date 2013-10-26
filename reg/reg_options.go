@@ -11,10 +11,10 @@ import (
 // Not used in this package but used by xlReg
 type RegOptions struct {
 	Address     string
-	BackingFile	string
+	BackingFile string
 	ClearFilter bool
 	EndPoint    xt.EndPointI // derived from Address, Port
-	Ephemeral   bool
+	Ephemeral   bool         // XXX probably don't need
 	K           uint
 	Lfs         string
 	Logger      *log.Logger

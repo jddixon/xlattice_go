@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.0
+    2012-10-25
+        * xlReg v0.2.0 with memory-mapped Bloom filter              SLOC 13384 
 0.3.1
     2013-08-24
         * working search.FindPeer maps []byte id to Peer            SLOC 6081

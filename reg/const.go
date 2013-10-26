@@ -9,8 +9,8 @@ const (
 	// The version MUST consist of three parts separated by dots,
 	// with each part being one or two digits.  It is converted
 	// into a uint32 in in_handler.go init()
-	VERSION      = "0.1.1"
-	VERSION_DATE = "2013-10-10"
+	VERSION      = "0.2.0"
+	VERSION_DATE = "2013-10-25"
 
 	BLOCK_SIZE = 4096
 

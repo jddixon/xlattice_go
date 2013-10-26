@@ -46,7 +46,7 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 	rn, err := NewRegNode(node, ckPriv, skPriv)
 	if err == nil {
 		if opt.BackingFile == "" {
-			idFilter, err = xf.NewBloomSHA(opt.M, opt.K) 
+			idFilter, err = xf.NewBloomSHA(opt.M, opt.K)
 		} else {
 			idFilter, err = xf.NewMappedBloomSHA(opt.M, opt.K, opt.BackingFile)
 		}

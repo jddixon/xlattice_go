@@ -3,8 +3,8 @@ package rnglib
 
 import (
 	xf "github.com/jddixon/xlattice_go/util/lfs"
-	"os"
 	"math/rand"
+	"os"
 	"strings"
 )
 

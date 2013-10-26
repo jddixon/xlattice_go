@@ -33,29 +33,29 @@ const (
 
 var (
 	// these need to be referenced as pointers
-	address		= flag.String("a", DEFAULT_ADDR, 
+	address = flag.String("a", DEFAULT_ADDR,
 		"registry IP address")
 	clearFilter = flag.Bool("c", false,
 		"clear Bloom filer at beginning of run")
-	ephemeral= flag.Bool("e", false, 
+	ephemeral = flag.Bool("e", false,
 		"server is ephemeral, does not persist data")
-	justShow = flag.Bool("j", false, 
+	justShow = flag.Bool("j", false,
 		"display option settings and exit")
-	k        = flag.Int("k", int(reg.DEFAULT_K), 
+	k = flag.Int("k", int(reg.DEFAULT_K),
 		"number of hash functions in Bloom filter")
-	lfs      = flag.String("lfs", DEFAULT_LFS, 
+	lfs = flag.String("lfs", DEFAULT_LFS,
 		"path to work directory")
-	logFile  = flag.String("l", "log", 
+	logFile = flag.String("l", "log",
 		"path to log file")
-	m        = flag.Int("m", int(reg.DEFAULT_M), 
+	m = flag.Int("m", int(reg.DEFAULT_M),
 		"exponent in Bloom filter")
-	name     = flag.String("n", DEFAULT_NAME, 
+	name = flag.String("n", DEFAULT_NAME,
 		"registry name")
-	port     = flag.Int("p", DEFAULT_PORT, 
+	port = flag.Int("p", DEFAULT_PORT,
 		"registry listening port")
-	testing  = flag.Bool("T", false, 
+	testing = flag.Bool("T", false,
 		"this is a test run")
-	verbose  = flag.Bool("v", false, 
+	verbose = flag.Bool("v", false,
 		"be talkative")
 )
 
@@ -89,7 +89,7 @@ func main() {
 		}
 	}
 	addrAndPort := fmt.Sprintf("%s:%d", *address, *port)
-	var backingFile string 
+	var backingFile string
 	if !*ephemeral {
 		backingFile = path.Join(*lfs, "idFilter.dat")
 	}

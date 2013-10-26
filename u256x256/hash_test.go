@@ -34,28 +34,28 @@ var (
 // SETUP AND TEARDOWN ///////////////////////////////////////////////
 func (s *XLSuite) setUpHashTest() {
 	var err error
-	found, err := xf.PathExists(dataPath) 
+	found, err := xf.PathExists(dataPath)
 	if !found {
 		// MODE SUSPECT
 		if err = os.MkdirAll(dataPath, 0775); err != nil {
 			fmt.Printf("error creating %s: %v\n", dataPath, err)
 		}
 	}
-	found, err = xf.PathExists(uPath) 
+	found, err = xf.PathExists(uPath)
 	if !found {
 		// MODE SUSPECT
 		if err = os.MkdirAll(uPath, 0775); err != nil {
 			fmt.Printf("error creating %s: %v\n", uPath, err)
 		}
 	}
-	found, err = xf.PathExists(uInDir) 
+	found, err = xf.PathExists(uInDir)
 	if !found {
 		// MODE SUSPECT
 		if err = os.MkdirAll(uInDir, 0775); err != nil {
 			fmt.Printf("error creating %s: %v\n", uInDir, err)
 		}
 	}
-	found, err = xf.PathExists(uTmpDir) 
+	found, err = xf.PathExists(uTmpDir)
 	if !found {
 
 		// MODE SUSPECT
@@ -270,7 +270,7 @@ func (s *XLSuite) doTestPut(c *C, u *U256x256, digest hash.Hash) {
 	found, err = xf.PathExists(dupePath)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, false)
-	c.Assert(true, Equals, u.Exists(uKey)) 
+	c.Assert(true, Equals, u.Exists(uKey))
 }
 
 func (s *XLSuite) doTestPutData(c *C, u *U256x256, digest hash.Hash) {

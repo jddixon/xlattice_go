@@ -56,13 +56,13 @@ func NewEphServer() (ms *EphServer, err error) {
 		if err == nil {
 			node, err = xn.New(name, id, lfs, ckPriv, skPriv, nil, eps, nil)
 			// a registry with no clusters and no logger
-			opt := &RegOptions {
-				EndPoint:	ep,		// not used
-				Ephemeral:	true,
-				Lfs:		lfs,	// redundant (is in node's BaseNode)
-				Logger:		nil,
-				K:			DEFAULT_K,
-				M:			DEFAULT_M,
+			opt := &RegOptions{
+				EndPoint:  ep, // not used
+				Ephemeral: true,
+				Lfs:       lfs, // redundant (is in node's BaseNode)
+				Logger:    nil,
+				K:         DEFAULT_K,
+				M:         DEFAULT_M,
 			}
 			fmt.Println("NewEphServer invoking NewRegistry()")
 			reg, err = NewRegistry(nil, node, ckPriv, skPriv, opt)

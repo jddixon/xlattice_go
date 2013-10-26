@@ -2,7 +2,7 @@ xlattice_go/reg/TODO
 
 2013-10-25
     * drop options.Ephemeral, which is implied by empty backing
-        file name
+        file name ?
     * use BloomSHAI interface to let NewRegistry() create               * DONE
         appropriate type of BloomFilter (Mapped or not) depending       * DONE
         upon whether backingFile has empty name                         * DONE
