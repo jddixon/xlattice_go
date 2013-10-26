@@ -1,0 +1,6 @@
+xlattice_go/TODO
+
+2013-10-25
+    * move the project version number from rnglib/ to util/ or subdir
+    * xlReg should drop version number from rng/const.go and use
+        project version number instead

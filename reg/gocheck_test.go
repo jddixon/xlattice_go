@@ -107,7 +107,7 @@ func (s *XLSuite) makeAClusterMember(c *C, rng *xr.PRNG) *ClusterMember {
 		nil) // overlays
 	c.Assert(err, IsNil)
 	return &ClusterMember{
-		attrs:    attrs,
+		Attrs:    attrs,
 		BaseNode: *bn,
 	}
 }

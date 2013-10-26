@@ -18,8 +18,8 @@ import (
 var _ = fmt.Print
 
 type ClusterMember struct {
-	attrs       uint64   //  bit flags are defined in const.go
-	myEnds      []string // serialized EndPointI
+	Attrs       uint64   //  bit flags are defined in const.go
+	MyEnds      []string // serialized EndPointI
 	xn.BaseNode          // name and ID must be unique
 }
 
@@ -32,8 +32,8 @@ func NewClusterMember(name string, id *xi.NodeID,
 	base, err := xn.NewBaseNode(name, id, commsPubKey, sigPubKey, nil)
 	if err == nil {
 		member = &ClusterMember{
-			attrs:    attrs,
-			myEnds:   myEnds,
+			Attrs:    attrs,
+			MyEnds:   myEnds,
 			BaseNode: *base,
 		}
 	}
@@ -82,11 +82,11 @@ func (cm *ClusterMember) Token() (token *XLRegMsg_Token, err error) {
 			name := cm.GetName()
 			token = &XLRegMsg_Token{
 				Name:     &name,
-				Attrs:    &cm.attrs,
+				Attrs:    &cm.Attrs,
 				ID:       cm.GetNodeID().Value(),
 				CommsKey: ckBytes,
 				SigKey:   skBytes,
-				MyEnds:   cm.myEnds,
+				MyEnds:   cm.MyEnds,
 			}
 		}
 	}
@@ -110,22 +110,22 @@ func (cm *ClusterMember) Equal(any interface{}) bool {
 		return false
 	}
 	other := any.(*ClusterMember) // type assertion
-	if cm.attrs != other.attrs {
+	if cm.Attrs != other.Attrs {
 		return false
 	}
-	if cm.myEnds == nil {
-		if other.myEnds != nil {
+	if cm.MyEnds == nil {
+		if other.MyEnds != nil {
 			return false
 		}
 	} else {
-		if other.myEnds == nil {
+		if other.MyEnds == nil {
 			return false
 		}
-		if len(cm.myEnds) != len(other.myEnds) {
+		if len(cm.MyEnds) != len(other.MyEnds) {
 			return false
 		}
-		for i := 0; i < len(cm.myEnds); i++ {
-			if cm.myEnds[i] != other.myEnds[i] {
+		for i := 0; i < len(cm.MyEnds); i++ {
+			if cm.MyEnds[i] != other.MyEnds[i] {
 				return false
 			}
 		}
@@ -142,10 +142,10 @@ func (cm *ClusterMember) Strings() (ss []string) {
 	for i := 0; i < len(bns); i++ {
 		ss = append(ss, "    "+bns[i])
 	}
-	ss = append(ss, fmt.Sprintf("    attrs: 0x%016x", cm.attrs))
+	ss = append(ss, fmt.Sprintf("    attrs: 0x%016x", cm.Attrs))
 	ss = append(ss, "    endPoints {")
-	for i := 0; i < len(cm.myEnds); i++ {
-		ss = append(ss, "        "+cm.myEnds[i])
+	for i := 0; i < len(cm.MyEnds); i++ {
+		ss = append(ss, "        "+cm.MyEnds[i])
 	}
 	ss = append(ss, "    }")
 	ss = append(ss, "}")
@@ -173,7 +173,7 @@ func collectAttrs(cm *ClusterMember, ss []string) (rest []string, err error) {
 					// high order bytes first - ie, it's big-endian
 					attrs |= uint64(val[i]) << uint(8*(7-i))
 				}
-				cm.attrs = attrs
+				cm.Attrs = attrs
 			}
 		}
 	} else {
@@ -192,7 +192,7 @@ func collectMyEnds(cm *ClusterMember, ss []string) (rest []string, err error) {
 			}
 			line = xn.NextNBLine(&rest)
 			// XXX NO CHECK THAT THIS IS A VALID ENDPOINT
-			cm.myEnds = append(cm.myEnds, line)
+			cm.MyEnds = append(cm.MyEnds, line)
 		}
 		line = xn.NextNBLine(&rest)
 		if line != "}" {
