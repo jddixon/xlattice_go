@@ -15,6 +15,7 @@ var _ = fmt.Print
 type MappedBloomSHA struct {
 	backingFile string
 	f           *os.File
+	inCore      gm.MMap
 	BloomSHA
 }
 
@@ -27,7 +28,7 @@ func NewMappedBloomSHA(m, k uint, backingFile string) (
 		filterWords uint
 		size        int64
 		Filter      []uint64
-		inCore      []byte
+		inCore      gm.MMap
 		b3          *BloomSHA
 	)
 	if m < MIN_M || m > MAX_M {
@@ -95,8 +96,16 @@ func NewMappedBloomSHA(m, k uint, backingFile string) (
 		mb3 = &MappedBloomSHA{
 			backingFile: backingFile,
 			f:           f,
+			inCore:      inCore,
 			BloomSHA:    *b3,
 		}
 	}
 	return
+}
+func (mb3 *MappedBloomSHA) Close() {
+	if mb3.f != nil {
+
+		mb3.inCore.Sync(gm.MS_SYNC)
+		mb3.f.Close()
+	}
 }

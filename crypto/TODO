@@ -5,10 +5,11 @@ xlattice_go/crypto/TODO
         NewBloomSHA3                                            		* DONE
     * consider renaming both to drop the '3', since neither has 		* DONE
         anything much to do with SHA3                           		* DONE
-
     * CRITICAL: BloomSHA Insert and other operations use a common       * DONE
         KeySelector.  This must be moved out of the BloomSHA struct     * DONE
         to permit concurrent operations                                 * DONE
+    * add BloomSHAI interface                                           * DONE
+    * add Close() to interface and both filters (Bloom and MappedBloom) * DONE
 
 2013-10-18
     * add backingFile string parameter to NewBloomSHA3

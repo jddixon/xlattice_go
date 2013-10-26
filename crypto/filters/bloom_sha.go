@@ -29,6 +29,17 @@ import (
 
 var _ = fmt.Print
 
+type BloomSHAI interface {
+	Capacity() uint
+	Clear()
+	Close()
+	FalsePositives() float64
+	FalsePositivesN(n uint) float64
+	Insert(b []byte) (err error)
+	Member(b []byte) (bool, error)
+	Size() uint
+}
+
 type BloomSHA struct {
 	m     uint // protected final int m
 	k     uint // protected final int k
@@ -184,4 +195,7 @@ func (b3 *BloomSHA) FalsePositivesN(n uint) float64 {
 
 func (b3 *BloomSHA) FalsePositives() float64 {
 	return b3.FalsePositivesN(b3.count)
+}
+func (b3 *BloomSHA) Close() {
+	// a no-op
 }
