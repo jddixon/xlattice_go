@@ -91,7 +91,8 @@ func (s *XLSuite) doTestCopyAndPut(
 	found, err := xf.PathExists(dPath)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
-	xPath := u.GetPathForKey(uKey)
+	xPath, err := u.GetPathForKey(uKey)
+	c.Assert(err, IsNil)
 	found, err = xf.PathExists(xPath)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
@@ -125,17 +126,19 @@ func (s *XLSuite) doTestExists(c *C, u UI, digest hash.Hash) {
 	}
 	c.Assert(err, Equals, nil)
 	c.Assert(dLen, Equals, uLen)
-	kPath := u.GetPathForKey(uKey)
+	kPath, err := u.GetPathForKey(uKey)
+	c.Assert(err, Equals, nil)
 	found, err := xf.PathExists(kPath)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
 
-	c.Assert(true, Equals, u.Exists(uKey))
+	found, err = u.Exists(uKey)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
 	os.Remove(kPath)
 	found, err = xf.PathExists(kPath)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, false)
-	c.Assert(false, Equals, u.Exists(uKey))
 }
 func (s *XLSuite) doTestFileLen(c *C, u UI, digest hash.Hash) {
 	//we are testing len = u.fileLen(key)
@@ -159,7 +162,8 @@ func (s *XLSuite) doTestFileLen(c *C, u UI, digest hash.Hash) {
 	}
 	c.Assert(err, Equals, nil)
 	c.Assert(dLen, Equals, uLen)
-	kPath := u.GetPathForKey(uKey)
+	kPath, err := u.GetPathForKey(uKey)
+	c.Assert(err, IsNil)
 	_ = kPath // NOT USED
 	length, err := u.FileLen(uKey)
 	c.Assert(err, Equals, nil)
@@ -207,11 +211,10 @@ func (s *XLSuite) doTestGetPathForKey(c *C, u UI, digest hash.Hash) {
 		c.Assert(err, Equals, nil)
 	}
 	c.Assert(uLen, Equals, dLen)
-	kPath := u.GetPathForKey(uKey)
+	kPath, err := u.GetPathForKey(uKey)
+	c.Assert(err, IsNil)
 
-	// XXX implementation-dependent test
 	var expectedPath string
-
 	dirStruc := u.GetDirStruc()
 	switch dirStruc {
 	case DIR16x16:
@@ -252,14 +255,19 @@ func (s *XLSuite) doTestPut(c *C, u UI, digest hash.Hash) {
 		c.Assert(err, Equals, nil)
 	}
 	c.Assert(dLen, Equals, uLen)
-	kPath := u.GetPathForKey(uKey)
+	kPath, err := u.GetPathForKey(uKey)
+	c.Assert(err, IsNil)
 	_ = kPath // NOT USED
 
 	// inFile is renamed
 	found, err := xf.PathExists(dPath)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, false)
-	c.Assert(true, Equals, u.Exists(uKey))
+
+	found, err = u.Exists(uKey)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
+
 	var dupeLen int64
 	var dupeKey string
 	if usingSHA1 {
@@ -275,7 +283,10 @@ func (s *XLSuite) doTestPut(c *C, u UI, digest hash.Hash) {
 	found, err = xf.PathExists(dupePath)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, false)
-	c.Assert(true, Equals, u.Exists(uKey))
+
+	found, err = u.Exists(uKey)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
 }
 
 func (s *XLSuite) doTestPutData(c *C, u UI, digest hash.Hash) {
@@ -305,9 +316,14 @@ func (s *XLSuite) doTestPutData(c *C, u UI, digest hash.Hash) {
 	c.Assert(err, Equals, nil)
 	c.Assert(dLen, Equals, uLen)
 	c.Assert(dKey, Equals, uKey)
-	c.Assert(true, Equals, u.Exists(uKey))
-	xPath := u.GetPathForKey(uKey)
-	found, err := xf.PathExists(xPath)
+
+	found, err := u.Exists(uKey)
+	c.Assert(err, Equals, nil)
+	c.Assert(found, Equals, true)
+
+	xPath, err := u.GetPathForKey(uKey)
+	c.Assert(err, IsNil)
+	found, err = xf.PathExists(xPath)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
 }

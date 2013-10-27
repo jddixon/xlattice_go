@@ -5,9 +5,9 @@ import (
 )
 
 type UI interface {
-	Exists(key string) bool
+	Exists(key string) (bool, error)
 	FileLen(key string) (length int64, err error)
-	GetPathForKey(key string) string
+	GetPathForKey(key string) (string, error)
 	CopyAndPut3(path, key string) (int64, string, error)
 	GetData3(key string) (data []byte, err error)
 	Put3(inFile, key string) (length int64, hash string, err error)

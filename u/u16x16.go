@@ -38,34 +38,38 @@ func (u *U16x16) GetPath() string  { return u.path }
 func (u *U16x16) GetRNG() *xr.PRNG { return u.rng }
 
 // - Exists ---------------------------------------------------------
-func (u *U16x16) Exists(key string) bool {
-	path := u.GetPathForKey(key)
-	found, _ := xf.PathExists(path) // err ignored
-	return found
+func (u *U16x16) Exists(key string) (found bool, err error) {
+	path, err := u.GetPathForKey(key)
+	if err == nil {
+		found, err = xf.PathExists(path)
+	}
+	return
 }
 
 // - FileLen --------------------------------------------------------
 func (u *U16x16) FileLen(key string) (length int64, err error) {
-	// XXX ERROR IF EMPTY KEY
-	path := u.GetPathForKey(key)
-	if path == "" {
-		err = errors.New("IllegalArgument: no key specified")
+	path, err := u.GetPathForKey(key)
+	if err == nil {
+		var info os.FileInfo
+		info, err = os.Stat(path) // ERRORS IGNORED
+		if err == nil {
+			length = info.Size()
+		}
 	}
-	info, _ := os.Stat(path) // ERRORS IGNORED
-	length = info.Size()
 	return
 }
 
 // - GetPathForKey --------------------------------------------------
 // Returns a path to a file with the content key passed.
-// XXX NEED TO RESPEC TO RETURN ERROR IF INVALID KEY (blank, wrong length, etc.
-func (u *U16x16) GetPathForKey(key string) string {
+func (u *U16x16) GetPathForKey(key string) (path string, err error) {
 	if key == "" {
-		return key
+		err = EmptyKey
+	} else {
+		topSubDir := key[0:1]
+		lowerDir := key[1:2]
+		path = filepath.Join(u.path, topSubDir, lowerDir, key[2:])
 	}
-	topSubDir := key[0:1]
-	lowerDir := key[1:2]
-	return filepath.Join(u.path, topSubDir, lowerDir, key[2:])
+	return
 }
 
 //- copyAndPut3 -------------------------------------------------------
@@ -88,9 +92,14 @@ func (u *U16x16) CopyAndPut3(path, key string) (
 
 // - GetData3 --------------------------------------------------------
 func (u *U16x16) GetData3(key string) (data []byte, err error) {
-	var path string
-	path = u.GetPathForKey(key)
-	found, err := xf.PathExists(path)
+	var (
+		found bool
+		path  string
+	)
+	path, err = u.GetPathForKey(key)
+	if err == nil {
+		found, err = xf.PathExists(path)
+	}
 	if err == nil && !found {
 		err = FileNotFound
 	}
@@ -229,11 +238,14 @@ func (u *U16x16) CopyAndPut1(path, key string) (
 func (u *U16x16) GetData1(key string) (data []byte, err error) {
 
 	var (
-		path string
-		src  *os.File
+		found bool
+		path  string
+		src   *os.File
 	)
-	path = u.GetPathForKey(key)
-	found, err := xf.PathExists(path)
+	path, err = u.GetPathForKey(key)
+	if err == nil {
+		found, err = xf.PathExists(path)
+	}
 	if err == nil && !found {
 		err = FileNotFound
 	}

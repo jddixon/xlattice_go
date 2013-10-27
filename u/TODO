@@ -1,24 +1,25 @@
 xlattice_go/u/TODO
 
+2013-10-27
+    * add at least DIR_FLAT implementation
+    * merge sha1_test.go and sha3_test.go by adding a usingSHA1
+        parameter in the right places
+    * investigate and fix: comment says that GetData3 will only
+        work for small files (same should apply to GetData1)
+
 2013-10-26
     * u16x16 and u256x256 are trivially different; they should be
         merged and a larger set of directory structures supported
-    * consolidate u/u256x256 into u/                                    * DONE
-    * hash_test.go should use uI interface                              * DONE
-    * consolidate u/u16x16 into u/                                      * DONE
    
     WHEN THE ABOVE IS STABLE:
-    * UI.Exists should return (bool, error)
-    * UI.GetPathForKey should return (string, error)
+    * UI.Exists should return (bool, error)                             * DONE
+    * UI.GetPathForKey should return (string, error)                    * DONE
 
     AFTER FURTHER CONSIDERATION:
     * where rnglib is used to make random file names, use 
         io.ioutil.TempFile(dir, prefix string) (*os.File, error)
 
 2013-10-15
-    * FIX: many functions (eg CopyAndPut) should return errors          * DONE
-        but don't                                                       * DONE
-
     * CHANGE SHA1_LEN, SHA3_LEN so that, as elsewhere in xlattice_go,
         they are defined as 20 and 32 respectively; or change
         their names
