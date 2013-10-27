@@ -1,6 +1,6 @@
-package u256x256
+package u
 
-// xlattice_go/hash_test.go
+// xlattice_go/u/hash_test.go
 
 import (
 	"encoding/hex"
@@ -11,17 +11,7 @@ import (
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
-	"testing"
 )
-
-// gocheck tie-in /////////////////////
-func Test(t *testing.T) { TestingT(t) }
-
-type XLSuite struct{}
-
-var _ = Suite(&XLSuite{})
-
-// end gocheck setUp //////////////////
 
 var (
 	dataPath  string

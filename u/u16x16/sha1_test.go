@@ -1,6 +1,6 @@
-package u256x256
+package u16x16
 
-// xlattice_go/sha1_test.go
+// xlattice_go/u/u16x16/sha1_test.go
 
 import (
 	"crypto/sha1"

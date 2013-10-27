@@ -1,4 +1,4 @@
-package u256x256
+package u16x16
 
 import "errors"
 

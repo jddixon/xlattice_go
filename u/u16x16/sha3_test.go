@@ -1,6 +1,6 @@
-package u256x256
+package u16x16
 
-// xlattice_go/sha3_test.go
+// xlattice_go/u/u16x16/sha3_test.go
 
 import (
 	"code.google.com/p/go.crypto/sha3"
