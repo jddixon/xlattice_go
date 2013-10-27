@@ -1,5 +1,9 @@
 package u
 
+import (
+	xr "github.com/jddixon/xlattice_go/rnglib"
+)
+
 type UI interface {
 	Exists(key string) bool
 	FileLen(key string) (length int64, err error)
@@ -12,4 +16,9 @@ type UI interface {
 	GetData1(key string) (data []byte, err error)
 	Put1(inFile, key string) (length int64, hash string, err error)
 	PutData1(data []byte, key string) (length int64, hash string, err error)
+
+	GetDirStruc() DirStruc
+	GetPath() string
+	// presumably temporary
+	GetRNG() *xr.PRNG
 }

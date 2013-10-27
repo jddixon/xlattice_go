@@ -60,11 +60,12 @@ func (s *XLSuite) teardownHashTest() {
 
 // UNIT TESTS ///////////////////////////////////////////////////////
 func (s *XLSuite) doTestCopyAndPut(
-	c *C, u *U256x256, digest hash.Hash) {
+	c *C, u UI, digest hash.Hash) {
 	//we are testing uLen, uKey, err = u.CopyAndPut3(path, key)
 
-	// create a random file                   maxLen   minLen
-	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
+	// create a random file
+	rng := u.GetRNG()
+	dLen, dPath := rng.NextDataFile(dataPath, 16*1024, 1) //  maxLen, minLen
 	var dKey string
 	var err error
 	if usingSHA1 {
@@ -102,10 +103,11 @@ func (s *XLSuite) doTestCopyAndPut(
 	}
 	// END HACK
 }
-func (s *XLSuite) doTestExists(c *C, u *U256x256, digest hash.Hash) {
+func (s *XLSuite) doTestExists(c *C, u UI, digest hash.Hash) {
 	//we are testing whether = u.Exists( key)
 
-	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
+	rng := u.GetRNG()
+	dLen, dPath := rng.NextDataFile(dataPath, 16*1024, 1)
 	var dKey string
 	var err error
 	if usingSHA1 {
@@ -135,10 +137,11 @@ func (s *XLSuite) doTestExists(c *C, u *U256x256, digest hash.Hash) {
 	c.Assert(found, Equals, false)
 	c.Assert(false, Equals, u.Exists(uKey))
 }
-func (s *XLSuite) doTestFileLen(c *C, u *U256x256, digest hash.Hash) {
+func (s *XLSuite) doTestFileLen(c *C, u UI, digest hash.Hash) {
 	//we are testing len = u.fileLen(key)
 
-	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
+	rng := u.GetRNG()
+	dLen, dPath := rng.NextDataFile(dataPath, 16*1024, 1)
 	var dKey string
 	var err error
 	if usingSHA1 {
@@ -163,9 +166,10 @@ func (s *XLSuite) doTestFileLen(c *C, u *U256x256, digest hash.Hash) {
 	c.Assert(dLen, Equals, length)
 }
 
-func (s *XLSuite) doTestFileHash(c *C, u *U256x256, digest hash.Hash) {
+func (s *XLSuite) doTestFileHash(c *C, u UI, digest hash.Hash) {
 	// we are testing sha1Key = fileSHA3(path)
-	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
+	rng := u.GetRNG()
+	dLen, dPath := rng.NextDataFile(dataPath, 16*1024, 1)
 	data, err := ioutil.ReadFile(dPath)
 	c.Assert(err, Equals, nil)
 	c.Assert(dLen, Equals, int64(len(data)))
@@ -183,10 +187,11 @@ func (s *XLSuite) doTestFileHash(c *C, u *U256x256, digest hash.Hash) {
 	c.Assert(fKey, Equals, dKey)
 }
 
-func (s *XLSuite) doTestGetPathForKey(c *C, u *U256x256, digest hash.Hash) {
+func (s *XLSuite) doTestGetPathForKey(c *C, u UI, digest hash.Hash) {
 	// we are testing path = GetPathForKey(key)
 
-	dLen, dPath := u.rng.NextDataFile(dataPath, 16*1024, 1)
+	rng := u.GetRNG()
+	dLen, dPath := rng.NextDataFile(dataPath, 16*1024, 1)
 	var err error
 	var dKey, uKey string
 	var uLen int64
@@ -205,18 +210,28 @@ func (s *XLSuite) doTestGetPathForKey(c *C, u *U256x256, digest hash.Hash) {
 	kPath := u.GetPathForKey(uKey)
 
 	// XXX implementation-dependent test
-	expectedPath := fmt.Sprintf("%s/%s/%s/%s",
-		u.path, uKey[0:2], uKey[2:4], uKey[4:])
+	var expectedPath string
+
+	dirStruc := u.GetDirStruc()
+	switch dirStruc {
+	case DIR16x16:
+		expectedPath = fmt.Sprintf("%s/%s/%s/%s",
+			u.GetPath(), uKey[0:1], uKey[1:2], uKey[2:])
+	case DIR256x256:
+		expectedPath = fmt.Sprintf("%s/%s/%s/%s",
+			u.GetPath(), uKey[0:2], uKey[2:4], uKey[4:])
+	}
 	c.Assert(expectedPath, Equals, kPath)
 }
 
-func (s *XLSuite) doTestPut(c *C, u *U256x256, digest hash.Hash) {
+func (s *XLSuite) doTestPut(c *C, u UI, digest hash.Hash) {
 	//we are testing (len,hash)  = put(inFile, key)
 
 	var dLen, uLen int64
 	var dPath, dKey, uKey string
 	var err error
-	dLen, dPath = u.rng.NextDataFile(dataPath, 16*1024, 1)
+	rng := u.GetRNG()
+	dLen, dPath = rng.NextDataFile(dataPath, 16*1024, 1)
 	if usingSHA1 {
 		dKey, err = FileSHA1(dPath)
 		c.Assert(err, Equals, nil)
@@ -263,14 +278,15 @@ func (s *XLSuite) doTestPut(c *C, u *U256x256, digest hash.Hash) {
 	c.Assert(true, Equals, u.Exists(uKey))
 }
 
-func (s *XLSuite) doTestPutData(c *C, u *U256x256, digest hash.Hash) {
+func (s *XLSuite) doTestPutData(c *C, u UI, digest hash.Hash) {
 	// we are testing (len,hash)  = putData3(data, key)
 
 	var dPath, dKey, uKey string
 	var dLen, uLen int64
 	var err error
 
-	dLen, dPath = u.rng.NextDataFile(dataPath, 16*1024, 1)
+	rng := u.GetRNG()
+	dLen, dPath = rng.NextDataFile(dataPath, 16*1024, 1)
 	if usingSHA1 {
 		dKey, err = FileSHA1(dPath)
 	} else {

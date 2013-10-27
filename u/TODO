@@ -4,8 +4,8 @@ xlattice_go/u/TODO
     * u16x16 and u256x256 are trivially different; they should be
         merged and a larger set of directory structures supported
     * consolidate u/u256x256 into u/                                    * DONE
-    * hash_test.go should use uI interface 
-    * consolidate u/u16x16 into u/
+    * hash_test.go should use uI interface                              * DONE
+    * consolidate u/u16x16 into u/                                      * DONE
    
     WHEN THE ABOVE IS STABLE:
     * UI.Exists should return (bool, error)

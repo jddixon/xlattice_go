@@ -15,36 +15,45 @@ import (
 	"path/filepath"
 	//"time"
 )
+
 // CLASS, so to speak ///////////////////////////////////////////////
 type U256x256 struct {
-	path   string       // all parameters are
-	inDir  string		// ... private
+	path   string // all parameters are
+	inDir  string // ... private
 	tmpDir string
-	rng		*xr.PRNG
+	rng    *xr.PRNG
 }
 
-func New(path string) *U256x256 {
-	var u U256x256
-	u.path = path // XXX validate
-	u.inDir = filepath.Join(path, "in")
-	u.tmpDir = filepath.Join(path, "tmp")
+func NewU256x256(path string) (*U256x256, error) {
+	var u2 U256x256
+	u2.path = path // XXX validate
+	u2.inDir = filepath.Join(path, "in")
+	u2.tmpDir = filepath.Join(path, "tmp")
 
 	// THIS SHOULD CHANGE
-	u.rng = xr.MakeSimpleRNG()
-	return &u
+	u2.rng = xr.MakeSimpleRNG()
+	return &u2, nil
+}
+
+func (u *U256x256) GetDirStruc() DirStruc { return DIR256x256 }
+func (u2 *U256x256) GetRNG() *xr.PRNG {
+	return u2.rng
+}
+func (u2 *U256x256) GetPath() string {
+	return u2.path
 }
 
 // - Exists ---------------------------------------------------------
-func (u *U256x256) Exists(key string) bool {
-	path := u.GetPathForKey(key)
+func (u2 *U256x256) Exists(key string) bool {
+	path := u2.GetPathForKey(key)
 	found, _ := xf.PathExists(path) // err ignored
 	return found
 }
 
 // - FileLen --------------------------------------------------------
-func (u *U256x256) FileLen(key string) (length int64, err error) {
+func (u2 *U256x256) FileLen(key string) (length int64, err error) {
 	// XXX ERROR IF EMPTY KEY
-	path := u.GetPathForKey(key)
+	path := u2.GetPathForKey(key)
 	if path == "" {
 		err = errors.New("IllegalArgument: no key specified")
 	}
@@ -56,36 +65,36 @@ func (u *U256x256) FileLen(key string) (length int64, err error) {
 // - GetPathForKey --------------------------------------------------
 // Returns a path to a file with the content key passed.
 // XXX NEED TO RESPEC TO RETURN ERROR IF INVALID KEY (blank, wrong length, etc.
-func (u *U256x256) GetPathForKey(key string) string {
+func (u2 *U256x256) GetPathForKey(key string) string {
 	if key == "" {
 		return key
 	}
 	topSubDir := key[0:2]
 	lowerDir := key[2:4]
-	return filepath.Join(u.path, topSubDir, lowerDir, key[4:])
+	return filepath.Join(u2.path, topSubDir, lowerDir, key[4:])
 }
 
 //- copyAndPut3 -------------------------------------------------------
-func (u *U256x256) CopyAndPut3(path, key string) (
+func (u2 *U256x256) CopyAndPut3(path, key string) (
 	written int64, hash string, err error) {
 	// the temporary file MUST be created on the same device
-	tmpFileName := filepath.Join(u.tmpDir, u.rng.NextFileName(16))
+	tmpFileName := filepath.Join(u2.tmpDir, u2.rng.NextFileName(16))
 	found, _ := xf.PathExists(tmpFileName) // XXX error ignored
 	for found {
-		tmpFileName = filepath.Join(u.tmpDir, u.rng.NextFileName(16))
+		tmpFileName = filepath.Join(u2.tmpDir, u2.rng.NextFileName(16))
 		found, _ = xf.PathExists(tmpFileName)
 	}
 	written, err = CopyFile(tmpFileName, path) // dest <== src
 	if err == nil {
-		written, hash, err = u.Put3(tmpFileName, key)
+		written, hash, err = u2.Put3(tmpFileName, key)
 	}
 	return
 }
 
 // - GetData3 --------------------------------------------------------
-func (u *U256x256) GetData3(key string) (data []byte, err error) {
+func (u2 *U256x256) GetData3(key string) (data []byte, err error) {
 	var path string
-	path = u.GetPathForKey(key)
+	path = u2.GetPathForKey(key)
 	found, err := xf.PathExists(path)
 	if err == nil && !found {
 		err = FileNotFound
@@ -110,12 +119,12 @@ func (u *U256x256) GetData3(key string) (data []byte, err error) {
 // - Put3 ------------------------------------------------------------
 // tmp is the path to a local file which will be renamed into U (or deleted
 // if it is already present in U)
-// u.path is an absolute or relative path to a U directory organized 256x256
+// u2.path is an absolute or relative path to a U directory organized 256x256
 // key is an sha3 content hash.
 // If the operation succeeds we return the length of the file (which must
 // not be zero.  Otherwise we return 0.
 // we don't do much checking
-func (u *U256x256) Put3(inFile, key string) (
+func (u2 *U256x256) Put3(inFile, key string) (
 	length int64, hash string, err error) {
 
 	var fullishPath string
@@ -138,7 +147,7 @@ func (u *U256x256) Put3(inFile, key string) (
 	length = info.Size()
 	topSubDir := hash[0:2]
 	lowerDir := hash[2:4]
-	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
+	targetDir := filepath.Join(u2.path, topSubDir, lowerDir)
 	found, err := xf.PathExists(targetDir)
 	if err == nil && !found {
 		// XXX MODE IS SUSPECT
@@ -166,7 +175,7 @@ func (u *U256x256) Put3(inFile, key string) (
 }
 
 // - putData3 --------------------------------------------------------
-func (u *U256x256) PutData3(data []byte, key string) (length int64, hash string, err error) {
+func (u2 *U256x256) PutData3(data []byte, key string) (length int64, hash string, err error) {
 	s := sha3.NewKeccak256()
 	s.Write(data)
 	hash = hex.EncodeToString(s.Sum(nil))
@@ -179,7 +188,7 @@ func (u *U256x256) PutData3(data []byte, key string) (length int64, hash string,
 	length = int64(len(data))
 	topSubDir := hash[0:2]
 	lowerDir := hash[2:4]
-	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
+	targetDir := filepath.Join(u2.path, topSubDir, lowerDir)
 	found, err := xf.PathExists(targetDir)
 	if err == nil && !found {
 		err = os.MkdirAll(targetDir, 0775)
@@ -205,31 +214,31 @@ func (u *U256x256) PutData3(data []byte, key string) (length int64, hash string,
 
 // CopyAndPut1 ------------------------------------------------------
 // XXX SHOULD RETURN ERROR
-func (u *U256x256) CopyAndPut1(path, key string) (
+func (u2 *U256x256) CopyAndPut1(path, key string) (
 	written int64, hash string, err error) {
 	// the temporary file MUST be created on the same device
 	// xxx POSSIBLE RACE CONDITION
-	tmpFileName := filepath.Join(u.tmpDir, u.rng.NextFileName(16))
+	tmpFileName := filepath.Join(u2.tmpDir, u2.rng.NextFileName(16))
 	found, err := xf.PathExists(tmpFileName)
 	for found {
-		tmpFileName = filepath.Join(u.tmpDir, u.rng.NextFileName(16))
+		tmpFileName = filepath.Join(u2.tmpDir, u2.rng.NextFileName(16))
 		found, err = xf.PathExists(tmpFileName)
 	}
 	written, err = CopyFile(tmpFileName, path) // dest <== src
 	if err == nil {
-		written, hash, err = u.Put1(tmpFileName, key)
+		written, hash, err = u2.Put1(tmpFileName, key)
 	}
 	return
 }
 
 // - GetData1 --------------------------------------------------------
-func (u *U256x256) GetData1(key string) (data []byte, err error) {
+func (u2 *U256x256) GetData1(key string) (data []byte, err error) {
 
 	var (
 		path string
 		src  *os.File
 	)
-	path = u.GetPathForKey(key)
+	path = u2.GetPathForKey(key)
 	found, err := xf.PathExists(path)
 	if err == nil && !found {
 		err = FileNotFound
@@ -253,12 +262,12 @@ func (u *U256x256) GetData1(key string) (data []byte, err error) {
 // - Put1 ------------------------------------------------------------
 // tmp is the path to a local file which will be renamed into U (or deleted
 // if it is already present in U)
-// u.path is an absolute or relative path to a U directory organized 256x256
+// u2.path is an absolute or relative path to a U directory organized 256x256
 // key is an sha1 content hash.
 // If the operation succeeds we return the length of the file (which must
 // not be zero.  Otherwise we return 0.
 // we don't do much checking
-func (u *U256x256) Put1(inFile, key string) (
+func (u2 *U256x256) Put1(inFile, key string) (
 	length int64, hash string, err error) {
 
 	var (
@@ -284,7 +293,7 @@ func (u *U256x256) Put1(inFile, key string) (
 	length = info.Size()
 	topSubDir = hash[0:2]
 	lowerDir = hash[2:4]
-	targetDir = filepath.Join(u.path, topSubDir, lowerDir)
+	targetDir = filepath.Join(u2.path, topSubDir, lowerDir)
 	found, err = xf.PathExists(targetDir)
 	if err == nil && !found {
 		// XXX MODE IS SUSPECT
@@ -312,7 +321,7 @@ func (u *U256x256) Put1(inFile, key string) (
 
 // PutData1 ---------------------------------------------------------
 // XXX SHOULD RETURN ERROR
-func (u *U256x256) PutData1(data []byte, key string) (
+func (u2 *U256x256) PutData1(data []byte, key string) (
 	length int64, hash string, err error) {
 
 	var fullishPath string
@@ -330,7 +339,7 @@ func (u *U256x256) PutData1(data []byte, key string) (
 	length = int64(len(data))
 	topSubDir := hash[0:2]
 	lowerDir := hash[2:4]
-	targetDir := filepath.Join(u.path, topSubDir, lowerDir)
+	targetDir := filepath.Join(u2.path, topSubDir, lowerDir)
 	found, err = xf.PathExists(targetDir)
 	if err == nil && !found {
 		// MODE QUESTIONABLE

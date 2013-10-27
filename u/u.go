@@ -13,6 +13,18 @@ import (
 	"os"
 )
 
+func New(path string, ds DirStruc) (UI, error) {
+
+	switch ds {
+	case DIR16x16:
+		return NewU16x16(path)
+	case DIR256x256:
+		return NewU256x256(path)
+	default:
+		return nil, DirStrucNotRecognized
+	}
+}
+
 // PACKAGE-LEVEL FUNCTIONS //////////////////////////////////////////
 func CopyFile(destName, srcName string) (written int64, err error) {
 	var (

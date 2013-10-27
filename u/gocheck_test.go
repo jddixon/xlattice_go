@@ -1,10 +1,12 @@
 package u
 
 import (
-    "testing"
-    . "launchpad.net/gocheck"	// for Suite
+	. "launchpad.net/gocheck" // for Suite
+	"testing"
 )
 
 func Test(t *testing.T) { TestingT(t) }
+
 type XLSuite struct{}
+
 var _ = Suite(&XLSuite{})

@@ -1,6 +1,6 @@
-package u16x16
+package u
 
-// xlattice_go/u/u16x16/u.go
+// xlattice_go/u/u16x16.go
 
 import (
 	"code.google.com/p/go.crypto/sha3"
@@ -8,110 +8,34 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt" // DEBUG
-	"github.com/jddixon/xlattice_go/rnglib"
+	xr "github.com/jddixon/xlattice_go/rnglib"
 	xf "github.com/jddixon/xlattice_go/util/lfs"
-	"io"
-	"io/ioutil"
+	//"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
 )
-
-const SHA1_LEN = 40 // length of hex version
-const SHA3_LEN = 64
-
-//                 ....x....1....x....2....x....3....x....4
-const SHA1_NONE = "0000000000000000000000000000000000000000"
-
-//                 ....x....1....x....2....x....3....x....4....x....5....x....6....
-const SHA3_NONE = "0000000000000000000000000000000000000000000000000000000000000000"
-
-const DEFAULT_BUFFER_SIZE = 256 * 256
-
-// XXX THIS DOES NOT BELONG HERE.  It is used to make unique
-// file names, but this results in a race condition.
-func makeSimpleRNG() *rnglib.PRNG {
-	t := time.Now().Unix()
-	rng := rnglib.NewSimpleRNG(t)
-	return rng
-}
-
-// PACKAGE-LEVEL FUNCTIONS //////////////////////////////////////////
-func CopyFile(destName, srcName string) (written int64, err error) {
-	var (
-		src, dest *os.File
-	)
-	if src, err = os.Open(srcName); err != nil {
-		return
-	}
-	defer src.Close()
-	if dest, err = os.Create(destName); err != nil {
-		return
-	}
-	defer dest.Close()
-	return io.Copy(dest, src) // returns written, err
-}
-
-// - FileSHA1 --------------------------------------------------------
-// returns the SHA1 hash of the contents of a file
-func FileSHA1(path string) (hash string, err error) {
-	var data2 []byte
-	hash = SHA1_NONE
-	found, err := xf.PathExists(path)
-	if err == nil && !found {
-		err = errors.New("IllegalArgument: empty path or non-existent file")
-	}
-	if err == nil {
-		data2, err = ioutil.ReadFile(path)
-	}
-	if err == nil {
-		d2 := sha1.New()
-		d2.Write(data2)
-		digest2 := d2.Sum(nil)
-		hash = hex.EncodeToString(digest2)
-	}
-	return
-}
-
-// - FileSHA3 --------------------------------------------------------
-// returns the SHA3 hash of the contents of a file
-func FileSHA3(path string) (hash string, err error) {
-	var data2 []byte
-
-	hash = SHA3_NONE
-	found, err := xf.PathExists(path)
-	if err == nil && !found {
-		err = errors.New("IllegalArgument: empty path or non-existent file")
-	}
-
-	if err == nil {
-		data2, err = ioutil.ReadFile(path)
-	}
-	if err == nil {
-		d2 := sha3.NewKeccak256()
-		d2.Write(data2)
-		digest2 := d2.Sum(nil)
-		hash = hex.EncodeToString(digest2)
-	}
-	return
-}
 
 // CLASS, so to speak ///////////////////////////////////////////////
 type U16x16 struct {
-	path   string       // all parameters are
-	rng    *rnglib.PRNG //	... private
+	path   string   // all parameters are
+	rng    *xr.PRNG //	... private
 	inDir  string
 	tmpDir string
 }
 
-func New(path string) *U16x16 {
+func NewU16x16(path string) (*U16x16, error) {
 	var u U16x16
 	u.path = path // XXX validate
 	u.inDir = filepath.Join(path, "in")
 	u.tmpDir = filepath.Join(path, "tmp")
-	u.rng = makeSimpleRNG()
-	return &u
+	u.rng = xr.MakeSimpleRNG()
+	return &u, nil
 }
+
+func (u *U16x16) GetDirStruc() DirStruc { return DIR16x16 }
+
+func (u *U16x16) GetPath() string  { return u.path }
+func (u *U16x16) GetRNG() *xr.PRNG { return u.rng }
 
 // - Exists ---------------------------------------------------------
 func (u *U16x16) Exists(key string) bool {
