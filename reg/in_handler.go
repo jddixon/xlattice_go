@@ -6,12 +6,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
-	// xc "github.com/jddixon/xlattice_go/crypto"
 	"github.com/jddixon/xlattice_go/msg"
-	// xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
-	"strconv"
-	"strings"
+	xu "github.com/jddixon/xlattice_go/util"
 )
 
 var _ = fmt.Print
@@ -44,7 +41,7 @@ const (
 
 var (
 	msgHandlers   [][]interface{}
-	serverVersion uint32
+	serverVersion xu.DecimalVersion
 )
 
 func init() {
@@ -60,28 +57,11 @@ func init() {
 		// messages permitted in JOIN_RCVD
 		{badCombo, badCombo, badCombo, doGetMsg, doByeMsg},
 	}
-	// VERSION is a string in M.m.d format, where each of M, m, and d
-	// is either one or two digits.  We want to convert this to a number
-	// like MMmmdd, a uint32 value.
 	var err error
-	var M, m, d int
-
-	parts := strings.Split(VERSION, ".")
-	if len(parts) != 3 {
-		err = BadVersion
-	} else {
-		M, err = strconv.Atoi(parts[0])
-		if err == nil {
-			m, err = strconv.Atoi(parts[1])
-			if err == nil {
-				d, err = strconv.Atoi(parts[2])
-			}
-		}
-	}
+	serverVersion, err = xu.ParseDecimalVersion(VERSION)
 	if err != nil {
 		panic(err)
 	}
-	serverVersion = uint32(M*10000 + m*100 + d)
 }
 
 type InHandler struct {
@@ -259,7 +239,7 @@ func handleHello(h *InHandler) (err error) {
 	if err == nil {
 		version2 := serverVersion
 		iv2, key2, salt2, ciphertextOut, err := msg.ServerEncodeHelloReply(
-			iv1, key1, salt1, version2)
+			iv1, key1, salt1, uint32(version2))
 		if err == nil {
 			err = h.writeData(ciphertextOut)
 		}
@@ -270,7 +250,7 @@ func handleHello(h *InHandler) (err error) {
 			h.key2 = key2
 			h.salt1 = salt1
 			h.salt2 = salt2
-			h.version = version2
+			h.version = uint32(version2)
 			h.State = HELLO_RCVD
 		}
 	}

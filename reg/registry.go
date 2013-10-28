@@ -11,8 +11,12 @@ import (
 	xf "github.com/jddixon/xlattice_go/crypto/filters"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	xt "github.com/jddixon/xlattice_go/transport"
+	xu "github.com/jddixon/xlattice_go/util"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -42,8 +46,18 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 	ckPriv, skPriv *rsa.PrivateKey, opt *RegOptions) (
 	reg *Registry, err error) {
 
-	var idFilter xf.BloomSHAI
-	rn, err := NewRegNode(node, ckPriv, skPriv)
+	var (
+		idFilter      xf.BloomSHAI
+		rn            *RegNode
+		serverVersion xu.DecimalVersion
+	)
+	serverVersion, err = xu.ParseDecimalVersion(VERSION)
+	// DEBUG
+	fmt.Printf("NewRegistry: server version is %s\n", serverVersion.String())
+	// END
+	if err == nil {
+		rn, err = NewRegNode(node, ckPriv, skPriv)
+	}
 	if err == nil {
 		if opt.BackingFile == "" {
 			idFilter, err = xf.NewBloomSHA(opt.M, opt.K)
@@ -52,6 +66,7 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 		}
 	}
 	if err == nil {
+		// registry's own ID added to Bloom filter
 		idFilter.Insert(node.GetNodeID().Value())
 
 		var bniMap xn.BNIMap
@@ -69,6 +84,24 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 		}
 		if clusters != nil {
 			// XXX need to populate the indexes here
+		}
+		myLFS := rn.GetLFS()
+		if myLFS != "" {
+			var ep []xt.EndPointI
+			for i := 0; i < rn.SizeEndPoints(); i++ {
+				ep = append(ep, rn.GetEndPoint(i))
+			}
+			regCred := &RegCred{
+				Name:        rn.GetName(),
+				ID:          rn.GetNodeID(),
+				CommsPubKey: rn.GetCommsPublicKey(),
+				SigPubKey:   rn.GetSigPublicKey(),
+				EndPoints:   ep,
+				Version:     serverVersion,
+			}
+			serialized := regCred.String() // shd have terminating CRLF
+			pathToFile := filepath.Join(myLFS, "regCred.dat")
+			err = ioutil.WriteFile(pathToFile, []byte(serialized), 0640)
 		}
 	}
 	return

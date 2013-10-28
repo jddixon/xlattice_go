@@ -1,14 +1,17 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
 0.4.0
-    2012-10-25
-        * xlReg v0.2.0 with memory-mapped Bloom filter              SLOC 13384 
+    2013-10-27
+        * u256x256 becomes u/ and surdirs u16x16, u256x256          SLOC 13881
+        * xlReg v0.2.1 writing regCred.dat to LFS
+    2013-10-25
+        * xlReg v0.2.0 with memory-mapped Bloom filter              SLOC 13384
 0.3.1
     2013-08-24
         * working search.FindPeer maps []byte id to Peer            SLOC 6081
 0.3.0
     2013-08-07
-        * node.Parse with lfs, keys, endPoints, overlays, peers 
+        * node.Parse with lfs, keys, endPoints, overlays, peers
             tests successfully                                      SLOC 5152
 0.2.1
     2013-07-05
@@ -20,5 +23,5 @@
 v0.1.0
     2013-06-12
         * modified rnglib.SimpleRNG to use the 64-bit Mersenne      SLOC 1387
-            Twister as a source of bits and expose the rand.Random 
+            Twister as a source of bits and expose the rand.Random
             interface

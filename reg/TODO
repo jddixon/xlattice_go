@@ -1,5 +1,8 @@
 xlattice_go/reg/TODO
 
+2013-10-27
+    * booting server writes regCred.dat to its LFS
+
 2013-10-25
     * drop options.Ephemeral, which is implied by empty backing
         file name ?
@@ -42,7 +45,7 @@ xlattice_go/reg/TODO
     * a new server's first act is to create its own NodeID and          * DONE
         register it                                                     * DONE
     * it then writes regCred to the log and to its own
-        LFS/.xlattice/reg.cred
+        LFS/reg.cred
 
     * ephemeral admin client unique ID should be itself ephemeral 
 

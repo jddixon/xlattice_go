@@ -22,7 +22,7 @@ type RegCred struct {
 	CommsPubKey *rsa.PublicKey    // CommsKey in token
 	SigPubKey   *rsa.PublicKey    // SigKey in token
 	EndPoints   []xt.EndPointI    // MyEnds in token
-	Version     xu.DecimalVersion // not in token
+	Version     xu.DecimalVersion // not in token at all
 }
 
 func (rc *RegCred) String() string {
@@ -48,7 +48,7 @@ func (rc *RegCred) String() string {
 	ss = append(ss, "    }")
 	ss = append(ss, "    Version: "+rc.Version.String())
 	ss = append(ss, "}")
-	return strings.Join(ss, "\r\n")
+	return strings.Join(ss, "\r\n") + "\r\n"
 }
 
 func ParseRegCred(s string) (rc *RegCred, err error) {
