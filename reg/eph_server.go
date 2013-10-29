@@ -64,21 +64,9 @@ func NewEphServer() (ms *EphServer, err error) {
 				K:         DEFAULT_K,
 				M:         DEFAULT_M,
 			}
-			fmt.Println("NewEphServer invoking NewRegistry()")
 			reg, err = NewRegistry(nil, node, ckPriv, skPriv, opt)
-			fmt.Printf("  back from NewRegistry, err is %v\n", err)
 		}
 	}
-	// DEBUG
-	if err == nil {
-		if reg.ClustersByID == nil {
-			fmt.Println("NewEphServer: CLUSTERS_BY_ID IS NIL")
-		}
-	} else {
-		fmt.Printf("error creating ephServer: %v\n", err)
-	}
-	// END
-
 	if err == nil {
 		server, err = NewRegServer(reg, true, 1)
 	}

@@ -12,12 +12,7 @@ package reg
 // 5.  do test run in which the K clients exchange details through the registry
 
 import (
-	// "crypto/rsa"
-	"encoding/hex"
 	"fmt"
-	//xc "github.com/jddixon/xlattice_go/crypto"
-	//xn "github.com/jddixon/xlattice_go/node"
-	// xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
@@ -69,14 +64,7 @@ func (s *XLSuite) TestServer(c *C) {
 		serverCK, serverSK, clusterName, clusterAttrs, K, 1, nil)
 	c.Assert(err, IsNil)
 
-	// DEBUG
-	fmt.Printf("Server name %s, id %s\n", serverName,
-		hex.EncodeToString(serverID.Value()))
-	fmt.Printf("cluster name %s; K is %d\n", clusterName, K)
-	// END
-
 	an.Run()
-
 	cn := &an.ClientNode // a bit ugly, this ...
 	<-cn.DoneCh
 
@@ -96,11 +84,6 @@ func (s *XLSuite) TestServer(c *C) {
 	found, err = reg.ContainsID(cn.ClusterID)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
-
-	// DEBUG
-	fmt.Printf("AdminClient has registered a cluster of size %d\n    cluster ID is %s\n",
-		K, hex.EncodeToString(cn.ClusterID.Value()))
-	// END
 
 	// 4. create K clients ------------------------------------------
 

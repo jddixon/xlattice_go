@@ -52,9 +52,6 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 		serverVersion xu.DecimalVersion
 	)
 	serverVersion, err = xu.ParseDecimalVersion(VERSION)
-	// DEBUG
-	fmt.Printf("NewRegistry: server version is %s\n", serverVersion.String())
-	// END
 	if err == nil {
 		rn, err = NewRegNode(node, ckPriv, skPriv)
 	}

@@ -261,22 +261,10 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 	}
 	if err == nil {
 		err = cn.h.writeData(ciphertext1)
-		// DEBUG
-		if err != nil {
-			fmt.Printf("SessionSetup, sending Hello: err after write is %v\n",
-				err)
-		}
-		// END
 	}
 	// Process HELLO REPLY --------------------------------------
 	if err == nil {
 		ciphertext2, err = cn.h.readData()
-		// DEBUG
-		if err != nil {
-			fmt.Printf("SessionSetup, sending Hello: err after read is %v\n",
-				err)
-		}
-		// END
 	}
 	if err == nil {
 		iv2, key2, salt2, salt1c, decidedVersion,
@@ -295,9 +283,6 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 			cn.encrypterC = cipher.NewCBCEncrypter(cn.engineC, iv2)
 			cn.decrypterC = cipher.NewCBCDecrypter(cn.engineC, iv2)
 		}
-		// DEBUG
-		fmt.Printf("client %s AES engines set up\n", cn.name)
-		// END
 	}
 	return
 }
@@ -336,9 +321,6 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 			}
 			// SHOULD CHECK FOR TIMEOUT
 			err = cn.writeMsg(request)
-			// DEBUG
-			fmt.Printf("CLIENT_MSG for %s sent\n", cn.name)
-			// END
 		}
 	}
 	// Process CLIENT_OK --------------------------------------------
@@ -351,10 +333,6 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 		// XXX err ignored
 
 		cn.decidedAttrs = response.GetClientAttrs()
-		// DEBUG
-		fmt.Printf("    client %s has received ClientOK\n",
-			cn.name)
-		// END
 	}
 	return
 } // GEEP2
@@ -374,20 +352,12 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 	}
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
-	// DEBUG
-	fmt.Printf("client %s sends CREATE for cluster %s, EpCount %d, size %d\n",
-		cn.name, cn.ClusterName, cn.EpCount, cn.ClusterSize)
-	// END
-
 	if err == nil {
 		// Process CREATE REPLY -------------------------------------
 		// SHOULD CHECK FOR TIMEOUT AND VERIFY THAT IT'S A CREATE REPLY
 		response, err = cn.readMsg()
 		op = response.GetOp()
 		_ = op
-		// DEBUG
-		fmt.Printf("    client has received CreateReply; err is %v\n", err)
-		// END
 		if err == nil {
 			id := response.GetClusterID()
 			cn.ClusterID, err = xi.New(id)
@@ -409,10 +379,6 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 	}
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
-	// DEBUG
-	fmt.Printf("Client %s sends JOIN by name cluster %s\n",
-		cn.name, cn.ClusterName)
-	// END
 
 	// Process JOIN REPLY ---------------------------------------
 	if err == nil {
@@ -424,10 +390,6 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 		_ = op
 
 		epCount := uint32(response.GetEndPointCount())
-		// DEBUG
-		fmt.Printf("    client has received JoinReply; epCount %d, err is %v\n",
-			epCount, err)
-		// END
 		if err == nil {
 			clusterSizeNow := response.GetClusterSize()
 			if cn.ClusterSize != clusterSizeNow {
@@ -464,10 +426,6 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 				stillToGet = stillToGet.Clear(i)
 			}
 		}
-		// DEBUG
-		fmt.Printf("ClientNode %s sends GET for %d members (bits 0x%x)\n",
-			cn.name, stillToGet.Count(), stillToGet.Bits)
-		// END
 
 		// Send GET MSG =========================================
 		op := XLRegMsg_GetCluster
@@ -493,10 +451,6 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			id := response.GetClusterID()
 			_ = id // XXX ignore for now
 			which := xu.NewBitMap64(response.GetWhich())
-			// DEBUG
-			fmt.Printf("    client has received %d MEMBERS\n",
-				which.Count())
-			// END
 			tokens := response.GetTokens() // a slice
 			if which.Any() {
 				offset := 0
@@ -529,9 +483,6 @@ func (cn *ClientNode) ByeAndAck() (err error) {
 	}
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
-	// DEBUG
-	fmt.Printf("client %s BYE sent\n", cn.name)
-	// END
 
 	// Process ACK = BYE REPLY ----------------------------------
 	if err == nil {
@@ -541,10 +492,6 @@ func (cn *ClientNode) ByeAndAck() (err error) {
 		response, err = cn.readMsg()
 		op := response.GetOp()
 		_ = op
-		// DEBUG
-		fmt.Printf("    client %s has received ACK; err is %v\n",
-			cn.name, err)
-		// END
 	}
 	return
 } // GEEP6

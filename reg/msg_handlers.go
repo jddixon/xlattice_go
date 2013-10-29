@@ -87,7 +87,6 @@ func doClientMsg(h *InHandler) {
 		// the InHandler.
 		cm, err = NewClusterMember(name, nodeID, ck, sk, attrs, myEnds)
 		if err == nil {
-			fmt.Printf("'thisMember' for connection is %s\n", cm.GetName())
 			h.thisMember = cm
 		}
 	}
@@ -103,8 +102,6 @@ func doClientMsg(h *InHandler) {
 		}
 		// Set exit state -----------------------------------------------
 		h.exitState = CLIENT_DETAILS_RCVD
-		// DEBUG
-		fmt.Printf("server has received client details and sent OK\n")
 	}
 }
 
@@ -166,9 +163,6 @@ func doCreateMsg(h *InHandler) {
 			index, err = h.reg.AddCluster(cluster)
 			// XXX index not used
 		}
-		// DEBUG
-		fmt.Printf("cluster %s has epCount %d\n", clusterName, endPointCount)
-		// END
 	}
 	_ = index // INDEX IS NOT BEING USED
 
@@ -307,10 +301,6 @@ func doGetMsg(h *InHandler) {
 		}
 		weHave := xu.LowNMap(size)
 		whichToSend := whichRequested.Intersection(weHave)
-		// DEBUG
-		fmt.Printf("doGetMsg: have 0x%x, client requests 0x%x, will send 0x%x\n",
-			weHave.Bits, whichRequested.Bits, whichToSend.Bits)
-		// END
 		for i := uint(0); i < size; i++ {
 			if whichToSend.Test(i) { // they want this one
 				member := cluster.members[i]
@@ -319,10 +309,6 @@ func doGetMsg(h *InHandler) {
 					tokens = append(tokens, token)
 					whichReturned = whichReturned.Set(i)
 				} else {
-					// DEBUG
-					fmt.Printf("ERROR seen while tokenizing member %d, %s\n",
-						i, member.GetName())
-					// END
 					break
 				}
 			}
@@ -339,10 +325,6 @@ func doGetMsg(h *InHandler) {
 		}
 		// Set exit state -----------------------------------------------
 		h.exitState = JOIN_RCVD // the JOIN is intentional !
-
-		// DEBUG
-		fmt.Printf("server returning %d tokens\n", whichReturned.Count())
-		// END
 	}
 }
 

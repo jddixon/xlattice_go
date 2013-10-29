@@ -44,9 +44,6 @@ func (s *XLSuite) TestMmap(c *C) {
 
 	rng := xr.MakeSimpleRNG()
 	pathToFile := s.scratchFileName(c, rng, "tmp")
-	fmt.Printf("FILE: %s\n", pathToFile)
-
-	_ = pathToFile
 
 	// XXX take care: this is ONE block
 	data := make([]byte, BLOCK_SIZE)
@@ -79,29 +76,18 @@ func (s *XLSuite) TestMmap(c *C) {
 
 	// inCore is an MMap
 	mh := (*reflect.SliceHeader)(unsafe.Pointer(&inCore))
-	mAddr := mh.Data
-	mLength := mh.Len
-	mCap := mh.Cap
-	fmt.Printf("inCore data, length, and cap: %v, %d, %d\n",
-		mAddr, mLength, mCap)
 
 	const SIZEOF_UINT64 = 8 // bytes
 
 	type MMap64 []uint64
 	var inCore64 MMap64
 	ih := (*reflect.SliceHeader)(unsafe.Pointer(&inCore64))
-	iAddr := ih.Data
-	iLength := ih.Len
-	iCap := ih.Cap
-	fmt.Printf("inCore64 data, length, and cap: %v, %d, %d\n",
-		iAddr, iLength, iCap)
 
 	ih.Data = mh.Data
 	ih.Len = mh.Len / SIZEOF_UINT64
 	ih.Cap = mh.Cap / SIZEOF_UINT64
 
 	inCore[0] = 0x7f
-	fmt.Printf("after fiddling inCore64[0] is 0x%x\n", inCore64[0])
 	// END HACKING //////////////////////////////////////////////////
 
 	// This succeeds, so the mapping from disk succeeded.

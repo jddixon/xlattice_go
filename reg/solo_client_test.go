@@ -47,7 +47,6 @@ func (s *XLSuite) TestSoloClient(c *C) {
 		found, err = xf.PathExists(lfs)
 		c.Assert(err, IsNil)
 	}
-	fmt.Printf("lfs is %s\n", lfs)
 
 	ep, err := xt.NewTcpEndPoint("127.0.0.1:0")
 	c.Assert(err, IsNil)

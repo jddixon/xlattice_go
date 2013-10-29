@@ -8,7 +8,6 @@ import (
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
-	"io"
 )
 
 var _ = fmt.Print
@@ -72,7 +71,6 @@ func (uc *UserClient) Run() (err error) {
 		var (
 			version1 uint32
 		)
-		clientName := cn.GetName()
 		cnx, version2, err := cn.SessionSetup(version1)
 		_ = version2 // not yet used
 		if err == nil {
@@ -94,13 +92,6 @@ func (uc *UserClient) Run() (err error) {
 		if cnx != nil {
 			cnx.Close()
 		}
-		// DEBUG
-		fmt.Printf("user client %s run complete ", clientName)
-		if err != nil && err != io.EOF {
-			fmt.Printf("- ERROR: %v", err)
-		}
-		fmt.Println("")
-		// END
 
 		cn.Err = err
 		cn.DoneCh <- true
