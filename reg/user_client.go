@@ -102,8 +102,8 @@ func (uc *UserClient) Run() (err error) {
 		fmt.Println("")
 		// END
 
-		cn.err = err
-		cn.doneCh <- true
+		cn.Err = err
+		cn.DoneCh <- true
 	}()
 	return
 }

@@ -1,23 +1,30 @@
 xlattice_go/reg/TODO
 
-2013-10-27
-    * booting server writes regCred.dat to its LFS
+2013-10-28
+    * "mapping file too small" error on starting xlReg, although
+        file size seemed correct
+        - change to 'backing file' for consistency
+    * (from 10-17) xlReg starting for the first time should
+        - writes regCred to the log 
+    * and to its own LFS/reg.cred                                       * DONE
 
+2013-10-27
+    * booting server writes regCred.dat to its LFS                      * DONE
 2013-10-25
     * drop options.Ephemeral, which is implied by empty backing
         file name ?
     * use BloomSHAI interface to let NewRegistry() create               * DONE
         appropriate type of BloomFilter (Mapped or not) depending       * DONE
         upon whether backingFile has empty name                         * DONE
-
 2013-10-18
     * Whatever is using BadVersion should be using the DecimalVersion
         type
         - This is in reg/in_handler.go init() and references VERSION in
             const.go.  
-        - That VERSION should be explicitly of type xu.DecimalVersion;
-            VERSION_DATE could also be typed.
-        - Note that VERSION is 0.1.1 in that file.
+        - That VERSION should be explicitly of type xu.DecimalVersion;  * DROP
+            VERSION_DATE could also be typed.                           * DROP
+            * VERSION is a string; DecimalVersion.Parse() translates
+        - Note that VERSION is 0.1.1 in that file.                      * FIXED
 
 2013-10-17
     * FIX: eph_server_test failure about line 126 suggests that Node    * FIXED
@@ -33,19 +40,17 @@ xlattice_go/reg/TODO
         doesn't make any sense
 
     REGISTRY SERVER
-    * (short run) verify that xlReg can set a specifc IP address
-        to listen on, such as 192.168.152.10:44444
+    * (short run) verify that xlReg can set a specifc IP address        * DONE
+        to listen on, such as 192.168.152.10:44444                      * DONE
     * (longer run) verify that xlReg can be configured to listen on
         either ALL IP addresses or on more than one IP address,
         such as {192.168.152.10.44444, 192.168.136.10.44444}
     * add RegCred message, which of course can't be used without
         knowing the registry's comms public key
-    * need RegCred data type with String() and Parse() methods
+    * need RegCred data type with String() and Parse() methods          * DONE
 
     * a new server's first act is to create its own NodeID and          * DONE
         register it                                                     * DONE
-    * it then writes regCred to the log and to its own
-        LFS/reg.cred
 
     * ephemeral admin client unique ID should be itself ephemeral 
 

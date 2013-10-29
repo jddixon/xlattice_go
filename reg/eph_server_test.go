@@ -78,10 +78,10 @@ func (s *XLSuite) TestServer(c *C) {
 	an.Run()
 
 	cn := &an.ClientNode // a bit ugly, this ...
-	<-cn.doneCh
+	<-cn.DoneCh
 
-	c.Assert(cn.clusterID, NotNil) // the purpose of the exercise
-	c.Assert(cn.epCount, Equals, uint32(1))
+	c.Assert(cn.ClusterID, NotNil) // the purpose of the exercise
+	c.Assert(cn.EpCount, Equals, uint32(1))
 
 	anID := reg.GetNodeID()
 	c.Assert(reg.IDCount(), Equals, uint(3)) // regID + anID + clusterID
@@ -90,16 +90,16 @@ func (s *XLSuite) TestServer(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
 	// may be redundant...
-	found, err = reg.ContainsID(an.clusterID)
+	found, err = reg.ContainsID(an.ClusterID)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
-	found, err = reg.ContainsID(cn.clusterID)
+	found, err = reg.ContainsID(cn.ClusterID)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
 
 	// DEBUG
 	fmt.Printf("AdminClient has registered a cluster of size %d\n    cluster ID is %s\n",
-		K, hex.EncodeToString(cn.clusterID.Value()))
+		K, hex.EncodeToString(cn.ClusterID.Value()))
 	// END
 
 	// 4. create K clients ------------------------------------------
@@ -114,11 +114,11 @@ func (s *XLSuite) TestServer(c *C) {
 		ucNames[i] = rng.NextFileName(8) // not guaranteed to be unique
 		uc[i], err = NewUserClient(ucNames[i], "",
 			serverName, serverID, serverEnd, serverCK, serverSK,
-			clusterName, cn.clusterAttrs, cn.clusterID,
+			clusterName, cn.ClusterAttrs, cn.ClusterID,
 			K, 1, e) //1 is endPoint count
 		c.Assert(err, IsNil)
 		c.Assert(uc[i], NotNil)
-		c.Assert(uc[i].clusterID, NotNil)
+		c.Assert(uc[i].ClusterID, NotNil)
 	}
 
 	// 5. start the K clients, each in a separate goroutine ---------
@@ -129,7 +129,7 @@ func (s *XLSuite) TestServer(c *C) {
 
 	// wait until all clients are done ------------------------------
 	for i := 0; i < K; i++ {
-		<-uc[i].ClientNode.doneCh
+		<-uc[i].ClientNode.DoneCh
 
 		// XXX NEXT LINE APPARENTLY DOES NOT WORK
 		// nodeID := uc[i].ClientNode.GetNodeID()

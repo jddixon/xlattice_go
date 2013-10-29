@@ -38,8 +38,8 @@ const (
 type ClientNode struct {
 
 	// EPHEMERAL INFORMATION ========================================
-	doneCh          chan bool
-	err             error
+	DoneCh          chan bool
+	Err             error
 	h               *CnxHandler
 	proposedAttrs   uint64
 	proposedVersion uint32 // proposed by client
@@ -55,10 +55,10 @@ type ClientNode struct {
 	// subclasses.  To the user, this is the cluster being joined.
 	// To an admin client, it is a cluster being created.
 
-	clusterName  string
-	clusterAttrs uint64
-	clusterID    *xi.NodeID
-	clusterSize  uint32 // this is a FIXED size, aka MaxSize
+	ClusterName  string
+	ClusterAttrs uint64
+	ClusterID    *xi.NodeID
+	ClusterSize  uint32 // this is a FIXED size, aka MaxSize
 
 	// PERSISTED ====================================================
 	// If the ClientNode is not ephemeral, this information is saved
@@ -75,9 +75,9 @@ type ClientNode struct {
 
 	// By convention endPoints[0] is used for member-member communications
 	// and [1] for comms with cluster clients, should they exist. Some or
-	// all of these (the first epCount) are passed to other cluster
+	// all of these (the first EpCount) are passed to other cluster
 	// members via the registry.
-	epCount uint32
+	EpCount uint32
 
 	// INFORMATION PERSISTED AS Node CONFIGURATION ------------------
 	// This is used to build the node and so is persisted as part of
@@ -191,18 +191,18 @@ func NewClientNode(
 			name:          name,
 			lfs:           lfs, // if blank, node is ephemeral
 			proposedAttrs: attrs,
-			doneCh:        make(chan bool, 1),
+			DoneCh:        make(chan bool, 1),
 			serverName:    serverName,
 			serverID:      serverID,
 			serverEnd:     serverEnd,
 			serverCK:      serverCK,
 			serverSK:      serverSK,
-			clusterName:   clusterName,
-			clusterAttrs:  clusterAttrs,
-			clusterID:     clusterID,
-			clusterSize:   uint32(size),
+			ClusterName:   clusterName,
+			ClusterAttrs:  clusterAttrs,
+			ClusterID:     clusterID,
+			ClusterSize:   uint32(size),
 			h:             cnxHandler,
-			epCount:       uint32(epCount),
+			EpCount:       uint32(epCount),
 			endPoints:     e,
 			ckPriv:        ckPriv,
 			skPriv:        skPriv,
@@ -367,16 +367,16 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 	op := XLRegMsg_Create
 	request := &XLRegMsg{
 		Op:            &op,
-		ClusterName:   &cn.clusterName,
-		ClusterAttrs:  &cn.clusterAttrs,
-		ClusterSize:   &cn.clusterSize,
-		EndPointCount: &cn.epCount,
+		ClusterName:   &cn.ClusterName,
+		ClusterAttrs:  &cn.ClusterAttrs,
+		ClusterSize:   &cn.ClusterSize,
+		EndPointCount: &cn.EpCount,
 	}
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
 	// DEBUG
-	fmt.Printf("client %s sends CREATE for cluster %s, epCount %d, size %d\n",
-		cn.name, cn.clusterName, cn.epCount, cn.clusterSize)
+	fmt.Printf("client %s sends CREATE for cluster %s, EpCount %d, size %d\n",
+		cn.name, cn.ClusterName, cn.EpCount, cn.ClusterSize)
 	// END
 
 	if err == nil {
@@ -390,9 +390,9 @@ func (cn *ClientNode) CreateAndReply() (err error) {
 		// END
 		if err == nil {
 			id := response.GetClusterID()
-			cn.clusterID, err = xi.New(id)
-			cn.clusterAttrs = response.GetClusterAttrs()
-			cn.clusterSize = response.GetClusterSize()
+			cn.ClusterID, err = xi.New(id)
+			cn.ClusterAttrs = response.GetClusterAttrs()
+			cn.ClusterSize = response.GetClusterSize()
 			// XXX no check on err
 		}
 	}
@@ -405,13 +405,13 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 	op := XLRegMsg_Join
 	request := &XLRegMsg{
 		Op:          &op,
-		ClusterName: &cn.clusterName,
+		ClusterName: &cn.ClusterName,
 	}
 	// SHOULD CHECK FOR TIMEOUT
 	err = cn.writeMsg(request)
 	// DEBUG
 	fmt.Printf("Client %s sends JOIN by name cluster %s\n",
-		cn.name, cn.clusterName)
+		cn.name, cn.ClusterName)
 	// END
 
 	// Process JOIN REPLY ---------------------------------------
@@ -430,14 +430,14 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 		// END
 		if err == nil {
 			clusterSizeNow := response.GetClusterSize()
-			if cn.clusterSize != clusterSizeNow {
-				cn.clusterSize = clusterSizeNow
-				cn.members = make([]*ClusterMember, cn.clusterSize)
+			if cn.ClusterSize != clusterSizeNow {
+				cn.ClusterSize = clusterSizeNow
+				cn.members = make([]*ClusterMember, cn.ClusterSize)
 			}
-			cn.epCount = epCount
+			cn.EpCount = epCount
 			// XXX This is just wrong: we already know the cluster ID
 			id := response.GetClusterID()
-			// cn.clusterID, err = xi.New(id)
+			// cn.ClusterID, err = xi.New(id)
 			_ = id // DO SOMETHING WITH IT  XXX
 		}
 	} // GEEP3
@@ -447,19 +447,19 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 // Collect information on all cluster members
 func (cn *ClientNode) GetAndMembers() (err error) {
 
-	if cn.clusterID == nil {
+	if cn.ClusterID == nil {
 		fmt.Printf("** ENTERING GetAndMembers for %s with nil clusterID! **\n",
 			cn.name)
 	}
 	MAX_GET := 16
 	if cn.members == nil {
-		cn.members = make([]*ClusterMember, cn.clusterSize)
+		cn.members = make([]*ClusterMember, cn.ClusterSize)
 	}
-	stillToGet := xu.LowNMap(uint(cn.clusterSize))
+	stillToGet := xu.LowNMap(uint(cn.ClusterSize))
 	for count := 0; count < MAX_GET && stillToGet.Any(); count++ {
 		var response *XLRegMsg
 
-		for i := uint(0); i < uint(cn.clusterSize); i++ {
+		for i := uint(0); i < uint(cn.ClusterSize); i++ {
 			if cn.members[i] != nil {
 				stillToGet = stillToGet.Clear(i)
 			}
@@ -473,7 +473,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		op := XLRegMsg_GetCluster
 		request := &XLRegMsg{
 			Op:        &op,
-			ClusterID: cn.clusterID.Value(),
+			ClusterID: cn.ClusterID.Value(),
 			Which:     &stillToGet.Bits,
 		}
 		// SHOULD CHECK FOR TIMEOUT
@@ -500,7 +500,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			tokens := response.GetTokens() // a slice
 			if which.Any() {
 				offset := 0
-				for i := uint(0); i < uint(cn.clusterSize); i++ {
+				for i := uint(0); i < uint(cn.ClusterSize); i++ {
 					if which.Test(i) {
 						token := tokens[offset]
 						offset++

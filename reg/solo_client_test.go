@@ -61,7 +61,7 @@ func (s *XLSuite) TestSoloClient(c *C) {
 	// 3. run the client, which gets a nodeID from the server -------
 	err = sc.Run()
 	c.Assert(err, IsNil)
-	<-sc.doneCh
+	<-sc.DoneCh
 
 	// 4.  verify that the client LFS exists and is correct ---------
 	found, err = xf.PathExists(lfs)
