@@ -189,21 +189,16 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 	opt.Logger.Print(greetings)
 
 	pathToConfigFile = path.Join(path.Join(opt.Lfs, ".xlattice"), "node.config")
-	// DEBUG
-	fmt.Printf("expecting to find config file in %s\n", pathToConfigFile)
-	// END
 	found, err := xf.PathExists(pathToConfigFile)
 	if err == nil {
 		if found {
 			// The registry node already exists.  Parse it and we are done.
-			fmt.Printf("loading existing node config\n") // DEBUG
 			var data []byte
 			data, err = ioutil.ReadFile(pathToConfigFile)
 			if err == nil {
 				node, _, err = xn.Parse(string(data))
 			}
 		} else {
-			fmt.Printf("creating a node from scratch\n") // DEBUG
 			// We need to create a registry node from scratch.
 			nodeID, _ := xi.New(nil)
 			ep, err := xt.NewTcpEndPoint(opt.Address + ":" + opt.Port)
@@ -220,21 +215,12 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 			}
 			if err == nil {
 				err = xf.MkdirsToFile(pathToConfigFile, 0700)
-				// DEBUG
-				fmt.Printf("should be writing %s\n", pathToConfigFile)
-				// END
 				if err == nil {
 					err = ioutil.WriteFile(pathToConfigFile,
 						[]byte(node.String()), 0400)
 				}
 			}
 		}
-		// DEBUG
-		if err == nil {
-			fmt.Printf("nodeID: %s\n", node.GetNodeID().String())
-
-		}
-		// END
 	}
 	if err == nil {
 		var r *reg.Registry
