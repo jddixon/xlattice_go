@@ -52,8 +52,8 @@ func NewMappedBloomSHA(m, k uint, backingFile string) (
 					fi, err = f.Stat()
 					if err == nil {
 						// XXX could be huge ...
-						size := uint(fi.Size())
-						if size < uint(1)<<m {
+						fileSize := int64(fi.Size())
+						if fileSize < size {
 							err = MappingFileTooSmall
 						}
 					}

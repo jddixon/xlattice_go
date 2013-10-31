@@ -1,9 +1,16 @@
 xlattice_go/reg/TODO
 
+2013-11-01
+    * FIX: 'permission denied' when running new xlReg detached
+        and reloading node.config
+        - displays nodeID 
+        - go build for cmd/xlReg needs to delete node.config?
+        - if I rm -rf /var/app/xlReg/* it succeeds
+
 2013-10-28
-    * "mapping file too small" error on starting xlReg, although
-        file size seemed correct
-        - change to 'backing file' for consistency
+    * "mapping file too small" error on starting xlReg, although        * FIXED
+        file size seemed correct                                        * FIXED
+        - change to 'backing file' for consistency                      * DROP
     * (from 10-17) xlReg starting for the first time should
         - writes regCred to the log 
     * and to its own LFS/reg.cred                                       * DONE
