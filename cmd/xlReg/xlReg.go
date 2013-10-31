@@ -172,14 +172,15 @@ func main() {
 	_ = err
 }
 func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
-	// If LFS/.xlattice/node.config exists, we load that.  Otherwise we
+	// If LFS/.xlattice/reg.config exists, we load that.  Otherwise we
 	// create a node.  In either case we force the node to listen on
 	// the designated port
 
 	var (
 		e                []xt.EndPointI
-		pathToConfigFile string
 		node             *xn.Node
+		pathToConfigFile string
+		rn               *reg.RegNode
 		ckPriv, skPriv   *rsa.PrivateKey
 	)
 
@@ -188,7 +189,7 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 	// fmt.Print(greetings)
 	opt.Logger.Print(greetings)
 
-	pathToConfigFile = path.Join(path.Join(opt.Lfs, ".xlattice"), "node.config")
+	pathToConfigFile = path.Join(path.Join(opt.Lfs, ".xlattice"), "reg.config")
 	found, err := xf.PathExists(pathToConfigFile)
 	if err == nil {
 		if found {
@@ -196,7 +197,7 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 			var data []byte
 			data, err = ioutil.ReadFile(pathToConfigFile)
 			if err == nil {
-				node, _, err = xn.Parse(string(data))
+				rn, _, err = reg.ParseRegNode(string(data))
 			}
 		} else {
 			// We need to create a registry node from scratch.
@@ -214,10 +215,13 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 					nil, e, nil)
 			}
 			if err == nil {
+				rn, err = reg.NewRegNode(node, ckPriv, skPriv)
+			}
+			if err == nil {
 				err = xf.MkdirsToFile(pathToConfigFile, 0700)
 				if err == nil {
 					err = ioutil.WriteFile(pathToConfigFile,
-						[]byte(node.String()), 0400)
+						[]byte(rn.String()), 0400)
 				}
 			}
 		}
@@ -225,11 +229,11 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 	if err == nil {
 		var r *reg.Registry
 		r, err = reg.NewRegistry(nil, // nil = clusters so far
-			node, ckPriv, skPriv, opt)
+			rn, opt)
 		if err == nil {
 			// DEBUG
-			fmt.Printf("Registry name: %s\n", node.GetName())
-			fmt.Printf("         ID:   %s\n", node.GetNodeID().String())
+			fmt.Printf("Registry name: %s\n", rn.GetName())
+			fmt.Printf("         ID:   %s\n", rn.GetNodeID().String())
 			// END
 		}
 		if err == nil {

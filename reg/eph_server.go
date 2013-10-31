@@ -55,6 +55,11 @@ func NewEphServer() (ms *EphServer, err error) {
 		eps := []xt.EndPointI{ep}
 		if err == nil {
 			node, err = xn.New(name, id, lfs, ckPriv, skPriv, nil, eps, nil)
+		}
+		if err == nil {
+			rn, err = NewRegNode(node, ckPriv, skPriv)
+		}
+		if err == nil {
 			// a registry with no clusters and no logger
 			opt := &RegOptions{
 				EndPoint:  ep, // not used
@@ -64,15 +69,13 @@ func NewEphServer() (ms *EphServer, err error) {
 				K:         DEFAULT_K,
 				M:         DEFAULT_M,
 			}
-			reg, err = NewRegistry(nil, node, ckPriv, skPriv, opt)
+			reg, err = NewRegistry(nil, rn, opt)
 		}
 	}
 	if err == nil {
 		server, err = NewRegServer(reg, true, 1)
 	}
-
 	if err == nil {
-		rn = &reg.RegNode
 		ms = &EphServer{
 			acc:    rn.GetAcceptor(0),
 			Server: server,

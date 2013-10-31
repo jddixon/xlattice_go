@@ -1,11 +1,26 @@
 xlattice_go/reg/TODO
 
-2013-11-01
-    * FIX: 'permission denied' when running new xlReg detached
-        and reloading node.config
-        - displays nodeID 
-        - go build for cmd/xlReg needs to delete node.config?
-        - if I rm -rf /var/app/xlReg/* it succeeds
+2013-10-31
+    * FIX: 'permission denied' when running new xlReg detached          * FIXED
+        and reloading node.config		                                * FIXED
+        - displays nodeID 		                                        * FIXED
+        - go build for cmd/xlReg needs to delete node.config?		    * FIXED
+        - if I rm -rf /var/app/xlReg/* it succeeds		                * FIXED
+
+    * FIX: running go test in upax_go crashes xlReg with a bad          * DONE
+        address (nil pointer?) in helloAndReply line 66 called          * DONE
+        from in_handler.go line 236                                     * DONE
+        - problem is that ckPriv is nil                                 * DONE
+        - and this is because whereas the registry's node is            * DONE
+            being properly persisted and reloaded, the other            * DONE
+            registry data is not!  So ckPriv is nil.                    * DONE
+    * modify NewRegistry() to replace node, ckPriv, skPriv with         * DONE
+        rn *RegNode                                                     * DONE
+    * modify the code so that the serialization of RegNode is saved     * DONE
+        as .xlattice/reg.config                                         * DONE
+        - this includes ckPriv and skPriv                               * DONE
+    * xlReg must detect the serialization and load if present           * DONE
+        - need to properly implement 10-02 Registry-related items 
 
 2013-10-28
     * "mapping file too small" error on starting xlReg, although        * FIXED
@@ -195,10 +210,10 @@ xlattice_go/reg/TODO
         - look at cluster_member_test
         - also reg_cluster_test
 2013-09-16
-    * regNode serialization follows practice in ../node: we first
-        serialize BaseNode, then rest of Node, then fields of
-        RegNode
-        - need Strings(), String(), Parse()
+    * regNode serialization follows practice in ../node: we first       * DONE
+        serialize BaseNode, then rest of Node, then fields of           * DONE
+        RegNode                                                         * DONE
+        - need Strings(), String(), Parse()                             * DONE
 2013-09-13
     * URGENT FIX: ClientMsg does NOT include digsig, so server cannot
         verify that the client knows skPriv

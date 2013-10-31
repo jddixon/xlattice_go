@@ -6,7 +6,6 @@ package reg
 // and manage the cluster data managed by the registry.
 
 import (
-	"crypto/rsa"
 	"fmt"
 	xf "github.com/jddixon/xlattice_go/crypto/filters"
 	xn "github.com/jddixon/xlattice_go/node"
@@ -42,18 +41,19 @@ type Registry struct {
 	RegNode
 }
 
-func NewRegistry(clusters []*RegCluster, node *xn.Node,
-	ckPriv, skPriv *rsa.PrivateKey, opt *RegOptions) (
+func NewRegistry(clusters []*RegCluster,
+	// node *xn.Node, ckPriv, skPriv *rsa.PrivateKey,
+	rn *RegNode,
+	opt *RegOptions) (
 	reg *Registry, err error) {
 
 	var (
 		idFilter      xf.BloomSHAI
-		rn            *RegNode
 		serverVersion xu.DecimalVersion
 	)
 	serverVersion, err = xu.ParseDecimalVersion(VERSION)
-	if err == nil {
-		rn, err = NewRegNode(node, ckPriv, skPriv)
+	if err == nil && rn == nil {
+		err = NilRegNode
 	}
 	if err == nil {
 		if opt.BackingFile == "" {
@@ -64,7 +64,7 @@ func NewRegistry(clusters []*RegCluster, node *xn.Node,
 	}
 	if err == nil {
 		// registry's own ID added to Bloom filter
-		idFilter.Insert(node.GetNodeID().Value())
+		idFilter.Insert(rn.GetNodeID().Value())
 
 		var bniMap xn.BNIMap
 		logger := opt.Logger
