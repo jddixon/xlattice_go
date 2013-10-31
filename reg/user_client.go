@@ -33,7 +33,7 @@ type UserClient struct {
 }
 
 func NewUserClient(
-	name, lfs string,
+	name, lfs string, ckPriv, skPriv *rsa.PrivateKey,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK, serverSK *rsa.PublicKey,
 	clusterName string, clusterAttrs uint64, clusterID *xi.NodeID, size int,
@@ -44,7 +44,7 @@ func NewUserClient(
 	if lfs == "" {
 		attrs |= ATTR_EPHEMERAL
 	}
-	cn, err := NewClientNode(name, lfs, attrs,
+	cn, err := NewClientNode(name, lfs, ckPriv, skPriv, attrs,
 		serverName, serverID, serverEnd,
 		serverCK, serverSK, //  *rsa.PublicKey,
 		clusterName, clusterAttrs, clusterID, size,

@@ -17,9 +17,15 @@ var _ = fmt.Print
 // LFS/.xlattice/node.config with a default mode of 0400.
 //
 // It requires a registry to give it its NodeID.
+//
+// In other words, use a SoloClient to create and persist an XLattice
+// node that will NOT be a member of a cluster but WILL have its
+// configuration saved to permanent storage, to its local file system
+// (LFS).
+
 type SoloClient struct {
 	// In this implementation, SoloClient is a one-shot, launched
-	// to create a single cluster
+	// to create a solitary node.
 
 	ClientNode
 }
@@ -30,7 +36,7 @@ func NewSoloClient(name, lfs string,
 	e []xt.EndPointI) (
 	sc *SoloClient, err error) {
 
-	cn, err := NewClientNode(name, lfs, ATTR_SOLO,
+	cn, err := NewClientNode(name, lfs, nil, nil, ATTR_SOLO,
 		serverName, serverID, serverEnd, serverCK, serverSK,
 		"", uint64(0), nil, 0, // no cluster
 		len(e), e)

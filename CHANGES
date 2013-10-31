@@ -1,8 +1,11 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
 0.4.0
+    2013-10-30
+        * dropped debug statements
+        * added private keys to NewClientNode and friends           SLOC 13796
     2013-10-27
-        * u256x256 becomes u/ and surdirs u16x16, u256x256          SLOC 13881
+        * u256x256 becomes u/ and subdirs u16x16, u256x256          SLOC 13881
         * xlReg v0.2.1 writing regCred.dat to LFS
     2013-10-25
         * xlReg v0.2.0 with memory-mapped Bloom filter              SLOC 13384

@@ -36,7 +36,7 @@ func NewAdminClient(
 	epCount int, e []xt.EndPointI) (
 	ac *AdminClient, err error) {
 
-	cn, err := NewClientNode("admin", "", // name, LFS
+	cn, err := NewClientNode("admin", "", nil, nil, // name, LFS, keys
 		ATTR_ADMIN|ATTR_SOLO|ATTR_EPHEMERAL,
 		serverName, serverID, serverEnd, serverCK, serverSK,
 		clusterName, clusterAttrs, nil, size, epCount, e)

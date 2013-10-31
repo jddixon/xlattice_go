@@ -127,7 +127,7 @@ func (cn *ClientNode) Persist() (err error) {
 // and terminates when it has info on the entire membership.
 
 func NewClientNode(
-	name, lfs string, attrs uint64,
+	name, lfs string, ckPriv, skPriv *rsa.PrivateKey, attrs uint64,
 	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
 	serverCK, serverSK *rsa.PublicKey,
 	clusterName string, clusterAttrs uint64, clusterID *xi.NodeID, size int,
@@ -135,9 +135,8 @@ func NewClientNode(
 	cn *ClientNode, err error) {
 
 	var (
-		isAdmin        = (attrs & ATTR_ADMIN) != 0
-		ckPriv, skPriv *rsa.PrivateKey
-		node           *xn.Node
+		isAdmin = (attrs & ATTR_ADMIN) != 0
+		node    *xn.Node
 	)
 
 	// sanity checks on parameter list
@@ -169,16 +168,11 @@ func NewClientNode(
 				epCount = actualEPCount
 			}
 		}
-		// XXX This is a gross simplification.  If lfs is not specified,
-		// this is an ephemeral node.  If lfs IS specified and
-		// configuration files are present, we should deserialize the
-		// configuration files, which creates the node.
-
-		if attrs&ATTR_EPHEMERAL != uint64(0) || attrs&ATTR_SOLO != uint64(0) {
+		if err == nil && ckPriv == nil {
 			ckPriv, err = rsa.GenerateKey(rand.Reader, 2048)
-			if err == nil {
-				skPriv, err = rsa.GenerateKey(rand.Reader, 2048)
-			}
+		}
+		if err == nil && skPriv == nil {
+			skPriv, err = rsa.GenerateKey(rand.Reader, 2048)
 		}
 	}
 
@@ -335,7 +329,7 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 		cn.decidedAttrs = response.GetClientAttrs()
 	}
 	return
-} // GEEP2
+}
 
 func (cn *ClientNode) CreateAndReply() (err error) {
 
@@ -402,7 +396,7 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 			// cn.ClusterID, err = xi.New(id)
 			_ = id // DO SOMETHING WITH IT  XXX
 		}
-	} // GEEP3
+	}
 	return
 }
 
@@ -471,7 +465,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		}
 	}
 	return
-} // GEEP4
+}
 
 // Send Bye, wait for and process Ack.
 
@@ -494,4 +488,4 @@ func (cn *ClientNode) ByeAndAck() (err error) {
 		_ = op
 	}
 	return
-} // GEEP6
+}

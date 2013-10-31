@@ -96,6 +96,7 @@ func (s *XLSuite) TestServer(c *C) {
 		e := []xt.EndPointI{ep}
 		ucNames[i] = rng.NextFileName(8) // not guaranteed to be unique
 		uc[i], err = NewUserClient(ucNames[i], "",
+			nil, nil, // private RSA keys are generated if nil
 			serverName, serverID, serverEnd, serverCK, serverSK,
 			clusterName, cn.ClusterAttrs, cn.ClusterID,
 			K, 1, e) //1 is endPoint count
