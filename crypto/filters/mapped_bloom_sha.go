@@ -46,7 +46,8 @@ func NewMappedBloomSHA(m, k uint, backingFile string) (
 		found, err = xf.PathExists(backingFile)
 		if err == nil {
 			if found {
-				f, err = os.Open(backingFile)
+				f, err = os.OpenFile(backingFile,
+					os.O_RDWR, 0640)
 				if err == nil {
 					var fi os.FileInfo
 					fi, err = f.Stat()
@@ -70,8 +71,12 @@ func NewMappedBloomSHA(m, k uint, backingFile string) (
 		}
 	}
 	if err == nil {
+		// 2013-11-01: was getting EPERM errors here because I used
+		// os.Open to open the backing file.  Switched to OpenFile
+		// with explicit permissions and everything worked.
 		inCore, err = gm.MapAt(0, f.Fd(), 0, size,
-			gm.PROT_READ|gm.PROT_WRITE, gm.MAP_SHARED)
+			gm.PROT_READ|gm.PROT_WRITE,
+			gm.MAP_SHARED)
 	}
 	if err == nil {
 		ih := (*reflect.SliceHeader)(unsafe.Pointer(&inCore))

@@ -1,15 +1,8 @@
 xlattice_go/crypto/TODO
 
-2013-10-25
-    * write NewMappedBloomSHA3 instead of adding parameter to           * DONE
-        NewBloomSHA3                                            		* DONE
-    * consider renaming both to drop the '3', since neither has 		* DONE
-        anything much to do with SHA3                           		* DONE
-    * CRITICAL: BloomSHA Insert and other operations use a common       * DONE
-        KeySelector.  This must be moved out of the BloomSHA struct     * DONE
-        to permit concurrent operations                                 * DONE
-    * add BloomSHAI interface                                           * DONE
-    * add Close() to interface and both filters (Bloom and MappedBloom) * DONE
+2013-11-01
+    * FIX: xlReg getting 'permission denied' when trying to reload
+        existing mapping file
 
 2013-10-18
     * add backingFile string parameter to NewBloomSHA3
@@ -18,10 +11,6 @@ xlattice_go/crypto/TODO
             * so m must be >= 12
         - if parameter is "", not memory-mapped
 2013-10-15
-    * need to be able to serialize Bloom filters, which can be          * DROP
-        expressed as a need for 
-        - BloomSHA3.String()
-        - BloomSHA3.Parse()
     * this suggests a need for
         - func (b3 *BloomSHA3) Union(*BloomSHA3) error
         - where the obvious error is that m and k differ
