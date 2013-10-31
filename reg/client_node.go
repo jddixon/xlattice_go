@@ -69,9 +69,9 @@ type ClientNode struct {
 	serverEnd      xt.EndPointI
 	serverCK       *rsa.PublicKey
 	serverSK       *rsa.PublicKey
-	decidedAttrs   uint64
-	decidedVersion uint32           // decreed by server
-	members        []*ClusterMember // information on cluster members
+	DecidedAttrs   uint64
+	DecidedVersion uint32           // decreed by server
+	Members        []*ClusterMember // information on cluster members
 
 	// By convention endPoints[0] is used for member-member communications
 	// and [1] for comms with cluster clients, should they exist. Some or
@@ -271,7 +271,7 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 		cn.iv2 = iv2
 		cn.key2 = key2
 		cn.salt2 = salt2
-		cn.decidedVersion = decidedVersion
+		cn.DecidedVersion = decidedVersion
 		cn.engineC, err = aes.NewCipher(key2)
 		if err == nil {
 			cn.encrypterC = cipher.NewCBCEncrypter(cn.engineC, iv2)
@@ -326,7 +326,7 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 
 		// XXX err ignored
 
-		cn.decidedAttrs = response.GetClientAttrs()
+		cn.DecidedAttrs = response.GetClientAttrs()
 	}
 	return
 }
@@ -388,7 +388,7 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 			clusterSizeNow := response.GetClusterSize()
 			if cn.ClusterSize != clusterSizeNow {
 				cn.ClusterSize = clusterSizeNow
-				cn.members = make([]*ClusterMember, cn.ClusterSize)
+				cn.Members = make([]*ClusterMember, cn.ClusterSize)
 			}
 			cn.EpCount = epCount
 			// XXX This is just wrong: we already know the cluster ID
@@ -408,15 +408,15 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			cn.name)
 	}
 	MAX_GET := 16
-	if cn.members == nil {
-		cn.members = make([]*ClusterMember, cn.ClusterSize)
+	if cn.Members == nil {
+		cn.Members = make([]*ClusterMember, cn.ClusterSize)
 	}
 	stillToGet := xu.LowNMap(uint(cn.ClusterSize))
 	for count := 0; count < MAX_GET && stillToGet.Any(); count++ {
 		var response *XLRegMsg
 
 		for i := uint(0); i < uint(cn.ClusterSize); i++ {
-			if cn.members[i] != nil {
+			if cn.Members[i] != nil {
 				stillToGet = stillToGet.Clear(i)
 			}
 		}
@@ -452,7 +452,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 					if which.Test(i) {
 						token := tokens[offset]
 						offset++
-						cn.members[i], err = NewClusterMemberFromToken(
+						cn.Members[i], err = NewClusterMemberFromToken(
 							token)
 						stillToGet = stillToGet.Clear(i)
 					}

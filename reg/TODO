@@ -1,56 +1,27 @@
 xlattice_go/reg/TODO
 
 2013-10-31
-    * FIX: 'permission denied' when running new xlReg detached          * FIXED
-        and reloading node.config		                                * FIXED
-        - displays nodeID 		                                        * FIXED
-        - go build for cmd/xlReg needs to delete node.config?		    * FIXED
-        - if I rm -rf /var/app/xlReg/* it succeeds		                * FIXED
-
-    * FIX: running go test in upax_go crashes xlReg with a bad          * DONE
-        address (nil pointer?) in helloAndReply line 66 called          * DONE
-        from in_handler.go line 236                                     * DONE
-        - problem is that ckPriv is nil                                 * DONE
-        - and this is because whereas the registry's node is            * DONE
-            being properly persisted and reloaded, the other            * DONE
-            registry data is not!  So ckPriv is nil.                    * DONE
-    * modify NewRegistry() to replace node, ckPriv, skPriv with         * DONE
-        rn *RegNode                                                     * DONE
-    * modify the code so that the serialization of RegNode is saved     * DONE
-        as .xlattice/reg.config                                         * DONE
-        - this includes ckPriv and skPriv                               * DONE
-    * xlReg must detect the serialization and load if present           * DONE
-        - need to properly implement 10-02 Registry-related items 
+    * need to properly implement 10-02 Registry-related items 
+    * when ParseRegistry is available, code must be available which
+        rebuilds volatile data structures, including ClustersByName
+        and ClustersByID
+        - in particular, the registry ID and all cluster IDs must be 
+            in the registry Bloom filter
 
 2013-10-28
-    * "mapping file too small" error on starting xlReg, although        * FIXED
-        file size seemed correct                                        * FIXED
-        - change to 'backing file' for consistency                      * DROP
     * (from 10-17) xlReg starting for the first time should
         - writes regCred to the log 
-    * and to its own LFS/reg.cred                                       * DONE
 
-2013-10-27
-    * booting server writes regCred.dat to its LFS                      * DONE
 2013-10-25
     * drop options.Ephemeral, which is implied by empty backing
         file name ?
-    * use BloomSHAI interface to let NewRegistry() create               * DONE
-        appropriate type of BloomFilter (Mapped or not) depending       * DONE
-        upon whether backingFile has empty name                         * DONE
 2013-10-18
     * Whatever is using BadVersion should be using the DecimalVersion
         type
         - This is in reg/in_handler.go init() and references VERSION in
             const.go.  
-        - That VERSION should be explicitly of type xu.DecimalVersion;  * DROP
-            VERSION_DATE could also be typed.                           * DROP
-            * VERSION is a string; DecimalVersion.Parse() translates
-        - Note that VERSION is 0.1.1 in that file.                      * FIXED
 
 2013-10-17
-    * FIX: eph_server_test failure about line 126 suggests that Node    * FIXED
-        is not being written back into ClientNode                       * FIXED
     * determine what LFS is being used and whether the node is
         being serialized to LFS/.xlattice/node.config
 
@@ -62,17 +33,11 @@ xlattice_go/reg/TODO
         doesn't make any sense
 
     REGISTRY SERVER
-    * (short run) verify that xlReg can set a specifc IP address        * DONE
-        to listen on, such as 192.168.152.10:44444                      * DONE
     * (longer run) verify that xlReg can be configured to listen on
         either ALL IP addresses or on more than one IP address,
         such as {192.168.152.10.44444, 192.168.136.10.44444}
     * add RegCred message, which of course can't be used without
         knowing the registry's comms public key
-    * need RegCred data type with String() and Parse() methods          * DONE
-
-    * a new server's first act is to create its own NodeID and          * DONE
-        register it                                                     * DONE
 
     * ephemeral admin client unique ID should be itself ephemeral 
 
@@ -83,14 +48,6 @@ xlattice_go/reg/TODO
         where FILE defaults to ./cluster.cred, PERM to 0640
         utility which retrieves regCred, displays and/or
         writes to LFS/.xlattice/reg.cred perm 0444
-
-2013-10-15
-    BLOOM FILTERS                                   
-    * integrate Bloom filter, to be referenced wherever IDs are         * DONE
-        assigned                                                        * DONE
-        - RegNode itself has an ID                                      * DONE
-        - all clients have IDs                                          * DONE
-        - all clusters have IDs                                         * DONE
 
 2013-10-13
     * ClientNode must be able to read config from LFS
