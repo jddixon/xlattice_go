@@ -97,7 +97,7 @@ func (s *XLSuite) makeHostAndKeys(c *C, rng *xr.PRNG) (
 
 // Using functions must check to ensure members have unique names
 
-func (s *XLSuite) makeAClusterMember(c *C, rng *xr.PRNG) *ClusterMember {
+func (s *XLSuite) makeAMemberInfo(c *C, rng *xr.PRNG) *MemberInfo {
 	attrs := uint64(rng.Int63())
 	bn, err := xn.NewBaseNode(
 		rng.NextFileName(8),
@@ -106,7 +106,7 @@ func (s *XLSuite) makeAClusterMember(c *C, rng *xr.PRNG) *ClusterMember {
 		&s.makeAnRSAKey(c).PublicKey,
 		nil) // overlays
 	c.Assert(err, IsNil)
-	return &ClusterMember{
+	return &MemberInfo{
 		Attrs:    attrs,
 		BaseNode: *bn,
 	}
@@ -129,11 +129,11 @@ func (s *XLSuite) makeACluster(c *C, rng *xr.PRNG, epCount, size uint) (
 	c.Assert(err, IsNil)
 
 	for count := uint(0); count < size; count++ {
-		cm := s.makeAClusterMember(c, rng)
+		cm := s.makeAMemberInfo(c, rng)
 		for {
 			if _, ok := rc.MembersByName[cm.GetName()]; ok {
 				// name is in use, so try again
-				cm = s.makeAClusterMember(c, rng)
+				cm = s.makeAMemberInfo(c, rng)
 			} else {
 				err = rc.AddMember(cm)
 				c.Assert(err, IsNil)

@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/reg/regData.go
+// xlattice_go/reg/member_info.go
 
 // This file contains functions and structures used to describe
 // and manage the cluster data managed by the registry.
@@ -17,21 +17,21 @@ import (
 
 var _ = fmt.Print
 
-type ClusterMember struct {
+type MemberInfo struct {
 	Attrs       uint64   //  bit flags are defined in const.go
 	MyEnds      []string // serialized EndPointI
 	xn.BaseNode          // name and ID must be unique
 }
 
-func NewClusterMember(name string, id *xi.NodeID,
+func NewMemberInfo(name string, id *xi.NodeID,
 	commsPubKey, sigPubKey *rsa.PublicKey, attrs uint64, myEnds []string) (
-	member *ClusterMember, err error) {
+	member *MemberInfo, err error) {
 
 	// all attrs bits are zero by default
 
 	base, err := xn.NewBaseNode(name, id, commsPubKey, sigPubKey, nil)
 	if err == nil {
-		member = &ClusterMember{
+		member = &MemberInfo{
 			Attrs:    attrs,
 			MyEnds:   myEnds,
 			BaseNode: *base,
@@ -40,10 +40,10 @@ func NewClusterMember(name string, id *xi.NodeID,
 	return
 }
 
-// Create the ClusterMember corresponding to the token passed.
+// Create the MemberInfo corresponding to the token passed.
 
-func NewClusterMemberFromToken(token *XLRegMsg_Token) (
-	m *ClusterMember, err error) {
+func NewMemberInfoFromToken(token *XLRegMsg_Token) (
+	m *MemberInfo, err error) {
 
 	var nodeID *xi.NodeID
 	if token == nil {
@@ -55,7 +55,7 @@ func NewClusterMemberFromToken(token *XLRegMsg_Token) (
 			if err == nil {
 				sk, err := xc.RSAPubKeyFromWire(token.GetSigKey())
 				if err == nil {
-					m, err = NewClusterMember(token.GetName(), nodeID,
+					m, err = NewMemberInfo(token.GetName(), nodeID,
 						ck, sk, token.GetAttrs(), token.GetMyEnds())
 				}
 			}
@@ -65,14 +65,14 @@ func NewClusterMemberFromToken(token *XLRegMsg_Token) (
 }
 
 // Return the XLRegMsg_Token corresponding to this cluster member.
-func (cm *ClusterMember) Token() (token *XLRegMsg_Token, err error) {
+func (cm *MemberInfo) Token() (token *XLRegMsg_Token, err error) {
 
 	var ckBytes, skBytes []byte
 
 	ck := cm.GetCommsPublicKey()
 	// DEBUG
 	if ck == nil {
-		fmt.Printf("ClusterMember.Token: %s commsPubKey is nil\n", cm.GetName())
+		fmt.Printf("MemberInfo.Token: %s commsPubKey is nil\n", cm.GetName())
 	}
 	// END
 	ckBytes, err = xc.RSAPubKeyToWire(ck)
@@ -95,7 +95,7 @@ func (cm *ClusterMember) Token() (token *XLRegMsg_Token, err error) {
 
 // EQUAL ////////////////////////////////////////////////////////////
 
-func (cm *ClusterMember) Equal(any interface{}) bool {
+func (cm *MemberInfo) Equal(any interface{}) bool {
 
 	if any == cm {
 		return true
@@ -104,12 +104,12 @@ func (cm *ClusterMember) Equal(any interface{}) bool {
 		return false
 	}
 	switch v := any.(type) {
-	case *ClusterMember:
+	case *MemberInfo:
 		_ = v
 	default:
 		return false
 	}
-	other := any.(*ClusterMember) // type assertion
+	other := any.(*MemberInfo) // type assertion
 	if cm.Attrs != other.Attrs {
 		return false
 	}
@@ -136,7 +136,7 @@ func (cm *ClusterMember) Equal(any interface{}) bool {
 
 // SERIALIZATION ////////////////////////////////////////////////////
 
-func (cm *ClusterMember) Strings() (ss []string) {
+func (cm *MemberInfo) Strings() (ss []string) {
 	ss = []string{"clusterMember {"}
 	bns := cm.BaseNode.Strings()
 	for i := 0; i < len(bns); i++ {
@@ -152,10 +152,10 @@ func (cm *ClusterMember) Strings() (ss []string) {
 	return
 }
 
-func (cm *ClusterMember) String() string {
+func (cm *MemberInfo) String() string {
 	return strings.Join(cm.Strings(), "\n")
 }
-func collectAttrs(cm *ClusterMember, ss []string) (rest []string, err error) {
+func collectAttrs(cm *MemberInfo, ss []string) (rest []string, err error) {
 	rest = ss
 	line := xn.NextNBLine(&rest) // trims
 	// attrs line looks like "attrs: 0xHHHH..." where H is a hex digit
@@ -181,7 +181,7 @@ func collectAttrs(cm *ClusterMember, ss []string) (rest []string, err error) {
 	}
 	return
 }
-func collectMyEnds(cm *ClusterMember, ss []string) (rest []string, err error) {
+func collectMyEnds(cm *MemberInfo, ss []string) (rest []string, err error) {
 	rest = ss
 	line := xn.NextNBLine(&rest)
 	if line == "endPoints {" {
@@ -203,19 +203,19 @@ func collectMyEnds(cm *ClusterMember, ss []string) (rest []string, err error) {
 	}
 	return
 }
-func ParseClusterMember(s string) (
-	cm *ClusterMember, rest []string, err error) {
+func ParseMemberInfo(s string) (
+	cm *MemberInfo, rest []string, err error) {
 
 	ss := strings.Split(s, "\n")
-	return ParseClusterMemberFromStrings(ss)
+	return ParseMemberInfoFromStrings(ss)
 }
 
-func ParseClusterMemberFromStrings(ss []string) (
-	cm *ClusterMember, rest []string, err error) {
+func ParseMemberInfoFromStrings(ss []string) (
+	cm *MemberInfo, rest []string, err error) {
 
 	bn, rest, err := xn.ParseBNFromStrings(ss, "clusterMember")
 	if err == nil {
-		cm = &ClusterMember{BaseNode: *bn}
+		cm = &MemberInfo{BaseNode: *bn}
 		rest, err = collectAttrs(cm, rest)
 		if err == nil {
 			rest, err = collectMyEnds(cm, rest)

@@ -37,7 +37,7 @@ const (
 
 type ClientNode struct {
 
-	// EPHEMERAL INFORMATION ========================================
+	// EPHEMERAL: USED IN NEGOTIATIONS WITH REGISTRY  ===============
 	DoneCh          chan bool
 	Err             error
 	h               *CnxHandler
@@ -50,36 +50,15 @@ type ClientNode struct {
 	encrypterC      cipher.BlockMode
 	decrypterC      cipher.BlockMode
 
-	// SOMETIMES (?) PERSISTED ======================================
-	// The significance of these fields is different in different
-	// subclasses.  To the user, this is the cluster being joined.
-	// To an admin client, it is a cluster being created.
+	// RegCred info: registry credentials ---------------------------
+	serverName string
+	serverID   *xi.NodeID
+	serverCK   *rsa.PublicKey
+	serverSK   *rsa.PublicKey
+	serverEnd  xt.EndPointI
+	// serverVersion xu.DecimalVersion		// missing
 
-	ClusterName  string
-	ClusterAttrs uint64
-	ClusterID    *xi.NodeID
-	ClusterSize  uint32 // this is a FIXED size, aka MaxSize
-
-	// PERSISTED ====================================================
-	// If the ClientNode is not ephemeral, this information is saved
-	// as LFS/.xlattice/client.node
-
-	serverName     string
-	serverID       *xi.NodeID
-	serverEnd      xt.EndPointI
-	serverCK       *rsa.PublicKey
-	serverSK       *rsa.PublicKey
-	DecidedAttrs   uint64
-	DecidedVersion uint32           // decreed by server
-	Members        []*ClusterMember // information on cluster members
-
-	// By convention endPoints[0] is used for member-member communications
-	// and [1] for comms with cluster clients, should they exist. Some or
-	// all of these (the first EpCount) are passed to other cluster
-	// members via the registry.
-	EpCount uint32
-
-	// INFORMATION PERSISTED AS Node CONFIGURATION ------------------
+	// REDUNDANT: INFORMATION USED TO BUILD NODE ====================
 	// This is used to build the node and so is persisted as part of
 	// the node when that is saved.
 	endPoints      []xt.EndPointI
@@ -87,6 +66,23 @@ type ClientNode struct {
 	name           string
 	clientID       *xi.NodeID
 	ckPriv, skPriv *rsa.PrivateKey
+
+	// PERSISTED ====================================================
+	Attrs   uint64 // negotiated with/decreed by server
+	Version uint32 // negotiated with/decreed by server
+
+	ClusterName  string
+	ClusterAttrs uint64
+	ClusterID    *xi.NodeID
+	ClusterSize  uint32 // this is a FIXED size, aka MaxSize
+
+	Members []*MemberInfo // information on cluster members
+
+	// By convention endPoints[0] is used for member-member communications
+	// and [1] for comms with cluster clients, should they exist. Some or
+	// all of these (the first EpCount) are passed to other cluster
+	// members via the registry.
+	EpCount uint32
 
 	// XLattice Node ------------------------------------------------
 	// This is created during the first session and serialized to
@@ -271,7 +267,7 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 		cn.iv2 = iv2
 		cn.key2 = key2
 		cn.salt2 = salt2
-		cn.DecidedVersion = decidedVersion
+		cn.Version = decidedVersion
 		cn.engineC, err = aes.NewCipher(key2)
 		if err == nil {
 			cn.encrypterC = cipher.NewCBCEncrypter(cn.engineC, iv2)
@@ -326,7 +322,7 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 
 		// XXX err ignored
 
-		cn.DecidedAttrs = response.GetClientAttrs()
+		cn.Attrs = response.GetClientAttrs()
 	}
 	return
 }
@@ -388,7 +384,7 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 			clusterSizeNow := response.GetClusterSize()
 			if cn.ClusterSize != clusterSizeNow {
 				cn.ClusterSize = clusterSizeNow
-				cn.Members = make([]*ClusterMember, cn.ClusterSize)
+				cn.Members = make([]*MemberInfo, cn.ClusterSize)
 			}
 			cn.EpCount = epCount
 			// XXX This is just wrong: we already know the cluster ID
@@ -409,7 +405,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 	}
 	MAX_GET := 16
 	if cn.Members == nil {
-		cn.Members = make([]*ClusterMember, cn.ClusterSize)
+		cn.Members = make([]*MemberInfo, cn.ClusterSize)
 	}
 	stillToGet := xu.LowNMap(uint(cn.ClusterSize))
 	for count := 0; count < MAX_GET && stillToGet.Any(); count++ {
@@ -452,7 +448,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 					if which.Test(i) {
 						token := tokens[offset]
 						offset++
-						cn.Members[i], err = NewClusterMemberFromToken(
+						cn.Members[i], err = NewMemberInfoFromToken(
 							token)
 						stillToGet = stillToGet.Clear(i)
 					}

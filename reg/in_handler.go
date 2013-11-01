@@ -70,7 +70,7 @@ type InHandler struct {
 	encrypterS                         cipher.BlockMode
 	decrypterS                         cipher.BlockMode
 	reg                                *Registry
-	thisMember                         *ClusterMember
+	thisMember                         *MemberInfo
 	cluster                            *RegCluster
 
 	version    uint32 // protocol version used in session

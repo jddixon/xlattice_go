@@ -27,7 +27,7 @@ var _ = fmt.Print
 // regenerating keys, etc.
 
 type UserClient struct {
-	members []ClusterMember
+	members []MemberInfo
 
 	ClientNode
 }

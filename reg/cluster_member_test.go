@@ -15,13 +15,13 @@ func (s *XLSuite) TestCMSerialization(c *C) {
 	rng := xr.MakeSimpleRNG()
 
 	// Generate a random cluster member
-	cm := s.makeAClusterMember(c, rng)
+	cm := s.makeAMemberInfo(c, rng)
 
 	// Serialize it
 	serialized := cm.String()
 
 	// Reverse the serialization
-	deserialized, rest, err := ParseClusterMember(serialized)
+	deserialized, rest, err := ParseMemberInfo(serialized)
 	c.Assert(err, IsNil)
 	c.Assert(len(rest), Equals, 0)
 
@@ -36,12 +36,12 @@ func (s *XLSuite) TestMembersAndTokens(c *C) {
 	rng := xr.MakeSimpleRNG()
 
 	// Generate a random cluster member
-	cm := s.makeAClusterMember(c, rng)
+	cm := s.makeAMemberInfo(c, rng)
 
 	token, err := cm.Token()
 	c.Assert(err, IsNil)
 
-	cm2, err := NewClusterMemberFromToken(token)
+	cm2, err := NewMemberInfoFromToken(token)
 	c.Assert(err, IsNil)
 	c.Assert(cm.Equal(cm2), Equals, true)
 }

@@ -44,7 +44,7 @@ func doClientMsg(h *InHandler) {
 		nodeID *xi.NodeID
 		ck, sk *rsa.PublicKey
 		myEnds []string
-		cm     *ClusterMember
+		cm     *MemberInfo
 	)
 	// XXX We should accept EITHER clientName + token OR clientID
 	// This implementation only accepts a token.
@@ -85,7 +85,7 @@ func doClientMsg(h *InHandler) {
 	if err == nil {
 		// The appropriate action is to hang a token for this client off
 		// the InHandler.
-		cm, err = NewClusterMember(name, nodeID, ck, sk, attrs, myEnds)
+		cm, err = NewMemberInfo(name, nodeID, ck, sk, attrs, myEnds)
 		if err == nil {
 			h.thisMember = cm
 		}
