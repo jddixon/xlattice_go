@@ -137,7 +137,7 @@ func (cm *MemberInfo) Equal(any interface{}) bool {
 // SERIALIZATION ////////////////////////////////////////////////////
 
 func (cm *MemberInfo) Strings() (ss []string) {
-	ss = []string{"clusterMember {"}
+	ss = []string{"memberInfo {"}
 	bns := cm.BaseNode.Strings()
 	for i := 0; i < len(bns); i++ {
 		ss = append(ss, "    "+bns[i])
@@ -213,7 +213,7 @@ func ParseMemberInfo(s string) (
 func ParseMemberInfoFromStrings(ss []string) (
 	cm *MemberInfo, rest []string, err error) {
 
-	bn, rest, err := xn.ParseBNFromStrings(ss, "clusterMember")
+	bn, rest, err := xn.ParseBNFromStrings(ss, "memberInfo")
 	if err == nil {
 		cm = &MemberInfo{BaseNode: *bn}
 		rest, err = collectAttrs(cm, rest)

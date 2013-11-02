@@ -1,5 +1,9 @@
 xlattice_go/reg/TODO
 
+2013-11-01
+    * ClusterMember needs Equal()
+    * FIX: cluster_member_test succeeds, but shouldn't!
+
 2013-10-31
     * need to properly implement 10-02 Registry-related items 
     * when ParseRegistry is available, code must be available which

@@ -1,47 +1,69 @@
 package reg
 
-// xlattice_go/msg/cluster_member_test.go
+// xlattice_go/reg/cluster_member_test.go
 
 import (
 	"fmt"
+	//xc "github.com/jddixon/xlattice_go/crypto"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
+	//xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) TestCMSerialization(c *C) {
+func (s *XLSuite) TestClusterMemberSerialization(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_CM_SERIALIZATION")
+		fmt.Println("TEST_CLUSTER_MEMBER_SERIALIZATION")
 	}
 	rng := xr.MakeSimpleRNG()
 
-	// Generate a random cluster member
-	cm := s.makeAMemberInfo(c, rng)
+	// Generate a random cluster
+	epCount := uint(1 + rng.Intn(3)) // so from 1 to 3
+	size := uint(2 + rng.Intn(6))    // so from 2 to 7
+	cl := s.makeACluster(c, rng, epCount, size)
+
+	// We are going to overwrite cluster member zero's attributes
+	// with those of the new cluster member.
+	myNode, myCkPriv, mySkPriv := s.makeHostAndKeys(c, rng)
+	myAttrs := cl.Members[0].Attrs
+
+	var myEnds []string
+	for i := uint(0); i < epCount; i++ {
+		myEnds = append(myEnds, "127.0.0.1:0")
+	}
+	myMemberInfo, err := NewMemberInfo(myNode.GetName(), myNode.GetNodeID(),
+		&myCkPriv.PublicKey, &mySkPriv.PublicKey, myAttrs, myEnds)
+	c.Assert(err, IsNil)
+	// overwrite member 0
+	cl.Members[0] = myMemberInfo
+
+	myClusterID, err := xi.New(cl.ID)
+	c.Assert(err, IsNil)
+
+	cm := &ClusterMember{
+		Attrs:        myAttrs,
+		ClusterName:  cl.Name,
+		ClusterAttrs: cl.Attrs,
+		ClusterID:    myClusterID,
+		ClusterSize:  uint32(cl.MaxSize()),
+		Members:      cl.Members, // []*MemberInfo
+		EpCount:      uint32(epCount),
+		Node:         *myNode,
+	}
 
 	// Serialize it
 	serialized := cm.String()
 
 	// Reverse the serialization
-	deserialized, rest, err := ParseMemberInfo(serialized)
+	deserialized, rest, err := ParseClusterMember(serialized)
 	c.Assert(err, IsNil)
-	c.Assert(len(rest), Equals, 0)
+	c.Assert(deserialized, Not(IsNil))
+	c.Assert(len(rest), Equals, 0) // XXX IS 1, presumably last brace
 
-	// Verify that the deserialized member is identical to the original
-	c.Assert(deserialized.Equal(cm), Equals, true)
-}
+	// Verify that the deserialized cluster is identical to the original
+	// NOT YET
+	//c.Assert(deserialized.Equal(cl), Equals, true)
 
-func (s *XLSuite) TestMembersAndTokens(c *C) {
-	if VERBOSITY > 0 {
-		fmt.Println("TEST_MEMBERS_AND_TOKENS")
-	}
-	rng := xr.MakeSimpleRNG()
-
-	// Generate a random cluster member
-	cm := s.makeAMemberInfo(c, rng)
-
-	token, err := cm.Token()
-	c.Assert(err, IsNil)
-
-	cm2, err := NewMemberInfoFromToken(token)
-	c.Assert(err, IsNil)
-	c.Assert(cm.Equal(cm2), Equals, true)
+	serialized2 := deserialized.String()
+	c.Assert(serialized2, Equals, serialized)
 }

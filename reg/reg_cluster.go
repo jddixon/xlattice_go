@@ -32,7 +32,7 @@ type RegCluster struct {
 	Attrs         uint64 // a field of bit flags
 	maxSize       uint   // a maximum; must be > 1
 	epCount       uint   // a positive integer, for now is 1 or 2
-	members       []*MemberInfo
+	Members       []*MemberInfo
 	MembersByName map[string]*MemberInfo
 	MembersByID   *xn.BNIMap
 	mu            sync.RWMutex
@@ -96,9 +96,9 @@ func (rc *RegCluster) AddMember(member *MemberInfo) (err error) {
 	// XXX STUB
 
 	rc.mu.Lock()             // <------------------------------------
-	index := len(rc.members) // DEBUG
+	index := len(rc.Members) // DEBUG
 	_ = index                // we might want to use this
-	rc.members = append(rc.members, member)
+	rc.Members = append(rc.Members, member)
 	rc.MembersByName[name] = member
 	err = rc.MembersByID.AddToBNIMap(member)
 	rc.mu.Unlock() // <------------------------------------
@@ -115,7 +115,7 @@ func (rc *RegCluster) MaxSize() uint {
 func (rc *RegCluster) Size() uint {
 	var curSize uint
 	rc.mu.RLock() // <------------------------------------
-	curSize = uint(len(rc.members))
+	curSize = uint(len(rc.Members))
 	rc.mu.RUnlock() // <------------------------------------
 	return curSize
 }
@@ -179,8 +179,8 @@ func (rc *RegCluster) Equal(any interface{}) bool {
 	}
 	// Members			[]*MemberInfo
 	for i := uint(0); i < rc.Size(); i++ {
-		rcMember := rc.members[i]
-		otherMember := other.members[i]
+		rcMember := rc.Members[i]
+		otherMember := other.Members[i]
 		if !rcMember.Equal(otherMember) {
 			return false
 		}
@@ -201,8 +201,8 @@ func (rc *RegCluster) Strings() (ss []string) {
 	ss = append(ss, fmt.Sprintf("    maxSize: %d", rc.maxSize))
 
 	ss = append(ss, "    Members {")
-	for i := 0; i < len(rc.members); i++ {
-		mem := rc.members[i].Strings()
+	for i := 0; i < len(rc.Members); i++ {
+		mem := rc.Members[i].Strings()
 		for i := 0; i < len(mem); i++ {
 			ss = append(ss, "        "+mem[i])
 		}

@@ -303,7 +303,7 @@ func doGetMsg(h *InHandler) {
 		whichToSend := whichRequested.Intersection(weHave)
 		for i := uint(0); i < size; i++ {
 			if whichToSend.Test(i) { // they want this one
-				member := cluster.members[i]
+				member := cluster.Members[i]
 				token, err := member.Token()
 				if err == nil {
 					tokens = append(tokens, token)

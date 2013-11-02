@@ -51,12 +51,14 @@ type ClientNode struct {
 	decrypterC      cipher.BlockMode
 
 	// RegCred info: registry credentials ---------------------------
-	serverName string
-	serverID   *xi.NodeID
-	serverCK   *rsa.PublicKey
-	serverSK   *rsa.PublicKey
-	serverEnd  xt.EndPointI
+	regName string
+	regID   *xi.NodeID
+	regCK   *rsa.PublicKey
+	regSK   *rsa.PublicKey
+	regEnd  xt.EndPointI
 	// serverVersion xu.DecimalVersion		// missing
+
+	Version uint32 // protocol version used to talk to registry
 
 	// REDUNDANT: INFORMATION USED TO BUILD NODE ====================
 	// This is used to build the node and so is persisted as part of
@@ -67,30 +69,29 @@ type ClientNode struct {
 	clientID       *xi.NodeID
 	ckPriv, skPriv *rsa.PrivateKey
 
-	// PERSISTED ====================================================
-	Attrs   uint64 // negotiated with/decreed by server
-	Version uint32 // negotiated with/decreed by server
+	// ClusterMember ================================================
 
-	ClusterName  string
-	ClusterAttrs uint64
-	ClusterID    *xi.NodeID
-	ClusterSize  uint32 // this is a FIXED size, aka MaxSize
+	//ClusterName  string
+	//ClusterAttrs uint64
+	//ClusterID    *xi.NodeID
+	//ClusterSize  uint32 // this is a FIXED size, aka MaxSize
 
-	Members []*MemberInfo // information on cluster members
+	//Members []*MemberInfo // information on cluster members
 
-	// By convention endPoints[0] is used for member-member communications
-	// and [1] for comms with cluster clients, should they exist. Some or
-	// all of these (the first EpCount) are passed to other cluster
-	// members via the registry.
-	EpCount uint32
+	//// EpCount is the number of endPoints dedicated to use for cluster-
+	//// related purposes.  By convention endPoints[0] is used for
+	//// member-member communications and [1] for comms with cluster clients,
+	//// should they exist. The first EpCount endPoints are passed
+	//// to other cluster members via the registry.
+	//EpCount uint32
 
-	// XLattice Node ------------------------------------------------
-	// This is created during the first session and serialized to
-	// LFS/.xlattice/node.config if LFS != ""
-	xn.Node
+	//xn.Node
+	ClusterMember
 }
 
-func (cn *ClientNode) Persist() (err error) {
+// Create just the Node for this client and write it to the conventional
+// place in the file system.
+func (cn *ClientNode) PersistNode() (err error) {
 
 	var (
 		config string
@@ -116,7 +117,7 @@ func (cn *ClientNode) Persist() (err error) {
 		err = ioutil.WriteFile(pathToCfgFile, []byte(config), 0600)
 	}
 	return
-}
+} // FOO
 
 // Given contact information for a registry and the name of a cluster,
 // the client joins the cluster, collects information on the other members,
@@ -124,20 +125,21 @@ func (cn *ClientNode) Persist() (err error) {
 
 func NewClientNode(
 	name, lfs string, ckPriv, skPriv *rsa.PrivateKey, attrs uint64,
-	serverName string, serverID *xi.NodeID, serverEnd xt.EndPointI,
-	serverCK, serverSK *rsa.PublicKey,
+	regName string, regID *xi.NodeID, regEnd xt.EndPointI,
+	regCK, regSK *rsa.PublicKey,
 	clusterName string, clusterAttrs uint64, clusterID *xi.NodeID, size int,
 	epCount int, e []xt.EndPointI) (
 	cn *ClientNode, err error) {
 
 	var (
+		cm      *ClusterMember
 		isAdmin = (attrs & ATTR_ADMIN) != 0
 		node    *xn.Node
 	)
 
 	// sanity checks on parameter list
-	if serverName == "" || serverID == nil || serverEnd == nil ||
-		serverCK == nil {
+	if regName == "" || regID == nil || regEnd == nil ||
+		regCK == nil {
 
 		err = MissingServerInfo
 	}
@@ -177,27 +179,32 @@ func NewClientNode(
 	}
 	if err == nil {
 		cnxHandler := &CnxHandler{State: CLIENT_START}
+		cm = &ClusterMember{
+			// Attrs gets negotiated
+			ClusterName:  clusterName,
+			ClusterAttrs: clusterAttrs,
+			ClusterID:    clusterID,
+			ClusterSize:  uint32(size),
+			EpCount:      uint32(epCount),
+			// Members added on the fly
+
+			// Node NOT YET INITIALIZED
+		}
 		cn = &ClientNode{
 			name:          name,
 			lfs:           lfs, // if blank, node is ephemeral
 			proposedAttrs: attrs,
 			DoneCh:        make(chan bool, 1),
-			serverName:    serverName,
-			serverID:      serverID,
-			serverEnd:     serverEnd,
-			serverCK:      serverCK,
-			serverSK:      serverSK,
-			ClusterName:   clusterName,
-			ClusterAttrs:  clusterAttrs,
-			ClusterID:     clusterID,
-			ClusterSize:   uint32(size),
+			regName:       regName,
+			regID:         regID,
+			regEnd:        regEnd,
+			regCK:         regCK,
+			regSK:         regSK,
 			h:             cnxHandler,
-			EpCount:       uint32(epCount),
 			endPoints:     e,
 			ckPriv:        ckPriv,
 			skPriv:        skPriv,
-
-			// Node NOT YET INITIALIZED
+			ClusterMember: *cm,
 		}
 	}
 	return
@@ -235,7 +242,7 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 		ciphertext2, iv2, key2, salt2         []byte
 	)
 	// Set up connection to server. -----------------------------
-	ctor, err := xt.NewTcpConnector(cn.serverEnd)
+	ctor, err := xt.NewTcpConnector(cn.regEnd)
 	if err == nil {
 		var conn xt.ConnectionI
 		conn, err = ctor.Connect(nil)
@@ -247,7 +254,7 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 	if err == nil {
 		cn.h.Cnx = cnx
 		ciphertext1, iv1, key1, salt1,
-			err = xm.ClientEncodeHello(proposedVersion, cn.serverCK)
+			err = xm.ClientEncodeHello(proposedVersion, cn.regCK)
 	}
 	if err == nil {
 		err = cn.h.writeData(ciphertext1)

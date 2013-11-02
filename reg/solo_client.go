@@ -74,7 +74,9 @@ func (sc *SoloClient) Run() (err error) {
 		if cnx != nil {
 			cnx.Close()
 		}
-		err = cn.Persist()
+		// Create the Node and write its configuration to the usual place
+		// in the file system: LFS/.xlattice/node.config.
+		err = cn.PersistNode()
 		cn.Err = err
 		cn.DoneCh <- true
 	}()

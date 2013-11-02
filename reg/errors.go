@@ -14,6 +14,7 @@ var (
 	ClusterMustHaveTwo             = e.New("cluster must have at least two members")
 	IDAlreadyInUse                 = e.New("ID already in use")
 	IllFormedCluster               = e.New("ill-formed cluster serialization")
+	IllFormedClusterMember         = e.New("ill-formed cluster member serialization")
 	IllFormedRegCred               = e.New("ill-formed regCred serialization")
 	MissingClosingBrace            = e.New("missing closing brace")
 	MissingClusterNameOrID         = e.New("missing cluster name or ID")
