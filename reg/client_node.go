@@ -119,6 +119,36 @@ func (cn *ClientNode) PersistNode() (err error) {
 	return
 } // FOO
 
+// Create the Node for this client and write the serialized ClusterMember
+// to the conventional place in the file system.
+func (cn *ClientNode) PersistClusterMember() (err error) {
+
+	var (
+		config string
+		node   *xn.Node
+	)
+
+	// XXX check attrs, etc
+	pathToCfgDir := path.Join(cn.lfs, ".xlattice")
+	pathToCfgFile := path.Join(pathToCfgDir, "cluster.member.config")
+	found, err := xf.PathExists(pathToCfgDir)
+	if err == nil && !found {
+		err = os.MkdirAll(pathToCfgDir, 0740)
+	}
+	if err == nil {
+		node, err = xn.New(cn.name, cn.clientID, cn.lfs,
+			cn.ckPriv, cn.skPriv, nil, cn.endPoints, nil)
+	}
+	if err == nil {
+		cn.Node = *node
+		config = cn.ClusterMember.String()
+	}
+	if err == nil {
+		err = ioutil.WriteFile(pathToCfgFile, []byte(config), 0600)
+	}
+	return
+} // FOO
+
 // Given contact information for a registry and the name of a cluster,
 // the client joins the cluster, collects information on the other members,
 // and terminates when it has info on the entire membership.

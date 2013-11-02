@@ -64,8 +64,10 @@ func (s *XLSuite) TestClusterMemberSerialization(c *C) {
 	c.Assert(len(rest), Equals, 0) // XXX IS 1, presumably last brace
 
 	// Verify that the deserialized cluster is identical to the original
+	// First version:
 	c.Assert(deserialized.Equal(cm), Equals, true)
 
+	// Second version of identity test:
 	serialized2 := deserialized.String()
 	c.Assert(serialized2, Equals, serialized)
 }
