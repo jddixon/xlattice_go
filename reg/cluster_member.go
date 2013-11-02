@@ -32,6 +32,40 @@ type ClusterMember struct {
 	xn.Node
 }
 
+// EQUAL ////////////////////////////////////////////////////////////
+
+func (cm *ClusterMember) Equal(any interface{}) bool {
+
+	if any == cm {
+		return true
+	}
+	if any == nil {
+		return false
+	}
+	switch v := any.(type) {
+	case *ClusterMember:
+		_ = v
+	default:
+		return false
+	}
+	other := any.(*ClusterMember) // type assertion
+
+	if cm.Attrs != other.Attrs || cm.ClusterName != other.ClusterName ||
+		cm.ClusterAttrs != other.ClusterAttrs ||
+		cm.ClusterSize != other.ClusterSize || cm.EpCount != other.EpCount {
+		return false
+	}
+	if !cm.ClusterID.Equal(other.ClusterID) {
+		return false
+	}
+	for i := 0; i < len(cm.Members); i++ {
+		if !cm.Members[i].Equal(other.Members[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 // SERIALIZATION ////////////////////////////////////////////////////
 
 func (cm *ClusterMember) Strings() (ss []string) {

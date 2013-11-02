@@ -51,6 +51,9 @@ func (s *XLSuite) TestClusterMemberSerialization(c *C) {
 		Node:         *myNode,
 	}
 
+	// simplest test of Equal()
+	c.Assert(cm.Equal(cm), Equals, true)
+
 	// Serialize it
 	serialized := cm.String()
 
@@ -61,8 +64,7 @@ func (s *XLSuite) TestClusterMemberSerialization(c *C) {
 	c.Assert(len(rest), Equals, 0) // XXX IS 1, presumably last brace
 
 	// Verify that the deserialized cluster is identical to the original
-	// NOT YET
-	//c.Assert(deserialized.Equal(cl), Equals, true)
+	c.Assert(deserialized.Equal(cm), Equals, true)
 
 	serialized2 := deserialized.String()
 	c.Assert(serialized2, Equals, serialized)

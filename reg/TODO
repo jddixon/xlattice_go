@@ -1,8 +1,12 @@
 xlattice_go/reg/TODO
 
+2013-11-02
+    * connections to xlReg are being left open; the server should
+        close
+
 2013-11-01
-    * ClusterMember needs Equal()
-    * FIX: cluster_member_test succeeds, but shouldn't!
+    * ClusterMember needs Equal()                                       * DONE
+    * FIX: cluster_member_test succeeds, but shouldn't!                 * FIXED
 
 2013-10-31
     * need to properly implement 10-02 Registry-related items 
