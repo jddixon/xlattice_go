@@ -18,7 +18,7 @@ func (s *XLSuite) setUp1() {
 
 func (s *XLSuite) doTestCopyAndPut1(c *C, ds DirStruc) {
 	s.setUp1()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestCopyAndPut(c, myU, sha1.New())
 }
@@ -30,7 +30,7 @@ func (s *XLSuite) TestCopyAndPut1(c *C) {
 
 func (s *XLSuite) doTestExists1(c *C, ds DirStruc) {
 	s.setUp1()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestExists(c, myU, sha1.New())
 }
@@ -42,7 +42,7 @@ func (s *XLSuite) TestExists1(c *C) {
 
 func (s *XLSuite) doTestFileLen1(c *C, ds DirStruc) {
 	s.setUp1()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestFileLen(c, myU, sha1.New())
 }
@@ -54,7 +54,7 @@ func (s *XLSuite) TestFileLen1(c *C) {
 
 func (s *XLSuite) doTestFileHash1(c *C, ds DirStruc) {
 	s.setUp1()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestFileHash(c, myU, sha1.New())
 }
@@ -66,7 +66,7 @@ func (s *XLSuite) TestFileHash1(c *C) {
 
 func (s *XLSuite) doTestGetPathForKey1(c *C, ds DirStruc) {
 	s.setUp1()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestGetPathForKey(c, myU, sha1.New())
 }
@@ -78,7 +78,7 @@ func (s *XLSuite) TestGetPathForKey1(c *C) {
 
 func (s *XLSuite) doTestPut1(c *C, ds DirStruc) {
 	s.setUp1()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestPut(c, myU, sha1.New())
 }
@@ -90,7 +90,7 @@ func (s *XLSuite) TestPut1(c *C) {
 
 func (s *XLSuite) doTestPutData1(c *C, ds DirStruc) {
 	s.setUp1()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestPutData(c, myU, sha1.New())
 }

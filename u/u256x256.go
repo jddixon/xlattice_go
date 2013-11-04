@@ -24,15 +24,41 @@ type U256x256 struct {
 	rng    *xr.PRNG
 }
 
-func NewU256x256(path string) (*U256x256, error) {
-	var u2 U256x256
-	u2.path = path // XXX validate
-	u2.inDir = filepath.Join(path, "in")
-	u2.tmpDir = filepath.Join(path, "tmp")
-
-	// THIS SHOULD CHANGE
-	u2.rng = xr.MakeSimpleRNG()
-	return &u2, nil
+// Create a new 256x256 file system, ORing perm into the default permissions.
+// If perm is 0, the default is to allow user and group access.
+// If the root is U, then this creates U/, U/tmp, U/in, and the top-level
+// hex directories U/xx
+func NewU256x256(path string, perm os.FileMode) (udir *U256x256, err error) {
+	// TODO: validate path
+	var (
+		inDir, tmpDir string
+	)
+	err = os.MkdirAll(path, 0750|perm)
+	if err == nil {
+		inDir = filepath.Join(path, "in")
+		err = os.MkdirAll(inDir, 0770|perm)
+		if err == nil {
+			tmpDir = filepath.Join(path, "tmp")
+			err = os.MkdirAll(tmpDir, 0700)
+			if err == nil {
+				for i := 0; i < 256; i++ {
+					hexDir := fmt.Sprintf("%02x", i)
+					hexPath := filepath.Join(path, hexDir)
+					err = os.MkdirAll(hexPath, 0750|perm)
+					if err != nil {
+						break
+					}
+				}
+			}
+		}
+	}
+	udir = &U256x256{
+		path:   path,
+		rng:    xr.MakeSimpleRNG(),
+		inDir:  inDir,
+		tmpDir: tmpDir,
+	}
+	return
 }
 
 func (u *U256x256) GetDirStruc() DirStruc { return DIR256x256 }

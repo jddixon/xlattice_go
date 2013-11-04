@@ -13,13 +13,13 @@ import (
 	"os"
 )
 
-func New(path string, ds DirStruc) (UI, error) {
+func New(path string, ds DirStruc, perm os.FileMode) (UI, error) {
 
 	switch ds {
 	case DIR16x16:
-		return NewU16x16(path)
+		return NewU16x16(path, perm)
 	case DIR256x256:
-		return NewU256x256(path)
+		return NewU256x256(path, perm)
 	default:
 		return nil, DirStrucNotRecognized
 	}

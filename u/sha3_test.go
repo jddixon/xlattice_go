@@ -18,7 +18,7 @@ func (s *XLSuite) setUp3() {
 
 func (s *XLSuite) doTestCopyAndPut3(c *C, ds DirStruc) {
 	s.setUp3()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestCopyAndPut(c, myU, sha3.NewKeccak256())
 }
@@ -30,7 +30,7 @@ func (s *XLSuite) TestCopyAndPut3(c *C) {
 
 func (s *XLSuite) doTestExists3(c *C, ds DirStruc) {
 	s.setUp3()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestExists(c, myU, sha3.NewKeccak256())
 }
@@ -42,7 +42,7 @@ func (s *XLSuite) TestExists3(c *C) {
 
 func (s *XLSuite) doTestFileLen3(c *C, ds DirStruc) {
 	s.setUp3()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestFileLen(c, myU, sha3.NewKeccak256())
 }
@@ -54,7 +54,7 @@ func (s *XLSuite) TestFileLen3(c *C) {
 
 func (s *XLSuite) doTestFileHash3(c *C, ds DirStruc) {
 	s.setUp3()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestFileHash(c, myU, sha3.NewKeccak256())
 }
@@ -66,7 +66,7 @@ func (s *XLSuite) TestFileHash3(c *C) {
 
 func (s *XLSuite) doTestGetPathForKey3(c *C, ds DirStruc) {
 	s.setUp3()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestGetPathForKey(c, myU, sha3.NewKeccak256())
 }
@@ -78,7 +78,7 @@ func (s *XLSuite) TestGetPathForKey3(c *C) {
 
 func (s *XLSuite) doTestPut3(c *C, ds DirStruc) {
 	s.setUp3()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestPut(c, myU, sha3.NewKeccak256())
 }
@@ -90,7 +90,7 @@ func (s *XLSuite) TestPut3(c *C) {
 
 func (s *XLSuite) doTestPutData3(c *C, ds DirStruc) {
 	s.setUp3()
-	myU, err := New(uPath, ds)
+	myU, err := New(uPath, ds, 0)
 	c.Assert(err, IsNil)
 	s.doTestPutData(c, myU, sha3.NewKeccak256())
 }
