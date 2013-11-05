@@ -4,6 +4,7 @@ package reg
 
 import (
 	xt "github.com/jddixon/xlattice_go/transport"
+	"net"
 )
 
 type RegServer struct {
@@ -46,11 +47,23 @@ func (rs *RegServer) Run() (err error) {
 
 	go func() {
 		for {
+			logger := rs.Registry.Logger
+
 			// As each client connects its connection is passed to a
 			// handler running in a separate goroutine.
 			cnx, err := rs.acc.Accept()
 			if err != nil {
-				// Any I/O error shuts down the server.
+				// SHOULD NOT CONTINUE IF 'use of closed network connection";
+				// this yields an infinite loop if the listening socket has
+				// been closed to shut down the server.
+				netOpError, ok := err.(*net.OpError)
+				if ok && netOpError.Err.Error() == "use of closed network connection" {
+					err = nil
+				} else {
+					logger.Printf(
+						"fatal I/O error %v, shutting down the server\n",
+						err)
+				}
 				break
 			}
 			go func() {
@@ -61,7 +74,14 @@ func (rs *RegServer) Run() (err error) {
 				if err == nil {
 					err = h.Run()
 				}
-				// XXX notice the error has no effect
+				if err != nil {
+					logger.Printf("I/O error %v, closing client connection\n",
+						err)
+					cnx := h.Cnx
+					if cnx != nil {
+						cnx.Close()
+					}
+				}
 			}()
 		}
 		rs.DoneCh <- true

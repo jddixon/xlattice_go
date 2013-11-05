@@ -176,6 +176,8 @@ func (h *InHandler) Run() (err error) {
 		// Convert any error encountered into an error message to be
 		// sent to the client.
 		if h.errOut != nil {
+			h.reg.Logger.Printf("errOut to client: %v\n", h.errOut)
+
 			op := XLRegMsg_Error
 			s := h.errOut.Error()
 			h.msgOut = &XLRegMsg{
@@ -192,7 +194,8 @@ func (h *InHandler) Run() (err error) {
 
 			// XXX log any error
 			if err != nil {
-				fmt.Printf("InHandler.Run: EncodePadEncrypt returns %v\n", err)
+				h.reg.Logger.Printf(
+					"InHandler.Run: EncodePadEncrypt returns %v\n", err)
 			}
 
 			// put the ciphertext on the wire
@@ -201,7 +204,8 @@ func (h *InHandler) Run() (err error) {
 
 				// XXX log any error
 				if err != nil {
-					fmt.Printf("InHandler.Run: writeData returns %v\n", err)
+					h.reg.Logger.Printf(
+						"InHandler.Run: writeData returns %v\n", err)
 				}
 			}
 

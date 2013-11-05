@@ -6,8 +6,23 @@ xlattice_go/reg/TODO
         - clientID creation                                             * DONE
         - clusterID creation                                            * DONE
         - cluster joins
+    * logging should be in separate goroutines and should include at
+        least the IP address and port number at the far end of the
+        connection (to gather enough information for blacklisting
+        where appropriate)
     * xlReg is dying at seemingly random intervals; need to log errors
         where possible
+        - "fatal I/O error accept tcp ...: use of closed network
+            connection, shutting down the server"
+        - ignoring this in tests results in infinite loop 
+            * it appears to be the acceptor (the listening socket)
+                which is closed, so ignoring it is impossible
+            * we are in fact using the close() to shut down the server,
+                so it makes no sense at all to ignore this particular
+                error.
+            * so need to determine which end of the connection is 
+                closed and respond accordingly (far end: who cares?
+                this end: we are done)
 
 2013-11-02
     * connections to xlReg are being left open; the server should
