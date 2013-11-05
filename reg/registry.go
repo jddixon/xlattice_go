@@ -97,6 +97,7 @@ func NewRegistry(clusters []*RegCluster,
 				Version:     serverVersion,
 			}
 			serialized := regCred.String() // shd have terminating CRLF
+			logger.Print(serialized)
 			pathToFile := filepath.Join(myLFS, "regCred.dat")
 			err = ioutil.WriteFile(pathToFile, []byte(serialized), 0640)
 		}

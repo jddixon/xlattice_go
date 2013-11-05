@@ -183,16 +183,22 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 		rn               *reg.RegNode
 		ckPriv, skPriv   *rsa.PrivateKey
 	)
+	logger := opt.Logger
+	verbose := opt.Verbose
 
 	greetings := fmt.Sprintf("xlReg v%s %s start run\n",
 		reg.VERSION, reg.VERSION_DATE)
-	// fmt.Print(greetings)
-	opt.Logger.Print(greetings)
+	if verbose {
+		fmt.Print(greetings)
+	}
+	logger.Print(greetings)
 
 	pathToConfigFile = path.Join(path.Join(opt.Lfs, ".xlattice"), "reg.config")
 	found, err := xf.PathExists(pathToConfigFile)
 	if err == nil {
 		if found {
+			logger.Printf("Loading existing reg config from %s\n",
+				pathToConfigFile)
 			// The registry node already exists.  Parse it and we are done.
 			var data []byte
 			data, err = ioutil.ReadFile(pathToConfigFile)
@@ -200,6 +206,7 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 				rn, _, err = reg.ParseRegNode(string(data))
 			}
 		} else {
+			logger.Println("No config file found, creating new registry.")
 			// We need to create a registry node from scratch.
 			nodeID, _ := xi.New(nil)
 			ep, err := xt.NewTcpEndPoint(opt.Address + ":" + opt.Port)
@@ -231,10 +238,8 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 		r, err = reg.NewRegistry(nil, // nil = clusters so far
 			rn, opt)
 		if err == nil {
-			// DEBUG
-			fmt.Printf("Registry name: %s\n", rn.GetName())
-			fmt.Printf("         ID:   %s\n", rn.GetNodeID().String())
-			// END
+			logger.Printf("Registry name: %s\n", rn.GetName())
+			logger.Printf("         ID:   %s\n", rn.GetNodeID().String())
 		}
 		if err == nil {
 			var verbosity int
@@ -245,7 +250,7 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 		}
 	}
 	if err != nil {
-		fmt.Printf("ERROR: %s\n", err.Error())
+		logger.Printf("ERROR: %s\n", err.Error())
 	}
 	return
 }

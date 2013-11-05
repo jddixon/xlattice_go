@@ -69,6 +69,8 @@ func doClientMsg(h *InHandler) {
 		id := clientSpecs.GetID()
 		if id == nil {
 			nodeID, err = h.reg.UniqueNodeID()
+			id := nodeID.Value()
+			h.reg.Logger.Printf("assigned new ClientID %x\n", id)
 		} else {
 			// must be known to the registry
 			nodeID, err = xi.New(id)
@@ -100,6 +102,7 @@ func doClientMsg(h *InHandler) {
 			ClientID:    nodeID.Value(),
 			ClientAttrs: &attrs, // in production, review and limit
 		}
+
 		// Set exit state -----------------------------------------------
 		h.exitState = CLIENT_DETAILS_RCVD
 	}
@@ -157,6 +160,8 @@ func doCreateMsg(h *InHandler) {
 		if err == nil {
 			cluster, err = NewRegCluster(clusterName, clusterID, attrs,
 				uint(clusterSize), uint(endPointCount))
+			h.reg.Logger.Printf("cluster %s assigning ID %x\n",
+				clusterName, clusterID.Value())
 		}
 		if err == nil {
 			h.cluster = cluster

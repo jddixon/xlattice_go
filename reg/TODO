@@ -1,5 +1,14 @@
 xlattice_go/reg/TODO
 
+2013-11-04
+    * xlReg must log all run starts                                     * DONE
+    * xlReg should log all interactions
+        - clientID creation                                             * DONE
+        - clusterID creation                                            * DONE
+        - cluster joins
+    * xlReg is dying at seemingly random intervals; need to log errors
+        where possible
+
 2013-11-02
     * connections to xlReg are being left open; the server should
         close
