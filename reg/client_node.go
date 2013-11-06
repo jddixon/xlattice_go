@@ -242,7 +242,7 @@ func NewClientNode(
 
 // Read the next message over the connection
 func (cn *ClientNode) readMsg() (m *XLRegMsg, err error) {
-	inBuf, err := cn.h.readData()
+	inBuf, err := cn.h.ReadData()
 	if err == nil && inBuf != nil {
 		m, err = DecryptUnpadDecode(inBuf, cn.decrypterC)
 	}
@@ -255,7 +255,7 @@ func (cn *ClientNode) writeMsg(m *XLRegMsg) (err error) {
 	// serialize, marshal the message
 	data, err = EncodePadEncrypt(m, cn.encrypterC)
 	if err == nil {
-		err = cn.h.writeData(data)
+		err = cn.h.WriteData(data)
 	}
 	return
 }
@@ -287,11 +287,11 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 			err = xm.ClientEncodeHello(proposedVersion, cn.regCK)
 	}
 	if err == nil {
-		err = cn.h.writeData(ciphertext1)
+		err = cn.h.WriteData(ciphertext1)
 	}
 	// Process HELLO REPLY --------------------------------------
 	if err == nil {
-		ciphertext2, err = cn.h.readData()
+		ciphertext2, err = cn.h.ReadData()
 	}
 	if err == nil {
 		iv2, key2, salt2, salt1c, decidedVersion,

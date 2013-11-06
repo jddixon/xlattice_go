@@ -1,5 +1,10 @@
 xlattice_go/reg/TODO
 
+2013-11-05
+    * make CnxHandler fields public                                     * DONE
+    * Registry is logging EOFs on all client connections; this
+        should be dropped
+
 2013-11-04
     * xlReg must log all run starts                                     * DONE
     * xlReg should log all interactions

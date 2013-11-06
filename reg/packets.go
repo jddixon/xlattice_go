@@ -25,11 +25,11 @@ type CnxHandler struct {
 
 // Read data from the connection.  XXX This will not handle partial
 // reads correctly
-func (h *CnxHandler) readData() (data []byte, err error) {
+func (h *CnxHandler) ReadData() (data []byte, err error) {
 	data = make([]byte, MSG_BUF_LEN)
 	count, err := h.Cnx.Read(data)
 	// DEBUG
-	//fmt.Printf("readData: count is %d, err is %v\n", count, err)
+	//fmt.Printf("ReadData: count is %d, err is %v\n", count, err)
 	// END
 	if err == nil && count > 0 {
 		data = data[:count]
@@ -38,7 +38,7 @@ func (h *CnxHandler) readData() (data []byte, err error) {
 	return nil, err
 }
 
-func (h *CnxHandler) writeData(data []byte) (err error) {
+func (h *CnxHandler) WriteData(data []byte) (err error) {
 	count, err := h.Cnx.Write(data)
 	// XXX handle cases where not all bytes written
 	_ = count
@@ -85,7 +85,7 @@ func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegM
 
 //// Read the next message over the connection
 //func (mc *Client) readMsg() (m *XLRegMsg, err error) {
-//	inBuf, err := mc.h.readData()
+//	inBuf, err := mc.h.ReadData()
 //	if err == nil && inBuf != nil {
 //		m, err = DecryptUnpadDecode(inBuf, mc.decrypterC)
 //	}
@@ -98,7 +98,7 @@ func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegM
 //	// serialize, marshal the message
 //	data, err = EncodePadEncrypt(m, mc.encrypterC)
 //	if err == nil {
-//		err = mc.h.writeData(data)
+//		err = mc.h.WriteData(data)
 //	}
 //	return
 //}

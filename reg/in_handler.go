@@ -154,7 +154,7 @@ func (h *InHandler) Run() (err error) {
 		// REQUEST --------------------------------------------------
 		//   receive the raw data off the wire
 		var ciphertext []byte
-		ciphertext, err = h.readData()
+		ciphertext, err = h.ReadData()
 		if err != nil {
 			return
 		}
@@ -200,12 +200,12 @@ func (h *InHandler) Run() (err error) {
 
 			// put the ciphertext on the wire
 			if err == nil {
-				err = h.writeData(ciphertext)
+				err = h.WriteData(ciphertext)
 
 				// XXX log any error
 				if err != nil {
 					h.reg.Logger.Printf(
-						"InHandler.Run: writeData returns %v\n", err)
+						"InHandler.Run: WriteData returns %v\n", err)
 				}
 			}
 
@@ -234,7 +234,7 @@ func handleHello(h *InHandler) (err error) {
 		version1                     uint32
 	)
 	rn := &h.reg.RegNode
-	ciphertext, err = h.readData()
+	ciphertext, err = h.ReadData()
 	if err == nil {
 		iv1, key1, salt1, version1,
 			err = msg.ServerDecodeHello(ciphertext, rn.ckPriv)
@@ -245,7 +245,7 @@ func handleHello(h *InHandler) (err error) {
 		iv2, key2, salt2, ciphertextOut, err := msg.ServerEncodeHelloReply(
 			iv1, key1, salt1, uint32(version2))
 		if err == nil {
-			err = h.writeData(ciphertextOut)
+			err = h.WriteData(ciphertextOut)
 		}
 		if err == nil {
 			h.iv1 = iv1
