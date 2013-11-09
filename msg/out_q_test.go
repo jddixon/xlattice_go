@@ -9,7 +9,6 @@ import (
 	"github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/rnglib"
-	// xu "github.com/jddixon/xlattice_go/util"
 	. "launchpad.net/gocheck"
 )
 
@@ -58,7 +57,6 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 
 	// check NodeID
 	idInMsg := hello.GetID() // a byte slice, not a NodeID
-	// c.Assert(xu.SameBytes(id, idInMsg), Equals, true)
 	c.Assert(id, DeepEquals, idInMsg)
 
 	// these are byte slices
@@ -68,8 +66,6 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	c.Assert(len(mcPubKey), Equals, len(wcPubKey))
 	c.Assert(len(msPubKey), Equals, len(wsPubKey)) // FAILS 0, 294
 
-	// c.Assert(xu.SameBytes(wcPubKey, mcPubKey), Equals, true)
 	c.Assert(wcPubKey, DeepEquals, mcPubKey)
-	// c.Assert(xu.SameBytes(wsPubKey, msPubKey), Equals, true)
 	c.Assert(wsPubKey, DeepEquals, msPubKey)
 }

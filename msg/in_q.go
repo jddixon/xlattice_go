@@ -3,6 +3,7 @@ package msg
 // xlattice_go/msg/in_q.go
 
 import (
+	"bytes"
 	cr "crypto"
 	"crypto/rsa"
 	"crypto/sha1"
@@ -10,7 +11,6 @@ import (
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"
 	xt "github.com/jddixon/xlattice_go/transport"
-	xu "github.com/jddixon/xlattice_go/util"
 	"strings"
 )
 
@@ -201,7 +201,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	}
 	if err == nil {
 		peerID := peer.GetNodeID().Value()
-		if !xu.SameBytes(id, peerID) {
+		if !bytes.Equal(id, peerID) {
 			fmt.Println("NOT SAME NODE ID") // XXX should log
 			err = NotExpectedNodeID
 		}
@@ -209,7 +209,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	if err == nil {
 		serCK, err = xc.RSAPubKeyToWire(peer.GetCommsPublicKey())
 		if err == nil {
-			if !xu.SameBytes(serCK, ck) {
+			if !bytes.Equal(serCK, ck) {
 				fmt.Println("NOT SAME COMMS KEY") // XXX should log
 				err = NotExpectedCommsKey
 			}
@@ -218,7 +218,7 @@ func (h *InHandler) handleHello(n *xn.Node) (err error) {
 	if err == nil {
 		serSK, err = xc.RSAPubKeyToWire(peer.GetSigPublicKey())
 		if err == nil {
-			if !xu.SameBytes(serSK, sk) {
+			if !bytes.Equal(serSK, sk) {
 				fmt.Println("NOT SAME SIG KEY") // XXX should log
 				err = NotExpectedSigKey
 			}
