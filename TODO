@@ -1,5 +1,9 @@
 xlattice_go/TODO
 
+2013-11-08
+    * xu.SameBytes() is functionally identical to Equal() from the
+        bytes package, and so should be dropped
+
 2013-10-25
     * move the project version number from rnglib/ to util/ or subdir
     * xlReg should drop version number from rng/const.go and use
