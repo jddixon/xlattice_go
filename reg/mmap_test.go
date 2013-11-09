@@ -3,9 +3,9 @@ package reg
 // xlattice_go/reg/mmap_test.go
 
 import (
+	"bytes"
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	xu "github.com/jddixon/xlattice_go/util"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	gm "launchpad.net/gommap"
@@ -91,7 +91,7 @@ func (s *XLSuite) TestMmap(c *C) {
 	// END HACKING //////////////////////////////////////////////////
 
 	// This succeeds, so the mapping from disk succeeded.
-	c.Assert(xu.SameBytes(inCore[1:BLOCK_SIZE], data[1:]), Equals, true)
+	c.Assert(bytes.Equal(inCore[1:BLOCK_SIZE], data[1:]), Equals, true)
 
 	const (
 		ASCII_A = byte(64)

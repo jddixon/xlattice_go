@@ -6,13 +6,13 @@ package reg
 // and manage the clusters managed by the registry.
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"encoding/hex"
 	"fmt"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xo "github.com/jddixon/xlattice_go/overlay"
-	xu "github.com/jddixon/xlattice_go/util"
 	"strconv"
 	"strings"
 	"sync"
@@ -148,7 +148,7 @@ func (rc *RegCluster) Equal(any interface{}) bool {
 		// END
 		return false
 	}
-	if !xu.SameBytes(rc.ID, other.ID) {
+	if !bytes.Equal(rc.ID, other.ID) {
 		// DEBUG
 		rcHexID := hex.EncodeToString(rc.ID)
 		otherHexID := hex.EncodeToString(other.ID)
