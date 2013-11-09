@@ -3,11 +3,11 @@ package merkletree
 // xlattice_go/util/merkletree/merkletree.go
 
 import (
+	"bytes"
 	"code.google.com/p/go.crypto/sha3"
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	xu "github.com/jddixon/xlattice_go/util"
 	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"hash"
 	"path"
@@ -108,7 +108,7 @@ func (md *MerkleDoc) Equal(any interface{}) bool {
 	other := any.(*MerkleDoc) // type assertion
 
 	return md.path == other.path &&
-		xu.SameBytes(md.hash, other.hash) &&
+		bytes.Equal(md.hash, other.hash) &&
 		md.tree.Equal(other.tree)
 }
 

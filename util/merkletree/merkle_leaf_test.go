@@ -1,12 +1,11 @@
 package merkletree
 
 import (
+	"bytes"
 	"code.google.com/p/go.crypto/sha3"
 	"crypto/sha1"
-	// "encoding/hex"
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	xu "github.com/jddixon/xlattice_go/util"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"strings"
@@ -58,12 +57,12 @@ func (s *XLSuite) doTestSHA(c *C, rng *xr.PRNG, usingSHA1 bool) {
 		fHash, err = SHA3File(pathToFile)
 	}
 	c.Assert(err, IsNil)
-	c.Assert(xu.SameBytes(hash, fHash), Equals, true)
+	c.Assert(bytes.Equal(hash, fHash), Equals, true)
 
 	ml, err := CreateMerkleLeafFromFileSystem(pathToFile, fileName, usingSHA1)
 	c.Assert(err, IsNil)
 	c.Assert(ml.Name(), Equals, fileName)
-	c.Assert(xu.SameBytes(ml.GetHash(), hash), Equals, true)
+	c.Assert(bytes.Equal(ml.GetHash(), hash), Equals, true)
 	c.Assert(ml.UsingSHA1(), Equals, usingSHA1)
 
 	// TODO: test ToString

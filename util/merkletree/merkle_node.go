@@ -3,8 +3,8 @@ package merkletree
 // xlattice_go/util/merkletree/merkle_node.go
 
 import (
+	"bytes"
 	"fmt"
-	xu "github.com/jddixon/xlattice_go/util"
 )
 
 var _ = fmt.Print
@@ -86,7 +86,7 @@ func (mn *MerkleNode) Equal(any interface{}) bool {
 	if mn.name != other.name {
 		return false
 	}
-	if !xu.SameBytes(mn.hash, other.hash) {
+	if !bytes.Equal(mn.hash, other.hash) {
 		return false
 	}
 	if mn.usingSHA1 != other.usingSHA1 {

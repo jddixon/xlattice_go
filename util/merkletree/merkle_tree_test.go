@@ -3,12 +3,12 @@ package merkletree
 // xlattice_go/util/merkletree/merkle_tree_test.go
 
 import (
+	"bytes"
 	"code.google.com/p/go.crypto/sha3"
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	xu "github.com/jddixon/xlattice_go/util"
 	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"hash"
 	"io/ioutil"
@@ -161,7 +161,7 @@ func (s *XLSuite) doTestParser(c *C, rng *xr.PRNG, usingSHA1 bool) {
 	indent2, treeHash2, dirName2, err := ParseFirstLine(line)
 	c.Assert(err, IsNil)
 	c.Assert(indent2, Equals, indent)
-	c.Assert(xu.SameBytes(treeHash2, tHash), Equals, true)
+	c.Assert(bytes.Equal(treeHash2, tHash), Equals, true)
 	c.Assert(dirName2, Equals, nameWithoutSlash)
 
 	// TEST OTHER LINE PARSER -----------------------------
@@ -174,7 +174,7 @@ func (s *XLSuite) doTestParser(c *C, rng *xr.PRNG, usingSHA1 bool) {
 	nodeDepth, nodeHash, nodeName, isDir, err := ParseOtherLine(line)
 	c.Assert(err, IsNil)
 	c.Assert(nodeDepth, Equals, indent)
-	c.Assert(xu.SameBytes(nodeHash, tHash), Equals, true)
+	c.Assert(bytes.Equal(nodeHash, tHash), Equals, true)
 	c.Assert(nodeName, Equals, nameWithoutSlash)
 	c.Assert(isDir, Equals, yesIsDir)
 }

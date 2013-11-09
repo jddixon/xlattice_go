@@ -3,17 +3,15 @@ package merkletree
 // xlatttice_go/util/merkletree/merkle_doc_test.go
 
 import (
+	"bytes"
 	"code.google.com/p/go.crypto/sha3"
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	xu "github.com/jddixon/xlattice_go/util"
 	"hash"
-	//"io/ioutil"
 	. "launchpad.net/gocheck"
 	re "regexp"
-	//"strings"
 )
 
 // REGEXP TESTS =====================================================
@@ -145,7 +143,7 @@ func (s *XLSuite) doTestMDParser(c *C, rng *xr.PRNG, usingSHA1 bool) {
 
 	treeHash2, dirName2, err := ParseMerkleDocFirstLine(line)
 	c.Assert(err, IsNil)
-	c.Assert(xu.SameBytes(treeHash2, tHash), Equals, true)
+	c.Assert(bytes.Equal(treeHash2, tHash), Equals, true)
 	// we retain the terminating slash in MerkleDoc first lines
 	c.Assert(dirName2, Equals, dirName)
 }
