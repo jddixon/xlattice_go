@@ -34,7 +34,7 @@ func (s *XLSuite) TestCnxInterface(c *C) {
 	defer cnx.Close()
 
 	// We have a good TcpConnection
-	c.Assert(cnx.GetState(), Equals, CONNECTED)
+	c.Assert(cnx.GetState(), Equals, CNX_CONNECTED)
 
 	// But the port number on nearEnd is 0, the dynamically assigned
 	// port number is returned.

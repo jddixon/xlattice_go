@@ -3,13 +3,7 @@ package transport
 // xlattice_go/transport/endpoint.go
 
 import (
-	"errors"
 	"strings"
-)
-
-var (
-	NotAnEndPoint     = errors.New("Not an endPoint")
-	NotAKnownEndPoint = errors.New("Not a known endPoint type")
 )
 
 // Parse a serialized endPoint such as "TcpEndPoint: 127.0.0.1:80",

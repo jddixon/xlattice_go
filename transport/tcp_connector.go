@@ -1,25 +1,17 @@
 package transport
 
-/**
- * Used to establish a Connection with another entity (Node).
- *
- * The notion is that a node has a collection of Connectors used
- * for establishing Connections with Peers, neighboring nodes.
- *
- * @author Jim Dixon
- */
-
 import (
-	"errors"
 	"net"
 )
 
+// Used to establish a Connection with another entity (Node).
+//
+// The notion is that a node has a collection of Connectors used
+// for establishing Connections with Peers, neighboring nodes.
+//
 type TcpConnector struct {
 	farEnd *TcpEndPoint
 }
-
-var NilEndPoint = errors.New("nil endpoint")
-var NotTcpEndPoint = errors.New("not a Tcp endpoint")
 
 func NewTcpConnector(farEnd EndPointI) (*TcpConnector, error) {
 	switch v := farEnd.(type) {
@@ -41,14 +33,12 @@ func NewTcpConnector(farEnd EndPointI) (*TcpConnector, error) {
 	return nil, err
 }
 
-/**
- * Establish a Connection with another entity using the transport
- * and address in the EndPoint.
- *
- * @param nearEnd  local end point to use for connection
- * @param blocking whether the new Connection is to be blocking
- */
-
+// Establish a Connection with another entity using the transport
+// and address in the EndPoint.
+//
+// @param nearEnd  local end point to use for connection
+// @param blocking whether the new Connection is to be blocking
+//
 func (c *TcpConnector) Connect(nearEnd EndPointI) (ConnectionI, error) {
 	var tcpNearEnd *TcpEndPoint
 	if nearEnd == nil {
@@ -60,7 +50,7 @@ func (c *TcpConnector) Connect(nearEnd EndPointI) (ConnectionI, error) {
 	tcpConn, err := net.DialTCP("tcp", tcpNearEnd.GetTcpAddr(),
 		c.farEnd.GetTcpAddr())
 	if err == nil {
-		cnx := TcpConnection{tcpConn, CONNECTED}
+		cnx := TcpConnection{tcpConn, CNX_CONNECTED}
 		return &cnx, nil
 	} else {
 		return nil, err
@@ -69,7 +59,7 @@ func (c *TcpConnector) Connect(nearEnd EndPointI) (ConnectionI, error) {
 
 // return the Acceptor EndPoint that this Connector is used to
 //          establish connections to
-
+//
 func (c *TcpConnector) GetFarEnd() EndPointI {
 	// XXX Should return copy
 	return c.farEnd

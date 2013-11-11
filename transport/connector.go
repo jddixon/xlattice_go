@@ -3,13 +3,7 @@ package transport
 // xlattice_go/transport/connector.go
 
 import (
-	"errors"
 	"strings"
-)
-
-var (
-	NotAConnector      = errors.New("Not a connector")
-	NotAKnownConnector = errors.New("Not a known connector type")
 )
 
 // Parse a serialized connector such as "TcpConnector: 127.0.0.1:80",
