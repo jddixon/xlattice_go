@@ -7,8 +7,6 @@ import (
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
-	"reflect"
-	"unsafe"
 )
 
 var _ = fmt.Print
@@ -37,15 +35,9 @@ func (s *XLSuite) TestMockConnection(c *C) {
 	c.Assert(clientCnx.NearEnd, Equals, serverCnx.FarEnd)
 	c.Assert(clientCnx.FarEnd, Equals, serverCnx.NearEnd)
 
-	cA2BHdr := (*reflect.SliceHeader)(unsafe.Pointer(&clientCnx.a2bMsg))
-	cB2AHdr := (*reflect.SliceHeader)(unsafe.Pointer(&clientCnx.b2aMsg))
-	sA2BHdr := (*reflect.SliceHeader)(unsafe.Pointer(&serverCnx.a2bMsg))
-	sB2AHdr := (*reflect.SliceHeader)(unsafe.Pointer(&serverCnx.b2aMsg))
-
-	// XXX This doesn't work because the arrays are empty.  That is, the
-	// tests succeed but are misleading.
-	c.Assert(cA2BHdr.Data, Equals, sB2AHdr.Data)
-	c.Assert(cB2AHdr.Data, Equals, sA2BHdr.Data)
+	// testing whether the slice pointers are equal
+	c.Assert(clientCnx.a2bMsg, Equals, serverCnx.b2aMsg)
+	c.Assert(clientCnx.b2aMsg, Equals, serverCnx.a2bMsg)
 
 	msg1Len := 32 + rng.Intn(32)
 	msg2Len := 32 + rng.Intn(32)
@@ -55,6 +47,7 @@ func (s *XLSuite) TestMockConnection(c *C) {
 	msg2 := make([]byte, msg2Len)
 	msg3 := make([]byte, msg3Len)
 
+	// the client writes three messages -----------------------------
 	count, err := clientCnx.Write(msg1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, msg1Len)
@@ -67,6 +60,7 @@ func (s *XLSuite) TestMockConnection(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, msg3Len)
 
+	// the server reads the three messages --------------------------
 	sBuf1 := make([]byte, msg1Len)
 	sBuf2 := make([]byte, msg2Len)
 	sBuf3 := make([]byte, msg3Len)
@@ -86,6 +80,37 @@ func (s *XLSuite) TestMockConnection(c *C) {
 	c.Assert(count, Equals, msg3Len)
 	bytes.Equal(msg3, sBuf3)
 
-	_, _ = err, rng // DEBUG
-	_, _ = clientCnx, serverCnx
+	// the server echoes the three messages back -----------------------
+	count, err = serverCnx.Write(sBuf1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, msg1Len)
+
+	count, err = serverCnx.Write(sBuf2)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, msg2Len)
+
+	count, err = serverCnx.Write(sBuf3)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, msg3Len)
+
+	// the client reads back the messages and compares with original
+	cBuf1 := make([]byte, msg1Len)
+	cBuf2 := make([]byte, msg2Len)
+	cBuf3 := make([]byte, msg3Len)
+
+	count, err = clientCnx.Read(cBuf1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, msg1Len)
+	bytes.Equal(msg1, cBuf1)
+
+	count, err = clientCnx.Read(cBuf2)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, msg2Len)
+	bytes.Equal(msg2, cBuf2)
+
+	count, err = clientCnx.Read(cBuf3)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, msg3Len)
+	bytes.Equal(msg3, cBuf2)
+
 }

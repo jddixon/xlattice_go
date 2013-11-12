@@ -10,7 +10,7 @@ import (
 type MockConnection struct {
 	State           int
 	NearEnd, FarEnd *MockEndPoint
-	a2bMsg, b2aMsg  [][]byte
+	a2bMsg, b2aMsg  *[][]byte
 	a2bMu, b2aMu    sync.Mutex
 }
 
@@ -26,10 +26,16 @@ func NewMockConnection(nearEnd, farEnd *MockEndPoint) (
 	if nearEnd == nil || farEnd == nil {
 		err = NilEndPoint
 	} else {
+		// XXX attempt to make things work by assigning a capacity
+		p := make([][]byte, 0, 8)
+		q := make([][]byte, 0, 8)
 		cnx = &MockConnection{
 			NearEnd: nearEnd,
 			FarEnd:  farEnd,
 			State:   CNX_CONNECTED,
+
+			a2bMsg: &p,
+			b2aMsg: &q,
 		}
 	}
 	return
@@ -48,10 +54,12 @@ func NewReverseMockConnection(orig *MockConnection) (
 			State:   orig.State,
 			NearEnd: orig.FarEnd,
 			FarEnd:  orig.NearEnd,
-			a2bMsg:  orig.b2aMsg,
-			b2aMsg:  orig.a2bMsg,
-			a2bMu:   orig.b2aMu,
-			b2aMu:   orig.a2bMu,
+
+			a2bMsg: orig.b2aMsg,
+			b2aMsg: orig.a2bMsg,
+
+			a2bMu: orig.b2aMu,
+			b2aMu: orig.a2bMu,
 		}
 	}
 	return
@@ -134,31 +142,23 @@ func (c *MockConnection) GetFarEnd() (ep EndPointI) {
 //
 func (c *MockConnection) Read(b []byte) (count int, err error) {
 
-	if len(c.b2aMsg) == 0 {
-		// DEBUG
-		fmt.Printf("Read: %d in b2a (but %d in a2b)\n",
-			len(c.b2aMsg), len(c.a2bMsg))
-		// END
+	if len(*c.b2aMsg) == 0 {
 		count = 0
 	} else {
 		lenB := len(b) // how many bytes we can return
-		lenMsg := len(c.b2aMsg[0])
+		lenMsg := len((*c.b2aMsg)[0])
 		if lenB >= lenMsg {
 			buf := bytes.NewBuffer(b)
 			c.b2aMu.Lock()
-			count, err = buf.Write(c.b2aMsg[0])
-			// DEBUG
-			fmt.Printf("Read: buf.Write returns count = %d, len msg is %d\n",
-				count, lenMsg)
-			// END
-			c.b2aMsg = c.b2aMsg[1:]
+			count, err = buf.Write((*c.b2aMsg)[0])
+			*c.b2aMsg = (*c.b2aMsg)[1:]
 			c.b2aMu.Unlock()
 		} else {
 			// send what we can
 			buf := bytes.NewBuffer(b)
 			c.b2aMu.Lock()
-			count, err = buf.Write(c.b2aMsg[0][0:lenB])
-			c.b2aMsg[0] = c.b2aMsg[0][count:]
+			count, err = buf.Write((*c.b2aMsg)[0][0:lenB])
+			(*c.b2aMsg)[0] = (*c.b2aMsg)[0][count:]
 			c.b2aMu.Unlock()
 		}
 	}
@@ -172,11 +172,7 @@ func (c *MockConnection) Read(b []byte) (count int, err error) {
 func (c *MockConnection) Write(b []byte) (count int, err error) {
 	count = len(b)
 	c.a2bMu.Lock()
-	c.a2bMsg = append(c.a2bMsg, b)
-	// DEBUG
-	fmt.Printf("Write: after writing %d byte msg, %d msgs in buffer\n",
-		count, len(c.a2bMsg))
-	// END
+	*c.a2bMsg = append(*c.a2bMsg, b)
 	c.a2bMu.Unlock()
 	return
 }
