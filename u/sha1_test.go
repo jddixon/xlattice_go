@@ -98,4 +98,4 @@ func (s *XLSuite) TestPutData1(c *C) {
 	s.setUp1()
 	s.doTestPutData1(c, DIR16x16)
 	s.doTestPutData1(c, DIR256x256)
-} // FOO
+}

@@ -101,8 +101,16 @@ func (u *U16x16) GetPathForKey(key string) (path string, err error) {
 }
 
 //- copyAndPut3 -------------------------------------------------------
+
+// Copy the file at path to a randomly-named temporary file under U/tmp.
+// If that operation succeeds, we then attempt to rename the file into
+// the appropriate U data subdirectory.  If the file is already present,
+// we silently discard the copy.  Returns the length of the file in bytes,
+// its actual content hash, and any error.
+//
 func (u *U16x16) CopyAndPut3(path, key string) (
 	written int64, hash string, err error) {
+
 	// the temporary file MUST be created on the same device
 	// xxx POSSIBLE RACE CONDITION
 	tmpFileName := filepath.Join(u.tmpDir, u.rng.NextFileName(16))
@@ -149,13 +157,15 @@ func (u *U16x16) GetData3(key string) (data []byte, err error) {
 }
 
 // - Put3 ------------------------------------------------------------
-// tmp is the path to a local file which will be renamed into U (or deleted
+
+// inFile is the path to a local file which will be renamed into U (or deleted
 // if it is already present in U)
 // u.path is an absolute or relative path to a U directory organized 16x16
 // key is an sha3 content hash.
 // If the operation succeeds we return the length of the file (which must
 // not be zero.  Otherwise we return 0.
-// we don't do much checking
+// We don't do much checking.
+//
 func (u *U16x16) Put3(inFile, key string) (
 	length int64, hash string, err error) {
 
@@ -207,6 +217,7 @@ func (u *U16x16) Put3(inFile, key string) (
 }
 
 // - putData3 --------------------------------------------------------
+
 func (u *U16x16) PutData3(data []byte, key string) (length int64, hash string, err error) {
 	s := sha3.NewKeccak256()
 	s.Write(data)
@@ -242,7 +253,44 @@ func (u *U16x16) PutData3(data []byte, key string) (length int64, hash string, e
 	return
 }
 
-// Retrieve a file using a binary key.
+// SHA1/SHA3 NEUTRAL FUNCTIONS ======================================
+
+// - CopyAndPub -----------------------------------------------------
+
+// Copy the file at path to a randomly-named temporary file under U/tmp.
+// If that operation succeeds, we then attempt to rename the file into
+// the appropriate U data subdirectory.  If the file is already present,
+// we silently discard the copy.  Returns the length of the file in bytes
+// and any error.
+//
+// CopyAndPut1 and 3 return the actual content hash; this doesn't.
+//
+func (u *U16x16) CopyAndPut(pathToFile string, key []byte) (
+	length int64, err error) {
+
+	if pathToFile == "" {
+		err = EmptyPath
+	} else if key == nil {
+		err = NilKey
+	} else {
+		strKey := hex.EncodeToString(key)
+		switch len(strKey) {
+		case SHA1_LEN:
+			length, _, err = u.CopyAndPut1(pathToFile, strKey)
+		case SHA3_LEN:
+			length, _, err = u.CopyAndPut3(pathToFile, strKey)
+		default:
+			err = BadKeyLength
+		}
+	}
+	return
+}
+
+// - GetData --------------------------------------------------------
+
+// Retrieves file contents using a binary key.  The key is the SHA1
+// or SHA3 hash of the file contents.
+//
 func (u *U16x16) GetData(key []byte) (data []byte, err error) {
 	if key == nil {
 		err = NilKey
@@ -260,7 +308,38 @@ func (u *U16x16) GetData(key []byte) (data []byte, err error) {
 	return
 }
 
+// - Put ------------------------------------------------------------
+
+// Given a local temporary file, either rename it into U or just silently
+// delete it if the data is already present in U.  Returns the length
+// of the file and any error.
+//
+// Put1 and 3 return the actual content hash; this doesn't.
+//
+func (u *U16x16) Put(tmpFile string, key []byte) (length int64, err error) {
+
+	if tmpFile == "" {
+		err = EmptyPath
+	} else if key == nil {
+		err = NilKey
+	} else {
+		strKey := hex.EncodeToString(key)
+		switch len(strKey) {
+		case SHA1_LEN:
+			length, _, err = u.Put1(tmpFile, strKey)
+		case SHA3_LEN:
+			length, _, err = u.Put3(tmpFile, strKey)
+		default:
+			err = BadKeyLength
+		}
+	}
+	return
+}
+
+// - PutData --------------------------------------------------------
+
 // Write data into the store using a binary key.
+//
 func (u *U16x16) PutData(data []byte, key []byte) (
 	length int64, hash []byte, err error) {
 
@@ -287,8 +366,10 @@ func (u *U16x16) PutData(data []byte, key []byte) (
 // SHA1 CODE ========================================================
 
 // CopyAndPut1 ------------------------------------------------------
+
 func (u *U16x16) CopyAndPut1(path, key string) (
 	written int64, hash string, err error) {
+
 	// the temporary file MUST be created on the same device
 	// xxx POSSIBLE RACE CONDITION
 	tmpFileName := filepath.Join(u.tmpDir, u.rng.NextFileName(16))
@@ -336,13 +417,15 @@ func (u *U16x16) GetData1(key string) (data []byte, err error) {
 }
 
 // - Put1 ------------------------------------------------------------
+
 // tmp is the path to a local file which will be renamed into U (or deleted
 // if it is already present in U)
 // u.path is an absolute or relative path to a U directory organized 16x16
 // key is an sha1 content hash.
 // If the operation succeeds we return the length of the file (which must
 // not be zero.  Otherwise we return 0.
-// we don't do much checking
+// we don't do much checking.
+//
 func (u *U16x16) Put1(inFile, key string) (
 	length int64, hash string, err error) {
 

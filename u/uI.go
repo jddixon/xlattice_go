@@ -5,6 +5,7 @@ import (
 )
 
 type UI interface {
+	CopyAndPut(path string, key []byte) (int64, error)
 	CopyAndPut1(path, key string) (int64, string, error)
 	CopyAndPut3(path, key string) (int64, string, error)
 
@@ -12,6 +13,7 @@ type UI interface {
 	GetData1(key string) (data []byte, err error)
 	GetData3(key string) (data []byte, err error)
 
+	Put(inFile string, key []byte) (length int64, err error)
 	Put1(inFile, key string) (length int64, hash string, err error)
 	Put3(inFile, key string) (length int64, hash string, err error)
 

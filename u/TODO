@@ -1,5 +1,11 @@
 xlattice_go/u/TODO
 
+2013-11-13
+    * Need SHA1/SHA3-neutral versions of 
+        - Exists()
+        - FileLen()
+        - GetPathForKey()
+
 2013-11-04
     * New should create top level directory structure with appropriate 	* DONE
         permissions, which means by default 0750 for U/, 0770 for 	    * DONE
