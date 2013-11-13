@@ -1,10 +1,18 @@
 xlattice_go/u/TODO
 
 2013-11-13
-    * Need SHA1/SHA3-neutral versions of 
-        - Exists()
-        - FileLen()
-        - GetPathForKey()
+    * Need binary key versions of 							            * DONE
+        - Exists()							                            * DONE
+        - FileLen()							                            * DONE
+        - GetPathForKey()							                    * DONE
+    * Need tests of
+        - CopyAndPut()
+        - GetData()
+        - Put()
+        - PutData()
+        - Exists([]byte) or whatever the name is
+        - FileLen([]byte)
+        - GetPathForKey([]byte)
 
 2013-11-04
     * New should create top level directory structure with appropriate 	* DONE

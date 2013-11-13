@@ -69,6 +69,8 @@ func (u2 *U256x256) GetPath() string {
 	return u2.path
 }
 
+// STRING KEY FUNCTIONS =============================================
+
 // - Exists ---------------------------------------------------------
 func (u2 *U256x256) Exists(key string) (found bool, err error) {
 	path, err := u2.GetPathForKey(key)
@@ -104,143 +106,42 @@ func (u2 *U256x256) GetPathForKey(key string) (path string, err error) {
 	return
 }
 
-//- copyAndPut3 -------------------------------------------------------
-func (u2 *U256x256) CopyAndPut3(path, key string) (
-	written int64, hash string, err error) {
-	// the temporary file MUST be created on the same device
-	tmpFileName := filepath.Join(u2.tmpDir, u2.rng.NextFileName(16))
-	found, _ := xf.PathExists(tmpFileName) // XXX error ignored
-	for found {
-		tmpFileName = filepath.Join(u2.tmpDir, u2.rng.NextFileName(16))
-		found, _ = xf.PathExists(tmpFileName)
-	}
-	written, err = CopyFile(tmpFileName, path) // dest <== src
-	if err == nil {
-		written, hash, err = u2.Put3(tmpFileName, key)
-	}
-	return
-}
+// BINARY KEY FUNCTIONS =============================================
 
-// - GetData3 --------------------------------------------------------
-func (u2 *U256x256) GetData3(key string) (data []byte, err error) {
-	var (
-		found bool
-		path  string
-	)
-	path, err = u2.GetPathForKey(key)
+// - KeyExists ------------------------------------------------------
+
+func (u *U256x256) KeyExists(key []byte) (found bool, err error) {
+	path, err := u.GetPathForBinaryKey(key)
 	if err == nil {
 		found, err = xf.PathExists(path)
 	}
-	if err == nil && !found {
-		err = FileNotFound
-	}
+	return
+}
+
+// - KeyFileLen -----------------------------------------------------
+
+func (u *U256x256) KeyFileLen(key []byte) (length int64, err error) {
+	path, err := u.GetPathForBinaryKey(key)
 	if err == nil {
-		var src *os.File
-		if src, err = os.Open(path); err != nil {
-			return
+		var info os.FileInfo
+		info, err = os.Stat(path)
+		if err == nil {
+			length = info.Size()
 		}
-		defer src.Close()
-		var count int
-		// XXX THIS WILL NOT WORK FOR LARGER FILES!  It will ignore
-		//     anything over 64 KB
-		data = make([]byte, DEFAULT_BUFFER_SIZE)
-		count, err = src.Read(data)
-		// XXX COUNT IS IGNORED
-		_ = count
 	}
 	return
 }
 
-// - Put3 ------------------------------------------------------------
-// tmp is the path to a local file which will be renamed into U (or deleted
-// if it is already present in U)
-// u2.path is an absolute or relative path to a U directory organized 256x256
-// key is an sha3 content hash.
-// If the operation succeeds we return the length of the file (which must
-// not be zero.  Otherwise we return 0.
-// we don't do much checking
-func (u2 *U256x256) Put3(inFile, key string) (
-	length int64, hash string, err error) {
+// - GetPathForBinaryKey --------------------------------------------
 
-	var fullishPath string
-
-	hash, err = FileSHA3(inFile)
-	if err != nil {
-		fmt.Printf("DEBUG: FileSHA3 returned error %v\n", err)
-		return
-	}
-	if hash != key {
-		fmt.Printf("expected %s to have key %s, but the content key is %s\n",
-			inFile, key, hash)
-		err = errors.New("IllegalArgument: Put3: key does not match content")
-		return
-	}
-	info, err := os.Stat(inFile)
-	if err != nil {
-		return
-	}
-	length = info.Size()
-	topSubDir := hash[0:2]
-	lowerDir := hash[2:4]
-	targetDir := filepath.Join(u2.path, topSubDir, lowerDir)
-	found, err := xf.PathExists(targetDir)
-	if err == nil && !found {
-		// XXX MODE IS SUSPECT
-		err = os.MkdirAll(targetDir, 0775)
-	}
-	if err == nil {
-		var found bool
-
-		fullishPath = filepath.Join(targetDir, key[4:])
-		found, err = xf.PathExists(fullishPath)
-		if err == nil {
-			if found {
-				// drop the temporary input file
-				err = os.Remove(inFile)
-			} else {
-				// rename the temporary file into U
-				err = os.Rename(inFile, fullishPath)
-			}
-		}
-	}
-	if err == nil {
-		err = os.Chmod(fullishPath, 0444)
-	}
-	return
-}
-
-// - putData3 --------------------------------------------------------
-func (u2 *U256x256) PutData3(data []byte, key string) (length int64, hash string, err error) {
-	s := sha3.NewKeccak256()
-	s.Write(data)
-	hash = hex.EncodeToString(s.Sum(nil))
-	if hash != key {
-		fmt.Printf("expected data to have key %s, but content key is %s",
-			key, hash)
-		err = errors.New("content/key mismatch")
-		return
-	}
-	length = int64(len(data))
-	topSubDir := hash[0:2]
-	lowerDir := hash[2:4]
-	targetDir := filepath.Join(u2.path, topSubDir, lowerDir)
-	found, err := xf.PathExists(targetDir)
-	if err == nil && !found {
-		err = os.MkdirAll(targetDir, 0775)
-	}
-	fullishPath := filepath.Join(targetDir, key[4:])
-	found, err = xf.PathExists(fullishPath)
-	if !found {
-		var dest *os.File
-		dest, err = os.Create(fullishPath)
-		if err == nil {
-			var count int
-			defer dest.Close()
-			count, err = dest.Write(data)
-			if err == nil {
-				length = int64(count)
-			}
-		}
+// Returns a path to a file with the content key passed.
+//
+func (u *U256x256) GetPathForBinaryKey(key []byte) (path string, err error) {
+	if key == nil {
+		err = NilKey
+	} else {
+		strKey := hex.EncodeToString(key)
+		path, err = u.GetPathForKey(strKey)
 	}
 	return
 }
@@ -511,3 +412,146 @@ func (u2 *U256x256) PutData1(data []byte, key string) (
 	}
 	return
 }
+
+// SHA3 CODE ========================================================
+
+//- copyAndPut3 -------------------------------------------------------
+func (u2 *U256x256) CopyAndPut3(path, key string) (
+	written int64, hash string, err error) {
+	// the temporary file MUST be created on the same device
+	tmpFileName := filepath.Join(u2.tmpDir, u2.rng.NextFileName(16))
+	found, _ := xf.PathExists(tmpFileName) // XXX error ignored
+	for found {
+		tmpFileName = filepath.Join(u2.tmpDir, u2.rng.NextFileName(16))
+		found, _ = xf.PathExists(tmpFileName)
+	}
+	written, err = CopyFile(tmpFileName, path) // dest <== src
+	if err == nil {
+		written, hash, err = u2.Put3(tmpFileName, key)
+	}
+	return
+}
+
+// - GetData3 --------------------------------------------------------
+func (u2 *U256x256) GetData3(key string) (data []byte, err error) {
+	var (
+		found bool
+		path  string
+	)
+	path, err = u2.GetPathForKey(key)
+	if err == nil {
+		found, err = xf.PathExists(path)
+	}
+	if err == nil && !found {
+		err = FileNotFound
+	}
+	if err == nil {
+		var src *os.File
+		if src, err = os.Open(path); err != nil {
+			return
+		}
+		defer src.Close()
+		var count int
+		// XXX THIS WILL NOT WORK FOR LARGER FILES!  It will ignore
+		//     anything over 64 KB
+		data = make([]byte, DEFAULT_BUFFER_SIZE)
+		count, err = src.Read(data)
+		// XXX COUNT IS IGNORED
+		_ = count
+	}
+	return
+}
+
+// - Put3 ------------------------------------------------------------
+// tmp is the path to a local file which will be renamed into U (or deleted
+// if it is already present in U)
+// u2.path is an absolute or relative path to a U directory organized 256x256
+// key is an sha3 content hash.
+// If the operation succeeds we return the length of the file (which must
+// not be zero.  Otherwise we return 0.
+// we don't do much checking
+func (u2 *U256x256) Put3(inFile, key string) (
+	length int64, hash string, err error) {
+
+	var fullishPath string
+
+	hash, err = FileSHA3(inFile)
+	if err != nil {
+		fmt.Printf("DEBUG: FileSHA3 returned error %v\n", err)
+		return
+	}
+	if hash != key {
+		fmt.Printf("expected %s to have key %s, but the content key is %s\n",
+			inFile, key, hash)
+		err = errors.New("IllegalArgument: Put3: key does not match content")
+		return
+	}
+	info, err := os.Stat(inFile)
+	if err != nil {
+		return
+	}
+	length = info.Size()
+	topSubDir := hash[0:2]
+	lowerDir := hash[2:4]
+	targetDir := filepath.Join(u2.path, topSubDir, lowerDir)
+	found, err := xf.PathExists(targetDir)
+	if err == nil && !found {
+		// XXX MODE IS SUSPECT
+		err = os.MkdirAll(targetDir, 0775)
+	}
+	if err == nil {
+		var found bool
+
+		fullishPath = filepath.Join(targetDir, key[4:])
+		found, err = xf.PathExists(fullishPath)
+		if err == nil {
+			if found {
+				// drop the temporary input file
+				err = os.Remove(inFile)
+			} else {
+				// rename the temporary file into U
+				err = os.Rename(inFile, fullishPath)
+			}
+		}
+	}
+	if err == nil {
+		err = os.Chmod(fullishPath, 0444)
+	}
+	return
+}
+
+// - putData3 --------------------------------------------------------
+func (u2 *U256x256) PutData3(data []byte, key string) (length int64, hash string, err error) {
+	s := sha3.NewKeccak256()
+	s.Write(data)
+	hash = hex.EncodeToString(s.Sum(nil))
+	if hash != key {
+		fmt.Printf("expected data to have key %s, but content key is %s",
+			key, hash)
+		err = errors.New("content/key mismatch")
+		return
+	}
+	length = int64(len(data))
+	topSubDir := hash[0:2]
+	lowerDir := hash[2:4]
+	targetDir := filepath.Join(u2.path, topSubDir, lowerDir)
+	found, err := xf.PathExists(targetDir)
+	if err == nil && !found {
+		err = os.MkdirAll(targetDir, 0775)
+	}
+	fullishPath := filepath.Join(targetDir, key[4:])
+	found, err = xf.PathExists(fullishPath)
+	if !found {
+		var dest *os.File
+		dest, err = os.Create(fullishPath)
+		if err == nil {
+			var count int
+			defer dest.Close()
+			count, err = dest.Write(data)
+			if err == nil {
+				length = int64(count)
+			}
+		}
+	}
+	return
+} // GEEP
