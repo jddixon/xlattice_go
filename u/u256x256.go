@@ -245,6 +245,50 @@ func (u2 *U256x256) PutData3(data []byte, key string) (length int64, hash string
 	return
 }
 
+// SHA1/SHA3 NEUTRAL CODE ===========================================
+
+// Retrieve a file using a binary key.
+func (u *U256x256) GetData(key []byte) (data []byte, err error) {
+	if key == nil {
+		err = NilKey
+	} else {
+		strKey := hex.EncodeToString(key)
+		switch len(strKey) {
+		case SHA1_LEN:
+			data, err = u.GetData1(strKey)
+		case SHA3_LEN:
+			data, err = u.GetData1(strKey)
+		default:
+			err = BadKeyLength
+		}
+	}
+	return
+}
+
+// Write data into the store using a binary key.
+func (u *U256x256) PutData(data []byte, key []byte) (
+	length int64, hash []byte, err error) {
+
+	if key == nil {
+		err = NilKey
+	} else {
+		var strHash string
+		strKey := hex.EncodeToString(key)
+		switch len(strKey) {
+		case SHA1_LEN:
+			length, strHash, err = u.PutData1(data, strKey)
+		case SHA3_LEN:
+			length, strHash, err = u.PutData3(data, strKey)
+		default:
+			err = BadKeyLength
+		}
+		if err == nil {
+			hash, err = hex.DecodeString(strHash)
+		}
+	}
+	return
+}
+
 // SHA1 CODE ========================================================
 
 // CopyAndPut1 ------------------------------------------------------
@@ -358,7 +402,6 @@ func (u2 *U256x256) Put1(inFile, key string) (
 }
 
 // PutData1 ---------------------------------------------------------
-// XXX SHOULD RETURN ERROR
 func (u2 *U256x256) PutData1(data []byte, key string) (
 	length int64, hash string, err error) {
 
