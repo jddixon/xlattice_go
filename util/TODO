@@ -1,5 +1,8 @@
 xlattice_go/util/TODO
 
+2013-11-09
+    * replace SameBytes by bytes.Equal wherever used                    * DONE
+
 2013-09-28
     * need to confirm that all functions are tested (Set and Clear
         weren't)
@@ -9,6 +12,6 @@ xlattice_go/util/TODO
         to 0..63 inclusive
 
 2013-08-26
-    * SameBytes test should be extended to make sure it fails
-        when it should (eg flip the bits in a randomly 
-        selected byte
+    * SameBytes test should be extended to make sure it fails           * DROP
+        when it should (eg flip the bits in a randomly                  * DROP
+        selected byte                                                   * DROP

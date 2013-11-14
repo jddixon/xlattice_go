@@ -14,12 +14,6 @@ xlattice_go/u/TODO
         - FileLen([]byte)
         - GetPathForKey([]byte)
 
-2013-11-04
-    * New should create top level directory structure with appropriate 	* DONE
-        permissions, which means by default 0750 for U/, 0770 for 	    * DONE
-        U/in, 0700 for U/tmp, and 0750 for U/x, where the x represents	* DONE
-        the top level hex directories.	                                * DONE
-
 2013-10-27
     * add at least DIR_FLAT implementation
     * merge sha1_test.go and sha3_test.go by adding a usingSHA1
@@ -31,10 +25,6 @@ xlattice_go/u/TODO
     * u16x16 and u256x256 are trivially different; they should be
         merged and a larger set of directory structures supported
    
-    WHEN THE ABOVE IS STABLE:
-    * UI.Exists should return (bool, error)                             * DONE
-    * UI.GetPathForKey should return (string, error)                    * DONE
-
     AFTER FURTHER CONSIDERATION:
     * where rnglib is used to make random file names, use 
         io.ioutil.TempFile(dir, prefix string) (*os.File, error)
