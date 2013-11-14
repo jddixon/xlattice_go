@@ -1,5 +1,9 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.1
+    2013-11-14
+        * added IDMap in node/
+        * added SHA1/SHA3-neutral functions to u/                   SLOC 14978
 0.4.0
     2013-10-30
         * dropped debug statements
