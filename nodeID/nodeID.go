@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	xu "github.com/jddixon/xlattice_go/util"
 )
 
 // TAKE CARE: these in bytes; hex values are twice these
@@ -90,7 +89,7 @@ func SameNodeID(a, b *NodeID) (same bool) {
 	}
 	aVal, bVal := a.Value(), b.Value()
 
-	return xu.SameBytes(aVal, bVal)
+	return bytes.Equal(aVal, bVal)
 
 }
 func (n *NodeID) Equal(any interface{}) bool {
