@@ -44,9 +44,9 @@ func (m *IDMap) Insert(key []byte, value interface{}) (err error) {
 	} else {
 		var depth uint
 		curMap := &m.MapForDepth
-		for depth = 00; depth < m.MaxDepth; depth++ {
+		for depth = 0; depth < m.MaxDepth; depth++ {
 			nextByte := uint(key[depth])
-			cell := curMap.Cells[nextByte]
+			cell := &curMap.Cells[nextByte]
 			if cell.Next == nil {
 				if cell.Key == nil {
 					// we are done
@@ -55,12 +55,11 @@ func (m *IDMap) Insert(key []byte, value interface{}) (err error) {
 				} else if bytes.Equal(*cell.Key, key) {
 					// it's already there
 				} else {
-					err = m.handleCollision(depth, curMap, &cell, key, value)
+					err = m.handleCollision(depth, curMap, cell, key, value)
 				}
 				break
 			} else {
-				// XXX STUB: WORKING HERE
-
+				curMap = cell.Next
 			}
 		}
 		if err == nil && depth >= m.MaxDepth {
@@ -79,7 +78,7 @@ func (m *IDMap) handleCollision(curDepth uint, curMap *MapForDepth,
 	if curDepth >= m.MaxDepth-1 {
 		err = MaxDepthExceeded
 	} else {
-		keyB := curCell.Key
+		keyB := *curCell.Key
 		valueB := curCell.Value
 		curCell.Key = nil
 		curCell.Value = nil
@@ -87,10 +86,10 @@ func (m *IDMap) handleCollision(curDepth uint, curMap *MapForDepth,
 		curMap = curCell.Next
 		curDepth++
 		aByte := uint(key[curDepth])
-		bByte := uint(key[curDepth])
+		bByte := uint(keyB[curDepth])
 
 		bCell := &curMap.Cells[bByte]
-		bCell.Key = keyB
+		bCell.Key = &keyB
 		bCell.Value = valueB
 		if aByte != bByte {
 			aCell := &curMap.Cells[aByte]
@@ -103,6 +102,10 @@ func (m *IDMap) handleCollision(curDepth uint, curMap *MapForDepth,
 	}
 	return
 }
+
+// Return the value associated with the key or nil if there is no
+// such value.
+//
 func (m *IDMap) Find(key []byte) (value interface{}, err error) {
 
 	if key == nil {
@@ -115,7 +118,7 @@ func (m *IDMap) Find(key []byte) (value interface{}, err error) {
 			cell := curMap.Cells[nextByte]
 			if cell.Next == nil {
 				// there is a match at this cell or no match at all
-				if bytes.Equal(*cell.Key, key) {
+				if cell.Key != nil && bytes.Equal(*cell.Key, key) {
 					value = cell.Value
 				}
 				break
