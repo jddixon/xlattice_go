@@ -91,7 +91,6 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	lenSig2 := len(sig2)
 	c.Assert(lenSig, Equals, lenSig2)
 
-	// XXX why does this succeed?
 	for i := 0; i < lenSig; i++ {
 		c.Assert(sig[i], Equals, sig2[i])
 	}

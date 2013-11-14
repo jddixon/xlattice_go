@@ -1,0 +1,131 @@
+package node
+
+// xlattice_go/node/id_map.go
+
+import (
+	"bytes"
+	"fmt"
+)
+
+var _ = fmt.Print
+
+type Thinger struct {
+	Next  *MapForDepth
+	Key   *[]byte
+	Value interface{} // holds pointer to object of interest
+}
+
+type IDMap struct {
+	MaxDepth uint // in bytes
+	MapForDepth
+}
+type MapForDepth struct {
+	Cells [256]Thinger
+}
+
+func NewIDMap(maxDepth uint) (m *IDMap, err error) {
+	if maxDepth >= MAX_MAX_DEPTH {
+		err = MaxDepthTooLarge
+	} else {
+		m = &IDMap{
+			MaxDepth: maxDepth,
+		}
+	}
+	return
+}
+
+// Add an item to the map.  This should be idempotent: adding a key
+// that is already in the map should have no effect at all.  The cell map
+// allows us to efficiently return a pointer to the item, given its nodeID.
+
+func (m *IDMap) Insert(key []byte, value interface{}) (err error) {
+	if key == nil {
+		err = NilID
+	} else {
+		var depth uint
+		curMap := &m.MapForDepth
+		for depth = 00; depth < m.MaxDepth; depth++ {
+			nextByte := uint(key[depth])
+			cell := curMap.Cells[nextByte]
+			if cell.Next == nil {
+				if cell.Key == nil {
+					// we are done
+					cell.Key = &key
+					cell.Value = value
+				} else if bytes.Equal(*cell.Key, key) {
+					// it's already there
+				} else {
+					err = m.handleCollision(depth, curMap, &cell, key, value)
+				}
+				break
+			} else {
+				// XXX STUB: WORKING HERE
+
+			}
+		}
+		if err == nil && depth >= m.MaxDepth {
+			err = MaxDepthExceeded
+		}
+	}
+	return
+}
+
+// The cell is occupied by a key with a different value.  We are guaranteed
+// that the pointer to the next map is nil
+//
+func (m *IDMap) handleCollision(curDepth uint, curMap *MapForDepth,
+	curCell *Thinger, key []byte, value interface{}) (err error) {
+
+	if curDepth >= m.MaxDepth-1 {
+		err = MaxDepthExceeded
+	} else {
+		keyB := curCell.Key
+		valueB := curCell.Value
+		curCell.Key = nil
+		curCell.Value = nil
+		curCell.Next = new(MapForDepth)
+		curMap = curCell.Next
+		curDepth++
+		aByte := uint(key[curDepth])
+		bByte := uint(key[curDepth])
+
+		bCell := &curMap.Cells[bByte]
+		bCell.Key = keyB
+		bCell.Value = valueB
+		if aByte != bByte {
+			aCell := &curMap.Cells[aByte]
+			aCell.Key = &key
+			aCell.Value = value
+		} else {
+			err = m.handleCollision(curDepth, curMap, bCell, key, value)
+		}
+
+	}
+	return
+}
+func (m *IDMap) Find(key []byte) (value interface{}, err error) {
+
+	if key == nil {
+		err = NilID
+	} else {
+		var depth uint
+		curMap := &m.MapForDepth
+		for depth = 0; depth < m.MaxDepth; depth++ {
+			nextByte := uint(key[depth])
+			cell := curMap.Cells[nextByte]
+			if cell.Next == nil {
+				// there is a match at this cell or no match at all
+				if bytes.Equal(*cell.Key, key) {
+					value = cell.Value
+				}
+				break
+			} else {
+				curMap = cell.Next
+			}
+		}
+		if err == nil && depth >= m.MaxDepth {
+			err = MaxDepthExceeded
+		}
+	}
+	return
+}
