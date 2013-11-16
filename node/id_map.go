@@ -23,8 +23,11 @@ type MapForDepth struct {
 	Cells [256]Thinger
 }
 
+// Create an IDMap with the depth specified, where depth is the length
+// of the longest key that can be inserted.
+//
 func NewIDMap(maxDepth uint) (m *IDMap, err error) {
-	if maxDepth >= MAX_MAX_DEPTH {
+	if maxDepth > MAX_MAX_DEPTH {
 		err = MaxDepthTooLarge
 	} else {
 		m = &IDMap{
@@ -32,6 +35,12 @@ func NewIDMap(maxDepth uint) (m *IDMap, err error) {
 		}
 	}
 	return
+}
+
+// Create an IDMap with the default depth.
+//
+func NewNewIDMap() (m *IDMap, err error) {
+	return NewIDMap(MAX_MAX_DEPTH)
 }
 
 // Add an item to the map.  This should be idempotent: adding a key

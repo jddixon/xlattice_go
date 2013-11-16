@@ -1,17 +1,12 @@
 xlattice_go/node/TODO
 
-2013-10-01
-    * test node.FindPeer()                                              * DONE
-
-2013-09-30 
-    * running go test --race gets some peculiar errors relating to      * FIXED
-        ../overlay/parser.go
-    * same --race test finds data races in TEST_LOCAL_HOST_TCP_CLUSTER
-
-2013-09-30 (from 2013-08-23, edited)
+2013-11-16 (from 2013-08-23, 2013-09-30, edited)
     * bni_map: consider replacing the current approach, perhaps with
         one where we have an array of 2^N pointers at each level -
         should be simpler to construct and much faster to search
+        - edit to use IDMap (cost is redundant reference to ID)
+        - later revise to become a simplified IDMap that just uses
+            the ID in BaseNodeI, dropping the superfluous Key *[]byte
 
 2013-09-19
     * first NextNBLine check in Peer.collectConnectors should be
@@ -32,16 +27,7 @@ xlattice_go/node/TODO
     * complete the stubbed sections in
         test_node.TestAutoCreateOverlays
 
-2013-08-24
-    * peer_map: strip debug statements and meaningless comments * NOW IRRELEVANT
-        from code
-
 2013-08-19
-    * "connection reset by peer" in localHost_test.go at lines          * FIXED
-        115, 126 seen once (seen again 08-25) (and again 09-11)
-        (and again, many times, 09-30)
-        - fixed 2013-09-30 by doubling sleep to 2 ms and retrying
-            up to 5 times
     * arguably need stronger version of Peer.Equal(); it only
         confirms that NodeIDs are the same
 
@@ -75,13 +61,6 @@ xlattice_go/node/TODO
         _ Reran 8 detached, 1 failed with 'address already in use'
             in serialization/deserialization test
 
-    * If possible, modify tests to cope with these problems.  This  * DONE!
-        probably means wait-and-retry on both 'address already
-        in use' and 'connection reset by peer'.  In the first case
-        we already wait 50 ms after closing acceptors; we could
-        just increase this.
-            - edited node_test.go      (delay 10 more ms)
-            - edited localHost_test.go (retries up to 3x)
 2013-08-12
     * In order to force an orderly shutdown of a Node, it must be
         doing something.  In other words, we need a set of commands
@@ -119,13 +98,6 @@ xlattice_go/node/TODO
         down and then all are restarted from their saved
         configurations.  The save-and-reload should precede
         the communications checks.
-
-2013-08-02
-    * need peer.Parse() which converts a slice of strings back      * DONE
-        into a Peer object
-        - first version of parser can be quite strict
-        - eventually should be syntactically liberal when
-            parsing (although strict when writing)
 
 2013-07-30
     * p_test.go should be done over the wire, so to speak; that
