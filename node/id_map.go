@@ -5,6 +5,7 @@ package node
 import (
 	"bytes"
 	"fmt"
+	"sync"
 )
 
 var _ = fmt.Print
@@ -17,6 +18,8 @@ type Thinger struct {
 
 type IDMap struct {
 	MaxDepth uint // in bytes
+	count    int
+	mu       sync.RWMutex
 	MapForDepth
 }
 type MapForDepth struct {
@@ -52,6 +55,10 @@ func (m *IDMap) Insert(key []byte, value interface{}) (err error) {
 		err = NilID
 	} else {
 		var depth uint
+		// XXX This is a very coarse lock; could lock at the mapForDepth
+		// level instead
+		m.mu.Lock()
+		defer m.mu.Unlock()
 		curMap := &m.MapForDepth
 		for depth = 0; depth < m.MaxDepth; depth++ {
 			nextByte := uint(key[depth])
@@ -61,6 +68,7 @@ func (m *IDMap) Insert(key []byte, value interface{}) (err error) {
 					// we are done
 					cell.Key = &key
 					cell.Value = value
+					m.count++
 				} else if bytes.Equal(*cell.Key, key) {
 					// it's already there
 				} else {
@@ -107,7 +115,6 @@ func (m *IDMap) handleCollision(curDepth uint, curMap *MapForDepth,
 		} else {
 			err = m.handleCollision(curDepth, curMap, bCell, key, value)
 		}
-
 	}
 	return
 }
@@ -120,6 +127,9 @@ func (m *IDMap) Find(key []byte) (value interface{}, err error) {
 	if key == nil {
 		err = NilID
 	} else {
+		m.mu.RLock()
+		// XXX A very coarse lock; could lock at MapForDepth level instead
+		defer m.mu.RUnlock()
 		var depth uint
 		curMap := &m.MapForDepth
 		for depth = 0; depth < m.MaxDepth; depth++ {
@@ -140,4 +150,10 @@ func (m *IDMap) Find(key []byte) (value interface{}, err error) {
 		}
 	}
 	return
+}
+
+func (m *IDMap) Size() int {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.count
 }
