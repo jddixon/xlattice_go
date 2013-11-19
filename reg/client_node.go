@@ -480,15 +480,15 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			}
 			time.Sleep(10 * time.Millisecond)
 		}
-		if err == nil {
-			selfID := cn.GetNodeID().Value()
+	}
+	if err == nil {
+		selfID := cn.regID.Value()
 
-			for i := uint(0); i < uint(cn.ClusterSize); i++ {
-				memberID := cn.Members[i].GetNodeID().Value()
-				if bytes.Equal(selfID, memberID) {
-					cn.SelfIndex = uint32(i)
-					break
-				}
+		for i := uint(0); i < uint(cn.ClusterSize); i++ {
+			memberID := cn.Members[i].GetNodeID().Value()	// PANIC !!!
+			if bytes.Equal(selfID, memberID) {
+				cn.SelfIndex = uint32(i)
+				break
 			}
 		}
 	}

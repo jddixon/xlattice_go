@@ -3,6 +3,9 @@ xlattice_go/reg/TODO
 2013-11-18
     * add SelfIndex identifying owning node to ClusterMember            * DONE
 
+    * this introduced a bug not caught here; need to modify tests
+        to catch it
+
 2013-11-05
     * Registry is logging EOFs on all client connections; this
         should be dropped
