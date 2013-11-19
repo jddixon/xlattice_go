@@ -1,15 +1,14 @@
 xlattice_go/reg/TODO
 
+2013-11-18
+    * add SelfIndex identifying owning node to ClusterMember            * DONE
+
 2013-11-05
-    * make CnxHandler fields public                                     * DONE
     * Registry is logging EOFs on all client connections; this
         should be dropped
 
 2013-11-04
-    * xlReg must log all run starts                                     * DONE
     * xlReg should log all interactions
-        - clientID creation                                             * DONE
-        - clusterID creation                                            * DONE
         - cluster joins
     * logging should be in separate goroutines and should include at
         least the IP address and port number at the far end of the
@@ -32,10 +31,6 @@ xlattice_go/reg/TODO
 2013-11-02
     * connections to xlReg are being left open; the server should
         close
-
-2013-11-01
-    * ClusterMember needs Equal()                                       * DONE
-    * FIX: cluster_member_test succeeds, but shouldn't!                 * FIXED
 
 2013-10-31
     * need to properly implement 10-02 Registry-related items 

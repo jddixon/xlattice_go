@@ -46,6 +46,7 @@ func (s *XLSuite) TestClusterMemberSerialization(c *C) {
 		ClusterAttrs: cl.Attrs,
 		ClusterID:    myClusterID,
 		ClusterSize:  uint32(cl.MaxSize()),
+		SelfIndex:    uint32(0),
 		Members:      cl.Members, // []*MemberInfo
 		EpCount:      uint32(epCount),
 		Node:         *myNode,
@@ -61,7 +62,7 @@ func (s *XLSuite) TestClusterMemberSerialization(c *C) {
 	deserialized, rest, err := ParseClusterMember(serialized)
 	c.Assert(err, IsNil)
 	c.Assert(deserialized, Not(IsNil))
-	c.Assert(len(rest), Equals, 0) // XXX IS 1, presumably last brace
+	c.Assert(len(rest), Equals, 0)
 
 	// Verify that the deserialized cluster is identical to the original
 	// First version:

@@ -3,6 +3,7 @@ package reg
 // xlattice_go/reg/client_node.go
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -69,23 +70,6 @@ type ClientNode struct {
 	clientID       *xi.NodeID
 	ckPriv, skPriv *rsa.PrivateKey
 
-	// ClusterMember ================================================
-
-	//ClusterName  string
-	//ClusterAttrs uint64
-	//ClusterID    *xi.NodeID
-	//ClusterSize  uint32 // this is a FIXED size, aka MaxSize
-
-	//Members []*MemberInfo // information on cluster members
-
-	//// EpCount is the number of endPoints dedicated to use for cluster-
-	//// related purposes.  By convention endPoints[0] is used for
-	//// member-member communications and [1] for comms with cluster clients,
-	//// should they exist. The first EpCount endPoints are passed
-	//// to other cluster members via the registry.
-	//EpCount uint32
-
-	//xn.Node
 	ClusterMember
 }
 
@@ -147,7 +131,7 @@ func (cn *ClientNode) PersistClusterMember() (err error) {
 		err = ioutil.WriteFile(pathToCfgFile, []byte(config), 0600)
 	}
 	return
-} // FOO
+}
 
 // Given contact information for a registry and the name of a cluster,
 // the client joins the cluster, collects information on the other members,
@@ -495,6 +479,17 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 				break
 			}
 			time.Sleep(10 * time.Millisecond)
+		}
+		if err == nil {
+			selfID := cn.GetNodeID().Value()
+
+			for i := uint(0); i < uint(cn.ClusterSize); i++ {
+				memberID := cn.Members[i].GetNodeID().Value()
+				if bytes.Equal(selfID, memberID) {
+					cn.SelfIndex = uint32(i)
+					break
+				}
+			}
 		}
 	}
 	return

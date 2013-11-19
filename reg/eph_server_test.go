@@ -18,9 +18,9 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) TestServer(c *C) {
+func (s *XLSuite) TestEphServer(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_SERVER")
+		fmt.Println("TEST_EPH_SERVER")
 	}
 
 	rng := xr.MakeSimpleRNG()
