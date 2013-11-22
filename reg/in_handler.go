@@ -65,14 +65,9 @@ func init() {
 }
 
 type InHandler struct {
-	iv1, key1, iv2, key2, salt1, salt2 []byte
-	engineS                            cipher.Block
-	encrypterS                         cipher.BlockMode
-	decrypterS                         cipher.BlockMode
-	reg                                *Registry
-	thisMember                         *MemberInfo
-	cluster                            *RegCluster
-
+	reg        *Registry
+	thisMember *MemberInfo
+	cluster    *RegCluster
 	version    uint32 // protocol version used in session
 	known      uint64 // a bit vector:
 	entryState int
@@ -80,7 +75,8 @@ type InHandler struct {
 	msgIn      *XLRegMsg
 	msgOut     *XLRegMsg
 	errOut     error
-	CnxHandler
+
+	AesCnxHandler
 }
 
 // Given an open new connection, create a handler for the connection,
@@ -101,19 +97,10 @@ func NewInHandler(reg *Registry, conn xt.ConnectionI) (
 		cnx := conn.(*xt.TcpConnection)
 		h = &InHandler{
 			reg: reg,
-			CnxHandler: CnxHandler{
+			AesCnxHandler: AesCnxHandler{
 				Cnx: cnx,
 			},
 		}
-	}
-	return
-}
-
-func SetUpSessionKey(h *InHandler) (err error) {
-	h.engineS, err = aes.NewCipher(h.key2)
-	if err == nil {
-		h.encrypterS = cipher.NewCBCEncrypter(h.engineS, h.iv2)
-		h.decrypterS = cipher.NewCBCDecrypter(h.engineS, h.iv2)
 	}
 	return
 }
@@ -143,7 +130,8 @@ func (h *InHandler) Run() (err error) {
 		return
 	}
 	// Given iv2, key2 create encrypt and decrypt engines.
-	err = SetUpSessionKey(h)
+	aPtr := &h.AesCnxHandler
+	err = aPtr.SetUpSessionKey()
 	if err != nil {
 		return
 	}
@@ -158,7 +146,7 @@ func (h *InHandler) Run() (err error) {
 		if err != nil {
 			return
 		}
-		h.msgIn, err = DecryptUnpadDecode(ciphertext, h.decrypterS)
+		h.msgIn, err = DecryptUnpadDecode(ciphertext, h.decrypter)
 		if err != nil {
 			return
 		}
@@ -190,7 +178,7 @@ func (h *InHandler) Run() (err error) {
 
 		// encode, pad, and encrypt the XLRegMsg object
 		if h.msgOut != nil {
-			ciphertext, err = EncodePadEncrypt(h.msgOut, h.encrypterS)
+			ciphertext, err = EncodePadEncrypt(h.msgOut, h.encrypter)
 
 			// XXX log any error
 			if err != nil {
@@ -248,24 +236,23 @@ func handleHello(h *InHandler) (err error) {
 			err = h.WriteData(ciphertextOut)
 		}
 		if err == nil {
+			h.version = uint32(version2)
+
 			h.iv1 = iv1
 			h.key1 = key1
 			h.iv2 = iv2
 			h.key2 = key2
 			h.salt1 = salt1
 			h.salt2 = salt2
-			h.version = uint32(version2)
 			h.State = HELLO_RCVD
 		}
 	}
-	// On any error silently close the connection and delete the handler,
-	// an exciting thing to do.
+	// On any error silently close the connection.
 	if err != nil {
 		// DEBUG
 		fmt.Printf("handleHello closing cnx, error was %v\n", err)
 		// END
 		h.Cnx.Close()
-		h = nil
 	}
 	return
 }

@@ -1,6 +1,6 @@
 package reg
 
-// xlattice_go/reg/packets.go
+// xlattice_go/reg/aes_cnx.go
 
 import (
 	"code.google.com/p/goprotobuf/proto"
@@ -18,14 +18,28 @@ const (
 	MSG_BUF_LEN = 16 * 1024
 )
 
-type CnxHandler struct {
-	State int
-	Cnx   *xt.TcpConnection
+type AesCnxHandler struct {
+	State                              int
+	Cnx                                *xt.TcpConnection
+	engine                             cipher.Block
+	encrypter                          cipher.BlockMode
+	decrypter                          cipher.BlockMode
+	iv1, key1, iv2, key2, salt1, salt2 []byte
+}
+
+func (h *AesCnxHandler) SetUpSessionKey() (err error) {
+	h.engine, err = aes.NewCipher(h.key2)
+	if err == nil {
+		h.encrypter = cipher.NewCBCEncrypter(h.engine, h.iv2)
+		h.decrypter = cipher.NewCBCDecrypter(h.engine, h.iv2)
+	}
+	return
 }
 
 // Read data from the connection.  XXX This will not handle partial
-// reads correctly
-func (h *CnxHandler) ReadData() (data []byte, err error) {
+// reads correctly.
+//
+func (h *AesCnxHandler) ReadData() (data []byte, err error) {
 	data = make([]byte, MSG_BUF_LEN)
 	count, err := h.Cnx.Read(data)
 	// DEBUG
@@ -38,7 +52,7 @@ func (h *CnxHandler) ReadData() (data []byte, err error) {
 	return nil, err
 }
 
-func (h *CnxHandler) WriteData(data []byte) (err error) {
+func (h *AesCnxHandler) WriteData(data []byte) (err error) {
 	count, err := h.Cnx.Write(data)
 	// XXX handle cases where not all bytes written
 	_ = count
@@ -55,7 +69,9 @@ func EncodePacket(msg *XLRegMsg) (data []byte, err error) {
 	return proto.Marshal(msg)
 }
 
-func EncodePadEncrypt(msg *XLRegMsg, engine cipher.BlockMode) (ciphertext []byte, err error) {
+func EncodePadEncrypt(msg *XLRegMsg, engine cipher.BlockMode) (
+	ciphertext []byte, err error) {
+
 	var paddedData []byte
 
 	cData, err := EncodePacket(msg)
@@ -71,7 +87,8 @@ func EncodePadEncrypt(msg *XLRegMsg, engine cipher.BlockMode) (ciphertext []byte
 	return
 }
 
-func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegMsg, err error) {
+func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (
+	msg *XLRegMsg, err error) {
 
 	plaintext := make([]byte, len(ciphertext))
 	engine.CryptBlocks(plaintext, ciphertext) // dest <- src
@@ -87,7 +104,7 @@ func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegM
 //func (mc *Client) readMsg() (m *XLRegMsg, err error) {
 //	inBuf, err := mc.h.ReadData()
 //	if err == nil && inBuf != nil {
-//		m, err = DecryptUnpadDecode(inBuf, mc.decrypterC)
+//		m, err = DecryptUnpadDecode(inBuf, mc.decrypter)
 //	}
 //	return
 //}
@@ -96,7 +113,7 @@ func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegM
 //func (mc *Client) writeMsg(m *XLRegMsg) (err error) {
 //	var data []byte
 //	// serialize, marshal the message
-//	data, err = EncodePadEncrypt(m, mc.encrypterC)
+//	data, err = EncodePadEncrypt(m, mc.encrypter)
 //	if err == nil {
 //		err = mc.h.WriteData(data)
 //	}

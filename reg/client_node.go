@@ -37,19 +37,13 @@ const (
 )
 
 type ClientNode struct {
-
-	// EPHEMERAL: USED IN NEGOTIATIONS WITH REGISTRY  ===============
 	DoneCh          chan bool
 	Err             error
-	h               *CnxHandler
 	proposedAttrs   uint64
 	proposedVersion uint32 // proposed by client
-	iv1, key1       []byte // one-shot
-	iv2, key2       []byte // session
-	salt1, salt2    []byte // not currently used
-	engineC         cipher.Block
-	encrypterC      cipher.BlockMode
-	decrypterC      cipher.BlockMode
+
+	ckPriv, skPriv *rsa.PrivateKey
+	AesCnxHandler
 
 	// RegCred info: registry credentials ---------------------------
 	regName string
@@ -64,11 +58,10 @@ type ClientNode struct {
 	// REDUNDANT: INFORMATION USED TO BUILD NODE ====================
 	// This is used to build the node and so is persisted as part of
 	// the node when that is saved.
-	endPoints      []xt.EndPointI
-	lfs            string
-	name           string
-	clientID       *xi.NodeID
-	ckPriv, skPriv *rsa.PrivateKey
+	endPoints []xt.EndPointI
+	lfs       string
+	name      string
+	clientID  *xi.NodeID
 
 	ClusterMember
 }
@@ -192,7 +185,7 @@ func NewClientNode(
 		err = NoNodeNoKeys
 	}
 	if err == nil {
-		cnxHandler := &CnxHandler{State: CLIENT_START}
+		cnxHandler := &AesCnxHandler{State: CLIENT_START}
 		cm = &ClusterMember{
 			// Attrs gets negotiated
 			ClusterName:  clusterName,
@@ -214,10 +207,12 @@ func NewClientNode(
 			regEnd:        regEnd,
 			regCK:         regCK,
 			regSK:         regSK,
-			h:             cnxHandler,
 			endPoints:     e,
+
 			ckPriv:        ckPriv,
 			skPriv:        skPriv,
+			AesCnxHandler: *cnxHandler,
+
 			ClusterMember: *cm,
 		}
 	}
@@ -226,9 +221,9 @@ func NewClientNode(
 
 // Read the next message over the connection
 func (cn *ClientNode) readMsg() (m *XLRegMsg, err error) {
-	inBuf, err := cn.h.ReadData()
+	inBuf, err := cn.ReadData()
 	if err == nil && inBuf != nil {
-		m, err = DecryptUnpadDecode(inBuf, cn.decrypterC)
+		m, err = DecryptUnpadDecode(inBuf, cn.decrypter)
 	}
 	return
 }
@@ -237,9 +232,9 @@ func (cn *ClientNode) readMsg() (m *XLRegMsg, err error) {
 func (cn *ClientNode) writeMsg(m *XLRegMsg) (err error) {
 	var data []byte
 	// serialize, marshal the message
-	data, err = EncodePadEncrypt(m, cn.encrypterC)
+	data, err = EncodePadEncrypt(m, cn.encrypter)
 	if err == nil {
-		err = cn.h.WriteData(data)
+		err = cn.WriteData(data)
 	}
 	return
 }
@@ -266,16 +261,16 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 	}
 	// Send HELLO -----------------------------------------------
 	if err == nil {
-		cn.h.Cnx = cnx
+		cn.Cnx = cnx
 		ciphertext1, iv1, key1, salt1,
 			err = xm.ClientEncodeHello(proposedVersion, cn.regCK)
 	}
 	if err == nil {
-		err = cn.h.WriteData(ciphertext1)
+		err = cn.WriteData(ciphertext1)
 	}
 	// Process HELLO REPLY --------------------------------------
 	if err == nil {
-		ciphertext2, err = cn.h.ReadData()
+		ciphertext2, err = cn.ReadData()
 	}
 	if err == nil {
 		iv2, key2, salt2, salt1c, decidedVersion,
@@ -289,10 +284,10 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 		cn.key2 = key2
 		cn.salt2 = salt2
 		cn.Version = decidedVersion
-		cn.engineC, err = aes.NewCipher(key2)
+		cn.engine, err = aes.NewCipher(key2)
 		if err == nil {
-			cn.encrypterC = cipher.NewCBCEncrypter(cn.engineC, iv2)
-			cn.decrypterC = cipher.NewCBCDecrypter(cn.engineC, iv2)
+			cn.encrypter = cipher.NewCBCEncrypter(cn.engine, iv2)
+			cn.decrypter = cipher.NewCBCDecrypter(cn.engine, iv2)
 		}
 	}
 	return
@@ -485,7 +480,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		selfID := cn.regID.Value()
 
 		for i := uint(0); i < uint(cn.ClusterSize); i++ {
-			memberID := cn.Members[i].GetNodeID().Value()	// PANIC !!!
+			memberID := cn.Members[i].GetNodeID().Value() // PANIC !!!
 			if bytes.Equal(selfID, memberID) {
 				cn.SelfIndex = uint32(i)
 				break
