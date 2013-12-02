@@ -294,12 +294,14 @@ func doGetMsg(h *InHandler) {
 	whichReturned := xu.NewBitMap64(0)
 
 	h.reg.mu.RLock()
-	cluster := h.reg.ClustersByID.FindBNI(clusterID).(*RegCluster)
+	kluster := h.reg.ClustersByID.FindBNI(clusterID)
 	h.reg.mu.RUnlock()
 
-	if cluster == nil {
+	if kluster == nil {
 		err = CantFindClusterByID
 	} else {
+		// XXX will panic if type assertion fails
+		cluster := kluster.(*RegCluster)
 		size := uint(cluster.Size()) // actual size, not MaxSize
 		if size > 64 {               // yes, should be impossible
 			size = 64

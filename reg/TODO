@@ -1,5 +1,30 @@
 xlattice_go/reg/TODO
 
+2013-11-22
+    * modify client_node.go to use SetupSessionKey()
+    * insofar as possible, ClientNode.SessionSetup() should
+        migrate to AesCnxHandler.InitSessionSetup()
+    * insofar as possible, InHandler.handleHello() should 
+        migrate to AesCnxHandler.ReceiverSessionSetup()
+    * consider migrating to another package
+        - aes_cnx.go
+        - msg.ServerDecodeHello()
+        - msg.ServerEncodeHelloReply()
+    * the other package could be protocol/aescnx/, but the code must
+        be stable and usable externally
+    * cnx initializer / receiver distinction must be made very clear
+        and the code (re)structured accordingly
+    * XXX the problem is the protobuf protocol, which will vary from
+        application to application 
+        - need at least proto.Unmarshal and proto.Marshal functions
+        - don't know cost of using interface{} instead of eg *XLRegMsg
+        - alternative is to build a code generator; need not be in Go
+        - it's acceptable in the short term to simply copy and edit
+            the code in xlattice_go/reg
+        - tentively 
+            xlattice_go/protocol/AesCnxHandlerGen -s NAME -l LONGNAME
+            where NAME/LONGNAME is that of the protocol
+
 2013-11-18
     * add SelfIndex identifying owning node to ClusterMember            * DONE
 

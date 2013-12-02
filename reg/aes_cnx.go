@@ -2,17 +2,24 @@ package reg
 
 // xlattice_go/reg/aes_cnx.go
 
+// Assume that a generator for this code is parameterized by
+//	package name	- defaults to using local directory name
+//  protocol name	- defaults to using whatever precedes "Msg" in *.proto
+//  MSG_BUF_LEN		- defaults to 16 (K assumed)
+//  file name		- defaults to protocol name + "_aes_cnx.go"
+//  struct name		- defaults to protocol name + "AesCnxHandler"
+//
+// Generator is tested by generating the text for xlattice_go/reg
+// and then comparing it to this file, with this comment block dropped.
+
 import (
 	"code.google.com/p/goprotobuf/proto"
 	"crypto/aes"
 	"crypto/cipher"
-	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xt "github.com/jddixon/xlattice_go/transport"
 	// "sync"
 )
-
-var _ = fmt.Print
 
 const (
 	MSG_BUF_LEN = 16 * 1024
@@ -27,11 +34,11 @@ type AesCnxHandler struct {
 	iv1, key1, iv2, key2, salt1, salt2 []byte
 }
 
-func (h *AesCnxHandler) SetUpSessionKey() (err error) {
-	h.engine, err = aes.NewCipher(h.key2)
+func (a *AesCnxHandler) SetupSessionKey() (err error) {
+	a.engine, err = aes.NewCipher(a.key2)
 	if err == nil {
-		h.encrypter = cipher.NewCBCEncrypter(h.engine, h.iv2)
-		h.decrypter = cipher.NewCBCDecrypter(h.engine, h.iv2)
+		a.encrypter = cipher.NewCBCEncrypter(a.engine, a.iv2)
+		a.decrypter = cipher.NewCBCDecrypter(a.engine, a.iv2)
 	}
 	return
 }
@@ -39,12 +46,9 @@ func (h *AesCnxHandler) SetUpSessionKey() (err error) {
 // Read data from the connection.  XXX This will not handle partial
 // reads correctly.
 //
-func (h *AesCnxHandler) ReadData() (data []byte, err error) {
+func (a *AesCnxHandler) ReadData() (data []byte, err error) {
 	data = make([]byte, MSG_BUF_LEN)
-	count, err := h.Cnx.Read(data)
-	// DEBUG
-	//fmt.Printf("ReadData: count is %d, err is %v\n", count, err)
-	// END
+	count, err := a.Cnx.Read(data)
 	if err == nil && count > 0 {
 		data = data[:count]
 		return
@@ -52,9 +56,11 @@ func (h *AesCnxHandler) ReadData() (data []byte, err error) {
 	return nil, err
 }
 
-func (h *AesCnxHandler) WriteData(data []byte) (err error) {
-	count, err := h.Cnx.Write(data)
+func (a *AesCnxHandler) WriteData(data []byte) (err error) {
+	count, err := a.Cnx.Write(data)
+
 	// XXX handle cases where not all bytes written
+
 	_ = count
 	return
 }
@@ -99,23 +105,3 @@ func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (
 	}
 	return
 }
-
-//// Read the next message over the connection
-//func (mc *Client) readMsg() (m *XLRegMsg, err error) {
-//	inBuf, err := mc.h.ReadData()
-//	if err == nil && inBuf != nil {
-//		m, err = DecryptUnpadDecode(inBuf, mc.decrypter)
-//	}
-//	return
-//}
-//
-//// Write a message out over the connection
-//func (mc *Client) writeMsg(m *XLRegMsg) (err error) {
-//	var data []byte
-//	// serialize, marshal the message
-//	data, err = EncodePadEncrypt(m, mc.encrypter)
-//	if err == nil {
-//		err = mc.h.WriteData(data)
-//	}
-//	return
-//}

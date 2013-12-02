@@ -3,8 +3,6 @@ package reg
 // xlattice_go/reg/in_handler.go
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"fmt"
 	"github.com/jddixon/xlattice_go/msg"
 	xt "github.com/jddixon/xlattice_go/transport"
@@ -131,7 +129,7 @@ func (h *InHandler) Run() (err error) {
 	}
 	// Given iv2, key2 create encrypt and decrypt engines.
 	aPtr := &h.AesCnxHandler
-	err = aPtr.SetUpSessionKey()
+	err = aPtr.SetupSessionKey()
 	if err != nil {
 		return
 	}
