@@ -29,6 +29,9 @@ func NewMemberInfo(name string, id *xi.NodeID,
 
 	// all attrs bits are zero by default
 
+	// DEBUG
+	// fmt.Printf("NewMemberInfo for server %s\n", name)
+	// END
 	base, err := xn.NewBaseNode(name, id, commsPubKey, sigPubKey, nil)
 	if err == nil {
 		member = &MemberInfo{
@@ -65,28 +68,28 @@ func NewMemberInfoFromToken(token *XLRegMsg_Token) (
 }
 
 // Return the XLRegMsg_Token corresponding to this cluster member.
-func (cm *MemberInfo) Token() (token *XLRegMsg_Token, err error) {
+func (mi *MemberInfo) Token() (token *XLRegMsg_Token, err error) {
 
 	var ckBytes, skBytes []byte
 
-	ck := cm.GetCommsPublicKey()
+	ck := mi.GetCommsPublicKey()
 	// DEBUG
 	if ck == nil {
-		fmt.Printf("MemberInfo.Token: %s commsPubKey is nil\n", cm.GetName())
+		fmt.Printf("MemberInfo.Token: %s commsPubKey is nil\n", mi.GetName())
 	}
 	// END
 	ckBytes, err = xc.RSAPubKeyToWire(ck)
 	if err == nil {
-		skBytes, err = xc.RSAPubKeyToWire(cm.GetSigPublicKey())
+		skBytes, err = xc.RSAPubKeyToWire(mi.GetSigPublicKey())
 		if err == nil {
-			name := cm.GetName()
+			name := mi.GetName()
 			token = &XLRegMsg_Token{
 				Name:     &name,
-				Attrs:    &cm.Attrs,
-				ID:       cm.GetNodeID().Value(),
+				Attrs:    &mi.Attrs,
+				ID:       mi.GetNodeID().Value(),
 				CommsKey: ckBytes,
 				SigKey:   skBytes,
-				MyEnds:   cm.MyEnds,
+				MyEnds:   mi.MyEnds,
 			}
 		}
 	}
@@ -95,9 +98,9 @@ func (cm *MemberInfo) Token() (token *XLRegMsg_Token, err error) {
 
 // EQUAL ////////////////////////////////////////////////////////////
 
-func (cm *MemberInfo) Equal(any interface{}) bool {
+func (mi *MemberInfo) Equal(any interface{}) bool {
 
-	if any == cm {
+	if any == mi {
 		return true
 	}
 	if any == nil {
@@ -110,10 +113,10 @@ func (cm *MemberInfo) Equal(any interface{}) bool {
 		return false
 	}
 	other := any.(*MemberInfo) // type assertion
-	if cm.Attrs != other.Attrs {
+	if mi.Attrs != other.Attrs {
 		return false
 	}
-	if cm.MyEnds == nil {
+	if mi.MyEnds == nil {
 		if other.MyEnds != nil {
 			return false
 		}
@@ -121,41 +124,41 @@ func (cm *MemberInfo) Equal(any interface{}) bool {
 		if other.MyEnds == nil {
 			return false
 		}
-		if len(cm.MyEnds) != len(other.MyEnds) {
+		if len(mi.MyEnds) != len(other.MyEnds) {
 			return false
 		}
-		for i := 0; i < len(cm.MyEnds); i++ {
-			if cm.MyEnds[i] != other.MyEnds[i] {
+		for i := 0; i < len(mi.MyEnds); i++ {
+			if mi.MyEnds[i] != other.MyEnds[i] {
 				return false
 			}
 		}
 	}
 	// WARNING: panics without the ampersand !
-	return cm.BaseNode.Equal(&other.BaseNode)
+	return mi.BaseNode.Equal(&other.BaseNode)
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////
 
-func (cm *MemberInfo) Strings() (ss []string) {
+func (mi *MemberInfo) Strings() (ss []string) {
 	ss = []string{"memberInfo {"}
-	bns := cm.BaseNode.Strings()
+	bns := mi.BaseNode.Strings()
 	for i := 0; i < len(bns); i++ {
 		ss = append(ss, "    "+bns[i])
 	}
-	ss = append(ss, fmt.Sprintf("    attrs: 0x%016x", cm.Attrs))
+	ss = append(ss, fmt.Sprintf("    attrs: 0x%016x", mi.Attrs))
 	ss = append(ss, "    endPoints {")
-	for i := 0; i < len(cm.MyEnds); i++ {
-		ss = append(ss, "        "+cm.MyEnds[i])
+	for i := 0; i < len(mi.MyEnds); i++ {
+		ss = append(ss, "        "+mi.MyEnds[i])
 	}
 	ss = append(ss, "    }")
 	ss = append(ss, "}")
 	return
 }
 
-func (cm *MemberInfo) String() string {
-	return strings.Join(cm.Strings(), "\n")
+func (mi *MemberInfo) String() string {
+	return strings.Join(mi.Strings(), "\n")
 }
-func collectAttrs(cm *MemberInfo, ss []string) (rest []string, err error) {
+func collectAttrs(mi *MemberInfo, ss []string) (rest []string, err error) {
 	rest = ss
 	line := xn.NextNBLine(&rest) // trims
 	// attrs line looks like "attrs: 0xHHHH..." where H is a hex digit
@@ -173,7 +176,7 @@ func collectAttrs(cm *MemberInfo, ss []string) (rest []string, err error) {
 					// high order bytes first - ie, it's big-endian
 					attrs |= uint64(val[i]) << uint(8*(7-i))
 				}
-				cm.Attrs = attrs
+				mi.Attrs = attrs
 			}
 		}
 	} else {
@@ -181,7 +184,7 @@ func collectAttrs(cm *MemberInfo, ss []string) (rest []string, err error) {
 	}
 	return
 }
-func collectMyEnds(cm *MemberInfo, ss []string) (rest []string, err error) {
+func collectMyEnds(mi *MemberInfo, ss []string) (rest []string, err error) {
 	rest = ss
 	line := xn.NextNBLine(&rest)
 	if line == "endPoints {" {
@@ -192,7 +195,7 @@ func collectMyEnds(cm *MemberInfo, ss []string) (rest []string, err error) {
 			}
 			line = xn.NextNBLine(&rest)
 			// XXX NO CHECK THAT THIS IS A VALID ENDPOINT
-			cm.MyEnds = append(cm.MyEnds, line)
+			mi.MyEnds = append(mi.MyEnds, line)
 		}
 		line = xn.NextNBLine(&rest)
 		if line != "}" {
@@ -204,21 +207,21 @@ func collectMyEnds(cm *MemberInfo, ss []string) (rest []string, err error) {
 	return
 }
 func ParseMemberInfo(s string) (
-	cm *MemberInfo, rest []string, err error) {
+	mi *MemberInfo, rest []string, err error) {
 
 	ss := strings.Split(s, "\n")
 	return ParseMemberInfoFromStrings(ss)
 }
 
 func ParseMemberInfoFromStrings(ss []string) (
-	cm *MemberInfo, rest []string, err error) {
+	mi *MemberInfo, rest []string, err error) {
 
 	bn, rest, err := xn.ParseBNFromStrings(ss, "memberInfo")
 	if err == nil {
-		cm = &MemberInfo{BaseNode: *bn}
-		rest, err = collectAttrs(cm, rest)
+		mi = &MemberInfo{BaseNode: *bn}
+		rest, err = collectAttrs(mi, rest)
 		if err == nil {
-			rest, err = collectMyEnds(cm, rest)
+			rest, err = collectMyEnds(mi, rest)
 		}
 		if err == nil {
 			// expect and consume a closing brace

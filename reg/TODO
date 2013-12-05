@@ -1,8 +1,13 @@
 xlattice_go/reg/TODO
 
+2013-12-05
+    * ClusterMember has no NewClusterMember() function BUT it has		* DONE
+        a Members []*MemberInfo SLICE which must be initialized		    * DONE
+        - fix was to initialize slice in NewClientNode()		        * DONE
+
 2013-12-04
-    * reduced minimum membership to 1; tests succeed but need to test
-        specifically that everything works with only one member
+    * reduce minimum membership to 1                                    * DONE
+    * later: restore this to what it was !
 
 2013-12-01
     * xlReg fails in upax_go tests occasionally for no obvious reason: 

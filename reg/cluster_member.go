@@ -21,7 +21,7 @@ type ClusterMember struct {
 	ClusterSize  uint32 // this is a FIXED size, aka MaxSize, including self
 	SelfIndex    uint32 // which member we are in the Members slice
 
-	Members []*MemberInfo // information on cluster members
+	Members []*MemberInfo // information on (other) cluster members
 
 	// EpCount is the number of endPoints dedicated to use for cluster-
 	// related purposes.  By convention endPoints[0] is used for
@@ -84,6 +84,9 @@ func (cm *ClusterMember) Strings() (ss []string) {
 	ss = append(ss, fmt.Sprintf("%sselfIndex: %d", INDENT, cm.SelfIndex))
 	ss = append(ss, fmt.Sprintf("%smembers {", INDENT))
 	for i := 0; i < len(cm.Members); i++ {
+		// DEBUG
+		//fmt.Printf("serializing member %d\n", i)
+		// END
 		miss := cm.Members[i].Strings()
 		for j := 0; j < len(miss); j++ {
 			ss = append(ss, fmt.Sprintf("%s%s", INDENT, miss[j]))

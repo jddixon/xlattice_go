@@ -118,7 +118,7 @@ func (cn *ClientNode) PersistClusterMember() (err error) {
 	}
 	if err == nil {
 		cn.Node = *node
-		config = cn.ClusterMember.String()
+		config = cn.ClusterMember.String() // XXX sometimes panics
 	}
 	if err == nil {
 		err = ioutil.WriteFile(pathToCfgFile, []byte(config), 0600)
@@ -195,6 +195,7 @@ func NewClientNode(
 			ClusterSize:  uint32(size),
 			EpCount:      uint32(epCount),
 			// Members added on the fly
+			Members: make([]*MemberInfo, size),
 
 			// Node NOT YET INITIALIZED
 		}

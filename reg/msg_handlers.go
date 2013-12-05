@@ -150,8 +150,8 @@ func doCreateMsg(h *InHandler) {
 		clusterID, _ = xi.New(cluster.ID)
 	} else {
 		attrs := uint64(0)
-		if clusterSize < 2 {
-			clusterSize = 2
+		if clusterSize < 1 {
+			clusterSize = 1
 		} else if clusterSize > 64 {
 			clusterSize = 64
 		}
@@ -280,7 +280,10 @@ func doJoinMsg(h *InHandler) {
 // returned.
 
 func doGetMsg(h *InHandler) {
-	var err error
+	var (
+		cluster *RegCluster
+		err     error
+	)
 	defer func() {
 		h.errOut = err
 	}()
@@ -293,15 +296,21 @@ func doGetMsg(h *InHandler) {
 	var tokens []*XLRegMsg_Token
 	whichReturned := xu.NewBitMap64(0)
 
-	h.reg.mu.RLock()
-	kluster := h.reg.ClustersByID.FindBNI(clusterID)
-	h.reg.mu.RUnlock()
+	// Put the type assertion within the critical section because on
+	// 2013-12-04 I observed a panic with the error message saying
+	// that the assertion failed because kluster was nil, which should
+	// be impossible.
 
+	h.reg.mu.RLock() // <-- LOCK --------------------------
+	kluster := h.reg.ClustersByID.FindBNI(clusterID)
 	if kluster == nil {
 		err = CantFindClusterByID
 	} else {
-		// XXX will panic if type assertion fails
-		cluster := kluster.(*RegCluster)
+		cluster = kluster.(*RegCluster)
+	}
+	h.reg.mu.RUnlock() // <-- UNLOCK ----------------------
+
+	if err == nil {
 		size := uint(cluster.Size()) // actual size, not MaxSize
 		if size > 64 {               // yes, should be impossible
 			size = 64

@@ -30,7 +30,7 @@ type RegCluster struct {
 	Name          string // must be unique
 	ID            []byte // must be unique
 	Attrs         uint64 // a field of bit flags
-	maxSize       uint   // a maximum; must be > 1
+	maxSize       uint   // a maximum; must be > 0
 	epCount       uint   // a positive integer, for now is 1 or 2
 	Members       []*MemberInfo
 	MembersByName map[string]*MemberInfo
