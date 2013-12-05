@@ -154,8 +154,9 @@ func NewClientNode(
 		if err == nil && clusterName == "" {
 			err = MissingClusterNameOrID
 		}
-		if err == nil && size < 2 {
-			err = ClusterMustHaveTwo
+		if err == nil && size < 1 {
+			// err = ClusterMustHaveTwo
+			err = ClusterMustHaveMember
 		}
 	}
 	if err == nil {

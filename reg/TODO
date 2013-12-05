@@ -1,5 +1,15 @@
 xlattice_go/reg/TODO
 
+2013-12-04
+    * reduced minimum membership to 1; tests succeed but need to test
+        specifically that everything works with only one member
+
+2013-12-01
+    * xlReg fails in upax_go tests occasionally for no obvious reason: 
+        need to locate and fix bug
+        - at least sometimes appears as nil nodeID pointer 
+            * we have asked for a nodeID and didn't get one
+
 2013-11-22
     * modify client_node.go to use SetupSessionKey()
     * insofar as possible, ClientNode.SessionSetup() should

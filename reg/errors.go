@@ -11,6 +11,7 @@ var (
 	CantFindClusterByName          = e.New("cannot find cluster with this name")
 	ClientMustHaveEndPoint         = e.New("client must have at least one endPoint")
 	ClusterMembersMustHaveEndPoint = e.New("cluster members must have at least one endPoint")
+	ClusterMustHaveMember          = e.New("cluster must have a member!")
 	ClusterMustHaveTwo             = e.New("cluster must have at least two members")
 	IDAlreadyInUse                 = e.New("ID already in use")
 	IllFormedCluster               = e.New("ill-formed cluster serialization")

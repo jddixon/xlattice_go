@@ -48,8 +48,9 @@ func NewRegCluster(name string, id *xi.NodeID, attrs uint64,
 	if epCount < 1 {
 		err = ClusterMembersMustHaveEndPoint
 	}
-	if err == nil && maxSize < 2 {
-		err = ClusterMustHaveTwo
+	if err == nil && maxSize < 1 {
+		//err = ClusterMustHaveTwo
+		err = ClusterMustHaveMember
 	} else {
 		var bnm xn.BNIMap // empty map
 		rc = &RegCluster{
