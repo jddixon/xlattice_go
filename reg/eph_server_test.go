@@ -74,9 +74,9 @@ func (s *XLSuite) TestEphServer(c *C) {
 	c.Assert(reg.IDCount(), Equals, uint(3)) // regID + anID + clusterID
 
 	// DEBUG
-	fmt.Printf("regID     %s\n", regID.String())
-	fmt.Printf("anID      %s\n", anID.String())
-	fmt.Printf("clusterID %s\n", an.ClusterID.String())
+	//fmt.Printf("regID     %s\n", regID.String())
+	//fmt.Printf("anID      %s\n", anID.String())
+	//fmt.Printf("clusterID %s\n", an.ClusterID.String())
 	// END
 
 	found, err = reg.ContainsID(regID)

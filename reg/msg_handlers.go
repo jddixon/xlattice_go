@@ -145,12 +145,14 @@ func doCreateMsg(h *InHandler) {
 	h.reg.mu.RUnlock()
 
 	if exists {
+		fmt.Printf("doCreateMsg: cluster %s already exists!\n", clusterName)
 		// XXX THIS NO LONGER MAKES ANY SENSE
 		h.cluster = cluster
 
 		clusterSize = uint32(cluster.maxSize)
 		clusterID, _ = xi.New(cluster.ID)
 	} else {
+		fmt.Printf("doCreateMsg: new cluster %s\n", clusterName)
 		attrs := uint64(0)
 		if clusterSize < 1 {
 			clusterSize = 1

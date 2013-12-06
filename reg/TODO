@@ -7,6 +7,8 @@ xlattice_go/reg/TODO
         - dummy_test.go                                                 * DONE
         - then rebuild xlReg                                            * DONE
 
+    * NewRegistry must populate indexes if clusters supplied
+
 2013-12-05
     * ClusterMember has no NewClusterMember() function BUT it has		* DONE
         a Members []*MemberInfo SLICE which must be initialized		    * DONE

@@ -428,8 +428,6 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 	stillToGet := xu.LowNMap(uint(cn.ClusterSize))
 	for count := 0; count < MAX_GET && stillToGet.Any(); count++ {
 
-		fmt.Printf("cn.GetAndMembers loop %d\n", count) // DEBUG
-
 		var response *XLRegMsg
 
 		for i := uint(0); i < uint(cn.ClusterSize); i++ {
@@ -468,9 +466,6 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			if which.Any() {
 				offset := 0
 				for i := uint(0); i < uint(cn.ClusterSize); i++ {
-					// DEBUG
-					fmt.Printf("  server sent info on member %d\n", i)
-					// END
 					if which.Test(i) {
 						token := tokens[offset]
 						offset++
@@ -481,7 +476,6 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 				}
 			}
 			if stillToGet.None() {
-				fmt.Println("  GetAndMembers: no more to get") // DEBUG
 				break
 			}
 			time.Sleep(10 * time.Millisecond)

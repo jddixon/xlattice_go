@@ -49,6 +49,7 @@ func NewRegistry(clusters []*RegCluster,
 
 	var (
 		idFilter      xf.BloomSHAI
+		m             *xn.IDMap
 		serverVersion xu.DecimalVersion
 	)
 	serverVersion, err = xu.ParseDecimalVersion(VERSION)
@@ -61,12 +62,15 @@ func NewRegistry(clusters []*RegCluster,
 		} else {
 			idFilter, err = xf.NewMappedBloomSHA(opt.M, opt.K, opt.BackingFile)
 		}
+		if err == nil {
+			m, err = xn.NewNewIDMap()
+		}
 	}
 	if err == nil {
 		// registry's own ID added to Bloom filter
-		idFilter.Insert(rn.GetNodeID().Value())
-
-		var bniMap xn.IDMap
+		err = idFilter.Insert(rn.GetNodeID().Value())
+	}
+	if err == nil {
 		logger := opt.Logger
 		if logger == nil {
 			logger = log.New(os.Stderr, "", log.Ldate|log.Ltime)
@@ -75,7 +79,7 @@ func NewRegistry(clusters []*RegCluster,
 			idFilter:       idFilter,
 			Clusters:       clusters,
 			ClustersByName: make(map[string]*RegCluster),
-			ClustersByID:   &bniMap,
+			ClustersByID:   m,
 			Logger:         logger,
 			RegNode:        *rn,
 		}
