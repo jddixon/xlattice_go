@@ -33,8 +33,8 @@ type Registry struct {
 	idFilter xf.BloomSHAI
 
 	ClustersByName map[string]*RegCluster // volatile, not serialized
-	ClustersByID   *xn.BNIMap             // -ditto-
-	RegMembersByID *xn.BNIMap             // -ditto-
+	ClustersByID   *xn.IDMap              // -ditto-
+	RegMembersByID *xn.IDMap              // -ditto-
 	mu             sync.RWMutex           // -ditto-
 
 	// the extended XLattice node, so id, lfs, keys, etc
@@ -66,7 +66,7 @@ func NewRegistry(clusters []*RegCluster,
 		// registry's own ID added to Bloom filter
 		idFilter.Insert(rn.GetNodeID().Value())
 
-		var bniMap xn.BNIMap
+		var bniMap xn.IDMap
 		logger := opt.Logger
 		if logger == nil {
 			logger = log.New(os.Stderr, "", log.Ldate|log.Ltime)
@@ -139,14 +139,19 @@ func (reg *Registry) AddCluster(cluster *RegCluster) (index int, err error) {
 
 		if _, ok := reg.ClustersByName[name]; ok {
 			err = NameAlreadyInUse
-		} else if reg.ClustersByID.FindBNI(id) != nil {
-			err = IDAlreadyInUse
+		} else {
+			var whatever interface{}
+			whatever, err = reg.ClustersByID.Find(id)
+			if err == nil && whatever != nil {
+				err = IDAlreadyInUse
+			}
 		}
 		if err == nil {
 			index = len(reg.Clusters)
 			reg.Clusters = append(reg.Clusters, cluster)
 			reg.ClustersByName[name] = cluster
-			err = reg.ClustersByID.AddToBNIMap(cluster)
+			err = reg.ClustersByID.Insert(
+				cluster.GetNodeID().Value(), cluster)
 		}
 	}
 	if err != nil {

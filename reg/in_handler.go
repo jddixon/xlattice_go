@@ -162,7 +162,7 @@ func (h *InHandler) Run() (err error) {
 		// Convert any error encountered into an error message to be
 		// sent to the client.
 		if h.errOut != nil {
-			h.reg.Logger.Printf("errOut to client: %v\n", h.errOut)
+			h.reg.Logger.Printf("errOut to client: %s\n", h.errOut.Error())
 
 			op := XLRegMsg_Error
 			s := h.errOut.Error()

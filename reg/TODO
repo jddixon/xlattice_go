@@ -1,5 +1,12 @@
 xlattice_go/reg/TODO
 
+2013-12-06
+    * replace BNIMap with IDMap                                         * DONE
+        - registry.go                                                   * DONE
+        - reg_cluster.go                                                * DONE
+        - dummy_test.go                                                 * DONE
+        - then rebuild xlReg                                            * DONE
+
 2013-12-05
     * ClusterMember has no NewClusterMember() function BUT it has		* DONE
         a Members []*MemberInfo SLICE which must be initialized		    * DONE

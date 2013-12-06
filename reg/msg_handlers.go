@@ -4,6 +4,8 @@ package reg
 
 import (
 	"crypto/rsa"
+	"encoding/hex" // DEBUG
+	e "errors"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -226,12 +228,21 @@ func doJoinMsg(h *InHandler) {
 			err = MissingClusterNameOrID
 		}
 	} else if clusterID != nil {
+		var kluster interface{}
+
 		// if an ID has Leen defined, we will try to use that
 		h.reg.mu.RLock()
-		cluster = h.reg.ClustersByID.FindBNI(clusterID).(*RegCluster)
+		kluster, err = h.reg.ClustersByID.Find(clusterID)
 		h.reg.mu.RUnlock()
-		if cluster == nil {
-			err = CantFindClusterByID
+		if kluster == nil {
+			msg := fmt.Sprintf("can't find cluster with ID %s",
+				hex.EncodeToString(clusterID))
+			// DEBUG
+			fmt.Printf("%s\n", msg)
+			// END
+			err = e.New(msg)
+		} else {
+			cluster = kluster.(*RegCluster)
 		}
 	} else {
 		// we have no ID and clusterName is not nil, so we will try to use that
@@ -302,9 +313,14 @@ func doGetMsg(h *InHandler) {
 	// be impossible.
 
 	h.reg.mu.RLock() // <-- LOCK --------------------------
-	kluster := h.reg.ClustersByID.FindBNI(clusterID)
+	kluster, err := h.reg.ClustersByID.Find(clusterID)
 	if kluster == nil {
-		err = CantFindClusterByID
+		msg := fmt.Sprintf("doGetMsg: can't find cluster with ID %s",
+			hex.EncodeToString(clusterID))
+		// DEBUG
+		fmt.Printf("%s\n", msg)
+		// END
+		err = e.New(msg)
 	} else {
 		cluster = kluster.(*RegCluster)
 	}

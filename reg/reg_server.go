@@ -4,6 +4,7 @@ package reg
 
 import (
 	xt "github.com/jddixon/xlattice_go/transport"
+	"io"
 	"net"
 )
 
@@ -75,8 +76,10 @@ func (rs *RegServer) Run() (err error) {
 					err = h.Run()
 				}
 				if err != nil {
-					logger.Printf("I/O error %v, closing client connection\n",
-						err)
+					if err != io.EOF {
+						logger.Printf(
+							"I/O error %v, closing client connection\n", err)
+					}
 					cnx := h.Cnx
 					if cnx != nil {
 						cnx.Close()

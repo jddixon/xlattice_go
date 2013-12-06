@@ -34,12 +34,14 @@ type RegCluster struct {
 	epCount       uint   // a positive integer, for now is 1 or 2
 	Members       []*MemberInfo
 	MembersByName map[string]*MemberInfo
-	MembersByID   *xn.BNIMap
+	MembersByID   *xn.IDMap
 	mu            sync.RWMutex
 }
 
 func NewRegCluster(name string, id *xi.NodeID, attrs uint64,
 	maxSize, epCount uint) (rc *RegCluster, err error) {
+
+	var m *xn.IDMap
 
 	if name == "" {
 		name = "xlCluster"
@@ -52,7 +54,9 @@ func NewRegCluster(name string, id *xi.NodeID, attrs uint64,
 		//err = ClusterMustHaveTwo
 		err = ClusterMustHaveMember
 	} else {
-		var bnm xn.BNIMap // empty map
+		m, err = xn.NewNewIDMap()
+	}
+	if err == nil {
 		rc = &RegCluster{
 			Attrs:         attrs,
 			Name:          name,
@@ -60,7 +64,7 @@ func NewRegCluster(name string, id *xi.NodeID, attrs uint64,
 			epCount:       epCount,
 			maxSize:       maxSize,
 			MembersByName: nameMap,
-			MembersByID:   &bnm,
+			MembersByID:   m,
 		}
 	}
 	return
@@ -93,7 +97,8 @@ func (rc *RegCluster) AddMember(member *MemberInfo) (err error) {
 		fmt.Printf("AddMember: ATTEMPT TO ADD EXISTING MEMBER %s\n", name)
 		return
 	}
-	// XXX CHECK FOR ENTRY IN BNIMap
+	// XXX CHECK FOR ENTRY IN IDMap
+
 	// XXX STUB
 
 	rc.mu.Lock()             // <------------------------------------
@@ -101,7 +106,7 @@ func (rc *RegCluster) AddMember(member *MemberInfo) (err error) {
 	_ = index                // we might want to use this
 	rc.Members = append(rc.Members, member)
 	rc.MembersByName[name] = member
-	err = rc.MembersByID.AddToBNIMap(member)
+	err = rc.MembersByID.Insert(member.GetNodeID().Value(), member)
 	rc.mu.Unlock() // <------------------------------------
 
 	return

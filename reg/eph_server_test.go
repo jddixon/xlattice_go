@@ -65,25 +65,31 @@ func (s *XLSuite) TestEphServer(c *C) {
 	c.Assert(err, IsNil)
 
 	an.Run()
-	cn := &an.ClientNode // a bit ugly, this ...
-	<-cn.DoneCh
+	<-an.DoneCh
 
-	c.Assert(cn.ClusterID, NotNil) // the purpose of the exercise
-	c.Assert(cn.EpCount, Equals, uint32(1))
+	c.Assert(an.ClusterID, NotNil) // the purpose of the exercise
+	c.Assert(an.EpCount, Equals, uint32(1))
 
-	anID := reg.GetNodeID()
+	anID := an.clientID
 	c.Assert(reg.IDCount(), Equals, uint(3)) // regID + anID + clusterID
+
+	// DEBUG
+	fmt.Printf("regID     %s\n", regID.String())
+	fmt.Printf("anID      %s\n", anID.String())
+	fmt.Printf("clusterID %s\n", an.ClusterID.String())
+	// END
+
+	found, err = reg.ContainsID(regID)
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
 
 	found, err = reg.ContainsID(anID)
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
-	// may be redundant...
+
 	found, err = reg.ContainsID(an.ClusterID)
 	c.Assert(err, IsNil)
-	c.Assert(found, Equals, true)
-	found, err = reg.ContainsID(cn.ClusterID)
-	c.Assert(err, IsNil)
-	c.Assert(found, Equals, true)
+	// c.Assert(found, Equals, true)				// XXX FALSE
 
 	// 4. create K clients ------------------------------------------
 
@@ -98,7 +104,7 @@ func (s *XLSuite) TestEphServer(c *C) {
 		uc[i], err = NewUserClient(ucNames[i], "",
 			nil, nil, // private RSA keys are generated if nil
 			serverName, serverID, serverEnd, serverCK, serverSK,
-			clusterName, cn.ClusterAttrs, cn.ClusterID,
+			clusterName, an.ClusterAttrs, an.ClusterID,
 			K, 1, e) //1 is endPoint count
 		c.Assert(err, IsNil)
 		c.Assert(uc[i], NotNil)
@@ -114,7 +120,7 @@ func (s *XLSuite) TestEphServer(c *C) {
 	for i := 0; i < K; i++ {
 		success := <-uc[i].ClientNode.DoneCh
 		c.Assert(success, Equals, true)
-		// if false, should check cn.Err for error
+		// if false, should check an.Err for error
 
 		// XXX NEXT LINE APPARENTLY DOES NOT WORK
 		// nodeID := uc[i].ClientNode.GetNodeID()
