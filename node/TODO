@@ -3,13 +3,14 @@ xlattice_go/node/TODO
 2013-11-16
     * IDMap should synchronize access internally                        * DONE
     * should return a count (synchronized)                              * DONE
+    * add testing the count to id_map_test.go
 
 2013-11-16 (from 2013-08-23, 2013-09-30, edited)
-    * bni_map: consider replacing the current approach, perhaps with
-        one where we have an array of 2^N pointers at each level -
-        should be simpler to construct and much faster to search
-        - edit to use IDMap (cost is redundant reference to ID)
-        - later revise to become a simplified IDMap that just uses
+    * bni_map: consider replacing the current approach, perhaps with	* DONE
+        one where we have an array of 2^N pointers at each level -		* DONE
+        should be simpler to construct and much faster to search		* DONE
+        - edit to use IDMap (cost is redundant reference to ID)		    * DONE
+        - later revise to become a simplified IDMap that just uses		* DONE
             the ID in BaseNodeI, dropping the superfluous Key *[]byte
 
 2013-09-19

@@ -17,14 +17,11 @@ import (
 
 var _ = fmt.Print
 
-/**
- * A Node is uniquely identified by a NodeID and can satisfy an
- * identity test constructed using its public key.  That is, it
- * can prove that it holds the private key materials corresponding
- * to the public key.
- *
- * @author Jim Dixon
- */
+// A Node is uniquely identified by a NodeID and can satisfy an
+// identity test constructed using its public key.  That is, it
+// can prove that it holds the private key materials corresponding
+// to the public key..
+//
 type Node struct {
 	lfs         string
 	commsKey    *rsa.PrivateKey // private
@@ -34,7 +31,7 @@ type Node struct {
 	peers       []Peer
 	connections []xt.ConnectionI // volatile
 	gateways    []Gateway
-	peerMap     *BNIMap
+	peerMap     *IDMap
 	BaseNode    // listed last, but serialize first
 }
 
@@ -79,9 +76,13 @@ func New(name string, id *xi.NodeID, lfs string,
 	// pre-existing overlay whose address range is the same as one
 	// of these are contained within one of them.
 
-	var endPoints []xt.EndPointI
-	var acceptors []xt.AcceptorI // each must share index with endPoint
-	var overlays []xo.OverlayI
+	var (
+		endPoints []xt.EndPointI
+		acceptors []xt.AcceptorI // each must share index with endPoint
+		overlays  []xo.OverlayI
+		m         *IDMap
+		peers     []Peer // an empty slice
+	)
 
 	if err == nil {
 		if o != nil {
@@ -97,14 +98,14 @@ func New(name string, id *xi.NodeID, lfs string,
 			}
 		}
 	}
-	var pm BNIMap // empty BNIMap
-	pmPtr := &pm
-	var peers []Peer // an empty slice
+	if err == nil {
+		m, err = NewNewIDMap()
+	}
 	if err == nil {
 		if p != nil {
 			count := len(p)
 			for i := 0; i < count; i++ {
-				err = pmPtr.AddToBNIMap(&p[i])
+				err = m.Insert(p[i].GetNodeID().Value(), &p[i])
 				if err != nil {
 					break
 				}
@@ -126,8 +127,9 @@ func New(name string, id *xi.NodeID, lfs string,
 				peers:     peers,
 				gateways:  nil,
 				lfs:       lfs,
-				peerMap:   pmPtr,
-				BaseNode:  *baseNode}
+				// peerMap:   pmPtr,
+				peerMap:  m,
+				BaseNode: *baseNode}
 		}
 	}
 	return
@@ -204,10 +206,7 @@ func (n *Node) AddEndPoint(e xt.EndPointI) (ndx int, err error) {
 	return addEndPoint(e, &n.endPoints, &n.acceptors, &n.overlays)
 }
 
-/**
- * @return a count of the number of endPoints the peer can be
- *         accessed through
- */
+// Return a count of the number of endPoints the peer can be accessed through
 func (n *Node) SizeEndPoints() int {
 	return len(n.endPoints)
 }
@@ -219,13 +218,12 @@ func (n *Node) GetEndPoint(x int) xt.EndPointI {
 // ACCEPTORS ////////////////////////////////////////////////////////
 // no accAcceptor() function; add the endPoint instead
 
-// return a count of the number of acceptors the node listens on
+// Return a count of the number of acceptors the node listens on
 func (n *Node) SizeAcceptors() int {
 	return len(n.acceptors)
 }
 
 // Return the Nth acceptor, should it exist, or nil.
-
 func (n *Node) GetAcceptor(x int) (acc xt.AcceptorI) {
 	if x >= 0 && x < len(n.acceptors) {
 		acc = n.acceptors[x]
@@ -263,6 +261,7 @@ func (n *Node) GetAcceptor(x int) (acc xt.AcceptorI) {
 ////} // GEEP
 
 // PEERS ////////////////////////////////////////////////////////////
+
 func (n *Node) AddPeer(peer *Peer) (ndx int, err error) {
 	ndx = -1
 	if peer == nil {
@@ -277,7 +276,7 @@ func (n *Node) AddPeer(peer *Peer) (ndx int, err error) {
 			}
 		}
 		if ndx == -1 {
-			err = n.peerMap.AddToBNIMap(peer)
+			err = n.peerMap.Insert(peer.GetNodeID().Value(), peer)
 			if err == nil {
 				n.peers = append(n.peers, *peer)
 				ndx = len(n.peers) - 1
@@ -287,9 +286,7 @@ func (n *Node) AddPeer(peer *Peer) (ndx int, err error) {
 	return
 }
 
-/**
- * @return a count,  the number of peers
- */
+// Return a count,  the number of peers
 func (n *Node) SizePeers() int {
 	return len(n.peers)
 }
@@ -304,9 +301,9 @@ func (n *Node) FindPeer(id []byte) (peer *Peer, err error) {
 	if id == nil {
 		err = NilID
 	} else {
-		// XXX should return copy
-		p := n.peerMap.FindBNI(id)
-		if p != nil {
+		var p interface{}
+		p, err = n.peerMap.Find(id)
+		if err == nil && p != nil {
 			peer = p.(*Peer)
 		}
 	}
@@ -314,6 +311,7 @@ func (n *Node) FindPeer(id []byte) (peer *Peer, err error) {
 }
 
 // CONNECTIONS //////////////////////////////////////////////////////
+
 func (n *Node) addConnection(c xt.ConnectionI) (ndx int, err error) {
 	if c == nil {
 		return -1, NilConnection
@@ -323,19 +321,17 @@ func (n *Node) addConnection(c xt.ConnectionI) (ndx int, err error) {
 	return
 }
 
-/** @return a count of known Connections for this Peer */
+// Return a count of known Connections for this Peer.
 func (n *Node) SizeConnections() int {
 	return len(n.connections)
 }
 
-/**
- * Return a ConnectionI, an Address-Protocol pair identifying
- * an Acceptor for the Peer.  Connections are arranged in order
- * of preference, with the zero-th ConnectionI being the most
- * preferred.  THESE ARE OPEN, LIVE CONNECTIONS.
- *
- * @return the Nth Connection
- */
+// Return a ConnectionI, an Address-Protocol pair identifying
+// an Acceptor for the Peer.  Connections are arranged in order
+// of preference, with the zero-th ConnectionI being the most
+// preferred.  THESE ARE OPEN, LIVE CONNECTIONS.
+//
+// Returns the Nth Connection
 func (n *Node) GetConnection(x int) xt.ConnectionI {
 	return n.connections[x]
 }
@@ -369,6 +365,7 @@ func (n *Node) setLFS(val string) (err error) {
 }
 
 // CLOSE ////////////////////////////////////////////////////////////
+
 func (n *Node) Close() {
 	// XXX should run down list of connections and close each,
 
@@ -385,6 +382,7 @@ func (n *Node) Close() {
 }
 
 // EQUAL ////////////////////////////////////////////////////////////
+
 func (n *Node) Equal(any interface{}) bool {
 	if any == n {
 		return true
@@ -417,6 +415,7 @@ func (n *Node) Equal(any interface{}) bool {
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////
+
 func (n *Node) Strings() []string {
 	ss := []string{"node {"}
 	bns := n.BaseNode.Strings()
@@ -482,12 +481,16 @@ func Parse(s string) (node *Node, rest []string, err error) {
 }
 func ParseFromStrings(ss []string) (node *Node, rest []string, err error) {
 
+	var m *IDMap
 	bn, rest, err := ParseBNFromStrings(ss, "node")
 	if err == nil {
 		node = &Node{BaseNode: *bn}
-		var pm BNIMap
-		node.peerMap = &pm
-
+		m, err = NewNewIDMap()
+		if err == nil {
+			node.peerMap = m
+		}
+	}
+	if err == nil {
 		line := NextNBLine(&rest)
 		parts := strings.Split(line, ": ")
 		if parts[0] == "lfs" {

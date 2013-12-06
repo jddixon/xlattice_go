@@ -139,6 +139,14 @@ func addStringlet(slice *[]string, s string) {
 	*slice = append(*slice, s)
 }
 func (p *BaseNode) Strings() []string {
+	// DEBUG
+	if p == nil {
+		panic("BaseNode.Strings: nil p !")
+	}
+	if p.commsPubKey == nil {
+		panic("BaseNode.Strings: nil p.commsPubKey !")
+	}
+	// END
 	ckSSH, err := xc.RSAPubKeyToDisk(p.commsPubKey)
 	if err != nil {
 		panic(err)
