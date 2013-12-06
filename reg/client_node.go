@@ -37,7 +37,7 @@ const (
 )
 
 type ClientNode struct {
-	DoneCh          chan bool
+	DoneCh          chan bool // if false, check error
 	Err             error
 	proposedAttrs   uint64
 	proposedVersion uint32 // proposed by client
@@ -427,6 +427,9 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 	}
 	stillToGet := xu.LowNMap(uint(cn.ClusterSize))
 	for count := 0; count < MAX_GET && stillToGet.Any(); count++ {
+
+		fmt.Printf("cn.GetAndMembers loop %d\n", count) // DEBUG
+
 		var response *XLRegMsg
 
 		for i := uint(0); i < uint(cn.ClusterSize); i++ {
@@ -450,7 +453,9 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			break
 		}
 		response, err = cn.readMsg()
-		// XXX HANDLE ANY ERROR
+		if err != nil {
+			break
+		}
 		op = response.GetOp()
 		// XXX op MUST BE XLRegMsg_Members
 		_ = op
@@ -463,6 +468,9 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			if which.Any() {
 				offset := 0
 				for i := uint(0); i < uint(cn.ClusterSize); i++ {
+					// DEBUG
+					fmt.Printf("  server sent info on member %d\n", i)
+					// END
 					if which.Test(i) {
 						token := tokens[offset]
 						offset++
@@ -473,6 +481,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 				}
 			}
 			if stillToGet.None() {
+				fmt.Println("  GetAndMembers: no more to get") // DEBUG
 				break
 			}
 			time.Sleep(10 * time.Millisecond)
@@ -482,13 +491,18 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		selfID := cn.regID.Value()
 
 		for i := uint(0); i < uint(cn.ClusterSize); i++ {
-			memberID := cn.Members[i].GetNodeID().Value() // PANIC !!!
+			memberID := cn.Members[i].GetNodeID().Value()
 			if bytes.Equal(selfID, memberID) {
 				cn.SelfIndex = uint32(i)
 				break
 			}
 		}
+		// DEBUG
+	} else {
+		fmt.Printf("cn.GetAndMembers: error '%s'\n", err.Error())
+		// END
 	}
+
 	return
 }
 

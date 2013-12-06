@@ -5,6 +5,9 @@ xlattice_go/reg/TODO
         a Members []*MemberInfo SLICE which must be initialized		    * DONE
         - fix was to initialize slice in NewClientNode()		        * DONE
 
+    * UserClient.Run() may return error, especially EOF, in which case
+        we need to try again; using code needs to be fixed
+
 2013-12-04
     * reduce minimum membership to 1                                    * DONE
     * later: restore this to what it was !

@@ -27,7 +27,7 @@ var _ = fmt.Print
 // regenerating keys, etc.
 
 type UserClient struct {
-	members []MemberInfo
+	// members []MemberInfo		// XXX Nowhere used
 
 	ClientNode
 }
@@ -63,12 +63,13 @@ func NewUserClient(
 // Start the client running in separate goroutine, so that this function
 // is non-blocking.
 
-func (uc *UserClient) Run() (err error) {
+func (uc *UserClient) Run() {
 
 	cn := &uc.ClientNode
 
 	go func() {
 		var (
+			err      error
 			version1 uint32
 		)
 		cnx, version2, err := cn.SessionSetup(version1)
@@ -84,6 +85,18 @@ func (uc *UserClient) Run() (err error) {
 		if err == nil {
 			err = cn.GetAndMembers()
 		}
+		// DEBUG
+		var nilMembers []int
+		for i := 0; i < len(uc.Members); i++ {
+			if uc.Members[i] == nil {
+				nilMembers = append(nilMembers, i)
+			}
+		}
+		if len(nilMembers) > 0 {
+			fmt.Printf("UserClient.Run() after Get finds nil members: %v\n",
+				nilMembers)
+		}
+		// END
 		if err == nil {
 			err = cn.ByeAndAck()
 		}
@@ -92,9 +105,12 @@ func (uc *UserClient) Run() (err error) {
 		if cnx != nil {
 			cnx.Close()
 		}
-
-		cn.Err = err
-		cn.DoneCh <- true
+		if err != nil {
+			cn.Err = err
+			cn.DoneCh <- false
+		} else {
+			cn.DoneCh <- true
+		}
 	}()
 	return
 }

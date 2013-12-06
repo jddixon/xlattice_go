@@ -107,13 +107,14 @@ func (s *XLSuite) TestEphServer(c *C) {
 
 	// 5. start the K clients, each in a separate goroutine ---------
 	for i := 0; i < K; i++ {
-		err = uc[i].Run()
-		c.Assert(err, IsNil)
+		uc[i].Run()
 	}
 
 	// wait until all clients are done ------------------------------
 	for i := 0; i < K; i++ {
-		<-uc[i].ClientNode.DoneCh
+		success := <-uc[i].ClientNode.DoneCh
+		c.Assert(success, Equals, true)
+		// if false, should check cn.Err for error
 
 		// XXX NEXT LINE APPARENTLY DOES NOT WORK
 		// nodeID := uc[i].ClientNode.GetNodeID()
