@@ -3,9 +3,12 @@ package chunks
 import (
 	"code.google.com/p/go.crypto/sha3"
 	"encoding/binary"
+	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 )
+
+var _ = fmt.Print
 
 const (
 	MAGIC           = 0
@@ -22,14 +25,16 @@ const (
 	INDEX_BYTES     = 4
 	MAX_LENGTH      = 2 * 256 * 256 // exclusive
 	DATUM_OFFSET    = INDEX_OFFSET + INDEX_BYTES
-	DATUM_LENGTH    = 32
-	DATA_OFFSET     = DATUM_OFFSET + DATUM_LENGTH
+	DATUM_BYTES     = 32
+	DATA_OFFSET     = DATUM_OFFSET + DATUM_BYTES
 	HASH_BYTES      = xc.SHA3_LEN
 	WORD_BYTES      = 16
 )
 
 type Chunk struct {
-	chunk []byte
+	packet     []byte
+	dataLen    int // a convenience
+	hashOffset int // -ditto-
 }
 
 // Datum is declared a NodeID to restrict its value to certain byteslice
@@ -47,60 +52,79 @@ func NewChunk(datum *xi.NodeID, ndx uint32, data []byte) (
 		adjLen := ((realLen + WORD_BYTES - 1) / WORD_BYTES) * WORD_BYTES
 		paddingBytes := adjLen - realLen
 		packet := make([]byte, DATUM_OFFSET)
-		ch = &Chunk{packet}
+		ch = &Chunk{packet: packet}
 		ch.setLength(uint32(realLen)) // length of the data part
 		ch.setIndex(ndx)              // index of this chunk in overall message
-		packet = append(packet, id...)
-		packet = append(packet, data...)
+		ch.packet = append(ch.packet, id...)
+		ch.packet = append(ch.packet, data...)
 		if paddingBytes > 0 {
 			padding := make([]byte, paddingBytes)
-			packet = append(packet, padding...)
+			ch.packet = append(ch.packet, padding...)
 		}
 		// calculate the SHA3-256 hash of the chunk
 		d := sha3.NewKeccak256()
-		d.Write(packet)
+		d.Write(ch.packet)
 		chunkHash := d.Sum(nil)
 
 		// append that to the packet
-		packet = append(packet, chunkHash...)
+		ch.packet = append(ch.packet, chunkHash...)
 	}
 	return
 }
 
 func (ch *Chunk) Magic() byte {
-	return ch.chunk[MAGIC_OFFSET]
+	return ch.packet[MAGIC_OFFSET]
 }
 
 func (ch *Chunk) Type() byte {
-	return ch.chunk[TYPE_OFFSET]
+	return ch.packet[TYPE_OFFSET]
 }
 
 func (ch *Chunk) Reserved() []byte {
-	return ch.chunk[RESERVED_OFFSET : RESERVED_OFFSET+RESERVED_BYTES]
+	return ch.packet[RESERVED_OFFSET : RESERVED_OFFSET+RESERVED_BYTES]
 }
 
+// Return the length encoded in the packet.  This is the actual length
+// of the data in bytes, excluding any padding added.
+//
 func (ch *Chunk) GetLength() uint32 {
 	return binary.LittleEndian.Uint32(
-		ch.chunk[LENGTH_OFFSET : LENGTH_OFFSET+LENGTH_BYTES])
+		ch.packet[LENGTH_OFFSET : LENGTH_OFFSET+LENGTH_BYTES])
 }
 
 func (ch *Chunk) setLength(n uint32) {
 	binary.LittleEndian.PutUint32(
-		ch.chunk[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES], n)
+		ch.packet[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES], n)
 }
 
 func (ch *Chunk) GetIndex() uint32 {
 	return binary.LittleEndian.Uint32(
-		ch.chunk[INDEX_OFFSET : INDEX_OFFSET+INDEX_BYTES])
+		ch.packet[INDEX_OFFSET : INDEX_OFFSET+INDEX_BYTES])
 }
 
 func (ch *Chunk) setIndex(n uint32) {
 	binary.LittleEndian.PutUint32(
-		ch.chunk[INDEX_OFFSET:INDEX_OFFSET+INDEX_BYTES], n)
+		ch.packet[INDEX_OFFSET:INDEX_OFFSET+INDEX_BYTES], n)
 }
 
 // Given a byte slice, determine the length of a chunk wrapping it.
 func (ch *Chunk) CalculateLength(data []byte) uint32 {
 	dataLen := ((len(data) + WORD_BYTES - 1) / WORD_BYTES) * WORD_BYTES
 	return uint32(DATA_OFFSET + dataLen + HASH_BYTES)
+}
+
+func (ch *Chunk) GetDatum() []byte {
+	return ch.packet[DATUM_OFFSET : DATUM_OFFSET+DATUM_BYTES]
+}
+
+func (ch *Chunk) GetData() []byte {
+	return ch.packet[DATA_OFFSET : DATA_OFFSET+ch.GetLength()]
+}
+func (ch *Chunk) GetChunkHash() []byte {
+	if ch.dataLen == 0 {
+		ch.dataLen = int(ch.GetLength())
+		ch.hashOffset = ((ch.dataLen + DATA_OFFSET + WORD_BYTES - 1) /
+			WORD_BYTES) * WORD_BYTES
+	}
+	return ch.packet[ch.hashOffset : ch.hashOffset+HASH_BYTES]
 }
