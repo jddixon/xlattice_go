@@ -1,5 +1,11 @@
 xlattice_go/TODO
 
+2013-12-10
+    * protocol/aescnx seems wholly supersluous; drop?
+
+2013-11-25
+    * argument to rnglib.NextBytes should be []byte, not &[]byte
+
 2013-11-08
     * xu.SameBytes() is functionally identical to Equal() from the
         bytes package, and so should be dropped
