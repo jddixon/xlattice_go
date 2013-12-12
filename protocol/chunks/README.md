@@ -20,11 +20,11 @@ In the initial version of Chunks, header fields are laid out as follows:
 The 'datum' field contains the SHA3-256 content hash of the file of 
 which this is a chunk.
 
-The header is followed by ceil(len/16) bytes of data, with zero bytes
-added to bring the data length up to a multiple of 16.  That is, the
-data is padded with zeroes as required to the next whole multiple 
-of 16.  If the length of the data in bytes is already a whole multiple
-of 16, no padding is added.
+The header is followed by ceil(len/16) bytes of data, with zero byte
+padding added to bring the data length up to a multiple of 16.  That is, 
+the data is padded with zeroes as required to bring its length to the next 
+whole multiple of 16.  If the length of the data in bytes is already a 
+whole multiple of 16, no padding is added.
 
 The chunk data is followed by the 32-byte SHA3-256 hash of the chunk itself, 
 where the hash is calculated over the fields named (magic, type, reserved,

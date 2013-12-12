@@ -1,0 +1,13 @@
+xlattice_go/protocol/chunks/TODO
+
+2013-12-11
+    * Make a clear decision on whether and where to use big- and        * DONE
+        little-endian data (search on LittleEndian)                     * DONE
+        - we store chunk lengths big-endian                             * DONE
+
+    * NewChunkList must have a filename or io.Reader parameter !!!
+
+    * We need a message/file hash to build the ChunkList, so if the
+        input parameter is an io.Reader, we will need to make two
+        passes over the message, first to determine its length and
+        content hash, and then to chunk it.

@@ -19,16 +19,19 @@ const (
 	TYPE_OFFSET     = MAGIC_OFFSET + MAGIC_BYTES
 	RESERVED_OFFSET = TYPE_OFFSET + TYPE_BYTES
 	RESERVED_BYTES  = 6
-	LENGTH_OFFSET   = RESERVED_OFFSET + RESERVED_BYTES
-	LENGTH_BYTES    = 4
-	INDEX_OFFSET    = LENGTH_OFFSET + LENGTH_BYTES
-	INDEX_BYTES     = 4
-	MAX_LENGTH      = 2 * 256 * 256 // exclusive
-	DATUM_OFFSET    = INDEX_OFFSET + INDEX_BYTES
-	DATUM_BYTES     = 32
-	DATA_OFFSET     = DATUM_OFFSET + DATUM_BYTES
-	HASH_BYTES      = xc.SHA3_LEN
-	WORD_BYTES      = 16
+	// We actually store the length - 1 at this offset; and the length
+	// is big-endian.
+	LENGTH_OFFSET = RESERVED_OFFSET + RESERVED_BYTES
+	LENGTH_BYTES  = 4
+	INDEX_OFFSET  = LENGTH_OFFSET + LENGTH_BYTES
+	INDEX_BYTES   = 4
+	DATUM_OFFSET  = INDEX_OFFSET + INDEX_BYTES
+	DATUM_BYTES   = 32
+	DATA_OFFSET   = DATUM_OFFSET + DATUM_BYTES
+	HASH_BYTES    = xc.SHA3_LEN
+	WORD_BYTES    = 16
+
+	MAX_CHUNK_BYTES = 128 * 1024 // 128 KB
 )
 
 type Chunk struct {
@@ -85,25 +88,28 @@ func (ch *Chunk) Reserved() []byte {
 }
 
 // Return the length encoded in the packet.  This is the actual length
-// of the data in bytes, excluding any padding added.
+// of the data in bytes, excluding any padding added.  The value actually
+// stored is the length less one.
 //
 func (ch *Chunk) GetLength() uint32 {
-	return binary.LittleEndian.Uint32(
-		ch.packet[LENGTH_OFFSET : LENGTH_OFFSET+LENGTH_BYTES])
+	return binary.BigEndian.Uint32(
+		ch.packet[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES]) + 1
 }
 
+// We store the length - 1, so it is a serious error if the length is zero.
 func (ch *Chunk) setLength(n uint32) {
-	binary.LittleEndian.PutUint32(
-		ch.packet[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES], n)
+	binary.BigEndian.PutUint32(
+		ch.packet[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES], n-1)
 }
 
+// We store the actual value of the zero-based index.
 func (ch *Chunk) GetIndex() uint32 {
-	return binary.LittleEndian.Uint32(
+	return binary.BigEndian.Uint32(
 		ch.packet[INDEX_OFFSET : INDEX_OFFSET+INDEX_BYTES])
 }
 
 func (ch *Chunk) setIndex(n uint32) {
-	binary.LittleEndian.PutUint32(
+	binary.BigEndian.PutUint32(
 		ch.packet[INDEX_OFFSET:INDEX_OFFSET+INDEX_BYTES], n)
 }
 

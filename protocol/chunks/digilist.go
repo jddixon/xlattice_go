@@ -3,8 +3,12 @@ package chunks
 // xlattice_go/protocol/chunks/digilist.go
 
 import (
+	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
+	"encoding/binary"
+	xc "github.com/jddixon/xlattice_go/crypto"
 )
 
 // A DigiList is an abstract class.  Such a list is associated with an
@@ -64,16 +68,93 @@ func (dl *DigiList) DigSig() []byte {
 // any existing signature is overwritten and the public part of the key
 // is written to the data structure, to dl.sk.
 //
-func (dl *DigiList) Sign(key *rsa.PrivateKey) (err error) {
-	// XXX STUB
+func (dl *DigiList) Sign(key *rsa.PrivateKey, subClass DigiListI) (
+	err error) {
+
+	var (
+		hash   []byte
+		n      uint
+		sk     *rsa.PublicKey
+		skWire []byte
+	)
+	if key == nil {
+		err = NilRSAPrivKey
+	} else if subClass == nil {
+		err = NilSubClass
+	} else {
+		n = subClass.Size()
+		sk = &key.PublicKey
+
+		// DEVIATION FROM SPEC - we ignore any existing dl.sk
+
+		skWire, err = xc.RSAPubKeyToWire(sk)
+	}
+	if err == nil {
+		d := sha1.New()
+		d.Write(skWire)           // public key to hash
+		d.Write([]byte(dl.title)) // title
+		b := make([]byte, 8)
+		binary.LittleEndian.PutUint64(b, uint64(dl.timestamp))
+		d.Write(b) // timestamp to hash
+		for i := uint(0); i < n; i++ {
+			var itemHash []byte
+			itemHash, err = subClass.HashItem(n)
+			if err != nil {
+				break
+			}
+			d.Write(itemHash)
+		}
+		if err == nil {
+			hash = d.Sum(nil)
+		}
+	}
+	if err == nil {
+		dl.sk = sk
+		dl.digSig, err = rsa.SignPKCS1v15(
+			rand.Reader, key, crypto.SHA1, hash)
+	}
 	return
 }
 
-// If the DigiList has been signed, verify the digital signature.
-// Otherwise return false.
-func Verify() (ok bool) {
+// If the DigiList has been signed, verify the digital signature,
+// returning an error if it does not validate.
+func (dl *DigiList) Verify(subClass DigiListI) (err error) {
 
-	// XXx STUB
+	var (
+		hash   []byte
+		n      uint
+		skWire []byte
+	)
+	if subClass == nil {
+		err = NilSubClass
+	} else if dl.digSig == nil {
+		err = NoDigSig
+	} else {
+		n = subClass.Size()
+		skWire, err = xc.RSAPubKeyToWire(dl.sk)
+	}
+	if err == nil {
+		d := sha1.New()
+		d.Write(skWire)           // public key to hash
+		d.Write([]byte(dl.title)) // title
+		b := make([]byte, 8)
+		binary.LittleEndian.PutUint64(b, uint64(dl.timestamp))
+		d.Write(b) // timestamp to hash
+		for i := uint(0); i < n; i++ {
+			var itemHash []byte
+			itemHash, err = subClass.HashItem(n)
+			if err != nil {
+				break
+			}
+			d.Write(itemHash)
+		}
+		if err == nil {
+			hash = d.Sum(nil)
+		}
+	}
+	if err == nil {
+		err = rsa.VerifyPKCS1v15(dl.sk, crypto.SHA1, hash, dl.digSig)
+	}
 	return
 }
 
