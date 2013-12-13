@@ -5,11 +5,12 @@ import (
 )
 
 var (
+	BadDatum                    = e.New("bad datum - doesn't match content hash")
+	BadDatumLength              = e.New("bad datum - length must be 32")
 	EmptyTitle                  = e.New("empty title parameter")
 	MismatchedPublicPrivateKeys = e.New("public and private keys don't match")
-	NilContentHash              = e.New("nil content hash parameter")
 	NilData                     = e.New("nil data parameter")
-	NilDatum                    = e.New("nil datum parameter")
+	NilDatum                    = e.New("nil datum (content hash) parameter")
 	NilReader                   = e.New("nil io.Reader")
 	NilRSAPrivKey               = e.New("nil RSA private key parameter")
 	NilSubClass                 = e.New("nil subClass parameter")

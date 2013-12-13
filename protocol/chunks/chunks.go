@@ -64,6 +64,10 @@ func NewChunk(datum *xi.NodeID, ndx uint32, data []byte) (
 			padding := make([]byte, paddingBytes)
 			ch.packet = append(ch.packet, padding...)
 		}
+		// DEBUG
+		//fmt.Printf("NewChunk %d: %6d bytes, padding %2d\n",
+		//	ndx, realLen, paddingBytes)
+		// END
 		// calculate the SHA3-256 hash of the chunk
 		d := sha3.NewKeccak256()
 		d.Write(ch.packet)
@@ -113,7 +117,8 @@ func (ch *Chunk) setIndex(n uint32) {
 		ch.packet[INDEX_OFFSET:INDEX_OFFSET+INDEX_BYTES], n)
 }
 
-// Given a byte slice, determine the length of a chunk wrapping it.
+// Given a byte slice, determine the length of a chunk wrapping it:
+// /header + data + chunk hash.
 func (ch *Chunk) CalculateLength(data []byte) uint32 {
 	dataLen := ((len(data) + WORD_BYTES - 1) / WORD_BYTES) * WORD_BYTES
 	return uint32(DATA_OFFSET + dataLen + HASH_BYTES)
