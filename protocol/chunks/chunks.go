@@ -50,7 +50,7 @@ func NewChunk(datum *xi.NodeID, ndx uint32, data []byte) (
 	} else if data == nil {
 		err = NilData
 	} else {
-		id := datum.Value()
+		msgHash := datum.Value()
 		realLen := len(data)
 		adjLen := ((realLen + WORD_BYTES - 1) / WORD_BYTES) * WORD_BYTES
 		paddingBytes := adjLen - realLen
@@ -58,7 +58,7 @@ func NewChunk(datum *xi.NodeID, ndx uint32, data []byte) (
 		ch = &Chunk{packet: packet}
 		ch.setLength(uint32(realLen)) // length of the data part
 		ch.setIndex(ndx)              // index of this chunk in overall message
-		ch.packet = append(ch.packet, id...)
+		ch.packet = append(ch.packet, msgHash...)
 		ch.packet = append(ch.packet, data...)
 		if paddingBytes > 0 {
 			padding := make([]byte, paddingBytes)

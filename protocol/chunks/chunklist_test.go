@@ -9,7 +9,7 @@ import (
 	"crypto/rsa"
 	// "encoding/hex"
 	"fmt"
-	//xi "github.com/jddixon/xlattice_go/nodeID"
+	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
@@ -84,6 +84,8 @@ func (s *XLSuite) TestChunkList(c *C) {
 	d := sha3.NewKeccak256()
 	d.Write(data)
 	datum := d.Sum(nil)
+	nodeID, err := xi.NewNodeID(datum)
+	c.Assert(err, IsNil)
 
 	skPriv, err := rsa.GenerateKey(rand.Reader, 1024) // cheap key
 
@@ -103,5 +105,17 @@ func (s *XLSuite) TestChunkList(c *C) {
 		c.Assert(err, IsNil)
 		expected := s.calculateChunkHash(c, i, datum, data)
 		c.Assert(actual, DeepEquals, expected)
+
+		// compare with result of calculation in NewChunk -----------
+		var chunk *Chunk
+		var slice []byte
+		if i == chunkCount-1 {
+			slice = data[i*MAX_CHUNK_BYTES:]
+		} else {
+			slice = data[i*MAX_CHUNK_BYTES : (i+1)*MAX_CHUNK_BYTES]
+		}
+		chunk, err = NewChunk(nodeID, uint32(i), slice)
+		c.Assert(err, Equals, nil)
+		c.Assert(chunk.GetChunkHash(), DeepEquals, expected)
 	}
 }
