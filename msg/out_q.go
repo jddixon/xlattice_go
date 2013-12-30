@@ -43,7 +43,7 @@ func MakeHelloMsg(n *xn.Node) (m *XLatticeMsg, err error) {
 	if err == nil {
 		sysRNG := rnglib.MakeSystemRNG()
 		salt = make([]byte, 8)
-		sysRNG.NextBytes(&salt)
+		sysRNG.NextBytes(salt)
 		chunks := [][]byte{id, ck, sk, salt}
 		sig, err = n.Sign(chunks)
 	}

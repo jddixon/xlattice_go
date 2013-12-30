@@ -2,6 +2,7 @@ package msg;
 
 message XLatticeMsg {
     enum Cmd {
+        // Hello needs to be replaced by rsa/aes handshake
         Hello       = 1;    // msgN, id, ck, sk; initiates comms cycle
         Bye         = 2;    // msgN; ends comms cycle
         KeepAlive   = 3;    // msgN, id, opt salt, opt sig

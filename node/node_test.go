@@ -33,7 +33,7 @@ func makeNodeID(rng *rnglib.PRNG) (*xi.NodeID, error) {
 	} else {
 		buffer = make([]byte, xi.SHA3_LEN)
 	}
-	rng.NextBytes(&buffer)
+	rng.NextBytes(buffer)
 	return xi.NewNodeID(buffer)
 }
 
@@ -74,7 +74,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	// sign /////////////////////////////////////////////////////////
 	msgLen := 128
 	msg := make([]byte, msgLen)
-	rng.NextBytes(&msg)
+	rng.NextBytes(msg)
 
 	d := sha1.New()
 	d.Write(msg)

@@ -39,7 +39,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	// grade.
 
 	salty := make([]byte, 3*aes.BlockSize+8+4+SHA1_LEN)
-	rng.NextBytes(&salty)
+	rng.NextBytes(salty)
 
 	iv1 := salty[:aes.BlockSize]
 	key1 := salty[aes.BlockSize : 3*aes.BlockSize]
@@ -86,7 +86,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 
 	// create the session iv + key plus salt2
 	reply := make([]byte, 3*aes.BlockSize+8)
-	rng.NextBytes(&reply)
+	rng.NextBytes(reply)
 
 	iv2 := reply[:aes.BlockSize]
 	key2 := reply[aes.BlockSize : 3*aes.BlockSize]

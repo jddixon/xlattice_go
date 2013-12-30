@@ -25,7 +25,7 @@ func MockLocalHostCluster(K int) (nodes []*Node, accs []*xt.TcpAcceptor) {
 		// TODO: MAKE NAMES UNIQUE
 		names[i] = rng.NextFileName(4)
 		val := make([]byte, xi.SHA1_LEN)
-		rng.NextBytes(&val)
+		rng.NextBytes(val)
 		nodeIDs[i], _ = xi.NewNodeID(val)
 	}
 	nodes = make([]*Node, K)

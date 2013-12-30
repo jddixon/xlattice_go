@@ -175,7 +175,7 @@ func (s *XLSuite) TestLogBufferOverflow(c *C) {
 		seqN := int64(n + 1)
 		cmdLen := 64 + rng.Intn(64)
 		raw := make([]byte, cmdLen)
-		rng.NextBytes(&raw)
+		rng.NextBytes(raw)
 		cmd := string(raw)
 		pair := NumberedCmd{Seqn: seqN, Cmd: cmd}
 		p.InCh() <- pair

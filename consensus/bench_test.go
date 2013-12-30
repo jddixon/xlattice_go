@@ -13,7 +13,7 @@ func makeSomeCommands(n int) []*NumberedCmd {
 	for i := 0; i < n; i++ {
 		size := 64 + rng.Intn(64)
 		cmd := make([]byte, size)
-		rng.NextBytes(&cmd)
+		rng.NextBytes(cmd)
 		s[i] = &NumberedCmd{int64(i), string(cmd)}
 	}
 	return s

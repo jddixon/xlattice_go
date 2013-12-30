@@ -1,19 +1,12 @@
 xlattice_go/reg/TODO
 
-2013-12-06
-    * replace BNIMap with IDMap                                         * DONE
-        - registry.go                                                   * DONE
-        - reg_cluster.go                                                * DONE
-        - dummy_test.go                                                 * DONE
-        - then rebuild xlReg                                            * DONE
+2013-12-25
+    * urgently need digSig on Client msg
 
+2013-12-06
     * NewRegistry must populate indexes if clusters supplied
 
 2013-12-05
-    * ClusterMember has no NewClusterMember() function BUT it has		* DONE
-        a Members []*MemberInfo SLICE which must be initialized		    * DONE
-        - fix was to initialize slice in NewClientNode()		        * DONE
-
     * UserClient.Run() may return error, especially EOF, in which case
         we need to try again; using code needs to be fixed
 
@@ -207,12 +200,12 @@ xlattice_go/reg/TODO
 
     SERVER, CLIENT/SERVER MESSAGING
     * it must be possible for a Client to create a Cluster (by name)    * DONE
-        and set its size without joining it
+        and set its size without joining it                             * DONE
         - ah: it must be possible for a Client to create a Cluster
             without a name and get its assigned name and ID back
     * equally it must be possible for a client to join a cluster        * DONE
         using its name and get its ID back
-        - but if its full the client gets a ClusterFull error msg
+        - but if it's full the client gets a ClusterFull error msg
 
     * code up Registry serialization in reg/registry.go:
         - ParseRegistry()
@@ -253,18 +246,13 @@ xlattice_go/reg/TODO
         they run one CPU at 100% while the others are more or less idle
         - look at cluster_member_test
         - also reg_cluster_test
-2013-09-16
-    * regNode serialization follows practice in ../node: we first       * DONE
-        serialize BaseNode, then rest of Node, then fields of           * DONE
-        RegNode                                                         * DONE
-        - need Strings(), String(), Parse()                             * DONE
 2013-09-13
     * URGENT FIX: ClientMsg does NOT include digsig, so server cannot
         verify that the client knows skPriv
     * longer term xlReg needs to be distributed, using Paxos for
         consensus
 2013-09-12
-    * build and thoroughly test ../cmd/xlReg
+    * build and thoroughly test ../cmd/xlReg                            * DONE
     * this stays on main branch
     * deploy on test:44444 as service
 

@@ -32,7 +32,7 @@ func ClientEncodeHello(version1 uint32, ck *rsa.PublicKey) (
 	// Generate 16-byte AES IV, 32-byte AES key, and 8-byte salt for the
 	// Hello and another 20 bytes as salt for the OAEP encryp
 	salty := make([]byte, 3*aes.BlockSize+8+SHA1_LEN)
-	rng.NextBytes(&salty)
+	rng.NextBytes(salty)
 
 	iv1 = salty[:aes.BlockSize]
 	key1 = salty[aes.BlockSize : 3*aes.BlockSize]
@@ -83,7 +83,7 @@ func ServerEncodeHelloReply(iv1, key1, salt1 []byte, version2 uint32) (
 
 	rng := xr.MakeSystemRNG()
 	reply := make([]byte, 3*aes.BlockSize+8)
-	rng.NextBytes(&reply)
+	rng.NextBytes(reply)
 
 	iv2 = reply[:aes.BlockSize]
 	key2 = reply[aes.BlockSize : 3*aes.BlockSize]

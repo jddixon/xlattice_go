@@ -13,16 +13,16 @@ import (
 func (s *XLSuite) TestPKCS7Padding(c *C) {
 	rng := xr.MakeSimpleRNG()
 	seven := make([]byte, 7)
-	rng.NextBytes(&seven)
+	rng.NextBytes(seven)
 
 	fifteen := make([]byte, 15)
-	rng.NextBytes(&fifteen)
+	rng.NextBytes(fifteen)
 
 	sixteen := make([]byte, 16)
-	rng.NextBytes(&sixteen)
+	rng.NextBytes(sixteen)
 
 	seventeen := make([]byte, 17)
-	rng.NextBytes(&seventeen)
+	rng.NextBytes(seventeen)
 
 	padding := PKCS7Padding(seven, aes.BlockSize)
 	c.Assert(len(padding), Equals, aes.BlockSize-7)

@@ -31,9 +31,9 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 	var err error
 	rng := rnglib.MakeSimpleRNG()
 	v1 := make([]byte, SHA1_LEN)
-	rng.NextBytes(&v1)
+	rng.NextBytes(v1)
 	v2 := make([]byte, SHA1_LEN)
-	rng.NextBytes(&v2)
+	rng.NextBytes(v2)
 	id1, err := NewNodeID(v1)
 	c.Assert(err, Equals, nil)
 	id2, err := NewNodeID(v2)
@@ -69,9 +69,9 @@ func (s *XLSuite) TestComparator(c *C) {
 	}
 	rng := rnglib.MakeSimpleRNG()
 	v1 := make([]byte, SHA1_LEN)
-	rng.NextBytes(&v1)
+	rng.NextBytes(v1)
 	v3 := make([]byte, SHA3_LEN)
-	rng.NextBytes(&v3)
+	rng.NextBytes(v3)
 	id1, err := NewNodeID(v1) // SHA1
 	c.Assert(err, Equals, nil)
 	id3, err := NewNodeID(v3) // SHA3
@@ -138,7 +138,7 @@ func (s *XLSuite) makeANodeID(c *C, rng *rnglib.PRNG) (id *NodeID) {
 		length = SHA3_LEN
 	}
 	data := make([]byte, length)
-	rng.NextBytes(&data)
+	rng.NextBytes(data)
 	id, err := New(data)
 	c.Assert(err, IsNil)
 	return id

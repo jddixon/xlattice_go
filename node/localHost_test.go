@@ -111,7 +111,7 @@ func (s *XLSuite) nodeAsClient(c *C, node *Node, q int, doneCh chan bool) {
 				// make msg, random length, random content
 				msgLen := 1024 + rng.Intn(1024)
 				buf := make([]byte, msgLen)
-				rng.NextBytes(&buf)
+				rng.NextBytes(buf)
 
 				// send msg
 				count, err = tcpCnx.Write(buf)

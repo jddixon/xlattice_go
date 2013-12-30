@@ -26,7 +26,7 @@ func New(id []byte) (q *NodeID, err error) {
 	if id == nil {
 		id = make([]byte, SHA3_LEN)
 		rng := xr.MakeSystemRNG()
-		rng.NextBytes(&id)
+		rng.NextBytes(id)
 		q._nodeID = id
 	} else {
 		// deep copy the slice

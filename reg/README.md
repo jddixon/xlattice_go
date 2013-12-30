@@ -16,7 +16,7 @@ on communications and then send an encrypted Join message with their
 details.  
 
 The Hello is encrypted using the server's RSA public key.  It contains a 
-salt ("salt1"), a requested verstion number, and an AES IV and key ("KeyIV") 
+salt ("salt1"), a requested version number, and an AES IV and key ("KeyIV") 
 used only to encrypt the reply, the HelloReply.  This iv+key is created by 
 the client and used once and once only by the server.
 
@@ -30,18 +30,18 @@ if the HelloReply is not properly encrypted using KeyIV or does not contain
 the correct value for the salt.  From this point KeyIV2 is used by both sides 
 to encrypt session traffic.
 
-The version numbers will initially be ignored.  The expectation is that
+The version number is currently ignored.  The expectation is that
 at some point the version number in the Hello will be that requested by
 the client and the version number in the reply will be that actually used
 by the server.
 
-In the next step the client sends a User message with either a proposed
-userName and a token or a userID and salt2 from the HelloReply.  In the
+In the next step the client sends a Client message with either a proposed
+clientName and a token or a clientID and salt2 from the HelloReply.  In the
 first case the token will contain, among other things, a proposed 
 Attrs bit string.  In either case the message is signed using the 
-user's public key for signatures.  The server replies with a UserOK
-message or an error message.  The UserOK contains a possibly 
-uniquified userName, the actual userID, and a possibly modified Attrs
+client's public key for signatures.  The server replies with a ClientOK
+message or an error message.  The ClientOK contains a possibly 
+uniquified clientName, the actual clientID, and a possibly modified Attrs
 bit string, the value that the server will use from this point forward.
 
 At this point the client can send either a Create message, a Join, a 
@@ -49,7 +49,7 @@ Get, or a Bye.
 
 The Create message contains a cluster name and client-proposed size.
 The server returns a Create reply which contains the cluster ID, its
-possibly uniquified anem, and its actual size.  If the cluster did 
+possibly uniquified name, and its actual size.  If the cluster did 
 not previously exist, this message will create it with the size proposed, 
 but constrained to be in the range 2 .. 64 inclusive.  If the cluster 
 already exists, the proposed size is ignored.

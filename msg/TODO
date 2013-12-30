@@ -1,7 +1,11 @@
 xlattice_go/msg/TODO
 
-2013-09-30
+2103-11-16 (from 09-30)
     * drop Hello from p.proto
+        - this requires reworking in_q_test.go
+        - and out_q_test.go
+
+2013-09-30
     * modify tests to register with XLReg on 44444
     * initial goal is group of K peers which exchange keepalives
         until stopped
@@ -17,26 +21,22 @@ xlattice_go/msg/TODO
                 using the same XLatticeMsg layer
 
 2013-09-16
-    * need benchmarks for helloAndReply functions
+    * need benchmarks for helloAndReply functions                       * SKIP
 
 2013-09-12
     * modify code so that participating nodes use xlReg on test:44444
         to join
     * HelloMsg in protocol is replaced by helloAndReply
 
-2013-09-11
-    * xu.SameBytes() replaced by DeepEquals in tests                    # DONE
-
 2013-08-30
-    * Find and fix: something in in_q_test.go causes the test 
-        failure count to go up without any error being reported 
-        - test on c.Failed() at end of each test says none have failed
-        - usually claims 3 failures, sometimes 1 or 2
-        - assume this caused by goroutines still running when tests
-            end
+    * Find and fix: something in in_q_test.go causes the test 	        * DONE
+        failure count to go up without any error being reported 	    * DONE
+        - test on c.Failed() at end of each test says none have failed	* DONE
+        - usually claims 3 failures, sometimes 1 or 2	                * DONE
+        - assume this caused by goroutines still running when tests	    * DONE
+            end	                                                        * DONE
 
 2013-08-29
-    * add NodeID check to Hello handler                                 # DONE 
     * node/BaseNode has 'name' field, but this is not defined in
         p.proto.
         - should it be?

@@ -39,7 +39,7 @@ func (s *XLSuite) TestRSAPubKeyToFromDisk(c *C) {
 
 	msgLen := 128
 	msg := make([]byte, msgLen)
-	rng.NextBytes(&msg)
+	rng.NextBytes(msg)
 
 	digest := sha1.New()
 	digest.Write(msg)
@@ -105,7 +105,7 @@ func (s *XLSuite) TestRSAPubKeyToFromWire(c *C) {
 
 	msgLen := 128
 	msg := make([]byte, msgLen)
-	rng.NextBytes(&msg)
+	rng.NextBytes(msg)
 
 	digest := sha1.New()
 	digest.Write(msg)
@@ -143,7 +143,7 @@ func (s *XLSuite) TestRSAPrivateKeyToFromWire(c *C) {
 
 	msgLen := 128
 	msg := make([]byte, msgLen)
-	rng.NextBytes(&msg)
+	rng.NextBytes(msg)
 
 	digest := sha1.New()
 	digest.Write(msg)

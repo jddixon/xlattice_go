@@ -27,7 +27,7 @@ var (
 func (s *XLSuite) makeANode(c *C) (badGuy *node.Node, acc xt.AcceptorI) {
 	rng := rnglib.MakeSimpleRNG()
 	id := make([]byte, SHA1_LEN)
-	rng.NextBytes(&id)
+	rng.NextBytes(id)
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)
 	name := rng.NextFileName(8)
@@ -108,6 +108,9 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 		CnxHandler: CnxHandler{Cnx: cnx2, Peer: meAsPeer}}
 
 	// manually create and send a hello message -
+	
+	// XXX HELLO_MSG IS OBSOLETE; it's done with RSA/AES handshake
+
 	peerHello, err := MakeHelloMsg(peerNode)
 	c.Assert(err, IsNil)
 	c.Assert(peerHello, Not(IsNil))
@@ -222,6 +225,9 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 	// Create a second mock peer unknown to myNode.
 	badGuy, badAcc := s.makeANode(c)
 	defer badAcc.Close()
+	
+	// XXX HELLO_MSG IS OBSOLETE; it's done with RSA/AES handshake
+
 	badHello, err := MakeHelloMsg(badGuy)
 	c.Assert(err, IsNil)
 	c.Assert(badHello, Not(IsNil))
@@ -345,6 +351,9 @@ func (s *XLSuite) TestSecondHello(c *C) {
 	// -- SECOND WELL-FORMED HELLO ----------------------------------
 
 	// manually create and send a hello message -
+	
+	// XXX HELLO_MSG IS OBSOLETE; it's done with RSA/AES handshake
+
 	peerHello, err := MakeHelloMsg(clientNode)
 	c.Assert(err, IsNil)
 	c.Assert(peerHello, Not(IsNil))

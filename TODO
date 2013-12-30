@@ -1,9 +1,12 @@
 xlattice_go/TODO
 
-2013-12-10
-    * protocol/aescnx seems wholly supersluous; drop?
+2013-12-24  * FOCUS *
+    * msg/TODO: drop Hello from protocol
 
-2013-11-25
+2013-12-10
+    * protocol/aescnx seems wholly superfluous; drop?
+
+2013-11-25  * FOCUS *
     * argument to rnglib.NextBytes should be []byte, not &[]byte
 
 2013-11-08

@@ -29,7 +29,7 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	}
 	rng := rnglib.MakeSimpleRNG()
 	id := make([]byte, SHA1_LEN)
-	rng.NextBytes(&id)
+	rng.NextBytes(id)
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)
 

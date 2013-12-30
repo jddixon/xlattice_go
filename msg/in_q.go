@@ -124,7 +124,7 @@ func (h *InHandler) handleInMsg() (err error) {
 				err = h.checkMsgNbrAndAck(m)
 			default:
 				// XXX should log
-				//fmt.Printf("handleInMsg: UNEXPECTED MESSAGE TYPE %v\n", m.GetOp())
+				fmt.Printf("handleInMsg: UNEXPECTED MESSAGE TYPE %v\n", m.GetOp())
 				err = UnexpectedMsgType
 				h.errorReply(err) // ignore any errors from the call itself
 			}
