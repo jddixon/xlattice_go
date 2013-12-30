@@ -1,0 +1,4 @@
+xlattice_go/rnglib/TODO
+
+2013-12-09
+    * why does NewSystemRNG() have a salt parameter which is not used??

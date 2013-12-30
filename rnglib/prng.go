@@ -47,9 +47,9 @@ func (s *PRNG) NextBoolean() bool { return s.rng.Int63()&1 == 0 }
 func (s *PRNG) NextByte() byte    { return byte(s.rng.Int63n(256)) }
 
 // miraculously inefficient
-func (s *PRNG) NextBytes(buffer *[]byte) {
-	for n := range *buffer {
-		(*buffer)[n] = s.NextByte()
+func (s *PRNG) NextBytes(buffer []byte) {
+	for n := range buffer {
+		buffer[n] = s.NextByte()
 	}
 }
 func (s *PRNG) NextInt32(n uint32) uint32 { return uint32(float32(n) * s.rng.Float32()) }
@@ -139,8 +139,7 @@ func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int64, stri
 	}
 	count := minLen + int(s.NextFloat32()*float32((maxLen-minLen)))
 	data := make([]byte, count)
-	s.NextBytes(&data) // fill with random bytes
-	// XXX may cause panic
+	s.NextBytes(data)	// fill with random bytes
 	fo, err := os.Create(pathToFile)
 	if err != nil {
 		panic(err)

@@ -23,9 +23,9 @@ var _ = Suite(&XLSuite{})
 // end gocheck setup //////////////////
 
 // utility functions ////////////////////////////////////////////////
-func (s *XLSuite) buildData(count uint32) *[]byte {
+func (s *XLSuite) buildData(count uint32) []byte {
 	p := make([]byte, count)
-	return &p
+	return p
 }
 func (s *XLSuite) makeSimpleRNG() *PRNG {
 	t := time.Now().Unix() // int64 sec
@@ -59,7 +59,7 @@ func (s *XLSuite) doTestNextBytes(c *C, rng *PRNG) {
 	count += rng.NextInt32(256) // maximum
 	data := s.buildData(count)  // so 1 .. 256 bytes
 	rng.NextBytes(data)
-	actualLen := uint32(len(*data))
+	actualLen := uint32(len(data))
 	c.Assert(0, Not(Equals), actualLen) // NOT
 	c.Assert(actualLen, Equals, count)
 
