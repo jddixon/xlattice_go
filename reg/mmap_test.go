@@ -47,7 +47,7 @@ func (s *XLSuite) TestMmap(c *C) {
 
 	// XXX take care: this is ONE block
 	data := make([]byte, BLOCK_SIZE)
-	rng.NextBytes(&data)
+	rng.NextBytes(data)
 	err := ioutil.WriteFile(pathToFile, data, 0644)
 	c.Assert(err, IsNil)
 

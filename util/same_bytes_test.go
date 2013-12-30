@@ -19,7 +19,7 @@ func (s *XLSuite) TestThisAndThat(c *C) {
 	// confirm that function handles odd bytes correctly
 	for n := 6; n < 27; n++ {
 		buf := make([]byte, n)
-		rng.NextBytes(&buf)
+		rng.NextBytes(buf)
 		c.Assert(SameBytes(buf, buf), Equals, true)
 	}
 

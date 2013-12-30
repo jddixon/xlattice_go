@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.2
+    2013-12-30                                                      SLOC 15636
+        * changed rnglib NextBytes to take slice arg, not pointer
 0.4.1
     2013-11-14
         * added IDMap in node/

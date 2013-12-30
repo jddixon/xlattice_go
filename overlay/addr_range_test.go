@@ -15,7 +15,7 @@ func (s *XLSuite) TestAddrRangeCtor(c *C) {
 	v4PLen := uint(1 + rng.Intn(32)) // in bits
 	v4ByteLen := 4                   // ((v4PLen + 7) / 8) * 8
 	pBuffer := make([]byte, v4ByteLen)
-	rng.NextBytes(&pBuffer)
+	rng.NextBytes(pBuffer)
 	cidrMask := net.CIDRMask(int(v4PLen), 32)
 	for i := 0; i < 4; i++ {
 		pBuffer[i] &= cidrMask[i]
@@ -40,7 +40,7 @@ func (s *XLSuite) TestAddrRangeCtor(c *C) {
 	v6PLen := uint(1 + rng.Intn(128)) // in bits
 	v6ByteLen := 16                   // ((v6PLen + 7) / 8) * 8
 	p6Buffer := make([]byte, v6ByteLen)
-	rng.NextBytes(&p6Buffer)
+	rng.NextBytes(p6Buffer)
 	cidrMask = net.CIDRMask(int(v4PLen), 128)
 	for i := 0; i < 16; i++ {
 		p6Buffer[i] &= cidrMask[i]

@@ -22,7 +22,7 @@ func (s *XLSuite) TestConstructors(c *C) {
 
 	const BUF_SIZE = 16
 	value := make([]byte, BUF_SIZE)
-	rng.NextBytes(&value)
+	rng.NextBytes(value)
 
 	tlv := new(TLV16)
 	err := tlv.Init(tType, nil) // illegal nil data buffer
@@ -41,7 +41,7 @@ func (s *XLSuite) TestCFields(c *C) {
 
 	const BUF_SIZE = 16
 	value := make([]byte, BUF_SIZE)
-	rng.NextBytes(&value)
+	rng.NextBytes(value)
 
 	tlv := new(TLV16)
 	tlv.Init(tType, &value)
@@ -70,7 +70,7 @@ func (s *XLSuite) TestReadWrite(c *C) {
 		tType := uint16(rng.NextInt32(MAX_TYPE))
 		bufLen := 4 * (1 + int(rng.NextInt32(16)))
 		value := make([]byte, bufLen)
-		rng.NextBytes(&value) // just adds noise
+		rng.NextBytes(value) // just adds noise
 		tlv := new(TLV16)
 		tlv.Init(tType, &value)
 

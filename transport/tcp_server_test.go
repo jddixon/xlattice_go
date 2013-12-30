@@ -69,7 +69,7 @@ func (s *XLSuite) TestHashingServer(c *C) {
 		for j := 0; j < N; j++ {
 			msgLen := MIN_LEN + rng.Intn(MAX_LEN-MIN_LEN)
 			messages[i][j] = make([]byte, msgLen)
-			rng.NextBytes(&messages[i][j])
+			rng.NextBytes(messages[i][j])
 		}
 		hashes[i] = make([][]byte, N)
 		for j := 0; j < N; j++ {

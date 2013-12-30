@@ -10,6 +10,8 @@ import (
 // Return true if the two byte slices have the same length and no
 // byte differ.
 
+// XXX REPLACE BY bytes.Equal()
+
 func SameBytes(a, b []byte) bool {
 	// var aInt, bInt int
 	// if len(a) != len(b) {

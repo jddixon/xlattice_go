@@ -40,7 +40,7 @@ func NewEphServer() (ms *EphServer, err error) {
 	rng := xr.MakeSimpleRNG()
 	name := rng.NextFileName(16)
 	idBuf := make([]byte, SHA1_LEN)
-	rng.NextBytes(&idBuf)
+	rng.NextBytes(idBuf)
 	lfs := "tmp/" + hex.EncodeToString(idBuf)
 	id, err := xi.New(nil)
 	if err == nil {

@@ -28,7 +28,7 @@ const (
 
 func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {
 	id = make([]byte, SHA3_LEN)
-	rng.NextBytes(&id)
+	rng.NextBytes(id)
 	return
 }
 func (s *XLSuite) makeANodeID(c *C, rng *xr.PRNG) (nodeID *xi.NodeID) {
