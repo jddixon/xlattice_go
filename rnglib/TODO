@@ -1,4 +1,8 @@
 xlattice_go/rnglib/TODO
 
+2014-01-02
+    * add NextPosixPath() for upax_go
+    * add NextEmailAddress() for upax_go; need not be complicated
+
 2013-12-09
     * why does NewSystemRNG() have a salt parameter which is not used??

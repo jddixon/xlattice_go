@@ -19,64 +19,63 @@ type PRNG struct {
 //}
 //
 //func NewSimpleRNG(seed int64) *PRNG {
-//	s := new(PRNG) // allocates
+//	p := new(PRNG) // allocates
 //	src := NewMTSource(seed)
-//	s.rng = rand.New(src)
-//	s.Seed(seed)
+//	p.rng = rand.New(src)
+//	p.Seed(seed)
 //	return s
-//} // GEEP
+//}
 
-func (s *PRNG) Seed(seed int64) {
-	s.rng.Seed(seed)
+func (p *PRNG) Seed(seed int64) {
+	p.rng.Seed(seed)
 }
 
-// expose the rand.Random interface /////////////////////////////////
-func (s *PRNG) Int63() int64         { return s.rng.Int63() }
-func (s *PRNG) Uint32() uint32       { return s.rng.Uint32() }
-func (s *PRNG) Int31() int32         { return s.rng.Int31() }
-func (s *PRNG) Int() int             { return s.rng.Int() }
-func (s *PRNG) Int63n(n int64) int64 { return s.rng.Int63n(n) }
-func (s *PRNG) Int31n(n int32) int32 { return s.rng.Int31n(n) }
-func (s *PRNG) Intn(n int) int       { return s.rng.Intn(n) }
-func (s *PRNG) Float64() float64     { return s.rng.Float64() }
-func (s *PRNG) Float32() float32     { return s.rng.Float32() }
-func (s *PRNG) Perm(n int) []int     { return s.rng.Perm(n) }
+// expose the rand.Random interface
+func (p *PRNG) Int63() int64         { return p.rng.Int63() }
+func (p *PRNG) Uint32() uint32       { return p.rng.Uint32() }
+func (p *PRNG) Int31() int32         { return p.rng.Int31() }
+func (p *PRNG) Int() int             { return p.rng.Int() }
+func (p *PRNG) Int63n(n int64) int64 { return p.rng.Int63n(n) }
+func (p *PRNG) Int31n(n int32) int32 { return p.rng.Int31n(n) }
+func (p *PRNG) Intn(n int) int       { return p.rng.Intn(n) }
+func (p *PRNG) Float64() float64     { return p.rng.Float64() }
+func (p *PRNG) Float32() float32     { return p.rng.Float32() }
+func (p *PRNG) Perm(n int) []int     { return p.rng.Perm(n) }
 
-// PRNG functions //////////////////////////////////////////////
-func (s *PRNG) NextBoolean() bool { return s.rng.Int63()&1 == 0 }
-func (s *PRNG) NextByte() byte    { return byte(s.rng.Int63n(256)) }
+// PRNG functions
+func (p *PRNG) NextBoolean() bool { return p.rng.Int63()&1 == 0 }
+func (p *PRNG) NextByte() byte    { return byte(p.rng.Int63n(256)) }
 
 // miraculously inefficient
-func (s *PRNG) NextBytes(buffer []byte) {
+func (p *PRNG) NextBytes(buffer []byte) {
 	for n := range buffer {
-		buffer[n] = s.NextByte()
+		buffer[n] = p.NextByte()
 	}
 }
-func (s *PRNG) NextInt32(n uint32) uint32 { return uint32(float32(n) * s.rng.Float32()) }
-func (s *PRNG) NextInt64(n uint64) uint64 { return uint64(float64(n) * s.rng.Float64()) }
-func (s *PRNG) NextFloat32() float32      { return s.rng.Float32() }
-func (s *PRNG) NextFloat64() float64      { return s.rng.Float64() }
+func (p *PRNG) NextInt32(n uint32) uint32 { return uint32(float32(n) * p.rng.Float32()) }
+func (p *PRNG) NextInt64(n uint64) uint64 { return uint64(float64(n) * p.rng.Float64()) }
+func (p *PRNG) NextFloat32() float32      { return p.rng.Float32() }
+func (p *PRNG) NextFloat64() float64      { return p.rng.Float64() }
 
-// These produce strings which are acceptable POSIX file names.
-// and also advance a cursor by a multiple of 64 bits.  All strings
+// These produce strings which are acceptable POSIX file namep.
+// and also advance a cursor by a multiple of 64 bitp.  All strings
 // are at least one byte and less than maxLen bytes n length.  We
-// arbitrarily limit file names to less than 256 characters.
-
-func (s *PRNG) _nextFileName(nameLen int) string {
+// arbitrarily limit file names to less than 256 characterp.
+func (p *PRNG) _nextFileName(nameLen int) string {
 	/* always returns at least one character */
 	maxStarterNdx := uint32(len(_FILE_NAME_STARTERS))
-	ndx := s.NextInt32(maxStarterNdx)
+	ndx := p.NextInt32(maxStarterNdx)
 	var chars []string
 	chars = append(chars, _FILE_NAME_STARTERS[ndx])
 	maxCharNdx := uint32(len(_FILE_NAME_CHARS))
 	for n := 0; n < nameLen; n++ {
-		ndx := s.NextInt32(maxCharNdx)
+		ndx := p.NextInt32(maxCharNdx)
 		chars = append(chars, _FILE_NAME_CHARS[ndx])
 	}
 	return strings.Join(chars, "")
 }
 
-func (s *PRNG) NextFileName(maxLen int) string {
+func (p *PRNG) NextFileName(maxLen int) string {
 	_maxLen := uint32(maxLen)
 	if _maxLen < 2 {
 		_maxLen = 2 // this is a ceiling which cannot be reached
@@ -87,10 +86,10 @@ func (s *PRNG) NextFileName(maxLen int) string {
 	var name string
 	nameLen := uint32(0)
 	for nameLen == 0 {
-		nameLen = s.NextInt32(_maxLen) // so len < 256
+		nameLen = p.NextInt32(_maxLen) // so len < 256
 	}
 	for {
-		name = s._nextFileName(int(nameLen))
+		name = p._nextFileName(int(nameLen))
 		if (len(name) > 0) && !strings.Contains(name, "..") {
 			break
 		}
@@ -98,15 +97,85 @@ func (s *PRNG) NextFileName(maxLen int) string {
 	return name
 }
 
+// Return a string which is an acceptable POSIX path with at least
+// minParts parts and fewer than maxParts parts.  If the parameters
+// supplied are unreasonable, they are adjusted.
+//
+// If uniqueness or some other constraint needs to be met, call this
+// function then test compliance, then as necessary repeat.
+func (p *PRNG) NextPosixPath(maxPartLen, minParts, maxParts int) (pp string) {
+
+	if maxParts < 2 {
+		maxParts = 2 // so at least one
+	}
+	if minParts <= 0 || maxParts <= minParts {
+		minParts = maxParts - 1
+	}
+	count := minParts + p.Intn(maxParts-minParts)
+	var parts []string
+	for i := 0; i < count; i++ {
+		parts = append(parts, p.NextFileName(maxPartLen))
+	}
+	return strings.Join(parts, "/")
+}
+
+// Return a string which is a valid fully qualified domain name.  Only
+// names in .com, .net, and .org are returned by this version.  The
+// parameter is a suggestion as to the complexity of the result, with
+// zero returning the simplest response and values greater than zero
+// possibly returning a more complex result.
+func (p *PRNG) NextFQDN(complexity int) string {
+
+	if complexity == 0 {
+		complexity = 0
+	} else if complexity > 3 {
+		complexity = 3
+	}
+	top := p.Intn(3)
+	var topLevel string
+	switch top {
+	case 0:
+		topLevel = "com"
+	case 1:
+		topLevel = "net"
+	default:
+		topLevel = "org"
+	}
+	var parts []string
+	count := 1 + complexity
+	for i := 0; i < count; i++ {
+		parts = append(parts, p.NextFileName(8))
+	}
+	parts = append(parts, topLevel)
+	return strings.Join(parts, ".")
+}
+
+// Return a string which is a well-formed email address.  Complexity
+// is a suggestion as to how complex the result should be.
+func (p *PRNG) NextEmailAddress(complexity int) (e string) {
+	if complexity == 0 {
+		complexity = 0
+	} else if complexity > 3 {
+		complexity = 3
+	}
+	fqdn := p.NextFQDN(complexity)
+	name := p.NextFileName(5 + complexity)
+	return name + "@" + fqdn
+}
+
+// OPERATIONS ON THE FILE SYSTEM ------------------------------------
+
 // These are operations on the file system.  Directory depth is at least 1
 // and no more than 'depth'.  Likewise for width, the number of
 // files in a directory, where a file is either a data file or a subdirectory.
 // The number of bytes in a file is at least minLen and less than maxLen.
 // Subdirectory names may be random
 //
-// XXX CHANGED TO RETURN AN INT64 LENGTH
+// XXX Changed to return an int64 length.
+//
+func (p *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (
+	int64, string) {
 
-func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int64, string) {
 	// silently convert parameters to reasonable values
 	if minLen < 0 {
 		minLen = 0
@@ -125,21 +194,21 @@ func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int64, stri
 	}
 
 	// loop until the file does not exist
-	pathToFile := dirName + "/" + s.NextFileName(16)
+	pathToFile := dirName + "/" + p.NextFileName(16)
 	pathExists, err := xf.PathExists(pathToFile)
 	if err != nil {
 		panic(err)
 	}
 	for pathExists {
-		pathToFile := dirName + "/" + s.NextFileName(16)
+		pathToFile := dirName + "/" + p.NextFileName(16)
 		pathExists, err = xf.PathExists(pathToFile)
 		if err != nil {
 			panic(err)
 		}
 	}
-	count := minLen + int(s.NextFloat32()*float32((maxLen-minLen)))
+	count := minLen + int(p.NextFloat32()*float32((maxLen-minLen)))
 	data := make([]byte, count)
-	s.NextBytes(data)	// fill with random bytes
+	p.NextBytes(data) // fill with random bytes
 	fo, err := os.Create(pathToFile)
 	if err != nil {
 		panic(err)
@@ -158,7 +227,7 @@ func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int64, stri
 	return int64(count), pathToFile
 }
 
-// NextDataDir creates a directory tree populated with data files.
+// NextDataDir creates a directory tree populated with data filep.
 //
 // BUGS
 // * on at least one occasion with width = 4 only 3 files/directories
@@ -166,8 +235,8 @@ func (s *PRNG) NextDataFile(dirName string, maxLen int, minLen int) (int64, stri
 // DEFICIENCIES:
 // * no control over percentage of directories
 // * no guarantee that depth will be reached
-
-func (s *PRNG) NextDataDir(pathToDir string, depth int, width int,
+//
+func (p *PRNG) NextDataDir(pathToDir string, depth int, width int,
 	maxLen int, minLen int) {
 	// number of directory levels; 1 means no subdirectories
 	if depth < 1 {
@@ -188,28 +257,28 @@ func (s *PRNG) NextDataDir(pathToDir string, depth int, width int,
 	subdirSoFar := 0
 	for i := 0; i < width; i++ {
 		if depth > 1 {
-			if (s.NextFloat32() > 0.25) &&
+			if (p.NextFloat32() > 0.25) &&
 				((i < width-1) || (subdirSoFar > 0)) {
 				// 25% are subdirs
 				// data file i
 				// SPECIFICATION ERROR: file name may not be unique
 				// count, pathToFile
-				s.NextDataFile(pathToDir,
+				p.NextDataFile(pathToDir,
 					maxLen, minLen)
 			} else {
 				// directory
 				subdirSoFar += 1
 				// create unique name
-				fileName := s.NextFileName(16)
+				fileName := p.NextFileName(16)
 				pathToSubdir := pathToDir + "/" + fileName
-				s.NextDataDir(pathToSubdir, depth-1, width,
+				p.NextDataDir(pathToSubdir, depth-1, width,
 					maxLen, minLen)
 			}
 		} else {
 			// data file
 			// XXX SPECIFICATION ERROR: file name may not be unique
 			// count, pathToFile
-			s.NextDataFile(pathToDir, maxLen, minLen)
+			p.NextDataFile(pathToDir, maxLen, minLen)
 		}
-	} // end for
+	}
 }
