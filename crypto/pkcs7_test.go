@@ -8,8 +8,6 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-// TODO: MOVE THIS TO crypto/ =======================================
-
 func (s *XLSuite) TestPKCS7Padding(c *C) {
 	rng := xr.MakeSimpleRNG()
 	seven := make([]byte, 7)
