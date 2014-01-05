@@ -11,7 +11,3 @@ xlattice_go/util/TODO
     * need to constrain N (as in the Nth bit in BitMap64 functions)
         to 0..63 inclusive
 
-2013-08-26
-    * SameBytes test should be extended to make sure it fails           * DROP
-        when it should (eg flip the bits in a randomly                  * DROP
-        selected byte                                                   * DROP
