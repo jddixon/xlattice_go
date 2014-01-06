@@ -3,7 +3,6 @@ package crypto
 // xlatttice_go/crypto/signedListI.go
 
 import (
-	"bufio"
 	"crypto/rsa"
 )
 
@@ -37,44 +36,13 @@ type SignedListI interface {
 
 	GetTitle() string
 
-	// algorithm changed in line with Sourceforge tracker bug 1472471
-	// subclasses no longer have access to the verifier
-	// 2011-08-23 FIX/HACK uncommented this method
-	// GetVerifier() *SigVerifier
-
 	IsSigned() bool
-
-	/**
-	 * Read lines until one is found that does not begin with a space.
-	 * The lines beginning with a space are added to the StringBuffer.
-	 * The first line found not beginning with a space is returned.
-	 *
-	 * XXX This should find a better home.
-	 *
-	 * @param in     open BufferedReader		// XXX NOTE BUFFERED
-	 * @param unfold unfold the line if true
-	 * @return       the collected line
-	 */
-	ReadFoldedLine(in bufio.Reader, unfold bool) (string, error)
-
-	// OTHER METHODS ////////////////////////////////////////////////
 
 	/**
 	 * Return this SignedList's SHA1 hash, a byte array 20 bytes
 	 * long.
 	 */
 	GetHash() []byte
-
-	/**
-	 * Subclasses must read in content lines, stripping off line
-	 * endings
-	 * do a verifier.update(line), where line excludes any terminating
-	 * CRLF.
-	 *
-	 * @param in	BufferedReader			// XXX NOTE BUFFERED
-	 * @throws CryptoException if error in content lines
-	 */
-	ReadContents(in bufio.Reader) error
 
 	/**
 	 * Set a timestamp and calculate a digital signature.  First
@@ -97,8 +65,7 @@ type SignedListI interface {
 
 	/**
 	 * Verify that the SignedList agrees with its digital signature.
-	 *
-	 * Returns nil if the digital signature is correct
+	 * Returns nil if the digital signature is correct.
 	 */
 	Verify() error
 

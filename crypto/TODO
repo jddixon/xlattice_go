@@ -1,5 +1,12 @@
 xlattice_go/crypto/TODO
 
+2014-01-04 
+    * implement
+        - signedListI.go for ../overlay/dataKeyed*.go                   * DONE
+        - signedList.go, as an 'abstract class'
+        - mock_signedList_test.go to exercise SignedList
+        - signedList_test.go, which uses MockSignedList
+
 2013-10-31
     * FIX: xlReg getting 'permission denied' when trying to reload      * DONE
         existing mapping file                                           * DONE
