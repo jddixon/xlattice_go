@@ -12,3 +12,8 @@ func Test(t *testing.T) { TestingT(t) }
 type XLSuite struct{}
 
 var _ = Suite(&XLSuite{})
+
+// LOCAL VARIATIONS -------------------------------------------------
+const (
+	VERBOSITY = 1
+)
