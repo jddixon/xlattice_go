@@ -9,6 +9,7 @@ import (
 	"crypto/sha1"
 	xu "github.com/jddixon/xlattice_go/util"
 	"io"
+	"strings"
 	"time"
 )
 
@@ -83,7 +84,7 @@ func (sl *SignedList) GetHash() []byte {
 
 	d := sha1.New()
 
-	// public key to SSH format
+	// public key in PKCS1 format
 	pk, _ := RSAPubKeyToWire(sl.pubKey)
 	d.Write(pk)
 
@@ -100,6 +101,39 @@ func (sl *SignedList) ReadContents(in io.Reader) (line []byte, err error) {
 	return
 }
 
+// Return the SHA1 hash of the SignedList, excluding the digital
+// signature but expecting the timestamp to have been set.
+func (sl *SignedList) HashBody() (hash []byte, err error) {
+	d := sha1.New()
+
+	// public key in SSH format ---------------------------
+	pk, _ := RSAPubKeyToDisk(sl.pubKey)
+	d.Write(pk)
+
+	// title ----------------------------------------------
+	d.Write([]byte(sl.title))
+
+	// timestamp ------------------------------------------
+	d.Write([]byte(sl.timestamp.String()))
+
+	// content lines --------------------------------------
+	for i := 0; err == nil && i < sl.Size(); i++ {
+		var line string
+		line, err = sl.GetAsString(i)
+		if err == nil || err == io.EOF {
+			d.Write([]byte(line))
+			if err == io.EOF {
+				err = nil
+				break
+			}
+		}
+	}
+	if err == nil {
+		hash = d.Sum(nil)
+	}
+	return
+}
+
 /**
  * Set a timestamp and calculate a digital signature.  First
  * calculate the SHA1 hash of the pubKey, title, timestamp,
@@ -110,42 +144,26 @@ func (sl *SignedList) ReadContents(in io.Reader) (line []byte, err error) {
  */
 func (sl *SignedList) Sign(skPriv *rsa.PrivateKey) (err error) {
 
+	var (
+		digSig, hash []byte
+	)
+
 	if sl.digSig != nil {
 		err = ListAlreadySigned
 	} else if skPriv == nil {
 		err = NilPrivateKey
 	} else {
-		d := sha1.New()
-
-		// public key to SSH format -----------------------
-		pk, _ := RSAPubKeyToWire(sl.pubKey)
-		d.Write(pk)
-
-		// title ------------------------------------------
-		d.Write([]byte(sl.title))
-
-		// timestamp --------------------------------------
 		sl.timestamp = xu.Timestamp(time.Now().UnixNano())
-		d.Write([]byte(sl.timestamp.String()))
-
-		// content lines ----------------------------------
-		for i := 0; i < sl.Size(); i++ {
-			var line string
-			line, err = sl.GetAsString(i)
-			if err != nil && err != io.EOF {
-				break
-			}
-			d.Write([]byte(line))
-			if err == io.EOF {
-				err = nil
-				break
+		hash, err = sl.HashBody()
+		if err == nil {
+			digSig, err = rsa.SignPKCS1v15(
+				rand.Reader, skPriv, crypto.SHA1, hash)
+			if err == nil {
+				sl.digSig = digSig
 			}
 		}
-		hash := d.Sum(nil)
-		var digSig []byte
-		digSig, err = rsa.SignPKCS1v15(rand.Reader, skPriv, crypto.SHA1, hash)
-		if err == nil {
-			sl.digSig = digSig
+		if err != nil {
+			sl.timestamp = 0 // restore to default
 		}
 	}
 	return
@@ -169,10 +187,15 @@ func (sl *SignedList) Size() int {
  */
 func (sl *SignedList) Verify() (err error) {
 
+	var hash []byte
+
 	if sl.digSig == nil {
 		err = UnsignedList
 	} else {
-		// XXX STUB
+		hash, err = sl.HashBody()
+		if err == nil {
+			err = rsa.VerifyPKCS1v15(sl.pubKey, crypto.SHA1, hash, sl.digSig)
+		}
 	}
 	return
 }
@@ -182,12 +205,40 @@ func (sl *SignedList) Verify() (err error) {
 /**
  * Serialize the entire document.  All lines are CRLF-terminated.
  * Subclasses are responsible for formatting their content lines,
- * without any termination.
+ * without any termination.  If any error is encountered, this
+ * function silently returns an empty string.
  */
 func (sl *SignedList) String() (s string) {
 
-	// XXX STUB
+	var (
+		err error
+		ss  []string
+	)
+	// public key to SSH format -----------------------
+	pk, _ := RSAPubKeyToDisk(sl.pubKey)
+	ss = append(ss, string(pk))
 
+	// title ------------------------------------------
+	ss = append(ss, sl.title)
+
+	// timestamp --------------------------------------
+	ss = append(ss, sl.timestamp.String())
+
+	// content lines ----------------------------------
+	for i := 0; err == nil && i < sl.Size(); i++ {
+		var line string
+		line, err = sl.GetAsString(i)
+		if err == nil || err == io.EOF {
+			ss = append(ss, line)
+			if err == io.EOF {
+				err = nil
+				break
+			}
+		}
+	}
+	if err == nil {
+		s = strings.Join(ss, CRLF)
+	}
 	return
 }
 
@@ -199,7 +250,7 @@ func (sl *SignedList) String() (s string) {
  */
 func (sl *SignedList) GetAsString(n int) (s string, err error) {
 
-	// XXX SUBCLASSES MUST IMPLEMENT
+	/* SUBCLASSES MUST IMPLEMENT */
 
 	err = NotImplemented
 	return
@@ -208,11 +259,13 @@ func (sl *SignedList) GetAsString(n int) (s string, err error) {
 // SERIALIZATION ////////////////////////////////////////////////////
 
 // Read a signed list that has been serialized in disk format,
-// returning a pointer to the object or an error.
+// returning a pointer to the unserialized object or an error.
 //
 func ParseSignedList(rd io.Reader) (sl *SignedList, err error) {
 
-	// XXX STUB
+	/* SUBCLASSES MUST IMPLEMENT */
+
+	err = NotImplemented
 
 	return
 }

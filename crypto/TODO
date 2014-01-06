@@ -1,5 +1,11 @@
 xlattice_go/crypto/TODO
 
+2014-01-06
+    * ParseSignedList is marked 'subclasses must implement', but
+        it should at least in part be implemented by SignedList;
+        presumably we require subclass to provide a function which
+        parses a content line.
+
 2014-01-04 
     * implement
         - signedListI.go for ../overlay/dataKeyed*.go                   * DONE
