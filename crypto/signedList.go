@@ -119,7 +119,7 @@ func (sl *SignedList) HashBody() (hash []byte, err error) {
 	// content lines --------------------------------------
 	for i := 0; err == nil && i < sl.Size(); i++ {
 		var line string
-		line, err = sl.GetAsString(i)
+		line, err = sl.Get(i)
 		if err == nil || err == io.EOF {
 			d.Write([]byte(line))
 			if err == io.EOF {
@@ -227,7 +227,7 @@ func (sl *SignedList) String() (s string) {
 	// content lines ----------------------------------
 	for i := 0; err == nil && i < sl.Size(); i++ {
 		var line string
-		line, err = sl.GetAsString(i)
+		line, err = sl.Get(i)
 		if err == nil || err == io.EOF {
 			ss = append(ss, line)
 			if err == io.EOF {
@@ -248,7 +248,7 @@ func (sl *SignedList) String() (s string) {
  * with the last valid line or an empty string and io.EOF on subsequent
  * calls.
  */
-func (sl *SignedList) GetAsString(n int) (s string, err error) {
+func (sl *SignedList) Get(n int) (s string, err error) {
 
 	/* SUBCLASSES MUST IMPLEMENT */
 

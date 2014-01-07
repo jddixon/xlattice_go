@@ -11,6 +11,7 @@ var (
 	EmptyTitle              = e.New("empty title parameter")
 	ImpossibleBlockSize     = e.New("impossible block size")
 	IncorrectPKCS7Padding   = e.New("incorrectly padded data")
+	NdxOutOfRange           = e.New("list index out of range")
 	NilData                 = e.New("nil data argument")
 	NilPrivateKey           = e.New("nil private key parameter")
 	NilPublicKey            = e.New("nil public key parameter")

@@ -71,8 +71,6 @@ type SignedListI interface {
 
 	// SERIALIZATION ////////////////////////////////////////////////
 
-	withoutDigSig() []string
-
 	/**
 	 * Serialize the entire document.  All lines are CRLF-terminated.
 	 * Subclasses are responsible for formatting their content lines,
