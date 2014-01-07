@@ -28,4 +28,7 @@ func (s *XLSuite) TestGoodTimes(c *C) {
 	// This finally tests Timestamp.String()
 	c.Assert(ts.String(), Equals, myUTC)
 
+	utc, err := ParseTimestamp(myUTC)
+	c.Assert(err, IsNil)
+	c.Assert(utc, Equals, Timestamp(t2.UnixNano()))
 }

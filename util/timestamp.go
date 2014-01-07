@@ -20,3 +20,13 @@ func (t Timestamp) String() (x string) {
 	x = utc.UTC().Format(layout)
 	return
 }
+
+func ParseTimestamp(s string) (t Timestamp, err error) {
+	var tt time.Time
+	tt, err = time.Parse(layout, s)
+	if err == nil {
+		ns := tt.UnixNano()
+		t = Timestamp(ns)
+	}
+	return
+}
