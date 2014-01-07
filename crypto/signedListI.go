@@ -3,6 +3,7 @@ package crypto
 // xlatttice_go/crypto/signedListI.go
 
 import (
+	"bufio"
 	"crypto/rsa"
 )
 
@@ -72,18 +73,25 @@ type SignedListI interface {
 	// SERIALIZATION ////////////////////////////////////////////////
 
 	/**
-	 * Serialize the entire document.  All lines are CRLF-terminated.
-	 * Subclasses are responsible for formatting their content lines,
-	 * without any termination.
-	 */
-	String() string
-
-	/**
-	 * Nth content item in String form, without any terminating
-	 * CRLF.
+	 * Subclasses: return Nth content item in String form, without any
+	 * terminating CRLF.
 	 *
 	 * @param n index of content item to be serialized
 	 * @return  serialized content item
 	 */
 	Get(n int) (string, error)
+
+	/**
+	 * Subclasses must read in all content lines, stripping off
+	 * terminating CRLF.
+	 */
+
+	ReadContents(bufio.Reader) error
+
+	/**
+	 * Serialize the entire document.  All lines are CRLF-terminated.
+	 * Subclasses are responsible for formatting their content lines,
+	 * without any termination.
+	 */
+	String() string
 }

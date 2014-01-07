@@ -6,29 +6,14 @@ xlattice_go/crypto/TODO
         presumably we require subclass to provide a function which
         parses a content line.
 
+    * signedList_test.go has stubs, need to complete
+
 2014-01-04 
     * implement
         - signedListI.go for ../overlay/dataKeyed*.go                   * DONE
         - signedList.go, as an 'abstract class'
         - mock_signedList_test.go to exercise SignedList
         - signedList_test.go, which uses MockSignedList
-
-2013-10-31
-    * FIX: xlReg getting 'permission denied' when trying to reload      * DONE
-        existing mapping file                                           * DONE
-
-2013-10-18
-    * add backingFile string parameter to NewBloomSHA3				    * DONE
-        - alternatively this is NewMappedBloomSHA3				        * DONE
-        - size is 2^m bytes = 2^(m-12) blocks				            * DONE
-            * so m must be >= 12				                        * DONE
-        - if parameter is "", not memory-mapped				            * DONE
-2013-10-15
-    * this suggests a need for			                                * SKIP
-        - func (b3 *BloomSHA3) Union(*BloomSHA3) error			        * SKIP
-        - where the obvious error is that m and k differ			    * SKIP
-        - this is presumably a merge in place			                * SKIP
-    * DROP THE ABOVE; memory-mapped filters serve the same purpose      * DONE
 
 2013-10-12
     * implement Bloom filter (xlattice_j/.../crypto/filters)            * DONE

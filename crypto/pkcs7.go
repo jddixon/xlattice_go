@@ -4,8 +4,6 @@ package crypto
 
 import ()
 
-// TODO: MOVE THIS TO crypto/ =======================================
-
 // PKCS7 padding (RFC 5652) pads a message out to a whole multiple
 // of the block size, with the value of each byte being the number
 // of bytes of padding.  If the data passed is nil, the function
@@ -72,31 +70,3 @@ func StripPKCS7Padding(data []byte, blockSize int) (out []byte, err error) {
 	}
 	return
 }
-
-//func EncodePadEncrypt(msg *XLRegMsg, engine cipher.BlockMode) (ciphertext []byte, err error) {
-//	var paddedData []byte
-//
-//	cData, err := EncodePacket(msg)
-//	if err == nil {
-//		paddedData, err = AddPKCS7Padding(cData, aes.BlockSize)
-//	}
-//	if err == nil {
-//		msgLen := len(paddedData)
-//		nBlocks := (msgLen + aes.BlockSize - 2) / aes.BlockSize
-//		ciphertext = make([]byte, nBlocks*aes.BlockSize)
-//		engine.CryptBlocks(ciphertext, paddedData) // dest <- src
-//	}
-//	return
-//}
-//
-//func DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) (msg *XLRegMsg, err error) {
-//
-//	plaintext := make([]byte, len(ciphertext))
-//	engine.CryptBlocks(plaintext, ciphertext) // dest <- src
-//
-//	unpaddedCData, err := StripPKCS7Padding(plaintext, aes.BlockSize)
-//	if err == nil {
-//		msg, err = DecodePacket(unpaddedCData)
-//	}
-//	return
-//}

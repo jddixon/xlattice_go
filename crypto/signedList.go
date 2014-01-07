@@ -3,6 +3,7 @@ package crypto
 // xlatttice_go/crypto/signedList.go
 
 import (
+	"bufio"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -11,6 +12,11 @@ import (
 	"io"
 	"strings"
 	"time"
+)
+
+var (
+	CONTENT_START = []byte("# BEGIN CONTENT ")
+	CONTENT_END   = []byte("# END CONTENT ")
 )
 
 /**
@@ -90,15 +96,6 @@ func (sl *SignedList) GetHash() []byte {
 
 	d.Write([]byte(sl.title))
 	return d.Sum(nil)
-}
-
-/**
- * Reads in content lines, stripping off line endings.  Called
- * repeatedly until it returns io.EOF or some other error.
- */
-func (sl *SignedList) ReadContents(in io.Reader) (line []byte, err error) {
-	err = NotImplemented
-	return
 }
 
 // Return the SHA1 hash of the SignedList, excluding the digital
@@ -256,16 +253,52 @@ func (sl *SignedList) Get(n int) (s string, err error) {
 	return
 }
 
-// SERIALIZATION ////////////////////////////////////////////////////
-
-// Read a signed list that has been serialized in disk format,
-// returning a pointer to the unserialized object or an error.
-//
-func ParseSignedList(rd io.Reader) (sl *SignedList, err error) {
+/**
+ * Reads in content lines, stripping off line endings, storing the
+ * line in a subclass-defined internal buffer (conventionally "content").
+ */
+func (sl *SignedList) ReadContents(bufio.Reader) (err error) {
 
 	/* SUBCLASSES MUST IMPLEMENT */
 
 	err = NotImplemented
+	return
+}
+
+// SERIALIZATION ////////////////////////////////////////////////////
+
+func NextLineWithoutCRLF(in bufio.Reader) (line []byte, err error) {
+	line, err = in.ReadBytes('\n')
+	if err == nil || err == io.EOF {
+		line = line[:len(line)-1] // drop the \n
+		lineLen := len(line)
+		if lineLen > 0 && line[lineLen-1] == '\r' {
+			line = line[:len(line)-1] // drop any \r
+		}
+	}
+	return
+}
+
+// Read the header part a signed list that has been serialized in disk
+// format, returning a pointer to the unserialized object or an error.
+// Subclasses should call this to get a pointer to the SignedList part
+// of the subclass struct.  If the subclass is an XXXList, then expect
+// the calling routine to be ParseXXXList()
+//
+func ParseSignedList(in bufio.Reader) (sl *SignedList, err error) {
+
+	var (
+		line   []byte
+		pubKey []byte
+		title  string
+		t      xu.Timestamp // binary form
+	)
+
+	line, err = NextLineWithoutCRLF(in)
+
+	// DEBUG
+	_, _, _, _ = line, pubKey, title, t
+	// END
 
 	return
 }

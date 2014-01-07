@@ -41,11 +41,15 @@ func (s *XLSuite) TestGenerateSignedList(c *C) {
 		_ = myDoc // DEBUG
 
 		// deserialize = parse it
+		// XXX STUB
 
 		c.Assert(err, IsNil)
 
 		// assert that it's signed
+		// XXX STUB
+
 		// verify the digSig
+		// XXX STUB
 	}
 }
 
@@ -66,11 +70,13 @@ func (s *XLSuite) TestListHash(c *C) {
 		list2, err := NewMockSignedList(&pubKey, "document 1")
 		c.Assert(err, IsNil)
 		hash2 := list2.GetHash()
+		// pubkey and title the same so hashes are the same
 		c.Assert(bytes.Equal(myHash, hash2), Equals, true)
 
 		list2, err = NewMockSignedList(&pubKey, "document 2")
 		c.Assert(err, IsNil)
 		hash2 = list2.GetHash()
+		// titles differ so hashes differ
 		c.Assert(bytes.Equal(myHash, hash2), Equals, false)
 
 		//      // a build list with the same key and title has same hash
