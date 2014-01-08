@@ -6,8 +6,10 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
+	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
+	"strings"
 )
 
 /**
@@ -30,6 +32,16 @@ func (s *XLSuite) TestGenerateSignedList(c *C) {
 		myList, err := NewMockSignedList(&pubKey, "document 1")
 		c.Assert(err, IsNil)
 		c.Assert(myList, NotNil)
+
+		// add a few lines
+		count := 3 + rng.Intn(10)
+		for i := 0; i < count; i++ {
+			s := rng.NextFileName(16)
+			n := myList.AddItem(s)
+			c.Assert(n, Equals, i)
+		}
+		c.Assert(myList.Size(), Equals, count)
+
 		err = myList.Sign(skPriv)
 		c.Assert(myList.IsSigned(), Equals, true)
 		c.Assert(myList.Verify(), IsNil)
@@ -37,16 +49,21 @@ func (s *XLSuite) TestGenerateSignedList(c *C) {
 		// Generate a new SignedList from the serialization of the
 		// current one, use it to test Reader constructor.
 		myDoc := myList.String()
+		c.Assert(myDoc, Not(Equals), "")
 
-		_ = myDoc // DEBUG
+		// DEBUG
+		fmt.Printf("MY_DOC:\n%s", myDoc)
+		// END
 
 		// deserialize = parse it
-		// XXX STUB
-
+		reader := strings.NewReader(myDoc)
+		myList2, err := ParseMockSignedList(reader) // PANICS
 		c.Assert(err, IsNil)
+		c.Assert(myList2, NotNil)
 
 		// assert that it's signed
 		// XXX STUB
+		//c.Assert(myList2.IsSigned(), Equals, true)
 
 		// verify the digSig
 		// XXX STUB
@@ -66,6 +83,17 @@ func (s *XLSuite) TestListHash(c *C) {
 
 		myList, err := NewMockSignedList(&pubKey, "document 1")
 		c.Assert(err, IsNil)
+		c.Assert(myList, NotNil)
+
+		// add a few lines
+		count := 3 + rng.Intn(10)
+		for i := 0; i < count; i++ {
+			s := rng.NextFileName(16)
+			n := myList.AddItem(s)
+			c.Assert(n, Equals, i)
+		}
+		c.Assert(myList.Size(), Equals, count)
+
 		myHash := myList.GetHash()
 		list2, err := NewMockSignedList(&pubKey, "document 1")
 		c.Assert(err, IsNil)

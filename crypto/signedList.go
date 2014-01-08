@@ -11,13 +11,12 @@ import (
 	"crypto/sha1"
 	xu "github.com/jddixon/xlattice_go/util"
 	"io"
-	"strings"
 	"time"
 )
 
 var (
-	CONTENT_START = []byte("# BEGIN CONTENT ")
-	CONTENT_END   = []byte("# END CONTENT ")
+	CONTENT_START = []byte("# BEGIN CONTENT #")
+	CONTENT_END   = []byte("# END CONTENT #")
 )
 
 /**
@@ -201,42 +200,23 @@ func (sl *SignedList) Verify() (err error) {
 // SERIALIZATION ////////////////////////////////////////////////
 
 /**
- * Serialize the entire document.  All lines are CRLF-terminated.
+ * Serialize the document header.  All lines are CRLF-terminated.
  * Subclasses are responsible for formatting their content lines,
  * without any termination.  If any error is encountered, this
  * function silently returns an empty string.
  */
-func (sl *SignedList) String() (s string) {
+func (sl *SignedList) Strings() (pk, title, timestamp string) {
 
-	var (
-		err error
-		ss  []string
-	)
 	// public key to SSH format -----------------------
-	pk, _ := RSAPubKeyToDisk(sl.pubKey)
-	ss = append(ss, string(pk))
+	pkBytes, _ := RSAPubKeyToDisk(sl.pubKey) // is newline-terminated
+	pk = string(pkBytes)
 
 	// title ------------------------------------------
-	ss = append(ss, sl.title)
+	title = sl.title
 
 	// timestamp --------------------------------------
-	ss = append(ss, sl.timestamp.String())
+	timestamp = sl.timestamp.String()
 
-	// content lines ----------------------------------
-	for i := 0; err == nil && i < sl.Size(); i++ {
-		var line string
-		line, err = sl.Get(i)
-		if err == nil || err == io.EOF {
-			ss = append(ss, line)
-			if err == io.EOF {
-				err = nil
-				break
-			}
-		}
-	}
-	if err == nil {
-		s = strings.Join(ss, CRLF)
-	}
 	return
 }
 

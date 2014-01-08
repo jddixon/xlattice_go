@@ -9,8 +9,12 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"encoding/hex"
+	"fmt"
 	"io"
+	"strings"
 )
+
+var _ = fmt.Print
 
 type MockSignedList struct {
 	content []string
@@ -18,21 +22,26 @@ type MockSignedList struct {
 }
 
 func NewMockSignedList(pubKey *rsa.PublicKey, title string) (
-	sli SignedListI, err error) {
+	msl *MockSignedList, err error) {
 
 	sl, err := NewSignedList(pubKey, title)
 	if err == nil {
-		msl := &MockSignedList{
+		msl = &MockSignedList{
 			SignedList: *sl,
 		}
-		sli = msl
 	}
+	return
+}
+
+func (msl *MockSignedList) AddItem(s string) (n int) {
+	n = len(msl.content) // index of this item
+	msl.content = append(msl.content, s)
 	return
 }
 
 // Return the Nth content item in string form, without any CRLF.
 func (msl *MockSignedList) Get(n int) (s string, err error) {
-	if n > 0 || msl.Size() <= n {
+	if n < 0 || msl.Size() <= n {
 		err = NdxOutOfRange
 	} else {
 		s = msl.content[n]
@@ -59,6 +68,49 @@ func (msl *MockSignedList) Size() int {
 	return len(msl.content)
 }
 
+/**
+ * Serialize the entire document.  All lines are CRLF-terminated.
+ * If any error is encountered, this function silently returns an
+ * empty string.
+ */
+func (msl *MockSignedList) String() (s string) {
+
+	var (
+		err error
+		ss  []string
+	)
+	pk, title, timestamp := msl.SignedList.Strings()
+	ss = append(ss, title)
+	ss = append(ss, timestamp)
+
+	// content lines ----------------------------------
+	ss = append(ss, string(CONTENT_START))
+	for i := 0; err == nil && i < msl.Size(); i++ {
+		var line string
+		line, err = msl.Get(i)
+		if err == nil || err == io.EOF {
+			ss = append(ss, line)
+			if err == io.EOF {
+				err = nil
+				break
+			}
+		}
+	}
+	if err == nil {
+		ss = append(ss, string(CONTENT_END))
+
+		// HACK -- should be digSig
+		mockSig := []byte{0, 0, 0, 0}
+		hexDigSig := hex.EncodeToString(mockSig)
+		ss = append(ss, hexDigSig)
+		// END
+
+		// XXX not efficient
+		s = string(pk) + strings.Join(ss, CRLF) + CRLF
+	}
+	return
+}
+
 func ParseMockSignedList(in io.Reader) (msl *MockSignedList, err error) {
 
 	var (
@@ -72,12 +124,17 @@ func ParseMockSignedList(in io.Reader) (msl *MockSignedList, err error) {
 		if err == nil {
 			// try to read the digital signature line
 			line, err = NextLineWithoutCRLF(bin)
-			// XXX SHOULD BE BASE64 ENCODED
-			digSig, err = hex.DecodeString(string(line))
-			if err == nil {
+			if err == nil || err == io.EOF {
+				// XXX SHOULD BE BASE64 ENCODED
+				digSig, err = hex.DecodeString(string(line))
+			}
+			if err == nil || err == io.EOF {
 				msl.digSig = digSig
 			}
 		}
+	}
+	if err == io.EOF {
+		err = nil
 	}
 	return
 }
