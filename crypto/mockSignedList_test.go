@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/rsa"
+	"encoding/hex"
 	"io"
 )
 
@@ -39,7 +40,7 @@ func (msl *MockSignedList) Get(n int) (s string, err error) {
 	return
 }
 
-func (msl *MockSignedList) ReadContents(in bufio.Reader) (err error) {
+func (msl *MockSignedList) ReadContents(in *bufio.Reader) (err error) {
 
 	for err == nil {
 		var line []byte
@@ -56,4 +57,27 @@ func (msl *MockSignedList) ReadContents(in bufio.Reader) (err error) {
 }
 func (msl *MockSignedList) Size() int {
 	return len(msl.content)
+}
+
+func ParseMockSignedList(in io.Reader) (msl *MockSignedList, err error) {
+
+	var (
+		digSig, line []byte
+	)
+	bin := bufio.NewReader(in)
+	sl, err := ParseSignedList(bin)
+	if err == nil {
+		msl = &MockSignedList{SignedList: *sl}
+		err = msl.ReadContents(bin)
+		if err == nil {
+			// try to read the digital signature line
+			line, err = NextLineWithoutCRLF(bin)
+			// XXX SHOULD BE BASE64 ENCODED
+			digSig, err = hex.DecodeString(string(line))
+			if err == nil {
+				msl.digSig = digSig
+			}
+		}
+	}
+	return
 }

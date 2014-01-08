@@ -4,6 +4,7 @@ package crypto
 
 import (
 	"bufio"
+	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -257,7 +258,7 @@ func (sl *SignedList) Get(n int) (s string, err error) {
  * Reads in content lines, stripping off line endings, storing the
  * line in a subclass-defined internal buffer (conventionally "content").
  */
-func (sl *SignedList) ReadContents(bufio.Reader) (err error) {
+func (sl *SignedList) ReadContents(*bufio.Reader) (err error) {
 
 	/* SUBCLASSES MUST IMPLEMENT */
 
@@ -267,7 +268,7 @@ func (sl *SignedList) ReadContents(bufio.Reader) (err error) {
 
 // SERIALIZATION ////////////////////////////////////////////////////
 
-func NextLineWithoutCRLF(in bufio.Reader) (line []byte, err error) {
+func NextLineWithoutCRLF(in *bufio.Reader) (line []byte, err error) {
 	line, err = in.ReadBytes('\n')
 	if err == nil || err == io.EOF {
 		line = line[:len(line)-1] // drop the \n
@@ -279,26 +280,49 @@ func NextLineWithoutCRLF(in bufio.Reader) (line []byte, err error) {
 	return
 }
 
-// Read the header part a signed list that has been serialized in disk
-// format, returning a pointer to the unserialized object or an error.
+// Read the header part of a signed list that has been serialized in disk
+// format, returning a pointer to the deserialized object or an error.
 // Subclasses should call this to get a pointer to the SignedList part
 // of the subclass struct.  If the subclass is an XXXList, then expect
 // the calling routine to be ParseXXXList()
 //
-func ParseSignedList(in bufio.Reader) (sl *SignedList, err error) {
+func ParseSignedList(in *bufio.Reader) (sl *SignedList, err error) {
 
 	var (
 		line   []byte
-		pubKey []byte
+		pubKey *rsa.PublicKey
 		title  string
 		t      xu.Timestamp // binary form
 	)
 
 	line, err = NextLineWithoutCRLF(in)
-
-	// DEBUG
-	_, _, _, _ = line, pubKey, title, t
-	// END
-
+	if err == nil {
+		pubKey, err = RSAPubKeyFromDisk(line)
+		if err == nil {
+			line, err = NextLineWithoutCRLF(in)
+			if err == nil {
+				title = string(line)
+				line, err = NextLineWithoutCRLF(in)
+				if err == nil {
+					t, err = xu.ParseTimestamp(string(line))
+					if err == nil {
+						line, err = NextLineWithoutCRLF(in)
+						if err == nil {
+							if !bytes.Equal(line, CONTENT_START) {
+								err = MissingContentStart
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if err == nil {
+		sl = &SignedList{
+			pubKey:    pubKey,
+			title:     title,
+			timestamp: t,
+		}
+	}
 	return
 }

@@ -86,7 +86,7 @@ type SignedListI interface {
 	 * terminating CRLF.
 	 */
 
-	ReadContents(bufio.Reader) error
+	ReadContents(*bufio.Reader) error
 
 	/**
 	 * Serialize the entire document.  All lines are CRLF-terminated.

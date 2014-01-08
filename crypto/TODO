@@ -1,5 +1,8 @@
 xlattice_go/crypto/TODO
 
+2014-01-07
+    * MockSignedList digSig should be base64-encoded
+
 2014-01-06
     * ParseSignedList is marked 'subclasses must implement', but
         it should at least in part be implemented by SignedList;
