@@ -1,5 +1,12 @@
 xlattice_go/crypto/TODO
 
+2014-01-09
+    * BuildList, MockSignedList, and SignedList should be modified to 
+        use uint for index of list items
+    * Modify SignedList so that the basic functionality is identical
+        to that of MockSignedList
+        - and then drop MockSignedList as redundant
+
 2014-01-07
     * MockSignedList digSig should be base64-encoded, is just hex       * DONE
     * SignedList.String() does not CRLF-terminate lines
