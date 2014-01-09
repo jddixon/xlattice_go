@@ -86,6 +86,7 @@ func (sl *SignedList) IsSigned() bool {
  * XXX This is completely different from the current Java implementation;
  * the two must be reconciled.
  */
+
 func (sl *SignedList) GetHash() []byte {
 
 	d := sha1.New()
@@ -98,8 +99,24 @@ func (sl *SignedList) GetHash() []byte {
 	return d.Sum(nil)
 }
 
-// Return the SHA1 hash of the SignedList, excluding the digital
-// signature but expecting the timestamp to have been set.
+/**
+ * The number of items in the list, excluding the header lines
+ * (public key, title, timestamp) and the footer lines (blank
+ * line, digital signature).
+ *
+ * @return the number of content items
+ */
+func (sl *SignedList) Size() int {
+	// SUBCLASS MUST IMPLEMENT
+	return -1
+}
+
+// DIGITAL SIGNATURE ////////////////////////////////////////////////
+
+/**
+ * Return the SHA1 hash of the SignedList, excluding the digital
+ * signature but expecting the timestamp to have been set.
+ */
 func (sl *SignedList) HashBody() (hash []byte, err error) {
 	d := sha1.New()
 
@@ -164,18 +181,6 @@ func (sl *SignedList) Sign(skPriv *rsa.PrivateKey) (err error) {
 		}
 	}
 	return
-}
-
-/**
- * The number of items in the list, excluding the header lines
- * (public key, title, timestamp) and the footer lines (blank
- * line, digital signature).
- *
- * @return the number of content items
- */
-func (sl *SignedList) Size() int {
-	// SUBCLASS MUST IMPLEMENT
-	return -1
 }
 
 /**

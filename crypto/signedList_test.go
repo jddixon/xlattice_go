@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+var _ = fmt.Print
+
 /**
  * Generate a few random RSA keys, create MyLists, test.
  */
@@ -51,10 +53,6 @@ func (s *XLSuite) TestGenerateSignedList(c *C) {
 		myDoc := myList.String()
 		c.Assert(myDoc, Not(Equals), "")
 
-		// DEBUG
-		fmt.Printf("MY_DOC:\n%s", myDoc)
-		// END
-
 		// deserialize = parse it
 		reader := strings.NewReader(myDoc)
 		myList2, err := ParseMockSignedList(reader) // PANICS
@@ -62,11 +60,10 @@ func (s *XLSuite) TestGenerateSignedList(c *C) {
 		c.Assert(myList2, NotNil)
 
 		// assert that it's signed
-		// XXX STUB
-		//c.Assert(myList2.IsSigned(), Equals, true)
+		c.Assert(myList2.IsSigned(), Equals, true)
 
 		// verify the digSig
-		// XXX STUB
+		c.Assert(myList2.Verify(), IsNil)
 	}
 }
 

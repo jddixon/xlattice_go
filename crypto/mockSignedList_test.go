@@ -8,7 +8,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/rsa"
-	"encoding/hex"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"strings"
@@ -99,13 +99,8 @@ func (msl *MockSignedList) String() (s string) {
 	if err == nil {
 		ss = append(ss, string(CONTENT_END))
 
-		// HACK -- should be digSig
-		mockSig := []byte{0, 0, 0, 0}
-		hexDigSig := hex.EncodeToString(mockSig)
-		ss = append(ss, hexDigSig)
-		// END
-
-		// XXX not efficient
+		myDigSig := base64.StdEncoding.EncodeToString(msl.digSig)
+		ss = append(ss, myDigSig)
 		s = string(pk) + strings.Join(ss, CRLF) + CRLF
 	}
 	return
@@ -125,8 +120,7 @@ func ParseMockSignedList(in io.Reader) (msl *MockSignedList, err error) {
 			// try to read the digital signature line
 			line, err = NextLineWithoutCRLF(bin)
 			if err == nil || err == io.EOF {
-				// XXX SHOULD BE BASE64 ENCODED
-				digSig, err = hex.DecodeString(string(line))
+				digSig, err = base64.StdEncoding.DecodeString(string(line))
 			}
 			if err == nil || err == io.EOF {
 				msl.digSig = digSig
