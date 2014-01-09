@@ -6,7 +6,7 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 )
 
-type DataKeyedReader interface {
+type DataKeyedReaderI interface {
 
 	/**
 	 * Retrieve data by content key (content hash).

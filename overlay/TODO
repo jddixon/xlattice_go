@@ -1,8 +1,11 @@
 xlattice_go/overlay/TODO
 
+2014-01-02
+    * dataKeyed callbacks need crypto/SignedList                    * DONE
+
 2013-09-30
     * FIX: parser.go references NAME_STARTERS and NAME_CHARS which  * DONE
-        are in ../db/util/entityName*.go
+        are in ../db/util/entityName*.go                            * DONE
         - will move these to ../util                                * DONE
 
 2013-07-29
