@@ -33,14 +33,14 @@ func NewMockSignedList(pubKey *rsa.PublicKey, title string) (
 	return
 }
 
-func (msl *MockSignedList) AddItem(s string) (n int) {
-	n = len(msl.content) // index of this item
+func (msl *MockSignedList) AddItem(s string) (n uint) {
+	n = uint(len(msl.content)) // index of this item
 	msl.content = append(msl.content, s)
 	return
 }
 
 // Return the Nth content item in string form, without any CRLF.
-func (msl *MockSignedList) Get(n int) (s string, err error) {
+func (msl *MockSignedList) Get(n uint) (s string, err error) {
 	if n < 0 || msl.Size() <= n {
 		err = NdxOutOfRange
 	} else {
@@ -64,8 +64,8 @@ func (msl *MockSignedList) ReadContents(in *bufio.Reader) (err error) {
 	}
 	return
 }
-func (msl *MockSignedList) Size() int {
-	return len(msl.content)
+func (msl *MockSignedList) Size() uint {
+	return uint(len(msl.content))
 }
 
 /**
@@ -85,7 +85,7 @@ func (msl *MockSignedList) String() (s string) {
 
 	// content lines ----------------------------------
 	ss = append(ss, string(CONTENT_START))
-	for i := 0; err == nil && i < msl.Size(); i++ {
+	for i := uint(0); err == nil && i < msl.Size(); i++ {
 		var line string
 		line, err = msl.Get(i)
 		if err == nil || err == io.EOF {

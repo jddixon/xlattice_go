@@ -106,9 +106,9 @@ func (sl *SignedList) GetHash() []byte {
  *
  * @return the number of content items
  */
-func (sl *SignedList) Size() int {
+func (sl *SignedList) Size() (size uint) {
 	// SUBCLASS MUST IMPLEMENT
-	return -1
+	return
 }
 
 // DIGITAL SIGNATURE ////////////////////////////////////////////////
@@ -131,7 +131,7 @@ func (sl *SignedList) HashBody() (hash []byte, err error) {
 	d.Write([]byte(sl.timestamp.String()))
 
 	// content lines --------------------------------------
-	for i := 0; err == nil && i < sl.Size(); i++ {
+	for i := uint(0); err == nil && i < sl.Size(); i++ {
 		var line string
 		line, err = sl.Get(i)
 		if err == nil || err == io.EOF {
@@ -231,7 +231,7 @@ func (sl *SignedList) Strings() (pk, title, timestamp string) {
  * with the last valid line or an empty string and io.EOF on subsequent
  * calls.
  */
-func (sl *SignedList) Get(n int) (s string, err error) {
+func (sl *SignedList) Get(n uint) (s string, err error) {
 
 	/* SUBCLASSES MUST IMPLEMENT */
 

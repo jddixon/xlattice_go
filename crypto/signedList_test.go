@@ -36,8 +36,8 @@ func (s *XLSuite) TestGenerateSignedList(c *C) {
 		c.Assert(myList, NotNil)
 
 		// add a few lines
-		count := 3 + rng.Intn(10)
-		for i := 0; i < count; i++ {
+		count := uint(3 + rng.Intn(10))
+		for i := uint(0); i < count; i++ {
 			s := rng.NextFileName(16)
 			n := myList.AddItem(s)
 			c.Assert(n, Equals, i)
@@ -83,8 +83,8 @@ func (s *XLSuite) TestListHash(c *C) {
 		c.Assert(myList, NotNil)
 
 		// add a few lines
-		count := 3 + rng.Intn(10)
-		for i := 0; i < count; i++ {
+		count := uint(3 + rng.Intn(10))
+		for i := uint(0); i < count; i++ {
 			s := rng.NextFileName(16)
 			n := myList.AddItem(s)
 			c.Assert(n, Equals, i)

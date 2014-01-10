@@ -29,8 +29,8 @@ type BuildList struct {
 }
 
 const (
-     SEPARATOR   = "/"
-     SEPARATOR_CHAR = '/'
+	SEPARATOR      = "/"
+	SEPARATOR_CHAR = '/'
 )
 
 func NewBuildList(pubkey *rsa.PublicKey, title string) (
@@ -38,8 +38,8 @@ func NewBuildList(pubkey *rsa.PublicKey, title string) (
 
 	sl, err := xc.NewSignedList(pubkey, title)
 	if err == nil {
-		bl = &BuildList{ SignedList: *sl }
-	} 
+		bl = &BuildList{SignedList: *sl}
+	}
 	return
 }
 
@@ -60,17 +60,17 @@ func (bl *BuildList) ReadContents(in *bufio.Reader) (err error) {
 	return
 }
 
-/** 
- * Return the number of content lines 
+/**
+ * Return the number of content lines
  */
-func (bl *BuildList) Size () int {
-    return len(bl.content)
+func (bl *BuildList) Size() uint {
+	return uint(len(bl.content))
 }
 
 /**
  * Return the Nth content item in string form, without any CRLF.
  */
-func (bl *BuildList) Get(n int) (s string, err error) {
+func (bl *BuildList) Get(n uint) (s string, err error) {
 	if n < 0 || bl.Size() <= n {
 		err = xc.NdxOutOfRange
 	} else {
@@ -91,8 +91,8 @@ func (bl *BuildList) Get(n int) (s string, err error) {
  * @param name  file or path name of Item
  * @return      reference to this BuildList, to ease chaining
  */
-func (bl *BuildList) Add (hash []byte, name string) (err error) {
-	
+func (bl *BuildList) Add(hash []byte, name string) (err error) {
+
 	if bl.IsSigned() {
 		err = CantAddToSignedList
 	} else {
@@ -102,15 +102,17 @@ func (bl *BuildList) Add (hash []byte, name string) (err error) {
 			bl.content = append(bl.content, item)
 		}
 	}
-    return
+	return
 }
-/** 
- * Return the SHA1 hash for the Nth Item.  
+
+/**
+ * Return the SHA1 hash for the Nth Item.
  * XXX Should be modified to return a copy.
  */
-func (bl *BuildList) GetItemHash(n int) []byte {
-    return bl.content[n].ehash
+func (bl *BuildList) GetItemHash(n uint) []byte {
+	return bl.content[n].ehash
 }
+
 /**
  * Returns the path + fileName for the Nth content line, in
  * a form usable with the operating system.  That is, the
@@ -123,14 +125,13 @@ func (bl *BuildList) GetItemHash(n int) []byte {
 func (bl *BuildList) GetPath(n uint) string {
 
 	// XXX NEEDS VALIDATION
-    return bl.content[n].path
+	return bl.content[n].path
 }
 
-func ParseBuildList (rd io.Reader) (bl *BuildList, err error) {
-    // super (reader)
+func ParseBuildList(rd io.Reader) (bl *BuildList, err error) {
+	// super (reader)
 
 	// XXX STUB
 
 	return
 }
-
