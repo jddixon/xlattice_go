@@ -7,18 +7,6 @@ import (
 	// xo	"github.com/jddixon/xlattice_go/overlay"
 )
 
-// import org.xlattice.CryptoException
-// import org.xlattice.NodeID
-// import org.xlattice.crypto.SHA1Digest
-// import org.xlattice.crypto.SignedList
-// import org.xlattice.overlay.CallBack
-// import org.xlattice.overlay.DataKeyed
-// import org.xlattice.overlay.GetCallBack
-// import org.xlattice.overlay.DelCallBack
-// import org.xlattice.overlay.PutCallBack
-// import org.xlattice.util.NonBlockingLog
-// import org.xlattice.util.StringLib;         // DEBUG
-
 type MemCache struct {
 	maxCount uint   // items in cache
 	maxBytes uint64 // bytes in cache
