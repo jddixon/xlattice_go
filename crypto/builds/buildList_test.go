@@ -3,6 +3,7 @@ package builds
 // xlattice_go/crypto/builds/buildList_test.go
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
@@ -10,10 +11,12 @@ import (
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
+	"strings"
 )
 
 var _ = fmt.Print
 
+// XXX HOW MUCH OF THIS IS USED ?
 const (
 	// a folded RSA public key
 	docPK1    = "rsa AL0zGtdGkuJdH1vd4TaUMmRvdEBepnGfAbvZXPkdsVq367VUevbfzNL4W6u+Ks8+BksZzZPc"
@@ -110,25 +113,22 @@ func (s *XLSuite) TestGeneratedBuildList(c *C) {
 	c.Assert(err, IsNil)
 
 	myDoc := myList.String()
-	_ = myDoc
+	reader := strings.NewReader(myDoc)
+	list2, err := ParseBuildList(reader)
+	c.Assert(err, IsNil)
+	c.Assert(list2, NotNil)
+	c.Assert(list2.Size(), Equals, uint(4))
+	c.Assert(list2.IsSigned(), Equals, true) // FAILS
+	c.Assert(list2.String(), Equals, myDoc)
+	c.Assert(list2.Verify(), IsNil)
 
-	//    BuildList list2 = ParseBuildList (new StringReader(myDoc))
-	//    c.AssertNotNull(list2)
-	//    c.AssertEquals(4, list2.Size())
-	//    c.AssertTrue (list2.isSigned())
-	//    c.AssertEquals(myDoc, list2.toString())
-	//    c.AssertTrue (list2.verify())
-	//
-	//    // test item gets - sloppy naming, so can't loop :-(
-	//    byte[] b = myList.getHash(0)
-	//    c.AssertEquals (hash0.length, b.length)
-	//    for (int i = 0; i < hash0.length; i++)
-	//        c.AssertEquals (hash0[i], b[i])
-	//    c.AssertEquals ("fileForHash0", myList.getPath(0))
-	//
-	//    b = myList.getHash(1)
-	//    c.AssertEquals (hash1.length, b.length)
-	//    for (int i = 0; i < hash1.length; i++)
-	//        c.AssertEquals (hash1[i], b[i])
-	//    c.AssertEquals ("fileForHash1", myList.getPath(1))
+	// test item gets - sloppy naming, so can't loop :-(
+	b := myList.GetItemHash(0)
+	c.Assert(bytes.Equal(b, hash0), Equals, true)
+	c.Assert(myList.GetPath(0), Equals, "fileForHash0")
+
+	b = myList.GetItemHash(1)
+	c.Assert(bytes.Equal(b, hash1), Equals, true)
+	c.Assert(myList.GetPath(1), Equals, "fileForHash1")
+
 }

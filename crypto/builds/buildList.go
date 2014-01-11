@@ -7,10 +7,13 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"encoding/base64"
+	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	"io"
 	"strings"
 )
+
+var _ = fmt.Print
 
 /**
  * Serialized, a build list is a list of files and their extended hashes.
@@ -75,10 +78,15 @@ func (bl *BuildList) ReadContents(in *bufio.Reader) (err error) {
 					if len(parts) != 2 {
 						err = IllFormedContentLine
 					} else {
-						_, err = base64.StdEncoding.Decode(hash, parts[0])
+						var count int
+						e := base64.StdEncoding
+						maxLen := e.DecodedLen(len(parts[0]))
+						hash = make([]byte, maxLen)
+						count, err = e.Decode(hash, parts[0])
 						if err == nil {
 							path = string(parts[1])
 						}
+						hash = hash[:count]
 					}
 				}
 				if err == nil {
@@ -190,10 +198,28 @@ func (bl *BuildList) String() (s string) {
 	}
 	return
 }
-func ParseBuildList(rd io.Reader) (bl *BuildList, err error) {
-	// super (reader)
-
-	// XXX STUB
-
+func ParseBuildList(in io.Reader) (bl *BuildList, err error) {
+	var (
+		digSig, line []byte
+	)
+	bin := bufio.NewReader(in)
+	sl, err := xc.ParseSignedList(bin)
+	if err == nil {
+		bl = &BuildList{SignedList: *sl}
+		err = bl.ReadContents(bin)
+		if err == nil {
+			// try to read the digital signature line
+			line, err = xc.NextLineWithoutCRLF(bin)
+			if err == nil || err == io.EOF {
+				digSig, err = base64.StdEncoding.DecodeString(string(line))
+			}
+			if err == nil || err == io.EOF {
+				bl.SetDigSig(digSig)
+			}
+		}
+	}
+	if err == io.EOF {
+		err = nil
+	}
 	return
 }

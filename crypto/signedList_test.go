@@ -55,7 +55,7 @@ func (s *XLSuite) TestGenerateSignedList(c *C) {
 
 		// deserialize = parse it
 		reader := strings.NewReader(myDoc)
-		myList2, err := ParseMockSignedList(reader) // PANICS
+		myList2, err := ParseMockSignedList(reader)
 		c.Assert(err, IsNil)
 		c.Assert(myList2, NotNil)
 

@@ -9,10 +9,13 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
+	"fmt"
 	xu "github.com/jddixon/xlattice_go/util"
 	"io"
 	"time"
 )
+
+var _ = fmt.Print
 
 var (
 	CONTENT_START = []byte("# BEGIN CONTENT #")
@@ -75,11 +78,17 @@ func (sl *SignedList) GetTitle() string {
 }
 
 func (sl *SignedList) IsSigned() bool {
-	return sl.digSig != nil
+	return len(sl.digSig) > 0
 }
 
 func (sl *SignedList) GetDigSig() []byte {
 	return sl.digSig
+}
+
+func (sl *SignedList) SetDigSig(val []byte) {
+	// XXX NEEDS BETTER VALIDATION
+	sl.digSig = make([]byte, len(val))
+	copy(sl.digSig, val)
 }
 
 /**
