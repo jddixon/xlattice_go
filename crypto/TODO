@@ -1,16 +1,17 @@
 xlattice_go/crypto/TODO
 
 2014-01-10
-    * need builds/buildList.go ReadContents
+    * need builds/buildList.go ReadContents                             * DONE
     * need builds/buildList.go ParseBuildList
     * need builds/buildList_test.go
+    * FIX: signedList_test has no timestamps - but succeeds !
 
 2014-01-09
     * should be modified to use uint for index of list items:
         - SignedList                                                    * DONE
         - MockSignedList                                                * DONE
         - signedList_test.go                                            * DONE
-        - BuildList
+        - BuildList                                                     * DONE
     * Modify SignedList so that the basic functionality is identical
         to that of MockSignedList
         - and then drop MockSignedList as redundant

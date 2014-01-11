@@ -78,6 +78,10 @@ func (sl *SignedList) IsSigned() bool {
 	return sl.digSig != nil
 }
 
+func (sl *SignedList) GetDigSig() []byte {
+	return sl.digSig
+}
+
 /**
  * Return this SignedList's SHA1 hash, a byte array 20 bytes
  * long.  The hash is over first the public key in its 'wire' form
