@@ -1,0 +1,9 @@
+xlattice_go/httpd/TODO
+
+2014-01-10
+    * Name2Hash needs SiteList 
+    * SiteList entries need to be sorted, to eliminate duplicates
+    * need port numbers for sites, defaulting to 80
+
+2014-01-08
+    * Name2Hash requires BuildList, which must be implemented        

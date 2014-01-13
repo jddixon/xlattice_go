@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	ListAlreadySigned       = e.New("list has already been signed")
+	CantAddToSignedList  = e.New("can't add, list has been signed")
 	EmptyTitle              = e.New("empty title parameter")
 	ImpossibleBlockSize     = e.New("impossible block size")
 	IncorrectPKCS7Padding   = e.New("incorrectly padded data")
+	ListAlreadySigned       = e.New("list has already been signed")
 	MissingContentStart     = e.New("missing CONTENT START line")
 	NdxOutOfRange           = e.New("list index out of range")
 	NilData                 = e.New("nil data argument")

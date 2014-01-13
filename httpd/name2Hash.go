@@ -4,12 +4,19 @@ package httpd
 
 import (
 	xd "github.com/jddixon/xlattice_go/overlay/datakeyed"
+	"sync"
 )
-type Name2Hash struct {		// must implement xo.NameKeyedI
 
+/**
+ * Maintains data structures mapping path names to NodeIDs, which
+ * are used to retrieve data from a MemCache, an in-memory cache of
+ * byte slices.
+ */
+type Name2Hash struct { // must implement xo.NameKeyedI
 
-	// map
-	hashCache	xd.MemCacheI
-	siteNames []string
-	buildLists	[]string		// should be specific object
+	buildLists []string // should be specific object
+	hashCache  *xd.MemCache
+	hashMap    map[string][]byte
+	siteNames  []string
+	mx         sync.Mutex
 }

@@ -135,7 +135,7 @@ func (bl *BuildList) Get(n uint) (s string, err error) {
 func (bl *BuildList) Add(hash []byte, name string) (err error) {
 
 	if bl.IsSigned() {
-		err = CantAddToSignedList
+		err = xc.CantAddToSignedList
 	} else {
 		var item *Item
 		item, err = NewItem(hash, name)

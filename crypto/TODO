@@ -4,7 +4,8 @@ xlattice_go/crypto/TODO
     * need builds/buildList.go ReadContents                             * DONE
     * need builds/buildList.go ParseBuildList                           * DONE
     * need builds/buildList_test.go                                     * DONE
-    * FIX: signedList_test has no timestamps - but succeeds !
+    * FIX: signedList_test has no timestamps - but succeeds !           * SKIP
+        - ah, but zero is a legitimate timestamp                        * SKIP
 
 2014-01-09
     * should be modified to use uint for index of list items:
