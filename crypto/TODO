@@ -1,5 +1,9 @@
 xlattice_go/crypto/TODO
 
+2014-01-12
+    * need filters:CountingBloom for xd.DiskCacahe
+        - and test
+
 2014-01-10
     * need builds/buildList.go ReadContents                             * DONE
     * need builds/buildList.go ParseBuildList                           * DONE
