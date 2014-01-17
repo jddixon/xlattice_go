@@ -1,0 +1,10 @@
+xlreg_py/TODO
+
+2013-12-26
+    * Makefile needs fixing
+        - better to put proto updates in setup.py
+
+2013-12-24
+    * git remote set-url origin https;//github.com/jddixon/xlreg_py     * DONE
+    * need .gitignore                                                   * DONE
+        - commit !                                                      * DONE
