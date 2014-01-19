@@ -99,7 +99,7 @@ xlattice_go/reg/TODO
     * Whatever is using BadVersion should be using the DecimalVersion
         type
         - This is in reg/in_handler.go init() and references VERSION in
-            const.go.  
+            ../const.go.  
 
 2013-10-17
     * determine what LFS is being used and whether the node is

@@ -4,6 +4,7 @@ package reg
 
 import (
 	"fmt"
+	xl "github.com/jddixon/xlattice_go"
 	"github.com/jddixon/xlattice_go/msg"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
@@ -56,7 +57,7 @@ func init() {
 		{badCombo, badCombo, badCombo, doGetMsg, doByeMsg},
 	}
 	var err error
-	serverVersion, err = xu.ParseDecimalVersion(VERSION)
+	serverVersion, err = xu.ParseDecimalVersion(xl.VERSION)
 	if err != nil {
 		panic(err)
 	}

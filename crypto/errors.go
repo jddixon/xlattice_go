@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	CantAddToSignedList  = e.New("can't add, list has been signed")
+	CantAddToSignedList     = e.New("can't add, list has been signed")
 	EmptyTitle              = e.New("empty title parameter")
 	ImpossibleBlockSize     = e.New("impossible block size")
 	IncorrectPKCS7Padding   = e.New("incorrectly padded data")

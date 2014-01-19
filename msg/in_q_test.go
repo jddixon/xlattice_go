@@ -108,7 +108,7 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 		CnxHandler: CnxHandler{Cnx: cnx2, Peer: meAsPeer}}
 
 	// manually create and send a hello message -
-	
+
 	// XXX HELLO_MSG IS OBSOLETE; it's done with RSA/AES handshake
 
 	peerHello, err := MakeHelloMsg(peerNode)
@@ -225,7 +225,7 @@ func (s *XLSuite) TestHelloFromStranger(c *C) {
 	// Create a second mock peer unknown to myNode.
 	badGuy, badAcc := s.makeANode(c)
 	defer badAcc.Close()
-	
+
 	// XXX HELLO_MSG IS OBSOLETE; it's done with RSA/AES handshake
 
 	badHello, err := MakeHelloMsg(badGuy)
@@ -351,7 +351,7 @@ func (s *XLSuite) TestSecondHello(c *C) {
 	// -- SECOND WELL-FORMED HELLO ----------------------------------
 
 	// manually create and send a hello message -
-	
+
 	// XXX HELLO_MSG IS OBSOLETE; it's done with RSA/AES handshake
 
 	peerHello, err := MakeHelloMsg(clientNode)

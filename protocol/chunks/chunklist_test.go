@@ -78,7 +78,7 @@ func (s *XLSuite) TestChunkList(c *C) {
 
 	dataLen := 1 + rng.Intn(3*MAX_CHUNK_BYTES)
 	data := make([]byte, dataLen)
-	rng.NextBytes(&data)
+	rng.NextBytes(data)
 
 	reader := bytes.NewReader(data)
 	d := sha3.NewKeccak256()

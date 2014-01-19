@@ -4,5 +4,5 @@ package overlay
 
 type NameKeyedWriterI interface {
 	Delete(key string, listener DelCallBackI)
-	Put (key string, buffer []byte, listener PutCallBackI)
+	Put(key string, buffer []byte, listener PutCallBackI)
 }

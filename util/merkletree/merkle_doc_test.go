@@ -126,7 +126,7 @@ func (s *XLSuite) doTestMDParser(c *C, rng *xr.PRNG, usingSHA1 bool) {
 	} else {
 		tHash = make([]byte, SHA3_LEN)
 	}
-	rng.NextBytes(&tHash)              // not really a hash, of course
+	rng.NextBytes(tHash)               // not really a hash, of course
 	sHash := hex.EncodeToString(tHash) // string form of tHash
 
 	withoutSlash := rng.NextFileName(8)

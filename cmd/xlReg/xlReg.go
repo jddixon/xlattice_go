@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"flag"
 	"fmt"
+	xl "github.com/jddixon/xlattice_go"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	"github.com/jddixon/xlattice_go/reg"
@@ -187,7 +188,7 @@ func setup(opt *reg.RegOptions) (rs *reg.RegServer, err error) {
 	verbose := opt.Verbose
 
 	greetings := fmt.Sprintf("xlReg v%s %s start run\n",
-		reg.VERSION, reg.VERSION_DATE)
+		xl.VERSION, xl.VERSION_DATE)
 	if verbose {
 		fmt.Print(greetings)
 	}

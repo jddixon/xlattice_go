@@ -1,11 +1,12 @@
 package rnglib
 
 import (
+	xl "github.com/jddixon/xlattice_go"
 	"strings"
 )
 
 func Version() (string, string) {
-	return VERSION, VERSION_DATE
+	return xl.VERSION, xl.VERSION_DATE
 }
 
 // a crude attempt at properties

@@ -26,7 +26,7 @@ func (d *XLSuite) TestXLatticePkt(c *C) {
 	}
 
 	id := make([]byte, 32) // sha3 length
-	rng.NextBytes(id)     // random bytes
+	rng.NextBytes(id)      // random bytes
 
 	seqBuf := new(bytes.Buffer)
 	binary.Write(seqBuf, binary.LittleEndian, myMsgN)

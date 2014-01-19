@@ -5,5 +5,5 @@ import (
 )
 
 var (
-	EmptySiteDomainName		= e.New("empty site domain name")
+	EmptySiteDomainName = e.New("empty site domain name")
 )

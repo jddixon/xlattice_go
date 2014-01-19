@@ -37,7 +37,7 @@ func (s *XLSuite) TestChunks(c *C) {
 	c.Assert(err, IsNil)
 	dataLen := rng.Intn(256 * 256)
 	data := make([]byte, dataLen)
-	rng.NextBytes(&data)
+	rng.NextBytes(data)
 	ch, err := NewChunk(datum, ndx, data)
 	c.Assert(err, IsNil)
 	c.Assert(ch, NotNil)

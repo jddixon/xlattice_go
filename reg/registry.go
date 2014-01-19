@@ -7,6 +7,7 @@ package reg
 
 import (
 	"fmt"
+	xl "github.com/jddixon/xlattice_go"
 	xf "github.com/jddixon/xlattice_go/crypto/filters"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
@@ -52,7 +53,7 @@ func NewRegistry(clusters []*RegCluster,
 		m             *xn.IDMap
 		serverVersion xu.DecimalVersion
 	)
-	serverVersion, err = xu.ParseDecimalVersion(VERSION)
+	serverVersion, err = xu.ParseDecimalVersion(xl.VERSION)
 	if err == nil && rn == nil {
 		err = NilRegNode
 	}

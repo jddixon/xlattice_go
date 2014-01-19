@@ -1,5 +1,8 @@
 xlattice_go/TODO
 
+2014-01-19
+    * move project version number to xlattice_go/const.go
+
 2013-12-24  * FOCUS *
     * msg/TODO: drop Hello from protocol
 
@@ -7,11 +10,11 @@ xlattice_go/TODO
     * protocol/aescnx seems wholly superfluous; drop?
 
 2013-11-25  * FOCUS *
-    * argument to rnglib.NextBytes should be []byte, not &[]byte
+    * argument to rnglib.NextBytes should be []byte, not &[]byte        * DONE
 
 2013-11-08
-    * xu.SameBytes() is functionally identical to Equal() from the
-        bytes package, and so should be dropped
+    * xu.SameBytes() is functionally identical to Equal() from the      * DONE
+        bytes package, and so should be dropped                         * DONE
 
 2013-10-25
     * move the project version number from rnglib/ to util/ or subdir

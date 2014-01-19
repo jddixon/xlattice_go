@@ -6,12 +6,6 @@ const (
 	SHA1_LEN = 20 // length in bytes of binary hash
 	SHA3_LEN = 32
 
-	// The version MUST consist of three parts separated by dots,
-	// with each part being one or two digits.  It is converted
-	// into a uint32 in in_handler.go init()
-	VERSION      = "0.2.1"
-	VERSION_DATE = "2013-10-27"
-
 	BLOCK_SIZE = 4096
 
 	DEFAULT_M = uint(20)

@@ -23,8 +23,7 @@ import (
  */
 
 type SiteList struct {
-
-    content []string
+	content []string
 	xc.SignedList
 }
 
@@ -38,7 +37,6 @@ func NewSiteList(pubkey *rsa.PublicKey, title string) (
 	return
 }
 
-
 // SignedList METHODS ///////////////////////////////////////////
 
 // Return the Nth content item in string form, without any CRLF.
@@ -50,6 +48,7 @@ func (stl *SiteList) Get(n uint) (s string, err error) {
 	}
 	return
 }
+
 /**
  * Read a series of content lines, each consisting of a simple
  * name.  This is an Internet domain name and so may contain no
@@ -102,7 +101,7 @@ func (stl *SiteList) AddItem(s string) (err error) {
 }
 
 /**
- * Serialize the entire document.  If any error is encountered, this 
+ * Serialize the entire document.  If any error is encountered, this
  * function silently returns an empty string.
  */
 func (stl *SiteList) String() (s string) {
@@ -162,4 +161,3 @@ func ParseSiteList(in io.Reader) (stl *SiteList, err error) {
 	}
 	return
 }
-

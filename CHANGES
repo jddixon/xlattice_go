@@ -1,5 +1,11 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.3 
+    2014-01-19                                                      SLOC 16856
+        * version number moved from rnglib to xlattice_go/const.go
+        * dropped separate reg/ version number
+        * dropped separate merkletree version number
+        * corrected some misuse of rnglib.NextBytes() in tests
 0.4.2
     2013-12-30                                                      SLOC 15636
         * changed rnglib NextBytes to take slice arg, not pointer
