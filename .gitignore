@@ -1,8 +1,5 @@
-*.DS_Store
 *.log
-*.out
-*.prof
-.roundup.*
 *.java
 *.jar
+*.swp
 junk*
