@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>chunks</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+</head>
+<body>
+<h1>Chunks</h1>
+
+<p>Chunks is a message protocol designed to be intermixed with Protobuf messages.
+The latter begin with a varint which represents the length of the message.
+As Protobuf messages have a non-zero length, no message beginning with a
+zero byte can be a valid Protobuf message, so chunks always begin with a
+zero byte.</p>
+
+<p>In the initial version of Chunks, header fields are laid out as follows:</p>
+
+<table>
+<thead>
+<tr>
+<td align="center">field</td>
+<td align="center">value</td>
+<td align="center">bits</td>
+<td align="center">bytes</td>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="center">magic</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">1</td>
+</tr>
+
+<tr>
+<td align="center">type</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">1</td>
+</tr>
+
+<tr>
+<td align="center">reserved</td>
+<td align="center">0</td>
+<td align="center">48</td>
+<td align="center">6</td>
+</tr>
+
+<tr>
+<td align="center">length</td>
+<td align="center">n</td>
+<td align="center">32*</td>
+<td align="center">4</td>
+</tr>
+
+<tr>
+<td align="center">index</td>
+<td align="center">x</td>
+<td align="center">32</td>
+<td align="center">4</td>
+</tr>
+
+<tr>
+<td align="center">datum</td>
+<td align="center">sha3</td>
+<td align="center"></td>
+<td align="center">32</td>
+</tr>
+</tbody>
+</table>
+
+<p>The &lsquo;datum&rsquo; field contains the SHA3-256 content hash of the file of
+which this is a chunk.</p>
+
+<p>The header is followed by ceil(len/16) bytes of data, with zero byte
+padding added to bring the data length up to a multiple of 16.  That is,
+the data is padded with zeroes as required to bring its length to the next
+whole multiple of 16.  If the length of the data in bytes is already a
+whole multiple of 16, no padding is added.</p>
+
+<p>The chunk data is followed by the 32-byte SHA3-256 hash of the chunk itself,
+where the hash is calculated over the fields named (magic, type, reserved,
+length, datum, and data, in that order.</p>
+
+<p>A chunk is assumed to be part of a message.  Chunks are concatenated
+in index order to make the message.  The assumption is that chunks
+will normally be transmitted in index order, but that is not necessarily
+the case, and using software must tolerate missing, duplicated, and
+out-of-order chunks.</p>
+
+<p>The length of a type 0 Chunk is contrained to 17 bits (2^17 - 1) and
+so the upper 15 bits of that field can be construed as reserved and
+must be zero.</p>
+
+<p><a href="LICENSE.html">LICENSE</a></p>
+</body>
+</html>

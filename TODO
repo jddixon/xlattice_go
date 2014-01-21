@@ -1,10 +1,18 @@
-xlreg_py/TODO
+~/dev/gh-pages/xlatice_go/TODO
 
-2013-12-26
-    * Makefile needs fixing
-        - better to put proto updates in setup.py
+2014-01-20
+    * move this file to PROJECT/doc
 
-2013-12-24
-    * git remote set-url origin https;//github.com/jddixon/xlreg_py     * DONE
-    * need .gitignore                                                   * DONE
-        - commit !                                                      * DONE
+2014-01-19
+    * split up index page
+        - u256x256 becomes separate page
+            * properly named
+            * with better description
+            * add link to google docs
+            * drop redundant and out of data API info
+        - rnglib 
+            * improve description
+            * add link to google docs
+            * drop redundant and out of data API info
+    * add coverage for other components
+

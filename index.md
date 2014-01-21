@@ -24,6 +24,12 @@ communicate with the cluster, members register a second address for
 that purpose.  When a member has completed registration, it can retrieve
 the configuration data other members have registered.
 
+## Protocol
+
+### Chunks
+
+[chunks](chunks.html)
+
 ## u256x256
 
 Rather than storing data files in a hierarchical directory structure
