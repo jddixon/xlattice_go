@@ -3,7 +3,10 @@ package reg
 // xlattice_go/reg/msg_handlers.go
 
 import (
+	"crypto"
 	"crypto/rsa"
+	"crypto/sha1"
+	"encoding/binary"
 	"encoding/hex" // DEBUG
 	e "errors"
 	"fmt"
@@ -46,26 +49,42 @@ func doClientMsg(h *InHandler) {
 		nodeID *xi.NodeID
 		ck, sk *rsa.PublicKey
 		myEnds []string
+		hash   []byte
 		cm     *MemberInfo
 	)
 	// XXX We should accept EITHER clientName + token OR clientID
 	// This implementation only accepts a token.
 
 	clientMsg := h.msgIn
-	name = clientMsg.GetClientName()
 	clientSpecs := clientMsg.GetClientSpecs()
+	name = clientSpecs.GetName()
 	attrs = clientSpecs.GetAttrs()
 	ckBytes := clientSpecs.GetCommsKey()
 	skBytes := clientSpecs.GetSigKey()
+	digSig := clientSpecs.GetDigSig()
 
+	ck, err = xc.RSAPubKeyFromWire(ckBytes)
 	if err == nil {
-		ck, err = xc.RSAPubKeyFromWire(ckBytes)
+		sk, err = xc.RSAPubKeyFromWire(skBytes)
 		if err == nil {
-			sk, err = xc.RSAPubKeyFromWire(skBytes)
-			if err == nil {
-				myEnds = clientSpecs.GetMyEnds() // a string array
-			}
+			myEnds = clientSpecs.GetMyEnds() // a string array
 		}
+	}
+	if err == nil {
+		// calculate hash over fields in canonical order XXX EXCLUDING ID
+		aBytes := make([]byte, 8)
+		binary.LittleEndian.PutUint64(aBytes, attrs)
+		d := sha1.New()
+		d.Write([]byte(name))
+		d.Write(aBytes)
+		d.Write(ckBytes)
+		d.Write(skBytes)
+		for i := 0; i < len(myEnds); i++ {
+			d.Write([]byte(myEnds[i]))
+		}
+		hash = d.Sum(nil)
+		// verify the digital signature
+		err = rsa.VerifyPKCS1v15(sk, crypto.SHA1, hash, digSig)
 	}
 	if err == nil {
 		id := clientSpecs.GetID()

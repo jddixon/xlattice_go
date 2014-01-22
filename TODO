@@ -1,5 +1,8 @@
 xlattice_go/TODO
 
+2014-01-21
+    * fix CountingBloom
+
 2014-01-19
     * move project version number to xlattice_go/const.go
 

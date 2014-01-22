@@ -1,7 +1,10 @@
 xlattice_go/reg/TODO
 
-2013-12-25
-    * urgently need digSig on Client msg
+2014-01-22 (2013-12-25, edited)
+    * Urgently need digSig on the token in Client msg; digSig is
+        over the fields that are present.  
+        - server-side: msg_handler.go: doClientMsg()
+        - client-side: ClientNode:ClientAndOK()
 
 2013-12-06
     * NewRegistry must populate indexes if clusters supplied

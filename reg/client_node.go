@@ -4,10 +4,13 @@ package reg
 
 import (
 	"bytes"
+	"crypto"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha1"
+	"encoding/binary"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xm "github.com/jddixon/xlattice_go/msg"
@@ -299,37 +302,55 @@ func (cn *ClientNode) ClientAndOK() (err error) {
 
 	var (
 		ckBytes, skBytes []byte
+		digSig           []byte
+		hash             []byte
 		myEnds           []string
 	)
-	// XXX attrs not dealt with
+	// XXX attrs not actually dealt with
 
 	// Send CLIENT MSG ==========================================
-	//ckBytes, err = xc.RSAPubKeyToWire(cn.GetCommsPublicKey())
+	aBytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(aBytes, cn.proposedAttrs)
 	ckBytes, err = xc.RSAPubKeyToWire(&cn.ckPriv.PublicKey)
 	if err == nil {
-		//skBytes, err = xc.RSAPubKeyToWire(cn.GetSigPublicKey())
 		skBytes, err = xc.RSAPubKeyToWire(&cn.skPriv.PublicKey)
 		if err == nil {
 			for i := 0; i < len(cn.endPoints); i++ {
 				myEnds = append(myEnds, cn.endPoints[i].String())
 			}
-			token := &XLRegMsg_Token{
-				Name:     &cn.name,
-				Attrs:    &cn.proposedAttrs,
-				CommsKey: ckBytes,
-				SigKey:   skBytes,
-				MyEnds:   myEnds,
+			// calculate hash over fields in canonical order
+			d := sha1.New()
+			d.Write([]byte(cn.name))
+			d.Write(aBytes)
+			d.Write(ckBytes)
+			d.Write(skBytes)
+			for i := 0; i < len(myEnds); i++ {
+				d.Write([]byte(myEnds[i]))
 			}
-
-			op := XLRegMsg_Client
-			request := &XLRegMsg{
-				Op:          &op,
-				ClientName:  &cn.name, // XXX redundant
-				ClientSpecs: token,
-			}
-			// SHOULD CHECK FOR TIMEOUT
-			err = cn.writeMsg(request)
+			hash = d.Sum(nil)
+			// calculate digital signature
+			digSig, err = rsa.SignPKCS1v15(rand.Reader, cn.skPriv,
+				crypto.SHA1, hash)
 		}
+	}
+	if err == nil {
+		token := &XLRegMsg_Token{
+			Name:     &cn.name,
+			Attrs:    &cn.proposedAttrs,
+			CommsKey: ckBytes,
+			SigKey:   skBytes,
+			MyEnds:   myEnds,
+			DigSig:   digSig,
+		}
+
+		op := XLRegMsg_Client
+		request := &XLRegMsg{
+			Op: &op,
+			// ClientName:  &cn.name, // XXX redundant DROPPED
+			ClientSpecs: token,
+		}
+		// SHOULD CHECK FOR TIMEOUT
+		err = cn.writeMsg(request)
 	}
 	// Process CLIENT_OK --------------------------------------------
 	// SHOULD CHECK FOR TIMEOUT
