@@ -93,3 +93,6 @@ replies with an Ack and closes the connection.
 Error messages from the server contain a string describing the problem.
 The server will send the message and then close the connection without
 waiting for a reply.
+
+Look [here](xlReg_protocol.html) for a more detailed description of the
+xlReg protocol.
