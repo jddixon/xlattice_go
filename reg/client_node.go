@@ -506,7 +506,18 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		selfID := cn.regID.Value()
 
 		for i := uint(0); i < uint(cn.ClusterSize); i++ {
-			memberID := cn.Members[i].GetNodeID().Value()
+			// XXX WORKING HERE ///////////////////////////
+			member := cn.Members[i]
+			// XXX THIS HAPPENS WITH MEMBER 1 if running upax_go tests
+			if member == nil {
+				fmt.Printf("cluster member %d is nil\n", i)
+			}
+			id := member.GetNodeID()
+			if id == nil {
+				fmt.Printf("member has no nodeID!\n")
+			}
+			memberID := id.Value()
+			// END HERE ///////////////////////////////////
 			if bytes.Equal(selfID, memberID) {
 				cn.SelfIndex = uint32(i)
 				break

@@ -1,14 +1,13 @@
 package reg;
 
+// All messages encoded with this protocol are subsequently encrypted using 
+// the server-provided AES session key and PKCS7-padded.
+
 message XLRegMsg {
     enum Tag {
-        // 2013-10-01 dropped Hello and HelloReply; using ../msg/HelloAndReply 
-        // functions instead
         RegCredRequest  = 1;   
         RegCredReply    = 2;    // version, token (other registry credentials)
 
-        // All messages are encrypted using the server-provided
-        // session key and PKCS7-padded.
         Client      	= 3;    // token OR clientID, digSig
         ClientOK    	= 4;    // clientID, attrs
 
@@ -25,7 +24,6 @@ message XLRegMsg {
         // Response to Get is a list of known members -OR- error
         ClusterMembers 	= 10;   // clusterID, which, tokens
 
-        // Orderly close
         Bye         	= 11;   // from client
         Ack         	= 12;   // from server; followed by close
         

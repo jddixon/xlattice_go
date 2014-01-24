@@ -1,0 +1,22 @@
+xlatice_go/doc/TODO
+
+2014-01-23
+    * need tool to wrap ../reg/p.proto, generating *.md
+    * need Makefile to automate this
+
+2014-01-20
+    * move this file to PROJECT/doc                                     * DONE
+
+2014-01-19
+    * split up index page
+        - u256x256 becomes separate page                                * DONE
+            * properly named (u.md/html)                                * DONE
+            * with better description
+            * add link to google docs
+            * drop redundant and out of date API info
+        - rnglib                                                        * DONE
+            * improve description
+            * add link to google docs
+            * drop redundant and out of date API info
+    * add coverage for other components
+

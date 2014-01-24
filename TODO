@@ -4,7 +4,7 @@ xlattice_go/TODO
     * fix CountingBloom
 
 2014-01-19
-    * move project version number to xlattice_go/const.go
+    * move project version number to xlattice_go/const.go               * DONE
 
 2013-12-24  * FOCUS *
     * msg/TODO: drop Hello from protocol

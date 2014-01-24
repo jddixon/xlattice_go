@@ -96,9 +96,41 @@ client and server.
 
 ## Registry Credentials
 
-### RegCredRequest
+Any XLReg server will profide credentials upon request.  
+These are conventionally delivered as an ASCII file, `regCred.dat`,
+containing
 
-### RegCredReply
+* the registry's name
+* its ID as a string of hex digits
+* its comms RSA public key in ssh format
+* its sig RSA public key in ssh format
+* its IP address and port
+* and the xlReg protocol version it is running.
+
+An example follows.
+
+<pre><code>
+regCred {
+    Name: xlReg
+    ID: fc394d1363ce32e4cc6ae5e019bcc78176ad425014b01e906f8887eccb116664
+    A
+    CommsPubKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC1gaYZ9LtXq9uBeiP0jU6kqZrekd8GLdPMhENDmkxAoulh2+74WYN7AUo38hNZNjBT3VanMwZ2+QZNTfioNFbJnEdB5DvaC+/nSQ4B2i7qBdb2fWjXfLNAreB0R+oMWigFmUzooz5kQyk3jJZLxIoSLSDlyVUO2DWp2GDVU9FE2aVod3P7I8rI83OhU2K8/lrKBuLfQsVff+AJNCleu6raMNVzLgfCNsEKC9avXovX2qGhvZdQY/KZ7ZzrvIkOq03DJ3x6Vv37pCzRJtmxX04mk2CGTtqzliuzdarIVe+tvBbtE9dTRR9L8v2LKIhAr8JF+A3SPRPbcZJTxxsri+bR
+
+    SigPubKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCeUamt6heiNhIJkLQUxXjnEh1iLhvwf6Rp+f2nCoBg0l1wDBpp2Qb4WBVRCNzGlwBWp+ZPd8YOGYBfqrhlkl/TPZ3xgm1IEbJ0Gh+TO8h1TlF/5zzIIrbdy5//jESad5Q3Cq2Ph7b+MH1W3tvdIWTQ24ht4qDWq0pjs8oV4fbcrNgnDCYjG5QqhTOHPRQ1ZZOLEH6p74BU+afweMimnFDYKjaQA1N328eT6gT6QeenesYy2at9Gkz0KHpE8AmpMTfk9KtjtH0HEMzaaH0+AsEF9fuAMR9B+w/HhlyRHeJYwZncVRFl1ELNZE51Th6S0BaXCJrEVqm7vaBDeKSe2Hrn
+
+    EndPoints {
+         TcpEndPoint: 127.0.0.1:44444
+    }
+    Version: 0.2.1
+}
+</code></pre>
+
+This particular registry is on the test machine (_localhost_, `127.0.0.1`) and
+listens on `44444`, the port conventionally used for xlReg testing.
+
+The `Go` version of the xlReg client provides functions to read and write
+serialized RegCred files (`xlattice_go.reg.ParseRegCred()` and
+`xlattice_go.reg.String()` respectively.
 
 ## Client and OK
 
