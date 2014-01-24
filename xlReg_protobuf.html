@@ -10,8 +10,8 @@
 <pre><code>
 package reg;
 
-// All messages are encrypted using the server-provided
-// session key and PKCS7-padded.
+// All messages encoded with this protocol are subsequently encrypted using 
+// the server-provided AES session key and PKCS7-padded.
 
 message XLRegMsg {
     enum Tag {
