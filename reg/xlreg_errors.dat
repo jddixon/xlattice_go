@@ -1,0 +1,32 @@
+BAD_ATTRS_LINE:BadAttrsLine:badly formed attrs line
+BAD_VERSION:BadVersion:badly formated VERSION
+CANT_FIND_CLUSTER_BY_ID:CantFindClusterByID:cannot find cluster with this ID
+CANT_FIND_CLUSTER_BY_NAME:CantFindClusterByName:cannot find cluster with this name
+CLIENT_MUST_HAVE_END_POINT:ClientMustHaveEndPoint:client must have at least one endPoint
+CLUSTER_MEMBERS_MUST_HAVE_END_POINT:ClusterMembersMustHaveEndPoint:cluster members must have at least one endPoint
+CLUSTER_MUST_HAVE_MEMBER:ClusterMustHaveMember:cluster must have a member!
+CLUSTER_MUST_HAVE_TWO:ClusterMustHaveTwo:cluster must have at least two members
+ID_ALREADY_IN_USE:IDAlreadyInUse:ID already in use
+ILL_FORMED_CLUSTER:IllFormedCluster:ill-formed cluster serialization
+ILL_FORMED_CLUSTER_MEMBER:IllFormedClusterMember:ill-formed cluster member serialization
+ILL_FORMED_REG_CRED:IllFormedRegCred:ill-formed regCred serialization
+MISSING_CLOSING_BRACE:MissingClosingBrace:missing closing brace
+MISSING_CLUSTER_NAME_OR_ID:MissingClusterNameOrID:missing cluster name or ID
+MISSING_END_POINTS_SECTION:MissingEndPointsSection:missing endPoints section
+MISSING_MEMBERS_LIST:MissingMembersList:missing members list
+MISSING_PRIVATE_KEY:MissingPrivateKey:missing private key line
+MISSING_REG_NODE_LINE:MissingRegNodeLine:missing regNode line
+MISSING_SERVER_INFO:MissingServerInfo:missing server info
+NAME_ALREADY_IN_USE:NameAlreadyInUse:name already in use
+NIL_CLUSTER:NilCluster:nil cluster argument
+NIL_NODE:NilNode:nil node argument
+NIL_PRIVATE_KEY:NilPrivateKey:nil private key argument
+NIL_REGISTRY:NilRegistry:nil registry argument
+NIL_REG_NODE:NilRegNode:nil RegNode argument
+NIL_TOKEN:NilToken:nil XLRegMsg_Token argument
+NO_NODE_NO_KEYS:NoNodeNoKeys:no node and no keys to build one
+RCVD_INVALID_MSG_FOR_STATE:RcvdInvalidMsgForState:invalid msg type for current state
+TAG_OUT_OF_RANGE:TagOutOfRange:message tag of of range
+UNEXPECTED_MSG_TYPE:UnexpectedMsgType:unexpected message type
+UNKNOWN_CLIENT:UnknownClient:client unknown, not in registry
+WRONG_NUMBER_OF_BYTES_IN_ATTRS:WrongNumberOfBytesInAttrs:wrong number of bytes in attrs
