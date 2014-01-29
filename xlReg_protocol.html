@@ -105,10 +105,6 @@ the connection.</p>
 <p>Otherwise iv2 and key2 will be used in further messages between this
 client and server.</p>
 
-<h2>Protobuf Protocol</h2>
-
-<p><a href="xlReg_protobuf.html">xlReg Protobuf protocol</a></p>
-
 <h2>Registry Credentials</h2>
 
 <p>Any XLReg server will profide credentials upon request.<br />
@@ -148,6 +144,33 @@ listens on <code>44444</code>, the port conventionally used for xlReg testing.</
 <p>The <code>Go</code> version of the xlReg client provides functions to read and write
 serialized RegCred files (<code>xlattice_go.reg.ParseRegCred()</code> and
 <code>xlattice_go.reg.String()</code> respectively.</p>
+
+<h2>The Role of Protocol Buffers</h2>
+
+<p>All xlReg client-server sessions must begin with a Hello/Reply sequence,
+which establishes the identify of the server and determines the AES IV
+and key used to encrypt all further messages in the session.  While the
+Hello/Reply sequence is specified in terms of a pattern of bits on the
+wire, ClientMsg and OKMsg are specified by a
+<a href="http://code.google.com/p/protobuf">Google Protocol Buffers</a>
+protocol description file, <code>p.proto</code>.  This is used to generate libraries
+specific to the particular language.</p>
+
+<p>Any particular XLRegMsg message is first translated into wire format
+by a Protobuf library call, then PKCS7-padded to a whole number of
+16-byte AES blocks, and then AES-encrypted using the IV and key set
+during the Hello/Reply sequence.  In Go this is done by a call to
+    EncodePadEncrypt(msg *XLRegMsg, engine cipeher.BlockMode)
+which returns either a byte slice or an error.</p>
+
+<p>The receiver inverts this process.  It gets a byte slice off the wire
+and makes a call to
+    DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode)
+which returns either a pointer to an XLRegMsg or an error.</p>
+
+<h2>XLReg Protobuf Protocol Description</h2>
+
+<p><a href="xlReg_protobuf.html">xlReg Protobuf protocol</a></p>
 
 <h2>Client and OK</h2>
 
