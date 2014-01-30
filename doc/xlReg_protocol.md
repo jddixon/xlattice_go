@@ -39,7 +39,9 @@ of ciphertext, so an IV is used instead.
 
 Clients should encrypt the message using RSA-OAEP, SHA1, and a 20-byte
 random value, the oaepSalt.  No label is used.  In Go this is done using
+
 	ciphertext,err = rsa.EncryptOAEP(sha, oaepSalt, ck, data, nil)
+
 where `sha` represents an instance of the SHA1 hash function and `ck` is
 an RSA public key.
 
@@ -52,7 +54,9 @@ The message to be encoded must not be longer than the length of modulus
 less twice the hash length plus 2.  As we use SHA1 the hash length is 
 20 bytes, so for a 1024-bit = 128 byte RSA key the maximum message length
 is 
+
 	128 - (2 * 20 + 2) = 86 bytes
+
 The hello message is 60 bytes long and so fits.  We recommend using 1024-bit
 RSA keys for testing but 2048-bit or larger in production.
 
@@ -89,10 +93,6 @@ the connection.
 
 Otherwise iv2 and key2 will be used in further messages between this 
 client and server.
-
-## Protobuf Protocol
-
-[xlReg Protobuf protocol](xlReg_protobuf.html)
 
 ## Registry Credentials
 
@@ -132,11 +132,72 @@ The `Go` version of the xlReg client provides functions to read and write
 serialized RegCred files (`xlattice_go.reg.ParseRegCred()` and
 `xlattice_go.reg.String()` respectively.
 
+## The Role of Protocol Buffers
+
+All xlReg client-server sessions must begin with a Hello/Reply sequence, 
+which establishes the identify of the server and determines the AES IV 
+and key used to encrypt all further messages in the session.  While the
+Hello/Reply sequence is specified in terms of a pattern of bits on the
+wire, ClientMsg and OKMsg are specified by a 
+[Google Protocol Buffers](http://code.google.com/p/protobuf)
+protocol description file, `p.proto`.  This is used to generate libraries 
+specific to the particular language.  
+
+Any particular XLRegMsg message is first translated into wire format 
+by a Protobuf library call, then PKCS7-padded to a whole number of 
+16-byte AES blocks, and then AES-encrypted using the IV and key set
+during the Hello/Reply sequence.  In Go this is done by a call to
+    EncodePadEncrypt(msg *XLRegMsg, engine cipeher.BlockMode)
+which returns either a byte slice or an error.  
+
+The receiver inverts this process.  It gets a byte slice off the wire
+and makes a call to 
+    DecryptUnpadDecode(ciphertext []byte, engine cipher.BlockMode) 
+which returns either a pointer to an XLRegMsg or an error.
+
+## XLReg Protobuf Protocol Description
+
+[xlReg Protobuf protocol](xlReg_protobuf.html)
+
 ## Client and OK
+
+The ClientMsg, like all other XLRegMsg types, can only be sent to 
+the server after AES encryption is set up by the Hello/Reply sequnce.
+The message descriptions that follow are expressed in terms of the
+Protobuf message spec.
 
 ### Client Message
 
+The formal spec provides two versions of the Client message, one 
+containing a Token and the other only the ClientID.  At this time
+only the token-based message should be used.
+
+The token embedded in the client message consists of
+
+* the client **Name**, whose leading character should be a letter; other 
+  characters should be alphanumeric
+* an unsigned 64-bit **Attrs** field; this is the client's proposed 
+  value (and is ignored in the current implementation)
+* a serialized RSA public key, the **CommsKey**, used for encrypting 
+  (small) messages
+* another serialzied RSA public key, the **SigKey**, used only for
+  creating digital signatures
+* an array of strings, **MyEnds**, which must be the serialized TCP/IP
+  address, including port number, that the prospective member listens on
+* and finally **DigSig**, the RSA/SHA1 digital signature over each of 
+  the preceding fields, in order
+
+Note that the ClientID should **not** be included in the token; it is
+assigned by the server in response to this message.
+
 ### OK Message
+
+The server examines the client message on receipt.  If the message is
+ill-formed, the server simply closes the connection and discards the message.
+Otherwise it determines the value of the **Attrs** field for the client
+(currently it just accepts the client's proposed value) constructs a unique 
+random ID for the client.  This is a 256-bit / 32-byte **ClientID**.  
+The AES-encrypted reply to the client contains both of these fields.
 
 ## Create and CreateReply
 

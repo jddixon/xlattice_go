@@ -32,8 +32,8 @@ the configuration data other members have registered.
 
 ## u
 
-[A store organized by content key](u.md)
+[A store organized by content key](u.html)
 
 ## rnglib
 
-[A Go random number generator](rnglib)
+[A Go random number generator](rnglib.html)
