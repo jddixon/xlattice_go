@@ -2,6 +2,7 @@ package overlay
 
 // xlattice_go/overlay/nameKeyedReaderI.go
 
+// This call is synchronous: it blocks
 type NameKeyedReaderI interface {
-	Get(key string, listener GetCallBackI)
+	Get(key string) error
 }

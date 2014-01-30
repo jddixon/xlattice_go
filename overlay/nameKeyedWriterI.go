@@ -2,7 +2,8 @@ package overlay
 
 // xlattice_go/overlay/nameKeyedWriterI.go
 
+// This call is synchronous: it blocks.
 type NameKeyedWriterI interface {
-	Delete(key string, listener DelCallBackI)
-	Put(key string, buffer []byte, listener PutCallBackI)
+	Delete(key string) error
+	Put(key string, buffer []byte) error
 }
