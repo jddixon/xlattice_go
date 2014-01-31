@@ -1,11 +1,12 @@
-package node
+package nodeID
 
-// xlattice_go/node/id_map_test.go
+// xlattice_go/nodeID/id_map_test.go
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
 	"fmt"
-	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
@@ -15,6 +16,77 @@ var _ = fmt.Print
 const (
 	MY_MAX_DEPTH = uint(16)
 )
+
+// -- MockBaseNode --------------------------------------------------
+type MockBaseNode struct {
+	id   *NodeID
+	name string
+}
+
+func NewMockBaseNode(id *NodeID, name string) *MockBaseNode {
+	return &MockBaseNode{
+		id:   id,
+		name: name,
+	}
+}
+func (mbn *MockBaseNode) GetNodeID() *NodeID {
+	return mbn.id
+}
+
+func (mbn *MockBaseNode) GetName() string {
+	return mbn.name
+}
+
+// -- utility functions ---------------------------------------------
+func (s *XLSuite) makePubKey(c *C) *rsa.PublicKey {
+	key, err := rsa.GenerateKey(rand.Reader, 512) // 512 because cheaper
+	c.Assert(err, IsNil)
+	return &key.PublicKey
+}
+
+func (s *XLSuite) makePeerGivenID(c *C, rng *xr.PRNG, name string,
+	id []byte) (member *MockBaseNode) {
+
+	nodeID, err := New(id)
+	c.Assert(err, IsNil)
+
+	member = NewMockBaseNode(nodeID, name)
+	c.Assert(err, IsNil)
+	return
+}
+func (s *XLSuite) makeTopAndBottomBNI(c *C, rng *xr.PRNG) (
+	topBNI, bottomBNI *MockBaseNode) {
+
+	// top contains  a slice of SHA1_LEN 0xFF as NodeID
+	t := make([]byte, SHA1_LEN)
+	for i := 0; i < SHA1_LEN; i++ {
+		t[i] = byte(0xff)
+	}
+	topBNI = s.makePeerGivenID(c, rng, "top", t)
+
+	// bottom contains  a slice of SHA1_LEN zeroes as NodeID
+	b := make([]byte, SHA1_LEN)
+	bottomBNI = s.makePeerGivenID(c, rng, "bottom", b)
+
+	return topBNI, bottomBNI
+}
+
+// Create a randomish Peer for use as a BNI, assigning it a
+// nodeID based upon the variable-length list of ints passed
+
+func (s *XLSuite) makeABNI(c *C, rng *xr.PRNG, name string, id ...int) (
+	bni *MockBaseNode) {
+
+	t := make([]byte, SHA1_LEN)
+	for i := 0; i < len(id); i++ {
+		t[i] = byte(id[i])
+	}
+	bni = s.makePeerGivenID(c, rng, name, t)
+	c.Assert(bni, Not(IsNil))
+	return
+}
+
+// -- tests proper --------------------------------------------------
 
 func (s *XLSuite) TestIDMapTools(c *C) {
 	if VERBOSITY > 0 {
@@ -72,12 +144,12 @@ func (s *XLSuite) TestTopBottomIDMap(c *C) {
 	c.Assert(lowest.Value, Equals, bottomBNI)
 	c.Assert(highest.Value, Equals, topBNI)
 
-	c.Assert(xi.SameNodeID(
-		lowest.Value.(BaseNodeI).GetNodeID(), bottomBNI.GetNodeID()),
+	c.Assert(SameNodeID(
+		lowest.Value.(*MockBaseNode).GetNodeID(), bottomBNI.GetNodeID()),
 		Equals, true)
 
-	c.Assert(lowest.Value.(BaseNodeI).GetName(), Equals, "bottom")
-	c.Assert(highest.Value.(BaseNodeI).GetName(), Equals, "top")
+	c.Assert(lowest.Value.(*MockBaseNode).GetName(), Equals, "bottom")
+	c.Assert(highest.Value.(*MockBaseNode).GetName(), Equals, "top")
 }
 
 func (s *XLSuite) TestShallowIDMap(c *C) {
@@ -103,21 +175,21 @@ func (s *XLSuite) TestShallowIDMap(c *C) {
 	c.Assert(err, IsNil)
 	cell3 := &m.Cells[3]
 	c.Assert(cell3.Value, NotNil)
-	c.Assert(cell3.Value.(BaseNodeI).GetName(), Equals, baseNode3.GetName())
+	c.Assert(cell3.Value.(*MockBaseNode).GetName(), Equals, baseNode3.GetName())
 
 	// INSERT BNI 2 ------------------------------------------------
 	err = m.Insert(key2, baseNode2)
 	c.Assert(err, IsNil)
 	cell2 := &m.Cells[2]
 	c.Assert(cell2.Value, NotNil)
-	c.Assert(cell2.Value.(BaseNodeI).GetName(), Equals, baseNode2.GetName())
+	c.Assert(cell2.Value.(*MockBaseNode).GetName(), Equals, baseNode2.GetName())
 
 	// INSERT BNI 1 ------------------------------------------------
 	err = m.Insert(key1, baseNode1)
 	c.Assert(err, IsNil)
 	cell1 := &m.Cells[1]
 	c.Assert(cell1.Value, NotNil)
-	c.Assert(cell1.Value.(BaseNodeI).GetName(), Equals, baseNode1.GetName())
+	c.Assert(cell1.Value.(*MockBaseNode).GetName(), Equals, baseNode1.GetName())
 
 	for i := 0; i < 256; i++ {
 		cell := &m.Cells[i]
@@ -231,19 +303,19 @@ func (s *XLSuite) TestDeeperIDMap(c *C) {
 	c.Assert(value, Equals, baseNode12)
 }
 
-func (s *XLSuite) addAnID(c *C, m *IDMap, baseNode BaseNodeI) {
+func (s *XLSuite) addAnID(c *C, m *IDMap, baseNode *MockBaseNode) {
 	key := baseNode.GetNodeID().Value()
 	c.Assert(key, NotNil)
 	err := m.Insert(key, baseNode)
 	c.Assert(err, IsNil)
 }
-func (s *XLSuite) findAnID(c *C, m *IDMap, baseNode BaseNodeI) {
+func (s *XLSuite) findAnID(c *C, m *IDMap, baseNode *MockBaseNode) {
 	key := baseNode.GetNodeID().Value()
 	c.Assert(key, NotNil)
 	p, err := m.Find(key)
 	c.Assert(err, IsNil)
 	c.Assert(p, NotNil)
-	keyBack := p.(BaseNodeI).GetNodeID().Value()
+	keyBack := p.(*MockBaseNode).GetNodeID().Value()
 	c.Assert(bytes.Equal(key, keyBack), Equals, true)
 }
 

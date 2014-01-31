@@ -1,12 +1,11 @@
-package node
+package nodeID
 
-// xlattice_go/node/bn_map_test.go
+// xlattice_go/nodeID/bn_map_test.go
 
 import (
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
-	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
@@ -23,7 +22,7 @@ func (s *XLSuite) makePubKey(c *C) *rsa.PublicKey {
 func (s *XLSuite) makePeerGivenID(c *C, rng *xr.PRNG, name string,
 	id []byte) (member *Peer) {
 
-	nodeID, err := xi.New(id)
+	nodeID, err := New(id)
 	c.Assert(err, IsNil)
 
 	ck := s.makePubKey(c)
@@ -106,7 +105,7 @@ func (s *XLSuite) TestTopBottomBNMap(c *C) {
 
 	// THESE THREE TESTS ARE LOGICALLY EQUIVALENT ----------------------
 	c.Assert(lowest.CellNode, Equals, topBNI)
-	c.Assert(xi.SameNodeID(lowest.CellNode.GetNodeID(), topBNI.GetNodeID()),
+	c.Assert(SameNodeID(lowest.CellNode.GetNodeID(), topBNI.GetNodeID()),
 		Equals, true)
 	c.Assert(topBNI.Equal(lowest.CellNode), Equals, true)
 	// END LOGICALLY EQUIVALENT -----------------------------------------
@@ -299,7 +298,7 @@ func (s *XLSuite) findABaseNode(c *C, pm *BNIMap, baseNode BaseNodeI) {
 	// END
 	c.Assert(p, Not(IsNil))
 	nodeIDBack := p.GetNodeID()
-	c.Assert(xi.SameNodeID(nodeID, nodeIDBack), Equals, true)
+	c.Assert(SameNodeID(nodeID, nodeIDBack), Equals, true)
 
 }
 func (s *XLSuite) TestFindFlatBaseNodes(c *C) {

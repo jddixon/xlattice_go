@@ -1,10 +1,9 @@
-package node
+package nodeID
 
-// xlattice_go/node/bni_map.go
+// xlattice_go/nodeID/bni_map.go
 
 import (
 	"fmt"
-	xi "github.com/jddixon/xlattice_go/nodeID"
 )
 
 var _ = fmt.Print
