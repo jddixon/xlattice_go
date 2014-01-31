@@ -51,9 +51,12 @@ before encryption.  The first block of plaintext has no previous block
 of ciphertext, so an IV is used instead.</p>
 
 <p>Clients should encrypt the message using RSA-OAEP, SHA1, and a 20-byte
-random value, the oaepSalt.  No label is used.  In Go this is done using
-    ciphertext,err = rsa.EncryptOAEP(sha, oaepSalt, ck, data, nil)
-where <code>sha</code> represents an instance of the SHA1 hash function and <code>ck</code> is
+random value, the oaepSalt.  No label is used.  In Go this is done using</p>
+
+<pre><code>ciphertext,err = rsa.EncryptOAEP(sha, oaepSalt, ck, data, nil)
+</code></pre>
+
+<p>where <code>sha</code> represents an instance of the SHA1 hash function and <code>ck</code> is
 an RSA public key.</p>
 
 <p>In production all of the random values (IV, key, salt, and oaepSalt)
@@ -64,9 +67,12 @@ secure, crypto-quality random number generator.</p>
 The message to be encoded must not be longer than the length of modulus
 less twice the hash length plus 2.  As we use SHA1 the hash length is
 20 bytes, so for a 1024-bit = 128 byte RSA key the maximum message length
-is
-    128 - (2 * 20 + 2) = 86 bytes
-The hello message is 60 bytes long and so fits.  We recommend using 1024-bit
+is</p>
+
+<pre><code>128 - (2 * 20 + 2) = 86 bytes
+</code></pre>
+
+<p>The hello message is 60 bytes long and so fits.  We recommend using 1024-bit
 RSA keys for testing but 2048-bit or larger in production.</p>
 
 <p>The Hello message is sent to the server over a TCP connection using its
@@ -174,9 +180,45 @@ which returns either a pointer to an XLRegMsg or an error.</p>
 
 <h2>Client and OK</h2>
 
+<p>The ClientMsg, like all other XLRegMsg types, can only be sent to
+the server after AES encryption is set up by the Hello/Reply sequnce.
+The message descriptions that follow are expressed in terms of the
+Protobuf message spec.</p>
+
 <h3>Client Message</h3>
 
+<p>The formal spec provides two versions of the Client message, one
+containing a Token and the other only the ClientID.  At this time
+only the token-based message should be used.</p>
+
+<p>The token embedded in the client message consists of</p>
+
+<ul>
+<li>the client <strong>Name</strong>, whose leading character should be a letter; other
+characters should be alphanumeric</li>
+<li>an unsigned 64-bit <strong>Attrs</strong> field; this is the client&rsquo;s proposed
+value (and is ignored in the current implementation)</li>
+<li>a serialized RSA public key, the <strong>CommsKey</strong>, used for encrypting
+(small) messages</li>
+<li>another serialzied RSA public key, the <strong>SigKey</strong>, used only for
+creating digital signatures</li>
+<li>an array of strings, <strong>MyEnds</strong>, which must be the serialized TCP/IP
+address, including port number, that the prospective member listens on</li>
+<li>and finally <strong>DigSig</strong>, the RSA/SHA1 digital signature over each of
+the preceding fields, in order</li>
+</ul>
+
+<p>Note that the ClientID should <strong>not</strong> be included in the token; it is
+assigned by the server in response to this message.</p>
+
 <h3>OK Message</h3>
+
+<p>The server examines the client message on receipt.  If the message is
+ill-formed, the server simply closes the connection and discards the message.
+Otherwise it determines the value of the <strong>Attrs</strong> field for the client
+(currently it just accepts the client&rsquo;s proposed value) constructs a unique
+random ID for the client.  This is a 256-bit / 32-byte <strong>ClientID</strong>.<br />
+The AES-encrypted reply to the client contains both of these fields.</p>
 
 <h2>Create and CreateReply</h2>
 
