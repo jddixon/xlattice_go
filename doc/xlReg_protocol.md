@@ -199,11 +199,51 @@ Otherwise it determines the value of the **Attrs** field for the client
 random ID for the client.  This is a 256-bit / 32-byte **ClientID**.  
 The AES-encrypted reply to the client contains both of these fields.
 
+* **ClientID**, a 32-byte byte array 
+* **Attrs**, an unsigned 64-bit int
+
 ## Create and CreateReply
+
+The Create/CreateReply sequence is necessary only if the cluster does not
+already exist.  
 
 ### Create Message
 
+A cluster definition must be sent to the registry for each cluster
+once and only once.  A second cluster definition with the name of an
+existing cluster will be rejected by the server, which will reply
+with an XLReg Error message rather than a CreateReply.
+
+The cluster Create message consists of 
+
+*  **ClusterName**, which should be an acceptable xlReg name, and so 
+   begin with a letter (`[a-zA-Z_]`) and otherwise alphanumeric 
+   (`[a-zA-Z_0-9\`).
+* **ClusterAttrs**, an unsigned 64-bit integer, which currently is ignored
+* **ClusterSize**, the maximum number of members in the cluster; this is
+  a 32-bit integer constrained to be in the range 1..64 inclusive
+* **EndPointCount**, which in the current implementation should be 1 or 2
+
+The name must not already be in use.
+
+The `EndPointCount` is the number of endpoints that each cluster member
+must have.  A member must listen on each address/port number listed.  
+Conventionally `endPoint[0]` is used for intra-clusgter communications,
+communications between clusgter members, and `endPoint[1]`, if defined,
+is used by clients to reach clusgter members.
+
+The client creating the cluster need not be one of the members.  It is
+in fact convenient to use a dedicated admin client to create the cluster.
+
 ### CreateReply Message
+
+The `CreateReply` message is sent by the server to the client to confirm
+cluster attributes.  It consists of 
+
+* **ClusterID**, wich is assigned by the server
+* ** ClusterSize***, the maximum number of members, which may have been
+  adjusted by the server
+* **EndPointCount***, which also is subject to change by the server
 
 ## Join and JoinReply
 
