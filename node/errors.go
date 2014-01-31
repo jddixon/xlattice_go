@@ -5,8 +5,6 @@ import (
 )
 
 var (
-	MaxDepthExceeded   = e.New("max IDMap depth exceeded")
-	MaxDepthTooLarge   = e.New("max IDMap depth too large")
 	NilConnection      = e.New("nil connection argument")
 	NilConnector       = e.New("nil connector argument")
 	NilEndPoint        = e.New("nil endPoint argument")

@@ -31,7 +31,7 @@ type Node struct {
 	peers       []Peer
 	connections []xt.ConnectionI // volatile
 	gateways    []Gateway
-	peerMap     *IDMap
+	peerMap     *xi.IDMap
 	BaseNode    // listed last, but serialize first
 }
 
@@ -80,7 +80,7 @@ func New(name string, id *xi.NodeID, lfs string,
 		endPoints []xt.EndPointI
 		acceptors []xt.AcceptorI // each must share index with endPoint
 		overlays  []xo.OverlayI
-		m         *IDMap
+		m         *xi.IDMap
 		peers     []Peer // an empty slice
 	)
 
@@ -99,7 +99,7 @@ func New(name string, id *xi.NodeID, lfs string,
 		}
 	}
 	if err == nil {
-		m, err = NewNewIDMap()
+		m, err = xi.NewNewIDMap()
 	}
 	if err == nil {
 		if p != nil {
@@ -481,11 +481,11 @@ func Parse(s string) (node *Node, rest []string, err error) {
 }
 func ParseFromStrings(ss []string) (node *Node, rest []string, err error) {
 
-	var m *IDMap
+	var m *xi.IDMap
 	bn, rest, err := ParseBNFromStrings(ss, "node")
 	if err == nil {
 		node = &Node{BaseNode: *bn}
-		m, err = NewNewIDMap()
+		m, err = xi.NewNewIDMap()
 		if err == nil {
 			node.peerMap = m
 		}
