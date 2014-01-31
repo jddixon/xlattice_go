@@ -34,14 +34,14 @@ type RegCluster struct {
 	epCount       uint   // a positive integer, for now is 1 or 2
 	Members       []*MemberInfo
 	MembersByName map[string]*MemberInfo
-	MembersByID   *xn.IDMap
+	MembersByID   *xi.IDMap
 	mu            sync.RWMutex
 }
 
 func NewRegCluster(name string, id *xi.NodeID, attrs uint64,
 	maxSize, epCount uint) (rc *RegCluster, err error) {
 
-	var m *xn.IDMap
+	var m *xi.IDMap
 
 	if name == "" {
 		name = "xlCluster"
@@ -54,7 +54,7 @@ func NewRegCluster(name string, id *xi.NodeID, attrs uint64,
 		//err = ClusterMustHaveTwo
 		err = ClusterMustHaveMember
 	} else {
-		m, err = xn.NewNewIDMap()
+		m, err = xi.NewNewIDMap()
 	}
 	if err == nil {
 		rc = &RegCluster{

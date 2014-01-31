@@ -9,7 +9,6 @@ import (
 	"fmt"
 	xl "github.com/jddixon/xlattice_go"
 	xf "github.com/jddixon/xlattice_go/crypto/filters"
-	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
@@ -34,8 +33,8 @@ type Registry struct {
 	idFilter xf.BloomSHAI
 
 	ClustersByName map[string]*RegCluster // volatile, not serialized
-	ClustersByID   *xn.IDMap              // -ditto-
-	RegMembersByID *xn.IDMap              // -ditto-
+	ClustersByID   *xi.IDMap              // -ditto-
+	RegMembersByID *xi.IDMap              // -ditto-
 	mu             sync.RWMutex           // -ditto-
 
 	// the extended XLattice node, so id, lfs, keys, etc
@@ -50,7 +49,7 @@ func NewRegistry(clusters []*RegCluster,
 
 	var (
 		idFilter      xf.BloomSHAI
-		m             *xn.IDMap
+		m             *xi.IDMap
 		serverVersion xu.DecimalVersion
 	)
 	serverVersion, err = xu.ParseDecimalVersion(xl.VERSION)
@@ -64,7 +63,7 @@ func NewRegistry(clusters []*RegCluster,
 			idFilter, err = xf.NewMappedBloomSHA(opt.M, opt.K, opt.BackingFile)
 		}
 		if err == nil {
-			m, err = xn.NewNewIDMap()
+			m, err = xi.NewNewIDMap()
 		}
 	}
 	if err == nil {
