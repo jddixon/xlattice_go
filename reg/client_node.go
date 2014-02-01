@@ -421,6 +421,7 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 		epCount := uint32(response.GetEndPointCount())
 		if err == nil {
 			clusterSizeNow := response.GetClusterSize()
+
 			if cn.ClusterSize != clusterSizeNow {
 				cn.ClusterSize = clusterSizeNow
 				cn.Members = make([]*MemberInfo, cn.ClusterSize)
@@ -442,7 +443,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		fmt.Printf("** ENTERING GetAndMembers for %s with nil clusterID! **\n",
 			cn.name)
 	}
-	MAX_GET := 16
+	MAX_GET := 32			// 2014-01-31: was 16
 	if cn.Members == nil {
 		cn.Members = make([]*MemberInfo, cn.ClusterSize)
 	}
@@ -499,25 +500,29 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			if stillToGet.None() {
 				break
 			}
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(50 * time.Millisecond)		// WAS 10
 		}
 	}
 	if err == nil {
 		selfID := cn.regID.Value()
 
 		for i := uint(0); i < uint(cn.ClusterSize); i++ {
+
 			// XXX WORKING HERE ///////////////////////////
 			member := cn.Members[i]
 			// XXX THIS HAPPENS WITH MEMBER 1 if running upax_go tests
 			if member == nil {
 				fmt.Printf("cluster member %d is nil\n", i)
 			}
+			
+			// XXX NPE HERE if member is nil
 			id := member.GetNodeID()
 			if id == nil {
 				fmt.Printf("member has no nodeID!\n")
 			}
 			memberID := id.Value()
 			// END HERE ///////////////////////////////////
+
 			if bytes.Equal(selfID, memberID) {
 				cn.SelfIndex = uint32(i)
 				break

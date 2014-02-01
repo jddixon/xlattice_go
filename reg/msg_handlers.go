@@ -91,7 +91,8 @@ func doClientMsg(h *InHandler) {
 		if id == nil {
 			nodeID, err = h.reg.UniqueNodeID()
 			id := nodeID.Value()
-			h.reg.Logger.Printf("assigned new ClientID %x\n", id)
+			h.reg.Logger.Printf("assigned new ClientID %xi, user %s\n", 
+				id, name)
 		} else {
 			// must be known to the registry
 			nodeID, err = xi.New(id)
@@ -217,6 +218,7 @@ func doCreateMsg(h *InHandler) {
 //
 
 func doJoinMsg(h *InHandler) {
+
 	var err error
 	defer func() {
 		h.errOut = err
@@ -239,6 +241,14 @@ func doJoinMsg(h *InHandler) {
 
 	clusterName = joinMsg.GetClusterName() // will be "" if absent
 	clusterID = joinMsg.GetClusterID()     // will be nil if absent
+
+	if clusterID != nil {
+		h.reg.Logger.Printf("JOIN: cluster %x, new member %s\n", 
+				clusterID, h.thisMember.GetName())
+	} else {
+		h.reg.Logger.Printf("JOIN: cluster %s, new member %s\n", 
+				clusterName, h.thisMember.GetName())
+	}
 
 	if clusterID == nil && clusterName == "" {
 		// if neither is present, we will use any cluster already
@@ -279,6 +289,9 @@ func doJoinMsg(h *InHandler) {
 		err = cluster.AddMember(h.thisMember)
 	}
 	if err == nil {
+		h.reg.Logger.Printf("cluster %x, new member %s\n", 
+				cluster.ID, h.thisMember.GetName())
+
 		// Prepare reply to client ----------------------------------
 		h.cluster = cluster
 		clusterID = cluster.ID
@@ -296,6 +309,10 @@ func doJoinMsg(h *InHandler) {
 		}
 		// Set exit state -------------------------------------------
 		h.exitState = JOIN_RCVD
+	}
+	if err != nil {
+		h.reg.Logger.Printf("cluster %x, new member %s, ERROR %s\n", 
+				cluster.ID, h.thisMember.GetName(), err.Error())
 	}
 }
 
