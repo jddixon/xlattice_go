@@ -272,11 +272,33 @@ adjusted by the server</li>
 <li><strong>EndPointCount</strong>*, which also is subject to change by the server</li>
 </ul>
 
+<h3>Error Message</h3>
+
+<p>In the current implementation this message has a single field, an
+<code>ErrDesc</code> string.</p>
+
 <h2>Join and JoinReply</h2>
 
 <h3>Join Message</h3>
 
+<p>In the current implementation a Join message has only a single field,
+<code>ClusterName</code>, a string.  If the cluster exists and few members have
+joined than the cluster size, the xlReg server will sdnd a JoinReply
+message.  Otherwise, the server will send an error message and close
+the connection.</p>
+
 <h3>JoinReply Message</h3>
+
+<p>If a Join request succeeds, the server responds with a JoinReply
+containing:</p>
+
+<ul>
+<li>the <strong>endPontCount</strong>, a possibly adjusted endPoint count and</li>
+<li><strong>clusterID</strong>, the usual 256-bit binary value</li>
+</ul>
+
+<p>This is the point at which prospective members knowing only the
+cluster name will learn the cluster ID.</p>
 
 <h2>GetCluster and ClusterMembers</h2>
 
