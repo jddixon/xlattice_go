@@ -83,7 +83,7 @@ func (n *NodeID) Compare(any interface{}) (int, error) {
 	return bytes.Compare(n.Value(), other.Value()), nil
 }
 
-func SameNodeID(a, b *NodeID) (same bool) {
+func SameNodeID(a, b *NodeID) bool {
 	if a == nil || b == nil {
 		return false
 	}

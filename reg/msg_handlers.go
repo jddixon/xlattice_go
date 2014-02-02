@@ -91,7 +91,7 @@ func doClientMsg(h *InHandler) {
 		if id == nil {
 			nodeID, err = h.reg.UniqueNodeID()
 			id := nodeID.Value()
-			h.reg.Logger.Printf("assigned new ClientID %xi, user %s\n", 
+			h.reg.Logger.Printf("assigned new ClientID %xi, user %s\n",
 				id, name)
 		} else {
 			// must be known to the registry
@@ -174,10 +174,10 @@ func doCreateMsg(h *InHandler) {
 	} else {
 		fmt.Printf("doCreateMsg: new cluster %s\n", clusterName)
 		attrs := uint64(0)
-		if clusterSize < 1 {
-			clusterSize = 1
-		} else if clusterSize > 64 {
-			clusterSize = 64
+		if clusterSize < MIN_CLUSTER_SIZE {
+			clusterSize = MIN_CLUSTER_SIZE
+		} else if clusterSize > MAX_CLUSTER_SIZE {
+			clusterSize = MAX_CLUSTER_SIZE
 		}
 		// Assign a quasi-random cluster ID, adding it to the registry
 		clusterID, err = h.reg.UniqueNodeID()
@@ -243,11 +243,11 @@ func doJoinMsg(h *InHandler) {
 	clusterID = joinMsg.GetClusterID()     // will be nil if absent
 
 	if clusterID != nil {
-		h.reg.Logger.Printf("JOIN: cluster %x, new member %s\n", 
-				clusterID, h.thisMember.GetName())
+		h.reg.Logger.Printf("JOIN: cluster %x, new member %s\n",
+			clusterID, h.thisMember.GetName())
 	} else {
-		h.reg.Logger.Printf("JOIN: cluster %s, new member %s\n", 
-				clusterName, h.thisMember.GetName())
+		h.reg.Logger.Printf("JOIN: cluster %s, new member %s\n",
+			clusterName, h.thisMember.GetName())
 	}
 
 	if clusterID == nil && clusterName == "" {
@@ -289,8 +289,8 @@ func doJoinMsg(h *InHandler) {
 		err = cluster.AddMember(h.thisMember)
 	}
 	if err == nil {
-		h.reg.Logger.Printf("cluster %x, new member %s\n", 
-				cluster.ID, h.thisMember.GetName())
+		h.reg.Logger.Printf("cluster %x, new member %s\n",
+			cluster.ID, h.thisMember.GetName())
 
 		// Prepare reply to client ----------------------------------
 		h.cluster = cluster
@@ -311,8 +311,8 @@ func doJoinMsg(h *InHandler) {
 		h.exitState = JOIN_RCVD
 	}
 	if err != nil {
-		h.reg.Logger.Printf("cluster %x, new member %s, ERROR %s\n", 
-				cluster.ID, h.thisMember.GetName(), err.Error())
+		h.reg.Logger.Printf("cluster %x, new member %s, ERROR %s\n",
+			cluster.ID, h.thisMember.GetName(), err.Error())
 	}
 }
 
@@ -366,8 +366,8 @@ func doGetMsg(h *InHandler) {
 
 	if err == nil {
 		size := uint(cluster.Size()) // actual size, not MaxSize
-		if size > 64 {               // yes, should be impossible
-			size = 64
+		if size > MAX_CLUSTER_SIZE { // yes, should be impossible
+			size = MAX_CLUSTER_SIZE
 		}
 		weHave := xu.LowNMap(size)
 		whichToSend := whichRequested.Intersection(weHave)

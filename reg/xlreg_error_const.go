@@ -3,7 +3,7 @@ package reg
 // xlreg_error_const.go
 
 const (
-	BAD_ATTRS_LINE = iota
+	BAD_ATTRS_LINE = -1 - iota
 	BAD_VERSION
 	CANT_FIND_CLUSTER_BY_ID
 	CANT_FIND_CLUSTER_BY_NAME

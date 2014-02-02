@@ -427,7 +427,8 @@ func (cn *ClientNode) JoinAndReply() (err error) {
 				cn.Members = make([]*MemberInfo, cn.ClusterSize)
 			}
 			cn.EpCount = epCount
-			// XXX This is just wrong: we already know the cluster ID
+			// This allows members knowing only the cluster name to
+			// get the ID when they join
 			id := response.GetClusterID()
 			// cn.ClusterID, err = xi.New(id)
 			_ = id // DO SOMETHING WITH IT  XXX
@@ -443,7 +444,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		fmt.Printf("** ENTERING GetAndMembers for %s with nil clusterID! **\n",
 			cn.name)
 	}
-	MAX_GET := 32			// 2014-01-31: was 16
+	MAX_GET := 32 // 2014-01-31: was 16
 	if cn.Members == nil {
 		cn.Members = make([]*MemberInfo, cn.ClusterSize)
 	}
@@ -500,7 +501,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			if stillToGet.None() {
 				break
 			}
-			time.Sleep(50 * time.Millisecond)		// WAS 10
+			time.Sleep(50 * time.Millisecond) // WAS 10
 		}
 	}
 	if err == nil {
@@ -514,7 +515,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 			if member == nil {
 				fmt.Printf("cluster member %d is nil\n", i)
 			}
-			
+
 			// XXX NPE HERE if member is nil
 			id := member.GetNodeID()
 			if id == nil {

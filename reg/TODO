@@ -6,8 +6,8 @@ xlattice_go/reg/TODO
         - server-side: msg_handler.go: doClientMsg()		            * DONE
         - client-side: ClientNode:ClientAndOK()		                    * DONE
 
-    * FIX: reg/ tests succeed, but upax_go tests fail with a nil
-        pointer err in client_node.go, about line 510
+    * FIX: reg/ tests succeed, but upax_go tests fail with a nil        * DONE
+        pointer err in client_node.go, about line 510                   * DONE
 
 2013-12-06
     * NewRegistry must populate indexes if clusters supplied
