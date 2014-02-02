@@ -220,11 +220,57 @@ Otherwise it determines the value of the <strong>Attrs</strong> field for the cl
 random ID for the client.  This is a 256-bit / 32-byte <strong>ClientID</strong>.<br />
 The AES-encrypted reply to the client contains both of these fields.</p>
 
+<ul>
+<li><strong>ClientID</strong>, a 32-byte byte array</li>
+<li><strong>Attrs</strong>, an unsigned 64-bit int</li>
+</ul>
+
 <h2>Create and CreateReply</h2>
+
+<p>The Create/CreateReply sequence is necessary only if the cluster does not
+already exist.</p>
 
 <h3>Create Message</h3>
 
+<p>A cluster definition must be sent to the registry for each cluster
+once and only once.  A second cluster definition with the name of an
+existing cluster will be rejected by the server, which will reply
+with an XLReg Error message rather than a CreateReply.</p>
+
+<p>The cluster Create message consists of</p>
+
+<ul>
+<li><strong>ClusterName</strong>, which should be an acceptable xlReg name, and so
+begin with a letter (<code>[a-zA-Z_]</code>) and otherwise alphanumeric
+(<code>[a-zA-Z_0-9\</code>).</li>
+<li><strong>ClusterAttrs</strong>, an unsigned 64-bit integer, which currently is ignored</li>
+<li><strong>ClusterSize</strong>, the maximum number of members in the cluster; this is
+a 32-bit integer constrained to be in the range 1..64 inclusive</li>
+<li><strong>EndPointCount</strong>, which in the current implementation should be 1 or 2</li>
+</ul>
+
+<p>The name must not already be in use.</p>
+
+<p>The <code>EndPointCount</code> is the number of endpoints that each cluster member
+must have.  A member must listen on each address/port number listed.<br />
+Conventionally <code>endPoint[0]</code> is used for intra-clusgter communications,
+communications between clusgter members, and <code>endPoint[1]</code>, if defined,
+is used by clients to reach clusgter members.</p>
+
+<p>The client creating the cluster need not be one of the members.  It is
+in fact convenient to use a dedicated admin client to create the cluster.</p>
+
 <h3>CreateReply Message</h3>
+
+<p>The <code>CreateReply</code> message is sent by the server to the client to confirm
+cluster attributes.  It consists of</p>
+
+<ul>
+<li><strong>ClusterID</strong>, wich is assigned by the server</li>
+<li>** ClusterSize***, the maximum number of members, which may have been
+adjusted by the server</li>
+<li><strong>EndPointCount</strong>*, which also is subject to change by the server</li>
+</ul>
 
 <h2>Join and JoinReply</h2>
 
