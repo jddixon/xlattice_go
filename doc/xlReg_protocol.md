@@ -245,11 +245,31 @@ cluster attributes.  It consists of
   adjusted by the server
 * **EndPointCount***, which also is subject to change by the server
 
+### Error Message
+
+In the current implementation this message has a single field, an
+`ErrDesc` string.  
+
 ## Join and JoinReply
 
 ### Join Message
 
+In the current implementation a Join message has only a single field,
+`ClusterName`, a string.  If the cluster exists and few members have
+joined than the cluster size, the xlReg server will sdnd a JoinReply
+message.  Otherwise, the server will send an error message and close 
+the connection.
+
 ### JoinReply Message
+
+If a Join request succeeds, the server responds with a JoinReply 
+containing:
+
+* the **endPontCount**, a possibly adjusted endPoint count and
+* **clusterID**, the usual 256-bit binary value
+
+This is the point at which prospective members knowing only the
+cluster name will learn the cluster ID.
 
 ## GetCluster and ClusterMembers
 
