@@ -265,23 +265,66 @@ the connection.
 If a Join request succeeds, the server responds with a JoinReply 
 containing:
 
-* the **endPontCount**, a possibly adjusted endPoint count and
-* **clusterID**, the usual 256-bit binary value
+* the **EndPointCount**, a possibly adjusted endPoint count and
+* **ClusterID**, the usual 256-bit binary value
 
 This is the point at which prospective members knowing only the
 cluster name will learn the cluster ID.
 
 ## GetCluster and ClusterMembers
 
+A client sends the xlReg server GetCluster messages until it has 
+information on all members or until some limit (MAX_GET in the Go code)
+has been exceeded.  The client does not have to be a member in order
+to make this request.
+
 ### GetCluster Message
 
+The message has two fields:
+
+* **ClusterID**, the 32-byte cluster ID, and
+* **Which**, a bit map identifying which members information is needed about
+
+The bit map is a little-endian sequence of 64 bits, with the low-order
+bits in each byte mapping to 0, 1, 2, and so forth.  The server ignores 
+any bits that are out of range, so 0xffffffff simply means "all members".
+The client maintains a local bit map identifying those members that it
+has information on.  It will loop until it has information on all members
+or until MAX_GET is exceeded.
+
 ### ClusterMembers Message
+
+The xlReg server replies to the GetCluster message with a ClusterMembers
+message consisting of 
+
+* **ClusterID**, the usual 256-bit cluster identifier
+* **Which**, a bit map identifying which members the message contains
+    information about, and
+* **Tokens**, an array of tokens as described above under the Client 
+    Message heading
+
+The tokens are in the same order as bits in the bit map, so the client
+iterates through the bit map and copies each token to the corresponding
+slot in its own members table.  
+
+If a cluster member is making this request -- that is, if the client has
+already joined the cluster -- the reply will normally contain a token
+for the requesting client.
+
+The xlReg server does not maintain state regarding which membership 
+information the client has collected.  If asked repeatedly for the same
+information, it will send the information to the client repeatedly.
 
 ## Bye and Ack
 
 ### Bye Message
 
-### OK Message
+The **Bye** is sent by the client to signal that the session is over.
+It contains no further information.
 
-## Error Message
+### Ack Message
+
+The server's reply is a simple **Ack**.  It contains no further 
+information.  After sending it, the server closes the connection.  On
+receiving an the Ack, the client does the same.
 
