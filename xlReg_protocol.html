@@ -293,8 +293,8 @@ the connection.</p>
 containing:</p>
 
 <ul>
-<li>the <strong>endPontCount</strong>, a possibly adjusted endPoint count and</li>
-<li><strong>clusterID</strong>, the usual 256-bit binary value</li>
+<li>the <strong>EndPointCount</strong>, a possibly adjusted endPoint count and</li>
+<li><strong>ClusterID</strong>, the usual 256-bit binary value</li>
 </ul>
 
 <p>This is the point at which prospective members knowing only the
@@ -302,17 +302,64 @@ cluster name will learn the cluster ID.</p>
 
 <h2>GetCluster and ClusterMembers</h2>
 
+<p>A client sends the xlReg server GetCluster messages until it has
+information on all members or until some limit (MAX_GET in the Go code)
+has been exceeded.  The client does not have to be a member in order
+to make this request.</p>
+
 <h3>GetCluster Message</h3>
 
+<p>The message has two fields:</p>
+
+<ul>
+<li><strong>ClusterID</strong>, the 32-byte cluster ID, and</li>
+<li><strong>Which</strong>, a bit map identifying which members information is needed about</li>
+</ul>
+
+<p>The bit map is a little-endian sequence of 64 bits, with the low-order
+bits in each byte mapping to 0, 1, 2, and so forth.  The server ignores
+any bits that are out of range, so 0xffffffff simply means &ldquo;all members&rdquo;.
+The client maintains a local bit map identifying those members that it
+has information on.  It will loop until it has information on all members
+or until MAX_GET is exceeded.</p>
+
 <h3>ClusterMembers Message</h3>
+
+<p>The xlReg server replies to the GetCluster message with a ClusterMembers
+message consisting of</p>
+
+<ul>
+<li><strong>ClusterID</strong>, the usual 256-bit cluster identifier</li>
+<li><strong>Which</strong>, a bit map identifying which members the message contains
+information about, and</li>
+<li><strong>Tokens</strong>, an array of tokens as described above under the Client
+Message heading</li>
+</ul>
+
+<p>The tokens are in the same order as bits in the bit map, so the client
+iterates through the bit map and copies each token to the corresponding
+slot in its own members table.</p>
+
+<p>If a cluster member is making this request &ndash; that is, if the client has
+already joined the cluster &ndash; the reply will normally contain a token
+for the requesting client.</p>
+
+<p>The xlReg server does not maintain state regarding which membership
+information the client has collected.  If asked repeatedly for the same
+information, it will send the information to the client repeatedly.</p>
 
 <h2>Bye and Ack</h2>
 
 <h3>Bye Message</h3>
 
-<h3>OK Message</h3>
+<p>The <strong>Bye</strong> is sent by the client to signal that the session is over.
+It contains no further information.</p>
 
-<h2>Error Message</h2>
+<h3>Ack Message</h3>
+
+<p>The server&rsquo;s reply is a simple <strong>Ack</strong>.  It contains no further
+information.  After sending it, the server closes the connection.  On
+receiving an the Ack, the client does the same.</p>
   <div class="f">
     <div class="logo" style="text-align: right">
       <a href="http://www.xlattice.org">
