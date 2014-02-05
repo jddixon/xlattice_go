@@ -4,7 +4,6 @@ package filters
 
 import (
 	"fmt" // DEBUG
-	//xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
 
@@ -17,24 +16,20 @@ var _ = fmt.Print
 func (s *XLSuite) doTestBit(c *C, nibCount *NibbleCounters,
 	filterWord uint, filterBit uint) {
 
-	for i := uint(0); i < 18; i++ {
+	for i := uint16(0); i < 18; i++ {
 		value := nibCount.Inc(filterWord, filterBit)
-		// DEBUG
-		fmt.Printf("filterword %d, filterBit %d, i %d ==> value %d\n",
-			filterWord, filterBit, i, value)
-		// END
 		if i < 15 {
-			c.Assert(value, Equals, i+1)
+			c.Check(value, Equals, i+1) // XXX SHOULD BE Assert
 		} else {
-			c.Assert(value, Equals, 15)
+			c.Assert(value, Equals, uint16(15))
 		}
 	}
-	for i := uint(0); i < 18; i++ {
+	for i := uint16(0); i < 18; i++ {
 		value := nibCount.Dec(filterWord, filterBit)
 		if i < 15 {
 			c.Assert(value, Equals, 14-i)
 		} else {
-			c.Assert(value, Equals, 0)
+			c.Assert(value, Equals, uint16(0))
 		}
 	}
 }

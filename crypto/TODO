@@ -1,44 +1,20 @@
 xlattice_go/crypto/TODO
 
+2014-02-03
+    * fix bug in NibbleCounters (needed for CountingBloom)              * DONE
+
 2014-01-12
     * need filters:CountingBloom for xd.DiskCacahe
         - and test
 
-2014-01-10
-    * need builds/buildList.go ReadContents                             * DONE
-    * need builds/buildList.go ParseBuildList                           * DONE
-    * need builds/buildList_test.go                                     * DONE
-    * FIX: signedList_test has no timestamps - but succeeds !           * SKIP
-        - ah, but zero is a legitimate timestamp                        * SKIP
-
 2014-01-09
-    * should be modified to use uint for index of list items:
-        - SignedList                                                    * DONE
-        - MockSignedList                                                * DONE
-        - signedList_test.go                                            * DONE
-        - BuildList                                                     * DONE
     * Modify SignedList so that the basic functionality is identical
         to that of MockSignedList
         - and then drop MockSignedList as redundant
     * buildList.go needs ParseBuildList, currently just a stub
 
 2014-01-07
-    * MockSignedList digSig should be base64-encoded, is just hex       * DONE
     * SignedList.String() does not CRLF-terminate lines
-
-2014-01-06
-    * ParseSignedList is marked 'subclasses must implement', but        * DONE
-        it should at least in part be implemented by SignedList;        * DONE
-        presumably we require subclass to provide a function which      * DONE
-        parses a content line.                                          * DONE
-    * signedList_test.go has stubs, need to complete                    * DONE
-
-2014-01-04 
-    * implement
-        - signedListI.go for ../overlay/dataKeyed*.go                   * DONE
-        - signedList.go, as an 'abstract class'                         * DONE
-        - mock_signedList_test.go to exercise SignedList                * DONE
-        - signedList_test.go, which uses MockSignedList                 * DONE
 
 2013-10-12
     * implement Bloom filter (xlattice_j/.../crypto/filters)            * DONE
