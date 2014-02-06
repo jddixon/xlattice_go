@@ -1,0 +1,4 @@
+xlattice_go/crypto/filters/TODO
+
+2014-02-05
+    * test NibbleCounters.clear()

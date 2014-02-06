@@ -26,7 +26,8 @@ func NewNibbleCounters(filterInts uint) *NibbleCounters {
 	}
 }
 
-func (nc *NibbleCounters) Clear() {
+// XXX Unsynchronized
+func (nc *NibbleCounters) clear() {
 	for i := 0; i < len(nc.counters); i++ {
 		nc.counters[i] = 0
 	}

@@ -157,8 +157,10 @@ func (b3 *BloomSHA) Insert(b []byte) (err error) {
 }
 
 // Returns whether a key is in the filter.
-func (b3 *BloomSHA) isMember(b []byte) (whether bool, err error) {
-	ks, err := NewKeySelector(b3.m, b3.k, b)
+func (b3 *BloomSHA) isMember(b []byte) (
+	whether bool, ks *KeySelector, err error) {
+
+	ks, err = NewKeySelector(b3.m, b3.k, b)
 	if err == nil {
 		whether = true
 		for i := uint(0); i < b3.k; i++ {
@@ -176,7 +178,7 @@ func (b3 *BloomSHA) isMember(b []byte) (whether bool, err error) {
 //
 // @param b byte array representing a key (SHA3 digest)
 // @return true if b is in the filter
-func (b3 *BloomSHA) Member(b []byte) (bool, error) {
+func (b3 *BloomSHA) Member(b []byte) (bool, *KeySelector, error) {
 	b3.mu.RLock()
 	defer b3.mu.RUnlock()
 
