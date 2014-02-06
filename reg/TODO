@@ -1,5 +1,15 @@
 xlattice_go/reg/TODO
 
+2014-02-03 (2013-10-09, edited)
+    * ClientMsg is
+        - EITHER token with digSig but without clientID
+        - OR clientID plus salt plus digSig
+
+2014-02-03
+    * install code, start server on Stockton
+    * get regCred
+    * add to ../doc/xlReg_protocol.md
+
 2014-01-22 (2013-12-25, edited)
     * Urgently need digSig on the token in Client msg; digSig is		* DONE
         over the fields that are present.  		                        * DONE
@@ -18,19 +28,19 @@ xlattice_go/reg/TODO
 
 2013-12-04
     * reduce minimum membership to 1                                    * DONE
-    * later: restore this to what it was !
+    * later: restore this to what it was !                              * DONE
 
 2013-12-01
-    * xlReg fails in upax_go tests occasionally for no obvious reason: 
+    * xlReg fails in upax_go tests occasionally for no obvious reason:
         need to locate and fix bug
-        - at least sometimes appears as nil nodeID pointer 
+        - at least sometimes appears as nil nodeID pointer
             * we have asked for a nodeID and didn't get one
 
 2013-11-22
     * modify client_node.go to use SetupSessionKey()
     * insofar as possible, ClientNode.SessionSetup() should
         migrate to AesCnxHandler.InitSessionSetup()
-    * insofar as possible, InHandler.handleHello() should 
+    * insofar as possible, InHandler.handleHello() should
         migrate to AesCnxHandler.ReceiverSessionSetup()
     * consider migrating to another package
         - aes_cnx.go
@@ -41,13 +51,13 @@ xlattice_go/reg/TODO
     * cnx initializer / receiver distinction must be made very clear
         and the code (re)structured accordingly
     * XXX the problem is the protobuf protocol, which will vary from
-        application to application 
+        application to application
         - need at least proto.Unmarshal and proto.Marshal functions
         - don't know cost of using interface{} instead of eg *XLRegMsg
         - alternative is to build a code generator; need not be in Go
         - it's acceptable in the short term to simply copy and edit
             the code in xlattice_go/reg
-        - tentively 
+        - tentively
             xlattice_go/protocol/AesCnxHandlerGen -s NAME -l LONGNAME
             where NAME/LONGNAME is that of the protocol
 
@@ -72,13 +82,13 @@ xlattice_go/reg/TODO
         where possible
         - "fatal I/O error accept tcp ...: use of closed network
             connection, shutting down the server"
-        - ignoring this in tests results in infinite loop 
+        - ignoring this in tests results in infinite loop
             * it appears to be the acceptor (the listening socket)
                 which is closed, so ignoring it is impossible
             * we are in fact using the close() to shut down the server,
                 so it makes no sense at all to ignore this particular
                 error.
-            * so need to determine which end of the connection is 
+            * so need to determine which end of the connection is
                 closed and respond accordingly (far end: who cares?
                 this end: we are done)
 
@@ -87,16 +97,16 @@ xlattice_go/reg/TODO
         close
 
 2013-10-31
-    * need to properly implement 10-02 Registry-related items 
+    * need to properly implement 10-02 Registry-related items
     * when ParseRegistry is available, code must be available which
         rebuilds volatile data structures, including ClustersByName
         and ClustersByID
-        - in particular, the registry ID and all cluster IDs must be 
+        - in particular, the registry ID and all cluster IDs must be
             in the registry Bloom filter
 
 2013-10-28
     * (from 10-17) xlReg starting for the first time should
-        - writes regCred to the log 
+        - writes regCred to the log
 
 2013-10-25
     * drop options.Ephemeral, which is implied by empty backing
@@ -105,7 +115,7 @@ xlattice_go/reg/TODO
     * Whatever is using BadVersion should be using the DecimalVersion
         type
         - This is in reg/in_handler.go init() and references VERSION in
-            ../const.go.  
+            ../const.go.
 
 2013-10-17
     * determine what LFS is being used and whether the node is
@@ -125,7 +135,7 @@ xlattice_go/reg/TODO
     * add RegCred message, which of course can't be used without
         knowing the registry's comms public key
 
-    * ephemeral admin client unique ID should be itself ephemeral 
+    * ephemeral admin client unique ID should be itself ephemeral
 
     UTILITIES
     * xlClusterReg -e -s K -o FILE CLUSTER_NAME -p PERM
@@ -164,11 +174,6 @@ xlattice_go/reg/TODO
             * in this case it generates a new and unique ID
         - old tests must continue to run at least until new
             code is stable
-
-2013-10-09
-    PROTOCOL
-    * ClientMsg is EITHER token without clientID OR clientID;
-        in either case plus a digital signature
 
 2013-10-03
     * verify that mock_server_test considers it an error when
@@ -253,8 +258,8 @@ xlattice_go/reg/TODO
         - look at cluster_member_test
         - also reg_cluster_test
 2013-09-13
-    * URGENT FIX: ClientMsg does NOT include digsig, so server cannot
-        verify that the client knows skPriv
+    * URGENT FIX: ClientMsg does NOT include digsig, so server cannot   * DONE
+        verify that the client knows skPriv                             * DONE
     * longer term xlReg needs to be distributed, using Paxos for
         consensus
 2013-09-12
@@ -262,9 +267,9 @@ xlattice_go/reg/TODO
     * this stays on main branch
     * deploy on test:44444 as service
 
-    * on regBeta branch figure out how to persist the registry in
-        such a way it easily loads itself from disk after a
-        crash or reboot
-    * when this is stable, merge back into main branch
+    * on regBeta branch figure out how to persist the registry in       * DONE
+        such a way it easily loads itself from disk after a             * DONE
+        crash or reboot                                                 * DONE
+    * when this is stable, merge back into main branch                  * DONE
         - and deploy on test:44444
     * document

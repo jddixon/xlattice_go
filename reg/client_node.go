@@ -444,7 +444,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 		fmt.Printf("** ENTERING GetAndMembers for %s with nil clusterID! **\n",
 			cn.name)
 	}
-	MAX_GET := 32 // 2014-01-31: was 16
+	const MAX_GET = 32 // 2014-01-31: was 16
 	if cn.Members == nil {
 		cn.Members = make([]*MemberInfo, cn.ClusterSize)
 	}
@@ -509,9 +509,7 @@ func (cn *ClientNode) GetAndMembers() (err error) {
 
 		for i := uint(0); i < uint(cn.ClusterSize); i++ {
 
-			// XXX WORKING HERE ///////////////////////////
 			member := cn.Members[i]
-			// XXX THIS HAPPENS WITH MEMBER 1 if running upax_go tests
 			if member == nil {
 				fmt.Printf("cluster member %d is nil\n", i)
 			}

@@ -21,6 +21,7 @@ xlattice_go/crypto/TODO
       ...`
     * then look at Wikipedia article
     * and google on "golang bloom filter"
+
 2013-09-20
     * Supposedly RSA believes dual elliptic curve deterministic 
         random number generation algorithm contains a flaw 

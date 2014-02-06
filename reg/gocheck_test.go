@@ -119,7 +119,7 @@ func (s *XLSuite) makeACluster(c *C, rng *xr.PRNG, epCount, size uint) (
 	rc *RegCluster) {
 
 	var err error
-	c.Assert(MIN_CLUSTER_SIZE < size && size <= MAX_CLUSTER_SIZE, Equals, true)
+	c.Assert(MIN_CLUSTER_SIZE <= size && size <= MAX_CLUSTER_SIZE, Equals, true)
 
 	attrs := uint64(rng.Int63())
 	name := rng.NextFileName(8) // no guarantee of uniqueness
