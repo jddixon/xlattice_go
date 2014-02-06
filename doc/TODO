@@ -1,5 +1,8 @@
 xlatice_go/doc/TODO
 
+2014-02-03
+    * include regCred for Stockton server to xlReg_protocol.md
+
 2014-02-01
     * documentation needs to mention location of log file
     * should also include implementation guide for xlReg clients
