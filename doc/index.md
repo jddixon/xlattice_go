@@ -1,4 +1,4 @@
-## xlattice_go
+# xlattice_go
 
 An implementation of [XLattice](http://xlattice.sourceforge.net)
 for the Go language.  XLattice is a communications library 
@@ -23,6 +23,9 @@ register only one IP address.  If non-members, clients, are allowed to
 communicate with the cluster, members register a second address for 
 that purpose.  When a member has completed registration, it can retrieve
 the configuration data other members have registered.
+
+The xlReg server, its clients, and the cluster members, and all 
+XLattice [nodes](node.html).
 
 ## Other Protocols
 
