@@ -17,6 +17,7 @@ import (
 )
 
 // CLASS, so to speak ///////////////////////////////////////////////
+
 type U256x256 struct {
 	path   string // all parameters are
 	inDir  string // ... private
@@ -94,6 +95,7 @@ func (u2 *U256x256) FileLen(key string) (length int64, err error) {
 }
 
 // - GetPathForKey --------------------------------------------------
+
 // Returns a path to a file with the content key passed.
 func (u2 *U256x256) GetPathForKey(key string) (path string, err error) {
 	if key == "" {
@@ -310,6 +312,7 @@ func (u2 *U256x256) GetData1(key string) (data []byte, err error) {
 }
 
 // - Put1 ------------------------------------------------------------
+
 // tmp is the path to a local file which will be renamed into U (or deleted
 // if it is already present in U)
 // u2.path is an absolute or relative path to a U directory organized 256x256
@@ -370,6 +373,7 @@ func (u2 *U256x256) Put1(inFile, key string) (
 }
 
 // PutData1 ---------------------------------------------------------
+
 func (u2 *U256x256) PutData1(data []byte, key string) (
 	length int64, hash string, err error) {
 
@@ -416,6 +420,7 @@ func (u2 *U256x256) PutData1(data []byte, key string) (
 // SHA3 CODE ========================================================
 
 //- copyAndPut3 -------------------------------------------------------
+
 func (u2 *U256x256) CopyAndPut3(path, key string) (
 	written int64, hash string, err error) {
 	// the temporary file MUST be created on the same device
@@ -433,6 +438,7 @@ func (u2 *U256x256) CopyAndPut3(path, key string) (
 }
 
 // - GetData3 --------------------------------------------------------
+
 func (u2 *U256x256) GetData3(key string) (data []byte, err error) {
 	var (
 		found bool
@@ -463,6 +469,7 @@ func (u2 *U256x256) GetData3(key string) (data []byte, err error) {
 }
 
 // - Put3 ------------------------------------------------------------
+
 // tmp is the path to a local file which will be renamed into U (or deleted
 // if it is already present in U)
 // u2.path is an absolute or relative path to a U directory organized 256x256
@@ -521,7 +528,10 @@ func (u2 *U256x256) Put3(inFile, key string) (
 }
 
 // - putData3 --------------------------------------------------------
-func (u2 *U256x256) PutData3(data []byte, key string) (length int64, hash string, err error) {
+
+func (u2 *U256x256) PutData3(data []byte, key string) (
+	length int64, hash string, err error) {
+
 	s := sha3.NewKeccak256()
 	s.Write(data)
 	hash = hex.EncodeToString(s.Sum(nil))
@@ -554,4 +564,4 @@ func (u2 *U256x256) PutData3(data []byte, key string) (length int64, hash string
 		}
 	}
 	return
-} // GEEP
+}

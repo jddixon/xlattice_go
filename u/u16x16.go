@@ -16,6 +16,7 @@ import (
 )
 
 // CLASS, so to speak ///////////////////////////////////////////////
+
 type U16x16 struct {
 	path   string // all parameters are private
 	inDir  string
@@ -61,9 +62,8 @@ func NewU16x16(path string, perm os.FileMode) (udir *U16x16, err error) {
 }
 
 func (u *U16x16) GetDirStruc() DirStruc { return DIR16x16 }
-
-func (u *U16x16) GetPath() string  { return u.path }
-func (u *U16x16) GetRNG() *xr.PRNG { return u.rng }
+func (u *U16x16) GetPath() string       { return u.path }
+func (u *U16x16) GetRNG() *xr.PRNG      { return u.rng }
 
 // STRING KEY FUNCTIONS =============================================
 
@@ -443,6 +443,7 @@ func (u *U16x16) CopyAndPut3(path, key string) (
 }
 
 // - GetData3 --------------------------------------------------------
+
 func (u *U16x16) GetData3(key string) (data []byte, err error) {
 	var (
 		found bool

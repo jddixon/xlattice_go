@@ -26,6 +26,7 @@ func New(path string, ds DirStruc, perm os.FileMode) (UI, error) {
 }
 
 // PACKAGE-LEVEL FUNCTIONS //////////////////////////////////////////
+
 func CopyFile(destName, srcName string) (written int64, err error) {
 	var (
 		src, dest *os.File
@@ -42,6 +43,7 @@ func CopyFile(destName, srcName string) (written int64, err error) {
 }
 
 // - FileSHA1 --------------------------------------------------------
+
 // returns the SHA1 hash of the contents of a file
 func FileSHA1(path string) (hash string, err error) {
 	var data2 []byte
@@ -63,6 +65,7 @@ func FileSHA1(path string) (hash string, err error) {
 }
 
 // - FileSHA3 --------------------------------------------------------
+
 // returns the SHA3 hash of the contents of a file
 func FileSHA3(path string) (hash string, err error) {
 	var data2 []byte
