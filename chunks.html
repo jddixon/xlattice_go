@@ -11,13 +11,15 @@
 <div class="content">
 <h1>Chunks</h1>
 
-<p>Chunks is a message protocol designed to be intermixed with Protobuf messages.
-The latter begin with a varint which represents the length of the message.
+<p>Chunks is a message protocol designed to be intermixed with Protobuf
+<a href="http://code.google.com/p/protobuf/">(Google&rsquo;s Protocol Buffer)</a> messages.
+The latter begin with a varint, a variable-length integer,
+which represents the length of the message.
 As Protobuf messages have a non-zero length, no message beginning with a
 zero byte can be a valid Protobuf message, so chunks always begin with a
-zero byte.</p>
+zero byte, the <strong>magic</strong> field.</p>
 
-<p>In the initial version of Chunks, header fields are laid out as follows:</p>
+<p>In the initial version of Chunks, <strong><em>header fields</em></strong> are laid out as follows:</p>
 
 <table>
 <thead>
@@ -53,14 +55,14 @@ zero byte.</p>
 
 <tr>
 <td align="center">length</td>
-<td align="center">n</td>
+<td align="center">N</td>
 <td align="center">32*</td>
 <td align="center">4</td>
 </tr>
 
 <tr>
 <td align="center">index</td>
-<td align="center">x</td>
+<td align="center">ndx</td>
 <td align="center">32</td>
 <td align="center">4</td>
 </tr>
@@ -68,16 +70,16 @@ zero byte.</p>
 <tr>
 <td align="center">datum</td>
 <td align="center">sha3</td>
-<td align="center"></td>
+<td align="center">256</td>
 <td align="center">32</td>
 </tr>
 </tbody>
 </table>
 
 <p>The &lsquo;datum&rsquo; field contains the SHA3-256 content hash of the file of
-which this is a chunk.</p>
+which this is a chunk.  This is <strong>not</strong> the content hash of the chunk.</p>
 
-<p>The header is followed by ceil(len/16) bytes of data, with zero byte
+<p>The header is followed by <code>ceil(len/16)</code> bytes of data, with zero byte
 padding added to bring the data length up to a multiple of 16.  That is,
 the data is padded with zeroes as required to bring its length to the next
 whole multiple of 16.  If the length of the data in bytes is already a
@@ -88,22 +90,26 @@ where the hash is calculated over the fields named (magic, type, reserved,
 length, datum, and data, in that order.</p>
 
 <p>A chunk is assumed to be part of a message.  Chunks are concatenated
-in index order to make the message.  The assumption is that chunks
+at the destination
+in index order to make up the message.  The assumption is that chunks
 will normally be transmitted in index order, but that is not necessarily
 the case, and using software must tolerate missing, duplicated, and
 out-of-order chunks.</p>
 
-<p>The length of a type 0 Chunk is contrained to 17 bits (2^17 - 1) and
-so the upper 15 bits of that field can be construed as reserved and
+<p>The type 0 Chunk <em>length</em> field is constrained to 17 bits and stores
+<code>N-1</code>, the length of the chunk less one.   Therefore the
+maximum number of bytes in a chunk is <code>2^17 = 131072</code>.<br />
+The upper 15 bits of the length field are reserved and
 must be zero.</p>
+  <hr />
   <div class="f">
-    <div class="logo" style="text-align: right">
-      <a href="http://www.xlattice.org">
-      <img src="img/xlattice.batik.jpg" alt="the XLattice Project">
-      </a>
-    </div>
     <div class="license">
       <p><a href="LICENSE.html">LICENSE</a></p>
+    </div>
+    <div class="logo" >
+      <a href="http://www.xlattice.org">
+      <img src="img/xlattice-2014.jpg" alt="the XLattice Project" style="float: right;" >
+      </a>
     </div>
   </div>
 </div>
