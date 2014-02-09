@@ -4,7 +4,6 @@ package datakeyed
 
 import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
-	xo "github.com/jddixon/xlattice_go/overlay"
 )
 
 type DiskCacheI interface {
@@ -60,7 +59,7 @@ type DiskCacheI interface {
 	Size() uint
 
 	// DISK I/O QUEUES //////////////////////////////////////////////
-	AcceptReadJob(id *xi.NodeID, cb xo.GetCallBackI) error
+	AcceptReadJob(id *xi.NodeID) error
 
-	AcceptWriteJob(id *xi.NodeID, data []byte, cb xo.PutCallBackI) error
+	AcceptWriteJob(id *xi.NodeID, data []byte) error
 }

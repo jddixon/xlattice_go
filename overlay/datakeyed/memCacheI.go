@@ -7,18 +7,6 @@ import (
 	xo "github.com/jddixon/xlattice_go/overlay"
 )
 
-// import org.xlattice.CryptoException
-// import org.xlattice.NodeID
-// import org.xlattice.crypto.SHA1Digest
-// import org.xlattice.crypto.SignedList
-// import org.xlattice.overlay.CallBack
-// import org.xlattice.overlay.DataKeyed
-// import org.xlattice.overlay.GetCallBack
-// import org.xlattice.overlay.DelCallBack
-// import org.xlattice.overlay.PutCallBack
-// import org.xlattice.util.NonBlockingLog
-// import org.xlattice.util.StringLib;         // DEBUG
-
 type MemCacheI interface {
 
 	// Cannot be part of the interface because 'final static'
@@ -31,7 +19,7 @@ type MemCacheI interface {
 	ERROR_MSG(msg string)
 
 	// PROPERTIES ///////////////////////////////////////////////////
-	Add(id *xi.NodeID, b []byte)
+	Add(id *xi.NodeID, b []byte) error
 	ByteCount() int64
 	Clear()
 	ItemCount() int64

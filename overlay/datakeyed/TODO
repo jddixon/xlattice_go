@@ -1,9 +1,12 @@
 xlattice_go/overlay/datakeyed
 
+2014-02-05
+    * redesign code to not use callbacks
+
 2014-01-11
     * need to review existing Java code to ensure that it can use
         xlattice_go/u
-    * KeyQueue.FinishGet() may result in deadlock
+    * KeyQueue.FinishGet() may result in deadlock                       * SKIP!
 
 2014-01-09
     * do KeyQueue
