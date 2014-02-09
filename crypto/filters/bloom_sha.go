@@ -36,7 +36,7 @@ type BloomSHAI interface {
 	FalsePositives() float64
 	FalsePositivesN(n uint) float64
 	Insert(b []byte) (err error)
-	Member(b []byte) (bool, error)
+	Member(b []byte) (bool, *KeySelector, error)
 	Size() uint
 }
 

@@ -29,7 +29,6 @@ func (s *XLSuite) TestEmptyFilter(c *C) {
 	filter, err := NewBloomSHA(m, k)
 	c.Assert(err, IsNil)
 	c.Assert(filter, NotNil)
-
 	c.Assert(filter.Size(), Equals, uint(0))
 	c.Assert(filter.Capacity(), Equals, uint(2<<(m-1)))
 
