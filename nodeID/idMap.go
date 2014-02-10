@@ -1,6 +1,6 @@
 package nodeID
 
-// xlattice_go/nodeID/id_map.go
+// xlattice_go/nodeID/idMap.go
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ type Thinger struct {
 
 type IDMap struct {
 	MaxDepth uint // in bytes
-	count    int
+	count    uint
 	mu       sync.RWMutex
 	MapForDepth
 }
@@ -112,6 +112,7 @@ func (m *IDMap) handleCollision(curDepth uint, curMap *MapForDepth,
 			aCell := &curMap.Cells[aByte]
 			aCell.Key = &key
 			aCell.Value = value
+			m.count++ // change 2014-02-10
 		} else {
 			err = m.handleCollision(curDepth, curMap, bCell, key, value)
 		}
@@ -152,7 +153,7 @@ func (m *IDMap) Find(key []byte) (value interface{}, err error) {
 	return
 }
 
-func (m *IDMap) Size() int {
+func (m *IDMap) Size() uint {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.count

@@ -1,6 +1,6 @@
 package nodeID
 
-// xlattice_go/nodeID/id_map_test.go
+// xlattice_go/nodeID/idMap_test.go
 
 import (
 	"bytes"
@@ -122,6 +122,12 @@ func (s *XLSuite) TestTopBottomIDMap(c *C) {
 	c.Assert(err, IsNil)
 	err = m.Insert(bottomKey, bottomBNI)
 	c.Assert(err, IsNil)
+	c.Assert(m.Size(), Equals, uint(2))
+
+	// insert a duplicate
+	err = m.Insert(bottomKey, bottomBNI)
+	c.Assert(err, IsNil)
+	c.Assert(m.Size(), Equals, uint(2))
 
 	for i := 0; i < 256; i++ {
 		cell := m.Cells[i]
@@ -191,6 +197,14 @@ func (s *XLSuite) TestShallowIDMap(c *C) {
 	c.Assert(cell1.Value, NotNil)
 	c.Assert(cell1.Value.(*MockBaseNode).GetName(), Equals, baseNode1.GetName())
 
+	c.Assert(err, IsNil)
+	c.Assert(m.Size(), Equals, uint(3))
+
+	// insert a duplicate -------------------------------------------
+	err = m.Insert(key1, baseNode1)
+	c.Assert(err, IsNil)
+	c.Assert(m.Size(), Equals, uint(3))
+
 	for i := 0; i < 256; i++ {
 		cell := &m.Cells[i]
 		c.Assert(cell.Next, IsNil)
@@ -245,7 +259,7 @@ func (s *XLSuite) TestDeeperIDMap(c *C) {
 
 	// now add baseNode12 ============================================
 	// This should clear cell1 and create cell120 and cell123
-	err = m.Insert(key12, baseNode12) // XXX INFINITE LOOP
+	err = m.Insert(key12, baseNode12)
 	c.Assert(err, IsNil)
 	m1 := cell1.Next
 	c.Assert(m1, NotNil)
@@ -301,6 +315,15 @@ func (s *XLSuite) TestDeeperIDMap(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(value, NotNil)
 	c.Assert(value, Equals, baseNode12)
+
+	c.Assert(err, IsNil)
+	c.Assert(m.Size(), Equals, uint(3))
+
+	// insert a duplicate -------------------------------------------
+	err = m.Insert(key1, baseNode1)
+	c.Assert(err, IsNil)
+	c.Assert(m.Size(), Equals, uint(3))
+
 }
 
 func (s *XLSuite) addAnID(c *C, m *IDMap, baseNode *MockBaseNode) {
