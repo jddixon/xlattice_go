@@ -64,7 +64,6 @@ func NewKeyQueue(mCache MemCacheI, id *xi.NodeID) (
 
 // PROPERTIES ///////////////////////////////////////////////////
 
-
 func (kq *KeyQueue) GetNodeID() *xi.NodeID {
 	// XXX SHOULD COPY
 	return kq.myID
@@ -73,13 +72,12 @@ func (kq *KeyQueue) GetNodeID() *xi.NodeID {
 func (kq *KeyQueue) Size() (n uint) {
 	kq.mx.RLock()
 	defer kq.mx.RUnlock()
-	
+
 	// return uint(len(kq.cbQ))
 
 	// XXX STUB
 	return
 }
-
 
 /**
  * Useful only for debugging?

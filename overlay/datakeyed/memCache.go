@@ -4,27 +4,30 @@ package datakeyed
 
 import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
-	// xo	"github.com/jddixon/xlattice_go/overlay"
+	// xo "github.com/jddixon/xlattice_go/overlay"
+	"sync"
+	// "time"
 )
 
 type MemCache struct {
-	maxCount uint   // items in cache
-	maxBytes uint64 // bytes in cache
+	byteCount uint64
+	itemCount uint
+	maxBytes  uint64 // bytes in cache; should treat as const
+	maxItems  uint   // items in cache; should treat as const
 
+	idMap *xi.IDMap
+	mu    sync.RWMutex
 }
 
-// LOGGING //////////////////////////////////////////////////////
-/** Subclasses should override.  */
-func (mc *MemCache) DEBUG_MSG(msg string) {
-
-	// XXX STUB
-
-	return
-}
-func (mc *MemCache) ERROR_MSG(msg string) {
-
-	// XXX STUB
-
+func NewMemCache(maxBytes uint64, maxItems uint) (mc *MemCache, err error) {
+	idMap, err := xi.NewNewIDMap()
+	if err == nil {
+		mc = &MemCache{
+			maxBytes: maxBytes,
+			maxItems: maxItems,
+			idMap:    idMap,
+		}
+	}
 	return
 }
 
@@ -54,7 +57,16 @@ func (mc *MemCache) ItemCount() (count uint64) {
 
 	return
 }
-func (mc *MemCache) GetPathToXLattice() (path string) {
+
+// LOGGING //////////////////////////////////////////////////////
+/** Subclasses should override.  */
+func (mc *MemCache) DEBUG_MSG(msg string) {
+
+	// XXX STUB
+
+	return
+}
+func (mc *MemCache) ERROR_MSG(msg string) {
 
 	// XXX STUB
 
