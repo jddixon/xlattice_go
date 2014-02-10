@@ -31,31 +31,41 @@ func NewMemCache(maxBytes uint64, maxItems uint) (mc *MemCache, err error) {
 	return
 }
 
-// PROPERTIES ///////////////////////////////////////////////////
+// Add a file to the collection.  This operation must be idempotent.
+func (mc *MemCache) Add(id *xi.NodeID, b []byte) (err error) {
 
-func (mc *MemCache) Add(id *xi.NodeID, b []byte) {
+	key := id.Value()
 
-	// XXX STUB
+	// XXX POSSIBLE DEADLOCK
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
+	value, err := mc.idMap.Find(key)
+	if err == nil {
+		if value == nil {
+			mc.idMap.Insert(key, b)
+			mc.itemCount++
+			mc.byteCount += uint64(len(b))
+		}
+	}
 	return
 }
-func (mc *MemCache) ByteCount() (count uint64) {
 
-	// XXX STUB
-
-	return
+func (mc *MemCache) ByteCount() uint64 {
+	mc.mu.RLock()
+	defer mc.mu.RUnlock()
+	return mc.byteCount
 }
 func (mc *MemCache) Clear() {
 
-	// XXX STUB
+	// XXX STUB -- need a function of this name in IDMap !
 
 	return
 }
-func (mc *MemCache) ItemCount() (count uint64) {
-
-	// XXX STUB
-
-	return
+func (mc *MemCache) ItemCount() uint {
+	mc.mu.RLock()
+	defer mc.mu.RUnlock()
+	return mc.itemCount
 }
 
 // LOGGING //////////////////////////////////////////////////////
