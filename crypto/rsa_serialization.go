@@ -41,19 +41,20 @@ func RSAPrivateKeyFromWire(data []byte) (key *rsa.PrivateKey, err error) {
 
 // Serialize an RSA public key to disk format, specifically to the
 // format used by SSH. Should return nil if the conversion fails.
-func RSAPubKeyToDisk(pubKey *rsa.PublicKey) ([]byte, error) {
-	out := ssh.MarshalAuthorizedKey(pubKey)
-	// STUB ?
+func RSAPubKeyToDisk(rsaPubKey *rsa.PublicKey) (out []byte, err error) {
+	pubKey, err := ssh.NewPublicKey(rsaPubKey)
+	if err == nil {
+		out := ssh.MarshalAuthorizedKey(pubKey)
+	}
 	return out, nil
 }
 
 // Deserialize an RSA public key from the format used in SSH
 // key files
 func RSAPubKeyFromDisk(data []byte) (*rsa.PublicKey, error) {
-	out, comment, options, rest, ok := ssh.ParseAuthorizedKey(data)
-	_, _, _ = comment, options, rest
+	out, _, _, _, ok := ssh.ParseAuthorizedKey(data)
 	if ok {
-		return out.(*rsa.PublicKey), nil
+		return (*rsa.PublicKey)(&out), nil
 	} else {
 		return nil, NotAnRSAPublicKey
 	}
