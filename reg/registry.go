@@ -109,12 +109,13 @@ func NewRegistry(clusters []*RegCluster,
 	return
 }
 
-func (reg *Registry) ContainsID(n *xi.NodeID) (bool, error) {
-	return reg.idFilter.Member(n.Value())
+func (reg *Registry) ContainsID(n *xi.NodeID) (found bool, err error) {
+	found, _, err =  reg.idFilter.Member(n.Value())
+	return
 }
 func (reg *Registry) InsertID(n *xi.NodeID) (err error) {
 	b := n.Value()
-	found, err := reg.idFilter.Member(b)
+	found, _, err := reg.idFilter.Member(b)
 	if err == nil && found {
 		err = IDAlreadyInUse
 	}
