@@ -1,6 +1,6 @@
 package node
 
-// xlattice_go/node/base_node.go
+// xlattice_go/node/baseNode.go
 
 import (
 	"code.google.com/p/go.crypto/ssh"
