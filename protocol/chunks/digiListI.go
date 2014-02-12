@@ -1,6 +1,6 @@
 package chunks
 
-// xlattice_go/protocol/chunks/digilistI.go
+// xlattice_go/protocol/chunks/digiListI.go
 
 import (
 //	"crypto/rsa"

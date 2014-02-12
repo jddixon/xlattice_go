@@ -29,13 +29,22 @@ func (s *XLSuite) TestProperties(c *C) {
 
 }
 
+func (s *XLSuite) TestBadLengths(c *C) {
+
+	// verify length of zero causes error
+	// XXX STUB
+
+	// verify length > MAX_CHUNK_BYTES causes error
+	// XXX STUB
+}
+
 func (s *XLSuite) TestChunks(c *C) {
 	rng := xr.MakeSimpleRNG()
 
 	ndx := uint32(rng.Int31())
 	datum, err := xi.New(nil)
 	c.Assert(err, IsNil)
-	dataLen := rng.Intn(256 * 256)
+	dataLen := 1 + rng.Intn(256 * 256)	// 1 .. 2^16 
 	data := make([]byte, dataLen)
 	rng.NextBytes(data)
 	ch, err := NewChunk(datum, ndx, data)

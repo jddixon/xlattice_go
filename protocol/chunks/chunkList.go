@@ -1,6 +1,6 @@
 package chunks
 
-// xlattice_go/protocol/chunks/chunklist.go
+// xlattice_go/protocol/chunks/chunkList.go
 
 import (
 	"bytes"
@@ -169,7 +169,7 @@ func (cl *ChunkList) Size() uint {
 
 // Serialize the DigiList, terminating each field and each item
 // with a CRLF.  This implementation should override the code in
-// digilist.go
+// digiList.go
 func (cl *ChunkList) String() (str string) {
 	// XXX STUB
 	return

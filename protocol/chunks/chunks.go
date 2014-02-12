@@ -29,15 +29,15 @@ const (
 	DATUM_BYTES   = 32
 	DATA_OFFSET   = DATUM_OFFSET + DATUM_BYTES
 	HASH_BYTES    = xc.SHA3_LEN
-	WORD_BYTES    = 16
+	WORD_BYTES    = 16	// we pad to likely cpu cache length
 
 	MAX_CHUNK_BYTES = 128 * 1024 // 128 KB
 )
 
 type Chunk struct {
 	packet     []byte
-	dataLen    int // a convenience
-	hashOffset int // -ditto-
+	dataLen    uint32 // a convenience
+	hashOffset uint32 // -ditto-
 }
 
 // Datum is declared a NodeID to restrict its value to certain byteslice
@@ -133,7 +133,7 @@ func (ch *Chunk) GetData() []byte {
 }
 func (ch *Chunk) GetChunkHash() []byte {
 	if ch.dataLen == 0 {
-		ch.dataLen = int(ch.GetLength())
+		ch.dataLen = ch.GetLength()
 		ch.hashOffset = ((ch.dataLen + DATA_OFFSET + WORD_BYTES - 1) /
 			WORD_BYTES) * WORD_BYTES
 	}

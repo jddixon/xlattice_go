@@ -1,6 +1,6 @@
 package chunks
 
-// xlattice_go/protocol/chunks/chunklist_test.go
+// xlattice_go/protocol/chunks/chunkList_test.go
 
 import (
 	"bytes"
