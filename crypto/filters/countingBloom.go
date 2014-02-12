@@ -18,7 +18,6 @@ type CountingBloom struct {
 	BloomSHA
 }
 
-// Java has constructors for m defaulting to 8, k defaulting to 20.
 func NewCountingBloom(m, k uint) (cb *CountingBloom, err error) {
 
 	var (
@@ -101,7 +100,7 @@ func (cb *CountingBloom) Remove(b []byte) {
 	defer cb.mu.Unlock()
 
 	// XXX IGNORING POSSIBLE ERROR
-	present, ks, _ := cb.isMember(b) // calls ks.getOffsets
+	present, ks, _ := cb.IsMember(b) // calls ks.getOffsets
 
 	if present {
 		for i := uint(0); i < cb.k; i++ {

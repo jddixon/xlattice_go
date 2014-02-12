@@ -36,7 +36,7 @@ type BloomSHAI interface {
 	FalsePositives() float64
 	FalsePositivesN(n uint) float64
 	Insert(b []byte) (err error)
-	Member(b []byte) (bool, *KeySelector, error)
+	IsMember(b []byte) (bool, *KeySelector, error)
 	Size() uint
 }
 
@@ -156,7 +156,9 @@ func (b3 *BloomSHA) Insert(b []byte) (err error) {
 	return
 }
 
-// Returns whether a key is in the filter.
+// Returns whether a key is in the filter.  This is the internal
+// *unsynchronized* function.
+//
 func (b3 *BloomSHA) isMember(b []byte) (
 	whether bool, ks *KeySelector, err error) {
 
@@ -178,7 +180,7 @@ func (b3 *BloomSHA) isMember(b []byte) (
 //
 // @param b byte array representing a key (SHA3 digest)
 // @return true if b is in the filter
-func (b3 *BloomSHA) Member(b []byte) (bool, *KeySelector, error) {
+func (b3 *BloomSHA) IsMember(b []byte) (bool, *KeySelector, error) {
 	b3.mu.RLock()
 	defer b3.mu.RUnlock()
 

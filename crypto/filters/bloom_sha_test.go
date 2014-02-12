@@ -84,17 +84,17 @@ func (s *XLSuite) doTestInserts(c *C, m, k, numKey uint) {
 	c.Assert(filter, NotNil)
 	for i := uint(0); i < numKey; i++ {
 		c.Assert(filter.Size(), Equals, i)
-		isMember, ks, err := filter.Member(keys[i])
+		isAMember, ks, err := filter.IsMember(keys[i])
 		_ = ks // XXX NOT YET
 		c.Assert(err, IsNil)
-		c.Assert(isMember, Equals, false)
+		c.Assert(isAMember, Equals, false)
 		filter.Insert(keys[i])
 	}
 	for i := uint(0); i < numKey; i++ {
-		isMember, ks, err := filter.Member(keys[i])
+		isAMember, ks, err := filter.IsMember(keys[i])
 		_ = ks // XXX NEW, NOT YET TESTED
 		c.Assert(err, IsNil)
-		c.Assert(isMember, Equals, true)
+		c.Assert(isAMember, Equals, true)
 	}
 }
 func (s *XLSuite) TestInserts(c *C) {
