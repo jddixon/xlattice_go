@@ -1,6 +1,6 @@
-package msg
+package aes_cnx
 
-// xlattice_go/msg/helloAndReply.go
+// xlattice_go/protocol/aes_cnx/helloAndReply.go
 
 import (
 	"bytes"

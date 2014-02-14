@@ -1,13 +1,13 @@
 package aes_cnx
 
 import (
-	//"crypto/rand"
-	//"crypto/rsa"
+	"crypto/rand"
+	"crypto/rsa"
 	//"encoding/hex"
 	//"fmt"
 	//xn "github.com/jddixon/xlattice_go/node"
-	//xi "github.com/jddixon/xlattice_go/nodeID"
-	//xr "github.com/jddixon/xlattice_go/rnglib"
+	xi "github.com/jddixon/xlattice_go/nodeID"
+	xr "github.com/jddixon/xlattice_go/rnglib"
 	//xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
 	//"strings"
@@ -25,24 +25,24 @@ const (
 	VERBOSITY = 1
 )
 
-//func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {
-//	id = make([]byte, SHA3_LEN)
-//	rng.NextBytes(&id)
-//	return
-//}
-//func (s *XLSuite) makeANodeID(c *C, rng *xr.PRNG) (nodeID *xi.NodeID) {
-//	id := s.makeAnID(c, rng)
-//	nodeID, err := xi.New(id)
-//	c.Assert(err, IsNil)
-//	c.Assert(nodeID, Not(IsNil))
-//	return
-//}
-//func (s *XLSuite) makeAnRSAKey(c *C) (key *rsa.PrivateKey) {
-//	key, err := rsa.GenerateKey(rand.Reader, 2048)
-//	c.Assert(err, IsNil)
-//	c.Assert(key, Not(IsNil))
-//	return key
-//}
+func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {
+	id = make([]byte, SHA3_LEN)
+	rng.NextBytes(id)
+	return
+}
+func (s *XLSuite) makeANodeID(c *C, rng *xr.PRNG) (nodeID *xi.NodeID) {
+	id := s.makeAnID(c, rng)
+	nodeID, err := xi.New(id)
+	c.Assert(err, IsNil)
+	c.Assert(nodeID, Not(IsNil))
+	return
+}
+func (s *XLSuite) makeAnRSAKey(c *C) (key *rsa.PrivateKey) {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	c.Assert(err, IsNil)
+	c.Assert(key, Not(IsNil))
+	return key
+} // GEEP
 //
 //// Creates a local (127.0.0.1) endPoint and adds it to the node.
 //// XXX This code was hacked from ../node/node_test.go.
