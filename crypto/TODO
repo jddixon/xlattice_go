@@ -4,8 +4,8 @@ xlattice_go/crypto/TODO
     * fix bug in NibbleCounters (needed for CountingBloom)              * DONE
 
 2014-01-12
-    * need filters:CountingBloom for xd.DiskCacahe
-        - and test
+    * need filters:CountingBloom for xd.DiskCache                       * DONE
+        - and test                                                      * DONE
 
 2014-01-09
     * Modify SignedList so that the basic functionality is identical

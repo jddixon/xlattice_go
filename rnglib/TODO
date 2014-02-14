@@ -1,5 +1,10 @@
 xlattice_go/rnglib/TODO
 
+2014-02-27
+    * according to the docs, NextFileName may contain '.'; there
+        seems to be no restriction on this.  To prevent confusion
+        sequences of dots such as .. should be forbidden 
+
 2014-01-02
     * add NextPosixPath() for upax_go
     * add NextEmailAddress() for upax_go; need not be complicated

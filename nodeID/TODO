@@ -1,5 +1,9 @@
 xlattice_go/nodeID/TODO
 
+2014-02-10
+    * need IDMap.Clear() for xd.MemCache
+    * need IDMap.Delete(key *xi.NodeID) error, also for xd.MemCache
+
 2014-01-29
     * drop bni_map*.go*
     * clean up NodeID.Compare(); handling of err is uhm bizarre
