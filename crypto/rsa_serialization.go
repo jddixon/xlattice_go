@@ -7,7 +7,11 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 )
+
+var _ =  fmt.Print
+
 
 // CONVERSION TO AND FROM WIRE FORMAT ///////////////////////////////
 
@@ -44,7 +48,7 @@ func RSAPrivateKeyFromWire(data []byte) (key *rsa.PrivateKey, err error) {
 func RSAPubKeyToDisk(rsaPubKey *rsa.PublicKey) (out []byte, err error) {
 	pubKey, err := ssh.NewPublicKey(rsaPubKey)
 	if err == nil {
-		out := ssh.MarshalAuthorizedKey(pubKey)
+		out = ssh.MarshalAuthorizedKey(pubKey)
 	}
 	return out, nil
 }
@@ -52,9 +56,11 @@ func RSAPubKeyToDisk(rsaPubKey *rsa.PublicKey) (out []byte, err error) {
 // Deserialize an RSA public key from the format used in SSH
 // key files
 func RSAPubKeyFromDisk(data []byte) (*rsa.PublicKey, error) {
-	out, _, _, _, ok := ssh.ParseAuthorizedKey(data)
+	// out, _, _, _, ok := ssh.ParseAuthorizedKey(data)
+	out, _, _, _, ok := ParseAuthorizedKey(data)
+	_ = out	// DEBUG
 	if ok {
-		return (*rsa.PublicKey)(&out), nil
+		return out, nil
 	} else {
 		return nil, NotAnRSAPublicKey
 	}
