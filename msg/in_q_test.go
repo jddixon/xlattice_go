@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "launchpad.net/gocheck"
@@ -26,7 +27,7 @@ var (
 
 func (s *XLSuite) makeANode(c *C) (badGuy *node.Node, acc xt.AcceptorI) {
 	rng := rnglib.MakeSimpleRNG()
-	id := make([]byte, SHA1_LEN)
+	id := make([]byte, xa.SHA1_LEN)
 	rng.NextBytes(id)
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)

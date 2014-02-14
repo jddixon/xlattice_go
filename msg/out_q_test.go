@@ -8,6 +8,7 @@ import (
 	xc "github.com/jddixon/xlattice_go/crypto"
 	"github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
 	"github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
@@ -28,7 +29,7 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 		fmt.Println("TEST_MAKE_HELLO_MSG")
 	}
 	rng := rnglib.MakeSimpleRNG()
-	id := make([]byte, SHA1_LEN)
+	id := make([]byte, xa.SHA1_LEN)
 	rng.NextBytes(id)
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)

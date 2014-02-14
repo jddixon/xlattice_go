@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 	"testing"
@@ -26,7 +27,7 @@ const (
 /////////////////////////////////////////////////////////////////
 
 func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {
-	id = make([]byte, SHA3_LEN)
+	id = make([]byte, xa.SHA3_LEN)
 	rng.NextBytes(id)
 	return
 }

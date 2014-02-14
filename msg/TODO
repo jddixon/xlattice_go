@@ -1,5 +1,8 @@
 xlattice_go/msg/TODO
 
+2014-02-13
+    * migrate HelloAndReply*.go to ../protocol/aes_cnx                  * DONE
+
 2103-11-16 (from 09-30)
     * drop Hello from p.proto
         - this requires reworking in_q_test.go

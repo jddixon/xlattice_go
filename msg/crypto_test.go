@@ -11,6 +11,7 @@ import (
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xn "github.com/jddixon/xlattice_go/node"
+	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "launchpad.net/gocheck"
 )
@@ -38,7 +39,7 @@ func (s *XLSuite) TestCrytpo(c *C) {
 	// for the OAEP encrypt. For testing purposes these need not be crypto
 	// grade.
 
-	salty := make([]byte, 3*aes.BlockSize+8+4+SHA1_LEN)
+	salty := make([]byte, 3*aes.BlockSize+8+4+xa.SHA1_LEN)
 	rng.NextBytes(salty)
 
 	iv1 := salty[:aes.BlockSize]
