@@ -5,7 +5,7 @@ package reg
 import (
 	"fmt"
 	xl "github.com/jddixon/xlattice_go"
-	"github.com/jddixon/xlattice_go/msg"
+	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
 )
@@ -89,9 +89,9 @@ func NewInHandler(reg *Registry, conn xt.ConnectionI) (
 	}
 	rn := &reg.RegNode
 	if rn == nil {
-		err = msg.NilNode
+		err = xa.NilNode
 	} else if conn == nil {
-		err = msg.NilConnection
+		err = xa.NilConnection
 	} else {
 		cnx := conn.(*xt.TcpConnection)
 		h = &InHandler{
@@ -224,12 +224,12 @@ func handleHello(h *InHandler) (err error) {
 	ciphertext, err = h.ReadData()
 	if err == nil {
 		iv1, key1, salt1, version1,
-			err = msg.ServerDecodeHello(ciphertext, rn.ckPriv)
+			err = xa.ServerDecodeHello(ciphertext, rn.ckPriv)
 		_ = version1 // ignore whatever version they propose
 	}
 	if err == nil {
 		version2 := serverVersion
-		iv2, key2, salt2, ciphertextOut, err := msg.ServerEncodeHelloReply(
+		iv2, key2, salt2, ciphertextOut, err := xa.ServerEncodeHelloReply(
 			iv1, key1, salt1, uint32(version2))
 		if err == nil {
 			err = h.WriteData(ciphertextOut)

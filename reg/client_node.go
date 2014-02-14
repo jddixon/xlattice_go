@@ -13,9 +13,9 @@ import (
 	"encoding/binary"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
-	xm "github.com/jddixon/xlattice_go/msg"
 	xn "github.com/jddixon/xlattice_go/node"
 	xi "github.com/jddixon/xlattice_go/nodeID"
+	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
 	xf "github.com/jddixon/xlattice_go/util/lfs"
@@ -268,7 +268,7 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 	if err == nil {
 		cn.Cnx = cnx
 		ciphertext1, iv1, key1, salt1,
-			err = xm.ClientEncodeHello(proposedVersion, cn.regCK)
+			err = xa.ClientEncodeHello(proposedVersion, cn.regCK)
 	}
 	if err == nil {
 		err = cn.WriteData(ciphertext1)
@@ -279,7 +279,7 @@ func (cn *ClientNode) SessionSetup(proposedVersion uint32) (
 	}
 	if err == nil {
 		iv2, key2, salt2, salt1c, decidedVersion,
-			err = xm.ClientDecodeHelloReply(ciphertext2, iv1, key1)
+			err = xa.ClientDecodeHelloReply(ciphertext2, iv1, key1)
 		_ = salt1c // XXX
 	}
 	// Set up AES engines ---------------------------------------
