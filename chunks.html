@@ -16,9 +16,9 @@
 <a href="http://code.google.com/p/protobuf/">(Google&rsquo;s Protocol Buffer)</a> messages.
 The latter begin with a varint, a variable-length integer,
 which represents the length of the message.
-As Protobuf messages have a non-zero length, no message beginning with a
-zero byte can be a valid Protobuf message, so chunks always begin with a
-zero byte, the <strong>magic</strong> field.</p>
+As Protobuf messages always have a non-zero length, no message beginning with a
+zero byte can be a valid Protobuf message.  Therefore chunks always begin with
+a zero byte, the <strong>magic</strong> field.</p>
 
 <p>In the initial version of Chunks, <strong><em>header fields</em></strong> are laid out as follows:</p>
 
@@ -77,18 +77,33 @@ zero byte, the <strong>magic</strong> field.</p>
 </tbody>
 </table>
 
-<p>The &lsquo;datum&rsquo; field contains the SHA3-256 content hash of the file of
-which this is a chunk.  This is <strong>not</strong> the content hash of the chunk.</p>
+<p>In this version (type 0) of Chunks, the first eight bytes are always zero.</p>
 
-<p>The header is followed by <code>ceil(len/16)</code> bytes of data, with zero byte
-padding added to bring the data length up to a multiple of 16.  That is,
-the data is padded with zeroes as required to bring its length to the next
-whole multiple of 16.  If the length of the data in bytes is already a
-whole multiple of 16, no padding is added.</p>
+<p>The type 0 Chunk <strong>length</strong> field is constrained to 17 bits and stores
+<code>N-1</code>, the length of the chunk less one.   Therefore the
+maximum number of bytes in a chunk is <code>2^17 = 131072</code>.<br />
+The upper 15 bits of the length field are reserved and
+must be zero.</p>
 
-<p>The chunk data is followed by the 32-byte SHA3-256 hash of the chunk itself,
-where the hash is calculated over the fields named (magic, type, reserved,
-length, datum, and data, in that order.</p>
+<p>The length is big-endian, so that the first byte of the length is always
+zero and the second byte is either 0 or 1.</p>
+
+<p>The <strong>index</strong> field represents the zero-based index of this particular
+chunk in the overall message.  This is also a big-endian value.</p>
+
+<p>The <strong>datum</strong> field contains the SHA3-256 content hash of the file of
+which this is a chunk.  This is <strong>not</strong> the content hash of the chunk.
+It is the content hash of the entire file represented by this message.</p>
+
+<p>The header is followed by <code>ceil(len/16)</code> bytes of <strong>data</strong>, with zero byte
+<strong>padding</strong> added as necessary to bring the data length up to a multiple of
+16.  That is, the data is padded with zeroes as required to bring its length to
+the next whole multiple of 16.  If the length of the data in bytes is already
+a whole multiple of 16, no padding is added.</p>
+
+<p>The chunk data is followed by the 32-byte <strong>SHA3-256 hash</strong> of the chunk
+itself, where the hash is calculated over the fields named (magic, type,
+reserved, length, datum, and data, in that order.</p>
 
 <p>A chunk is assumed to be part of a message.  Chunks are concatenated
 at the destination
@@ -96,12 +111,6 @@ in index order to make up the message.  The assumption is that chunks
 will normally be transmitted in index order, but that is not necessarily
 the case, and using software must tolerate missing, duplicated, and
 out-of-order chunks.</p>
-
-<p>The type 0 Chunk <em>length</em> field is constrained to 17 bits and stores
-<code>N-1</code>, the length of the chunk less one.   Therefore the
-maximum number of bytes in a chunk is <code>2^17 = 131072</code>.<br />
-The upper 15 bits of the length field are reserved and
-must be zero.</p>
   <hr />
   <div class="f">
     <div class="license">
