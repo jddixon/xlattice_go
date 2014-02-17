@@ -31,11 +31,33 @@ func (s *XLSuite) TestProperties(c *C) {
 
 func (s *XLSuite) TestBadLengths(c *C) {
 
+	datum, err := xi.New(nil) // generates random NodeID
+
+	rng := xr.MakeSimpleRNG()
+	ndx := uint32(rng.Intn(256 * 256 * 256))
+	okData := make([]byte, 256+rng.Intn(3))
+
+	// verify nil datum causes error
+	nilChunk, err := NewChunk(nil, ndx, okData)
+	c.Assert(err, Equals, NilDatum)
+	c.Assert(nilChunk, Equals, (*Chunk)(nil))
+
+	// verify nil data causes error
+	nilChunk, err = NewChunk(datum, ndx, nil)
+	c.Assert(err, Equals, NilData)
+	c.Assert(nilChunk, Equals, (*Chunk)(nil))
+
 	// verify length of zero causes error
-	// XXX STUB
+	zeroLenData := make([]byte, 0)
+	lenZeroChunk, err := NewChunk(datum, ndx, zeroLenData)
+	c.Assert(err, Equals, ZeroLengthChunk)
+	c.Assert(lenZeroChunk, Equals, (*Chunk)(nil))
 
 	// verify length > MAX_CHUNK_BYTES causes error
-	// XXX STUB
+	bigData := make([]byte, MAX_CHUNK_BYTES+rng.Intn(3))
+	tooBig, err := NewChunk(datum, ndx, bigData)
+	c.Assert(err, Equals, ChunkTooLong)
+	c.Assert(tooBig, Equals, (*Chunk)(nil))
 }
 
 func (s *XLSuite) TestChunks(c *C) {
@@ -44,7 +66,7 @@ func (s *XLSuite) TestChunks(c *C) {
 	ndx := uint32(rng.Int31())
 	datum, err := xi.New(nil)
 	c.Assert(err, IsNil)
-	dataLen := 1 + rng.Intn(256 * 256)	// 1 .. 2^16 
+	dataLen := 1 + rng.Intn(256*256) // 1 .. 2^16
 	data := make([]byte, dataLen)
 	rng.NextBytes(data)
 	ch, err := NewChunk(datum, ndx, data)

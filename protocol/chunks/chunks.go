@@ -29,7 +29,7 @@ const (
 	DATUM_BYTES   = 32
 	DATA_OFFSET   = DATUM_OFFSET + DATUM_BYTES
 	HASH_BYTES    = xc.SHA3_LEN
-	WORD_BYTES    = 16	// we pad to likely cpu cache length
+	WORD_BYTES    = 16 // we pad to likely cpu cache length
 
 	MAX_CHUNK_BYTES = 128 * 1024 // 128 KB
 )
@@ -49,6 +49,10 @@ func NewChunk(datum *xi.NodeID, ndx uint32, data []byte) (
 		err = NilDatum
 	} else if data == nil {
 		err = NilData
+	} else if len(data) == 0 {
+		err = ZeroLengthChunk
+	} else if len(data) >= MAX_CHUNK_BYTES {
+		err = ChunkTooLong
 	} else {
 		msgHash := datum.Value()
 		realLen := len(data)
