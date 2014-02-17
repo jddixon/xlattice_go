@@ -114,6 +114,7 @@ func (s *XLSuite) TestChunkList(c *C) {
 		} else {
 			slice = data[i*MAX_CHUNK_BYTES : (i+1)*MAX_CHUNK_BYTES]
 		}
+
 		chunk, err = NewChunk(nodeID, uint32(i), slice)
 		c.Assert(err, Equals, nil)
 		c.Assert(chunk.GetChunkHash(), DeepEquals, expected)

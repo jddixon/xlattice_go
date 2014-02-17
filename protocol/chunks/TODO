@@ -1,8 +1,11 @@
 xlattice_go/protocol/chunks/TODO
 
+2014-02-17
+    * fix: error seen once at TestChunkList, line 119: ChunkTooLong
+
 2014-02-10
-    * it is an error if chunk length is zero or > 128K; tests should
-        check both values
+    * it is an error if chunk length is zero or > 128K; tests should    * DONE
+        check both values                                               * DONE
 
 2013-12-13
     * Serious deficiency: the digital signature in the DigiList is

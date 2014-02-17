@@ -1,7 +1,7 @@
 xlattice_go/TODO
 
 2014-01-21
-    * fix CountingBloom
+    * fix CountingBloom                                                 * DONE
 
 2014-01-19
     * move project version number to xlattice_go/const.go               * DONE
@@ -10,7 +10,7 @@ xlattice_go/TODO
     * msg/TODO: drop Hello from protocol
 
 2013-12-10
-    * protocol/aescnx seems wholly superfluous; drop?
+    * protocol/aescnx seems wholly superfluous; drop?                   * SKIP
 
 2013-11-25  * FOCUS *
     * argument to rnglib.NextBytes should be []byte, not &[]byte        * DONE
@@ -20,6 +20,6 @@ xlattice_go/TODO
         bytes package, and so should be dropped                         * DONE
 
 2013-10-25
-    * move the project version number from rnglib/ to util/ or subdir
-    * xlReg should drop version number from rng/const.go and use
-        project version number instead
+    * move the project version number from rnglib/ to util/ or subdir   * DONE
+    * xlReg should drop version number from rng/const.go and use        * DONE
+        project version number instead                                  * DONE

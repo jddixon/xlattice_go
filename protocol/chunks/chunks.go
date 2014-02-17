@@ -51,7 +51,7 @@ func NewChunk(datum *xi.NodeID, ndx uint32, data []byte) (
 		err = NilData
 	} else if len(data) == 0 {
 		err = ZeroLengthChunk
-	} else if len(data) >= MAX_CHUNK_BYTES {
+	} else if len(data) > MAX_CHUNK_BYTES {
 		err = ChunkTooLong
 	} else {
 		msgHash := datum.Value()

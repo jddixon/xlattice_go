@@ -54,7 +54,7 @@ func (s *XLSuite) TestBadLengths(c *C) {
 	c.Assert(lenZeroChunk, Equals, (*Chunk)(nil))
 
 	// verify length > MAX_CHUNK_BYTES causes error
-	bigData := make([]byte, MAX_CHUNK_BYTES+rng.Intn(3))
+	bigData := make([]byte, MAX_CHUNK_BYTES+1+rng.Intn(3))
 	tooBig, err := NewChunk(datum, ndx, bigData)
 	c.Assert(err, Equals, ChunkTooLong)
 	c.Assert(tooBig, Equals, (*Chunk)(nil))
