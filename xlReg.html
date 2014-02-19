@@ -48,6 +48,8 @@ at some point the version number in the Hello will be that requested by
 the client and the version number in the reply will be that actually used
 by the server.</p>
 
+<p><img src="img/simple-cluster.jpg" alt="simple-cluster" style="float:left"></p>
+
 <p>In the next step the client sends a Client message with either a proposed
 clientName and a token or a clientID and salt2 from the HelloReply.  In the
 first case the token will contain, among other things, a proposed
@@ -85,14 +87,14 @@ follows, and a list (an array) of member tokens.</p>
 <p>If the clusterID is not present, the server will assume the ID associated
 with any previous Create or Join.</p>
 
+<p><img src="img/cluster-with-clients.jpg" alt="cluster-with-clients" style="float:right"></p>
+
 <p>If the Which field is present, the server will return tokens for the Nth
 member wherever bit N is set in Which.  If Which is absent, the server
 will act as though all possible Which bits are set.  In any case, the
 server will return a token wherever the corresponding member has been
 defined, and then will return a Which value indicating which tokens are
 present.</p>
-
-<p><img src="img/simple-cluster.jpg" alt="simple-cluster" style="float:left"></p>
 
 <p>The first token in the Members message will correspond to the lowest bit
 set, any second bit to the second lowest bit, and so forth.  If no one
@@ -105,8 +107,6 @@ Alternatively the client can close the connection and return later.</p>
 
 <p>The client ends a session by sending Bye to the server.  The server
 replies with an Ack and closes the connection.</p>
-
-<p><img src="img/cluster-with-clients.jpg" alt="cluster-with-clients" style="float:right"></p>
 
 <p>Error messages from the server contain a string describing the problem.
 The server will send the message and then close the connection without
