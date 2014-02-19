@@ -26,6 +26,8 @@ server also has a well-known RSA public key.</p>
 on communications and then send an encrypted Join message with their
 details.</p>
 
+<p><img src="img/xl-registration.jpg" alt="xl-registration" style="float:right"></p>
+
 <p>The Hello is encrypted using the server&rsquo;s RSA public key.  It contains a
 salt (&ldquo;salt1&rdquo;), a requested version number, and an AES IV and key (&ldquo;KeyIV&rdquo;)
 used only to encrypt the reply, the HelloReply.  This iv+key is created by
@@ -90,6 +92,8 @@ server will return a token wherever the corresponding member has been
 defined, and then will return a Which value indicating which tokens are
 present.</p>
 
+<p><img src="img/simple-cluster.jpg" alt="simple-cluster" style="float:left"></p>
+
 <p>The first token in the Members message will correspond to the lowest bit
 set, any second bit to the second lowest bit, and so forth.  If no one
 has joined the cluster or none of the selected members is as yet defined,
@@ -101,6 +105,8 @@ Alternatively the client can close the connection and return later.</p>
 
 <p>The client ends a session by sending Bye to the server.  The server
 replies with an Ack and closes the connection.</p>
+
+<p><img src="img/cluster-with-clients.jpg" alt="cluster-with-clients" style="float:right"></p>
 
 <p>Error messages from the server contain a string describing the problem.
 The server will send the message and then close the connection without
