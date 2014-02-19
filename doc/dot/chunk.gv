@@ -1,0 +1,4 @@
+digraph chunk {
+node [shape=record];
+    struct [shape=record, label="<f0>magic |<f1>type |<f2>reserved |<f3>length |<f4>index |<f5>datum |<f6>data ... |<f7>padding |<f8>hash"];
+}

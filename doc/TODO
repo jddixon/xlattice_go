@@ -1,5 +1,25 @@
 xlatice_go/doc/TODO
 
+2014-02-18
+    * chunk.jpg 
+        * should be centered
+        * magic, type, reserved fields get blue background
+        * green background to datum and hash fields
+        * gray background for padding field 
+        * add a second row for field length ?
+        * add another row for field content?
+        * add a title ("chunk layout")
+
+2014-02-17
+    * need description of chunkList and digiList  
+    * replace table of fields with graphViz figure clearly 
+        distinguishing header, body (=data), and terminating 
+        chunk hash
+    * add another figure describing chunkList and digiList
+    * point out that chunks need not be assembled into a file and
+        that chunks may be distributed over a number of machines
+        - reason for doing so?
+
 2014-02-03
     * include regCred for Stockton server to xlReg_protocol.md
 
