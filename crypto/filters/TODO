@@ -3,8 +3,8 @@ xlattice_go/crypto/filters/TODO
 2014-02-11
     * URGENTLY NEEDS FIX: mixed up Member(), a public boolean, with
         isMember(), which is private and unsynchronized
-        - call the public, synchronized funcition IsMember()
-        - the private, unsynchronized version reverts to isMember()
+        - call the public, synchronized funcition IsMember()            * DONE
+        - the private, unsynchronized version reverts to isMember()     * DONE
         - using code needs to be examined :-(
 
 2014-02-05

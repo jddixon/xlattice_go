@@ -1,7 +1,7 @@
 xlattice_go/protocol/aes_cnx
 
 2014-02-14
-    * merge in anything useful from aes_cnx.go
+    * merge in anything useful from aes_cnx.go                          * DONE
 
 2014-02-13
     * xlattice_go/msg/helloAndReply{,_test}.go move here                * DONE
