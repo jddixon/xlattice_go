@@ -31,21 +31,21 @@ containing</p>
 
 <pre><code>regCred {
     Name: xlReg
-    ID: fc394d1363ce32e4cc6ae5e019bcc78176ad425014b01e906f8887eccb116664
-   
-    CommsPubKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC1gaYZ9LtXq9uBeiP0jU6kqZrekd8GLdPMhENDmkxAoulh2+74WYN7AUo38hNZNjBT3VanMwZ2+QZNTfioNFbJnEdB5DvaC+/nSQ4B2i7qBdb2fWjXfLNAreB0R+oMWigFmUzooz5kQyk3jJZLxIoSLSDlyVUO2DWp2GDVU9FE2aVod3P7I8rI83OhU2K8/lrKBuLfQsVff+AJNCleu6raMNVzLgfCNsEKC9avXovX2qGhvZdQY/KZ7ZzrvIkOq03DJ3x6Vv37pCzRJtmxX04mk2CGTtqzliuzdarIVe+tvBbtE9dTRR9L8v2LKIhAr8JF+A3SPRPbcZJTxxsri+bR
+    ID: 21b95b5c697977d266a0c364e12787ad72bf6fc9346ec0edef351cfb6da90c24
+    CommsPubKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCZz5Kdt5XqLRVipmnEEu1eedHmSswP8ZDkbadkRdCrgpGm1OLe79WTrkB0HLW98pjyBooaWLU/thSoB1/2UfkaYdoDHtfHzMKBLUmfR8MCgQaKA3KoOr83wYdtLPYiUmIlg77CjUAuKOPYtd8oy+9TrbM7AwYUZf7Ps/2Lalv7JPQKHX5jyBAjs8nF9LZj+6EhYX0m6RrwyptHjTle7ajQ+6taX+9pZUIY20zu9aiR7j4LNlk2JITOPDk0mr+UsVlI6SfHpuAdy6nsG592bQLT5RF/mD5knh3/EP+b+5yXJHth8myN4UDPIIupinVQ+Vcr0H4y106bebLITWhuJiuN
 
-    SigPubKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCeUamt6heiNhIJkLQUxXjnEh1iLhvwf6Rp+f2nCoBg0l1wDBpp2Qb4WBVRCNzGlwBWp+ZPd8YOGYBfqrhlkl/TPZ3xgm1IEbJ0Gh+TO8h1TlF/5zzIIrbdy5//jESad5Q3Cq2Ph7b+MH1W3tvdIWTQ24ht4qDWq0pjs8oV4fbcrNgnDCYjG5QqhTOHPRQ1ZZOLEH6p74BU+afweMimnFDYKjaQA1N328eT6gT6QeenesYy2at9Gkz0KHpE8AmpMTfk9KtjtH0HEMzaaH0+AsEF9fuAMR9B+w/HhlyRHeJYwZncVRFl1ELNZE51Th6S0BaXCJrEVqm7vaBDeKSe2Hrn
+    SigPubKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDcpMhDQWgLHLcaU4Ed8fHBwLmNOa5RKECmci5VeDczF01R/VaxUcLnna58NM6m1fajNJlS3Z7xICiCwmYFOfJjQ8weuvXebqKUKTZMBghVRJqjPiWGmz9C07U/sTtRrEg0kEUZKepZ6Z9M7VN7eUJwoi+Avp99enTAKmgotYFXn47vpoLDGeKaviHAVcqOHXoQRLfT1Q6vjs/b+yg9lnxRon9kyf3tLopz64Sor6itkI0WhwdWZ0PJHDFW5SfkBhStBW1gC8vED0HO5bbi5iU1NRPiG+nUHm4UYjiQD2DY2PQGXeogZeaqL7ADy8+V0A7TYOkWZTSulK/IuYBY8Clz
 
     EndPoints {
-         TcpEndPoint: 127.0.0.1:44444
+         TcpEndPoint: 50.18.104.7:55555
     }
-    Version: 0.2.1
+    Version: 0.4.3
 }
 </code></pre>
 
-<p>This particular registry is on the test machine (<em>localhost</em>, <code>127.0.0.1</code>) and
-listens on <code>44444</code>, the port conventionally used for xlReg testing.</p>
+<p>This particular registry is on stockton.dixons.org, a machine in
+Amazon&rsquo;s AWS/EC2 cloud, and listens on <code>55555</code>, the port conventionally
+used by the xlReg server.</p>
 
 <p>The <code>Go</code> version of the xlReg client provides functions to read and write
 serialized RegCred files (<code>xlattice_go.reg.ParseRegCred()</code> and
