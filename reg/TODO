@@ -1,5 +1,9 @@
 xlattice_go/reg/TODO
 
+2014-02-20
+    * need to step version number at each branch merge
+    * investigate: msg_handlers.go L 169: "NO LONGER MAKES ANY SENSE"
+
 2014-02-03 (2013-10-09, edited)
     * ClientMsg is
         - EITHER token with digSig but without clientID
