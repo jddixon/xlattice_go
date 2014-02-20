@@ -8,7 +8,7 @@ As Protobuf messages always have a non-zero length, no message beginning with a
 zero byte can be a valid Protobuf message.  Therefore chunks always begin with
 a zero byte, the **magic** field.
 
-![Chunk message layout](img/chunk.jpg)
+![Chunk message layout](img/chunk2.jpg)
 
 In the initial version of Chunks, ***header fields*** are laid out as follows:
 

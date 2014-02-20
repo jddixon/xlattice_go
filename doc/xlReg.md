@@ -14,6 +14,8 @@ Clients join a cluster by sending a Hello message to the server to agree
 on communications and then send an encrypted Join message with their 
 details.  
 
+<img src="img/xl-registration.jpg" alt="xl-registration" style="float:right">
+
 The Hello is encrypted using the server's RSA public key.  It contains a 
 salt ("salt1"), a requested version number, and an AES IV and key ("KeyIV") 
 used only to encrypt the reply, the HelloReply.  This iv+key is created by 
@@ -33,6 +35,8 @@ The version number is currently ignored.  The expectation is that
 at some point the version number in the Hello will be that requested by
 the client and the version number in the reply will be that actually used
 by the server.
+
+<img src="img/simple-cluster.jpg" alt="simple-cluster" style="float:left">
 
 In the next step the client sends a Client message with either a proposed
 clientName and a token or a clientID and salt2 from the HelloReply.  In the
@@ -70,6 +74,8 @@ follows, and a list (an array) of member tokens.
 
 If the clusterID is not present, the server will assume the ID associated 
 with any previous Create or Join.  
+
+<img src="img/cluster-with-clients.jpg" alt="cluster-with-clients" style="float:right">
 
 If the Which field is present, the server will return tokens for the Nth 
 member wherever bit N is set in Which.  If Which is absent, the server 

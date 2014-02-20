@@ -1,0 +1,9 @@
+/* cluster-with-clients.gv */
+
+digraph clusterWithClients {
+    Member1 -> Member2 -> Member3 -> Member1;
+    Member1 -> Member3 -> Member2 -> Member1;
+    Client1 -> Member1;
+    Client2 -> Member3;
+    Client3 -> Member3;
+}

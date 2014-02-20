@@ -1,42 +1,80 @@
 # xlattice_go
 
 An implementation of [XLattice](http://xlattice.sourceforge.net)
-for the Go language.  XLattice is a communications library 
-for peer-to-peer networks.  More extensive (although somewhat
-dated) information on XLattice is available as the 
-[XLattice website](http://www.xlattice.org).
+for the [Go programming language](http://golang.org).
 
-This version of xlattice-go includes a Go implementation of *rnglib*
-for use in testing and an implementation of **u**, a system for
+XLattice is a communications library  and a set of tools
+for peer-to-peer networks.  The library was originally developed in Java;
+more extensive (although somewhat
+dated) information on XLattice for Java is available at the
+[Java XLattice website](http://www.xlattice.org).
+
+XLattice consists of a number of components.  Generally speaking, those
+listed later depend upon some or all of the earlier components.
+
++ [util](#util)
++ [rnglib](#rnglib)
++ [u](#u)
++ [crypto](#crypto)
++ [transport](#transport)
++ [protocol](#protocol)
++ [overlay](#overlay)
++ [node](#node)
++ [reg](#reg)
++ [httpd](#httpd)
+
+All of these are currently in development.
+
+## <a name="util"></a>util
+
+## <a name="rnglib"></a>rnglib
+
+This version of xlattice_go includes a Go implementation of *rnglib*
+for use in testing.  rnglib is a [Go random number generator](rnglib.html)
+a drop-in replacement for Go's random number generator.  It
+
++ is somewhat faster; about 30% in our tests
++ has a number of additional functions for generating random file names,
+    directories of random data, etc
+
+## <a name="u"></a>u
+
+and an implementation of **u**, a system for
 storing files by their content keys.
 
-## xlReg
+[A store organized by content key](u.html)
 
-[xlReg](xlReg.html) is a tool, primarily intended for use in testing, 
-which facilitates the formation of clusters.  On registration, a 
-client/member is issued a globally unique NodeID, a 256-bit random value.  
-The member can then create and/or join clusters.  The cluster has
-a maximum size set at creation.  When members join the cluster they
-register their two RSA public keys and either one or two IP addresses.
-If the cluster only supports communications between members, members
-register only one IP address.  If non-members, clients, are allowed to
-communicate with the cluster, members register a second address for 
-that purpose.  When a member has completed registration, it can retrieve
-the configuration data other members have registered.
+## <a name="crypto"></a>crypto
 
-The xlReg server, its clients, and the cluster members, and all 
-XLattice [nodes](node.html).
+## <a name="transport"></a>transport
 
-## Other Protocols
+## <a name="protocol"></a>protocol
 
 ### Chunks
 
 [chunks](chunks.html)
 
-## u
+## <a name="overlay"></a>overlay
 
-[A store organized by content key](u.html)
+## <a name="node"></a>node
 
-## rnglib
+## <a name="reg"></a>reg
 
-[A Go random number generator](rnglib.html)
+[xlReg](xlReg.html) is a tool, primarily intended for use in testing,
+which facilitates the formation of clusters.  On registration, a
+client/member is issued a globally unique NodeID, a 256-bit random value.
+The member can then create and/or join clusters.  The cluster has
+a maximum size set at creation.  When members join the cluster they
+register their two RSA public keys and either one or two IP addresses.
+If the cluster only supports communications between members, members
+register only one IP address.  If non-members, clients, are allowed to
+communicate with the cluster, members register a second address for
+that purpose.  When a member has completed registration, it can retrieve
+the configuration data other members have registered.
+
+The xlReg server, its clients, and the cluster members, are all
+XLattice [nodes](node.html).
+
+## <a name="httpd"></a>httpd
+
+The go version of XLattice httpd is very much in development.

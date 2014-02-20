@@ -1,0 +1,18 @@
+/* chunk2.gv - record replaced with HTML */
+
+digraph chunk2 {
+    node [shape=plaintext colorscheme=svg];
+        struct1 [label=<
+            <TABLE><TR>
+                <TD BGCOLOR="lightgray"  >magic</TD>
+                <TD BGCOLOR="lightgray"  >type</TD>
+                <TD BGCOLOR="lightgray"  >reserved</TD>
+                <TD BGCOLOR="deepskyblue">length </TD>
+                <TD BGCOLOR="deepskyblue">index </TD>
+                <TD BGCOLOR="olivedrab"  >datum</TD>
+                <TD BGCOLOR="yellow"     >data ... </TD>
+                <TD BGCOLOR="lightgray"  >padding</TD>
+                <TD BGCOLOR="olivedrab"  >hash</TD>
+            </TR></TABLE>
+        >];
+}

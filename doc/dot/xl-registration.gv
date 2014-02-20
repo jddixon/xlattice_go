@@ -1,0 +1,7 @@
+/* xl-registration.gv */
+
+digraph xlRegistration {
+    member1 -> xlReg [label="Hello"] ;
+    member2 -> xlReg [label="Hello"] ;
+    member3 -> xlReg [label="Hello"] ;
+}

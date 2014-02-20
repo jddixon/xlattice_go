@@ -1,0 +1,6 @@
+/* simple-cluster.gv */
+
+digraph simpleCluster {
+    Member1 -> Member2 -> Member3 -> Member1;
+    Member1 -> Member3 -> Member2 -> Member1;
+}
