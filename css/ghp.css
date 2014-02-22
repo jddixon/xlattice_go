@@ -17,12 +17,19 @@ div.f div.project {
 }
 div.f div.logo { float: right; width:33%;}
 
-h1 { color: white;
+h1 { 
+    background-color: orange; 
     text-align: center;
     width: 100%;
 }
-.libTop { background-color: teal; }
-.appTop { background-color: seagreen; }
+.libTop { 
+    color: white;
+    background-color: teal; 
+}
+.appTop { 
+    color: white;
+    background-color: seagreen; 
+}
 
 h2 { border-bottom: solid 10px  #e5e4d9; }
 h3 { border-bottom: solid  5px  #e5e4d9; }
