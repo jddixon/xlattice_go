@@ -1,4 +1,4 @@
-# xlattice_go
+<h1 class="libTop">xlattice_go</h1>
 
 An implementation of [XLattice](http://xlattice.sourceforge.net)
 for the [Go programming language](http://golang.org).

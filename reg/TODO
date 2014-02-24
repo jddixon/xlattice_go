@@ -3,6 +3,8 @@ xlattice_go/reg/TODO
 2014-02-20
     * need to step version number at each branch merge
     * investigate: msg_handlers.go L 169: "NO LONGER MAKES ANY SENSE"
+    * also determine why xlReg continued to load on Stockton 
+        despite having no /var/app/xlReg
 
 2014-02-03 (2013-10-09, edited)
     * ClientMsg is
@@ -10,7 +12,7 @@ xlattice_go/reg/TODO
         - OR clientID plus salt plus digSig
 
 2014-02-03
-    * install code, start server on Stockton
+    * install code, start server on Stockton                            * DONE
     * get regCred
     * add to ../doc/xlReg_protocol.md
 

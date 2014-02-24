@@ -1,4 +1,4 @@
-# xlReg CLUSTER REGISTRY
+<h1 class="libTop">xlReg CLUSTER REGISTRY</h1>
 
 As the term is used here, *registry* is a protocol for communicating
 between parties in a traditional server/client relationship.  On the
