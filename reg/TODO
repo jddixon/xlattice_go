@@ -1,5 +1,9 @@
 xlattice_go/reg/TODO
 
+2014-02-24
+    * write test_program execising data in test_dir as model for
+        xlreg_*
+
 2014-02-20
     * need to step version number at each branch merge
     * investigate: msg_handlers.go L 169: "NO LONGER MAKES ANY SENSE"
