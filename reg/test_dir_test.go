@@ -139,27 +139,33 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	// 21. Verify helloDecrypted == helloData
 	c.Assert(bytes.Equal(helloDecrypted, helloData), Equals, true)
 
-	// XXX THESE ARE NOT YET GENERATED XXX
-
 	//	// 22, 23, 24, 25, 26 read iv2, key2, salt2, padding, reply-data as []byte
-	//	iv2, err := ioutil.ReadFile(path.Join("test_dir", "iv2"))
-	//	c.Assert(err, IsNil)
-	//
-	//	key2, err := ioutil.ReadFile(path.Join("test_dir", "key2"))
-	//	c.Assert(err, IsNil)
-	//
-	//	salt2, err := ioutil.ReadFile(path.Join("test_dir", "salt2"))
-	//	c.Assert(err, IsNil)
-	//
-	//	padding, err := ioutil.ReadFile(path.Join("test_dir", "padding"))
-	//	c.Assert(err, IsNil)
-	//
-	//	replyData, err := ioutil.ReadFile(path.Join("test_dir", "reply-data"))
-	//	c.Assert(err, IsNil)
+	iv2, err := ioutil.ReadFile(path.Join("test_dir", "iv2"))
+	c.Assert(err, IsNil)
 
-	// 27. helloReply = concat iv2, key2, salt2, salt1, padding
+	key2, err := ioutil.ReadFile(path.Join("test_dir", "key2"))
+	c.Assert(err, IsNil)
+
+	salt2, err := ioutil.ReadFile(path.Join("test_dir", "salt2"))
+	c.Assert(err, IsNil)
+
+	padding, err := ioutil.ReadFile(path.Join("test_dir", "padding"))
+	c.Assert(err, IsNil)
+
+	replyData, err := ioutil.ReadFile(path.Join("test_dir", "reply-data"))
+	c.Assert(err, IsNil)
+
+	// 27. helloReply = concat iv2, key2, salt2, version2, salt1, padding
+	var helloReply []byte
+	helloReply = append(helloReply, iv2...)
+	helloReply = append(helloReply, key2...)
+	helloReply = append(helloReply, salt2...)
+	helloReply = append(helloReply, version2...)
+	helloReply = append(helloReply, salt1...)
+	helloReply = append(helloReply, padding...)
 
 	// 28. Verify helloReply == replyData
+	c.Assert(bytes.Equal(replyData, helloReply), Equals, true)
 
 	// 29. Create aesEngineS1 from iv1, key1
 
