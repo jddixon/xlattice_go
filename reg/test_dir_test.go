@@ -2,6 +2,8 @@ package reg
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
@@ -162,19 +164,44 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	helloReply = append(helloReply, padding...)
 
 	// 28. Verify helloReply == replyData
+	// DEBUG
+	//fmt.Printf("len helloReply %d, len replyData %d\n",
+	//	len(helloReply), len(replyData))
+	//for i := 0; i < len(helloReply); i++ {
+	//	if helloReply[i] != replyData[i] {
+	//		fmt.Printf("%02d %02x %02x\n", i, helloReply[i], replyData[i])
+	//	}
+	//}
+	// END
 	c.Assert(bytes.Equal(replyData, helloReply), Equals, true)
 
 	// 29. Create aesEngineS1 from iv1, key1
+	aesEngineS1, err := aes.NewCipher(key1) // what happens on the server
+	c.Assert(err, IsNil)
+	c.Assert(aesEngineS1, NotNil)
+	aesEncrypter1 := cipher.NewCBCEncrypter(aesEngineS1, iv1)
 
 	// 30. helloReplyMsg = aesEngineS1.encrypt(helloReply)
+	helloReplyMsg := make([]byte, len(helloReply))       // includes padding
+	aesEncrypter1.CryptBlocks(helloReplyMsg, helloReply) // dest <-src
 
 	// 31. Read reply-encrypted as replyEncrypted []byte
+	replyEncrypted, err := ioutil.ReadFile(path.Join("test_dir", "reply-encrypted"))
+	c.Assert(err, IsNil)
 
 	// 32. Verify helloReplyMsg == replyEncrypted
+	c.Assert(bytes.Equal(helloReplyMsg, replyEncrypted), Equals, true)
 
 	// 33. Create aesEngineC1 from iv1, key1
+	aesEngineC1, err := aes.NewCipher(key1) // what happens on the client
+	c.Assert(err, IsNil)
+	c.Assert(aesEngineC1, NotNil)
+	aesDecrypter1c := cipher.NewCBCDecrypter(aesEngineC1, iv1)
 
 	// 34. Use aesEngineC1.decrypt(replyEncrypted) => replyDecrypted
+	replyDecrypted := make([]byte, len(replyEncrypted))
+	aesDecrypter1c.CryptBlocks(replyDecrypted, replyEncrypted)
 
-	// 35. Verify replyDecrypted == replyData
+	// 35. Verify replyDecrypted == replyData (both with padding)
+	c.Assert(bytes.Equal(replyData, replyDecrypted), Equals, true)
 }
