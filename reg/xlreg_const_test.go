@@ -7,7 +7,7 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) TestAAAErrorConst(c *C) {
+func (s *XLSuite) TestErrorConst(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_ERROR_CONSTS")
 	}
