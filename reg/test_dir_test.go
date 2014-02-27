@@ -19,9 +19,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 		fmt.Println("TEST_TEST_DIR")
 	}
 
-	/////////////////////////////////////////////////////////////////
-	// READ AND INTERPRET test_dir/regCred.dat
-	/////////////////////////////////////////////////////////////////
+	// 00 READ AND INTERPRET test_dir/regCred.dat ///////////////////
 
 	rcFile := path.Join("test_dir", "regCred.dat")
 	rcData, err := ioutil.ReadFile(rcFile)
@@ -31,9 +29,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(rc, NotNil)
 
-	/////////////////////////////////////////////////////////////////
-	// HELLO - REPLY TESTS
-	/////////////////////////////////////////////////////////////////
+	// 00 HELLO - REPLY TESTS ///////////////////////////////////////
 
 	// 1. Read key_rsa as key *rsa.PrivateKey
 	keyFile := path.Join("test_dir", "key-rsa")
@@ -57,7 +53,6 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	c.Assert(pubKey2, NotNil)
 
 	// 4. Verify pubkey == pubkey2
-	// The first is NOT a pointer
 	c.Assert(&pubKey, DeepEquals, pubKey2)
 
 	// 5. Read version1.str as v1Str
@@ -80,7 +75,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	// 8. Verify v1Str == dv1.String()
 	c.Assert(v1Str, Equals, dv1.String())
 
-	// 9, 10, 11, 12 same as 5-8 for version2  ----------------------
+	// 9, 10, 11, 12 same as 5-8 for version2 -----------------------
 
 	// 9. Read version2.str as v2Str
 	v2File := path.Join("test_dir", "version2.str")
@@ -99,10 +94,11 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	dv2, err := xu.VersionFromBytes(version2)
 	c.Assert(err, IsNil)
 
-	// 13. Verify v2Str == dv2.String()
+	// 12. Verify v2Str == dv2.String()
 	c.Assert(v2Str, Equals, dv2.String())
 
 	// 13, 14, 15, 16 read iv1, key1, salt1, hello-data as []byte ---
+
 	iv1, err := ioutil.ReadFile(path.Join("test_dir", "iv1"))
 	c.Assert(err, IsNil)
 
@@ -139,7 +135,8 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	// 21. Verify helloDecrypted == helloData
 	c.Assert(bytes.Equal(helloDecrypted, helloData), Equals, true)
 
-	//	// 22, 23, 24, 25, 26 read iv2, key2, salt2, padding, reply-data as []byte
+	// 22, 23, 24, 25, 26 read iv2, key2, salt2, padding, reply-data as []byte
+
 	iv2, err := ioutil.ReadFile(path.Join("test_dir", "iv2"))
 	c.Assert(err, IsNil)
 

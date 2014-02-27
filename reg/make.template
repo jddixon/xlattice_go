@@ -1,0 +1,1 @@
+grep <test_dir_test.go "^  *// [[:digit:]][[:digit:]]*" > test_dir_test_template
