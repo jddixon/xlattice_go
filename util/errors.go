@@ -3,10 +3,11 @@ package util
 // xlattice_go/util/errors.go
 
 import (
-	"errors"
+	e "errors"
 )
 
 var (
-	InvalidName           = errors.New("not a valid entity name")
-	TooManyPartsInVersion = errors.New("too many parts in version")
+	InvalidName           = e.New("not a valid entity name")
+	TooManyPartsInVersion = e.New("too many parts in version")
+	WrongLengthForVersion = e.New("wrong length for version")
 )

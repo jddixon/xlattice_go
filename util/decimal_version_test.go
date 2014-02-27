@@ -8,11 +8,16 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-func (s *XLSuite) makeVersion(a, b, c, d uint) (dv DecimalVersion) {
-	return DecimalVersion(uint((0xff & a) |
-		((0xff & b) << 8) |
-		((0xff & c) << 16) |
-		((0xff & d) << 24)))
+func (s *XLSuite) TestVersionFromBytes(c *C) {
+	dv1 := New(1, 2, 3, 4)
+	var b []byte = []byte{1, 2, 3, 4}
+	dv2, err := VersionFromBytes(b)
+	c.Assert(err, IsNil)
+	c.Assert(dv1, Equals, dv2)
+
+	dv3, err := VersionFromBytes(b[1:]) // so only 3 bytes long
+	c.Assert(err, Equals, WrongLengthForVersion)
+	c.Assert(dv3, Equals, DecimalVersion(0))
 }
 func (s *XLSuite) TestDecimalVersion(c *C) {
 	if VERBOSITY > 0 {
@@ -23,7 +28,7 @@ func (s *XLSuite) TestDecimalVersion(c *C) {
 	_ = rng
 
 	// always print at least two decimals
-	dv := s.makeVersion(1, 0, 0, 0)
+	dv := New(1, 0, 0, 0)
 	v := dv.String()
 	c.Assert(v, Equals, "1.0")
 	dv2, err := ParseDecimalVersion(v)
@@ -31,7 +36,7 @@ func (s *XLSuite) TestDecimalVersion(c *C) {
 	c.Assert(dv2, Equals, dv)
 
 	// don't print more if the values are zero
-	dv = s.makeVersion(1, 2, 0, 0)
+	dv = New(1, 2, 0, 0)
 	v = dv.String()
 	c.Assert(v, Equals, "1.2")
 	dv2, err = ParseDecimalVersion(v)
@@ -40,7 +45,7 @@ func (s *XLSuite) TestDecimalVersion(c *C) {
 
 	// if the third byte is zero but the fourth isn't, print
 	// both
-	dv = s.makeVersion(1, 2, 0, 4)
+	dv = New(1, 2, 0, 4)
 	v = dv.String()
 	c.Assert(v, Equals, "1.2.0.4")
 	dv2, err = ParseDecimalVersion(v)
@@ -48,14 +53,14 @@ func (s *XLSuite) TestDecimalVersion(c *C) {
 	c.Assert(dv2, Equals, dv)
 
 	// other cases
-	dv = s.makeVersion(1, 2, 3, 0)
+	dv = New(1, 2, 3, 0)
 	v = dv.String()
 	c.Assert(v, Equals, "1.2.3")
 	dv2, err = ParseDecimalVersion(v)
 	c.Assert(err, IsNil)
 	c.Assert(dv2, Equals, dv)
 
-	dv = s.makeVersion(1, 2, 3, 4)
+	dv = New(1, 2, 3, 4)
 	v = dv.String()
 	c.Assert(v, Equals, "1.2.3.4")
 	dv2, err = ParseDecimalVersion(v)

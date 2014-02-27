@@ -8,6 +8,23 @@ import (
 
 type DecimalVersion uint32
 
+func New(a, b, c, d uint) (dv DecimalVersion) {
+	return DecimalVersion(uint((0xff & a) |
+		((0xff & b) << 8) |
+		((0xff & c) << 16) |
+		((0xff & d) << 24)))
+}
+
+// Interpret a byte slice as a big-endian uint.
+func VersionFromBytes(b []byte) (dv DecimalVersion, err error) {
+	if len(b) != 4 {
+		err = WrongLengthForVersion
+	} else {
+		dv = New(uint(b[0]), uint(b[1]), uint(b[2]), uint(b[3]))
+	}
+	return
+}
+
 // Convert a uint32 DecimalVersion to string format.
 func (dv DecimalVersion) String() (s string) {
 	val := dv
