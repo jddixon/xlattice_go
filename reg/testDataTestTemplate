@@ -1,0 +1,31 @@
+	// 001 READ AND INTERPRET test_dir/regCred.dat //////////////////
+	// 002 HELLO - REPLY TESTS //////////////////////////////////////
+	// 201. Read key_rsa as key *rsa.PrivateKey
+	// 202. Extract public key as pubkey *rsa.PublicKey
+	// 203. Read key_rsa.pub as pubkey2 *rsa.PublicKey
+	// 204. Verify pubkey == pubkey2
+	// 205. Read version1.str as v1Str
+	// 206. Read version1 as []byte
+	// 207. Convert version1 to dv1 DecimalVersion
+	// 208. Verify v1Str == dv1.String()
+	// 209-212 same as 205-208 for version2 -------------------------
+	// 209. Read version2.str as v2Str
+	// 210. Read version2 as []byte
+	// 211. Convert version2 to dv2 DecimalVersion
+	// 212. Verify v2Str == dv2.String()
+	// 213-216 read iv1, key1, salt1, hello-data as []byte ----------
+	// 217. helloPlain = iv1 + key1 + salt1 + version1
+	// 218. Verify helloPlain == helloData
+	// 219. Read hello-encrypted as []byte
+	// 220. Decrypt helloEncrypted using key => helloDecrypted
+	// 221. Verify helloDecrypted == helloData
+	// 222-226 read iv2, key2, salt2, padding, reply-data as []byte -
+	// 227. helloReply = concat iv2, key2, salt2, version2, salt1, padding
+	// 228. Verify helloReply == replyData
+	// 229. Create aesEngineS1 from iv1, key1
+	// 230. helloReplyMsg = aesEngineS1.encrypt(helloReply)
+	// 231. Read reply-encrypted as replyEncrypted []byte
+	// 232. Verify helloReplyMsg == replyEncrypted
+	// 233. Create aesEngineC1 from iv1, key1
+	// 234. Use aesEngineC1.decrypt(replyEncrypted) => replyDecrypted
+	// 235. Verify replyDecrypted == replyData (both with padding)

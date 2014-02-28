@@ -1,1 +1,3 @@
-grep <test_dir_test.go "^  *// [[:digit:]][[:digit:]]*" > test_dir_test_template
+# -P is "Perl-style" regex
+#
+grep -P <testData_test.go "\s+// \d+" > testDataTestTemplate
