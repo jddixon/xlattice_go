@@ -23,7 +23,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 
 	// 001 READ AND INTERPRET test_dir/regCred.dat //////////////////
 
-	rcFile := path.Join("test_dir", "regCred.dat")
+	rcFile := path.Join("testData/regCred", "regCred.dat")
 	rcData, err := ioutil.ReadFile(rcFile)
 	c.Assert(err, IsNil)
 	c.Assert(len(rcData) > 0, Equals, true)
@@ -34,7 +34,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	// 002 HELLO - REPLY TESTS //////////////////////////////////////
 
 	// 201. Read key_rsa as key *rsa.PrivateKey
-	keyFile := path.Join("test_dir", "key-rsa")
+	keyFile := path.Join("testData/helloAndReply", "key-rsa")
 	kd, err := ioutil.ReadFile(keyFile)
 	c.Assert(err, IsNil)
 	c.Assert(len(kd) > 0, Equals, true)
@@ -46,7 +46,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	pubKey := key.PublicKey
 
 	// 203. Read key_rsa.pub as pubkey2 *rsa.PublicKey
-	pubKeyFile := path.Join("test_dir", "key-rsa.pub")
+	pubKeyFile := path.Join("testData/helloAndReply", "key-rsa.pub")
 	pkd, err := ioutil.ReadFile(pubKeyFile)
 	c.Assert(err, IsNil)
 	c.Assert(len(pkd) > 0, Equals, true)
@@ -58,14 +58,14 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	c.Assert(&pubKey, DeepEquals, pubKey2)
 
 	// 205. Read version1.str as v1Str
-	v1File := path.Join("test_dir", "version1.str")
+	v1File := path.Join("testData/helloAndReply", "version1.str")
 	v, err := ioutil.ReadFile(v1File)
 	c.Assert(err, IsNil)
 	c.Assert(len(v) > 0, Equals, true)
 	v1Str := string(v)
 
 	// 206. Read version1 as []byte
-	v1File = path.Join("test_dir", "version1")
+	v1File = path.Join("testData/helloAndReply", "version1")
 	version1, err := ioutil.ReadFile(v1File)
 	c.Assert(err, IsNil)
 	c.Assert(len(version1), Equals, 4) // length of DecimalVersion
@@ -80,14 +80,14 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	// 209-212 same as 205-208 for version2 -------------------------
 
 	// 209. Read version2.str as v2Str
-	v2File := path.Join("test_dir", "version2.str")
+	v2File := path.Join("testData/helloAndReply", "version2.str")
 	v, err = ioutil.ReadFile(v2File)
 	c.Assert(err, IsNil)
 	c.Assert(len(v) > 0, Equals, true)
 	v2Str := string(v)
 
 	// 210. Read version2 as []byte
-	v2File = path.Join("test_dir", "version2")
+	v2File = path.Join("testData/helloAndReply", "version2")
 	version2, err := ioutil.ReadFile(v2File)
 	c.Assert(err, IsNil)
 	c.Assert(len(version2), Equals, 4) // length of DecimalVersion
@@ -101,16 +101,16 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 
 	// 213-216 read iv1, key1, salt1, hello-data as []byte ----------
 
-	iv1, err := ioutil.ReadFile(path.Join("test_dir", "iv1"))
+	iv1, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "iv1"))
 	c.Assert(err, IsNil)
 
-	key1, err := ioutil.ReadFile(path.Join("test_dir", "key1"))
+	key1, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "key1"))
 	c.Assert(err, IsNil)
 
-	salt1, err := ioutil.ReadFile(path.Join("test_dir", "salt1"))
+	salt1, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "salt1"))
 	c.Assert(err, IsNil)
 
-	helloData, err := ioutil.ReadFile(path.Join("test_dir", "hello-data"))
+	helloData, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "hello-data"))
 	c.Assert(err, IsNil)
 
 	// 217. helloPlain = iv1 + key1 + salt1 + version1
@@ -125,7 +125,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 
 	// 219. Read hello-encrypted as []byte
 	helloEncrypted, err := ioutil.ReadFile(
-		path.Join("test_dir", "hello-encrypted"))
+		path.Join("testData/helloAndReply", "hello-encrypted"))
 	c.Assert(err, IsNil)
 
 	// 220. Decrypt helloEncrypted using key => helloDecrypted
@@ -139,19 +139,19 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 
 	// 222-226 read iv2, key2, salt2, padding, reply-data as []byte -
 
-	iv2, err := ioutil.ReadFile(path.Join("test_dir", "iv2"))
+	iv2, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "iv2"))
 	c.Assert(err, IsNil)
 
-	key2, err := ioutil.ReadFile(path.Join("test_dir", "key2"))
+	key2, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "key2"))
 	c.Assert(err, IsNil)
 
-	salt2, err := ioutil.ReadFile(path.Join("test_dir", "salt2"))
+	salt2, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "salt2"))
 	c.Assert(err, IsNil)
 
-	padding, err := ioutil.ReadFile(path.Join("test_dir", "padding"))
+	padding, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "padding"))
 	c.Assert(err, IsNil)
 
-	replyData, err := ioutil.ReadFile(path.Join("test_dir", "reply-data"))
+	replyData, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "reply-data"))
 	c.Assert(err, IsNil)
 
 	// 227. helloReply = concat iv2, key2, salt2, version2, salt1, padding
@@ -186,7 +186,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	aesEncrypter1.CryptBlocks(helloReplyMsg, helloReply) // dest <-src
 
 	// 231. Read reply-encrypted as replyEncrypted []byte
-	replyEncrypted, err := ioutil.ReadFile(path.Join("test_dir", "reply-encrypted"))
+	replyEncrypted, err := ioutil.ReadFile(path.Join("testData/helloAndReply", "reply-encrypted"))
 	c.Assert(err, IsNil)
 
 	// 232. Verify helloReplyMsg == replyEncrypted
