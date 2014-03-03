@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"path"
+	"strings"
 )
 
 // AAAA makes it run first.
@@ -23,6 +24,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 
 	// 001 READ AND INTERPRET test_dir/regCred.dat //////////////////
 
+	// 101. Read and parse regCred.dat
 	rcFile := path.Join("testData/regCred", "regCred.dat")
 	rcData, err := ioutil.ReadFile(rcFile)
 	c.Assert(err, IsNil)
@@ -30,6 +32,54 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	rc, err := ParseRegCred(string(rcData))
 	c.Assert(err, IsNil)
 	c.Assert(rc, NotNil)
+
+	// 102. Read and compare regCred name
+	nameFile := path.Join("testData/regCred", "name.str")
+	name, err := ioutil.ReadFile(nameFile)
+	c.Assert(err, IsNil)
+	c.Assert(rc.Name, Equals, string(name))
+
+	// 103. Read and compare regCred ID
+	idFile := path.Join("testData/regCred", "id")
+	id, err := ioutil.ReadFile(idFile)
+	c.Assert(err, IsNil)
+	c.Assert(rc.ID.Value(), DeepEquals, id)
+
+	// 104. Read and compare regCred commsPubKey
+	ckFile := path.Join("testData/regCred", "ck-rsa.pub")
+	ckStr, err := ioutil.ReadFile(ckFile)
+	c.Assert(err, IsNil)
+	ckObj, err := xc.RSAPubKeyFromDisk(ckStr)
+	c.Assert(rc.CommsPubKey, DeepEquals, ckObj)
+
+	// 105. Read and compare regCred sigPubKey
+	skFile := path.Join("testData/regCred", "sk-rsa.pub")
+	skStr, err := ioutil.ReadFile(skFile)
+	c.Assert(err, IsNil)
+	skObj, err := xc.RSAPubKeyFromDisk(skStr)
+	c.Assert(rc.SigPubKey, DeepEquals, skObj)
+
+	// 106. Read and compare endPoints
+	epFile := path.Join("testData/regCred", "endPoints")
+	epStr, err := ioutil.ReadFile(epFile)
+	c.Assert(err, IsNil)
+	var eps []string
+	if len(epStr) > 0 {
+		eps = strings.Split(string(epStr), "\n")
+	}
+	epsFromObj := rc.EndPoints
+	epCount := len(epsFromObj)
+	c.Assert(epCount, Equals, len(eps))
+	for i := 0; i < epCount; i++ {
+		c.Assert(epsFromObj[i].String(), Equals, eps[i])
+	}
+
+	// 107. Read and compare version
+	versionFile := path.Join("testData/regCred", "version.str")
+	versionBin, err := ioutil.ReadFile(versionFile)
+	c.Assert(err, IsNil)
+	versionStr := string(versionBin) // string, dotted quad
+	c.Assert(rc.Version.String(), Equals, versionStr)
 
 	// 002 HELLO - REPLY TESTS //////////////////////////////////////
 

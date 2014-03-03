@@ -1,4 +1,11 @@
 	// 001 READ AND INTERPRET test_dir/regCred.dat //////////////////
+	// 101. Read and parse regCred.dat
+	// 102. Read and compare regCred name
+	// 103. Read and compare regCred ID
+	// 104. Read and compare regCred commsPubKey
+	// 105. Read and compare regCred sigPubKey
+	// 106. Read and compare endPoints
+	// 107. Read and compare version
 	// 002 HELLO - REPLY TESTS //////////////////////////////////////
 	// 201. Read key_rsa as key *rsa.PrivateKey
 	// 202. Extract public key as pubkey *rsa.PublicKey
