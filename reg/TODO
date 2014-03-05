@@ -1,8 +1,16 @@
 xlattice_go/reg/TODO
 
 2014-02-24
-    * write test_program execising data in test_dir as model for
+    * write testData_test.go exercising data in test_dir as model for
         xlreg_*
+        - 001 regCred tests                                             * DONE
+        - 002 hello/reply tests                                         * DONE
+            * do hello/reply with stockton
+        - 003 client/ok tests
+        - 004 create/reply
+        - 005 join/reply
+        - 006 get/members
+        - 007 bye/ack
 
 2014-02-20
     * need to step version number at each branch merge
@@ -16,18 +24,8 @@ xlattice_go/reg/TODO
         - OR clientID plus salt plus digSig
 
 2014-02-03
-    * install code, start server on Stockton                            * DONE
-    * get regCred
-    * add to ../doc/xlReg_protocol.md
-
-2014-01-22 (2013-12-25, edited)
-    * Urgently need digSig on the token in Client msg; digSig is		* DONE
-        over the fields that are present.  		                        * DONE
-        - server-side: msg_handler.go: doClientMsg()		            * DONE
-        - client-side: ClientNode:ClientAndOK()		                    * DONE
-
-    * FIX: reg/ tests succeed, but upax_go tests fail with a nil        * DONE
-        pointer err in client_node.go, about line 510                   * DONE
+    * get Stockton regCred                                              * DONE
+    * add to ../doc/xlReg_protocol.md                                   * DONE
 
 2013-12-06
     * NewRegistry must populate indexes if clusters supplied
@@ -36,15 +34,11 @@ xlattice_go/reg/TODO
     * UserClient.Run() may return error, especially EOF, in which case
         we need to try again; using code needs to be fixed
 
-2013-12-04
-    * reduce minimum membership to 1                                    * DONE
-    * later: restore this to what it was !                              * DONE
-
 2013-12-01
-    * xlReg fails in upax_go tests occasionally for no obvious reason:
-        need to locate and fix bug
-        - at least sometimes appears as nil nodeID pointer
-            * we have asked for a nodeID and didn't get one
+    * xlReg fails in upax_go tests occasionally for no obvious reason:  * DONE?
+        need to locate and fix bug					                    * DONE ?
+        - at least sometimes appears as nil nodeID pointer				* DONE ?
+            * we have asked for a nodeID and didn't get one				* DONE ?
 
 2013-11-22
     * modify client_node.go to use SetupSessionKey()
@@ -72,8 +66,6 @@ xlattice_go/reg/TODO
             where NAME/LONGNAME is that of the protocol
 
 2013-11-18
-    * add SelfIndex identifying owning node to ClusterMember            * DONE
-
     * this introduced a bug not caught here; need to modify tests
         to catch it
 

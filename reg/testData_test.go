@@ -33,33 +33,33 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(rc, NotNil)
 
-	// 102. Read and compare regCred name
+	// 102. Read name.str and compare regCred name
 	nameFile := path.Join("testData/regCred", "name.str")
 	name, err := ioutil.ReadFile(nameFile)
 	c.Assert(err, IsNil)
 	c.Assert(rc.Name, Equals, string(name))
 
-	// 103. Read and compare regCred ID
+	// 103. Read id and compare regCred ID
 	idFile := path.Join("testData/regCred", "id")
 	id, err := ioutil.ReadFile(idFile)
 	c.Assert(err, IsNil)
 	c.Assert(rc.ID.Value(), DeepEquals, id)
 
-	// 104. Read and compare regCred commsPubKey
+	// 104. Read ck-rsa.pub and compare regCred commsPubKey
 	ckFile := path.Join("testData/regCred", "ck-rsa.pub")
 	ckStr, err := ioutil.ReadFile(ckFile)
 	c.Assert(err, IsNil)
 	ckObj, err := xc.RSAPubKeyFromDisk(ckStr)
 	c.Assert(rc.CommsPubKey, DeepEquals, ckObj)
 
-	// 105. Read and compare regCred sigPubKey
+	// 105. Read sk-rsa.pub and compare regCred sigPubKey
 	skFile := path.Join("testData/regCred", "sk-rsa.pub")
 	skStr, err := ioutil.ReadFile(skFile)
 	c.Assert(err, IsNil)
 	skObj, err := xc.RSAPubKeyFromDisk(skStr)
 	c.Assert(rc.SigPubKey, DeepEquals, skObj)
 
-	// 106. Read and compare endPoints
+	// 106. Read endPoints and compare endPoints
 	epFile := path.Join("testData/regCred", "endPoints")
 	epStr, err := ioutil.ReadFile(epFile)
 	c.Assert(err, IsNil)
@@ -74,7 +74,7 @@ func (s *XLSuite) TestAAAATestDir(c *C) {
 		c.Assert(epsFromObj[i].String(), Equals, eps[i])
 	}
 
-	// 107. Read and compare version
+	// 107. Read version.str and compare version
 	versionFile := path.Join("testData/regCred", "version.str")
 	versionBin, err := ioutil.ReadFile(versionFile)
 	c.Assert(err, IsNil)

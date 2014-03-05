@@ -34,6 +34,8 @@ func badCombo(h *InHandler) {
 	h.errOut = RcvdInvalidMsgForState
 }
 
+// CLIENT AND CLIENT_OK =============================================
+
 // Handle the message which gives us information about the client and
 // so associates this connection with a specific user.
 
