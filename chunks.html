@@ -19,22 +19,65 @@ As Protobuf messages always have a non-zero length, no message beginning with a
 zero byte can be a valid Protobuf message.  Therefore chunks always begin with
 a zero byte, the <strong>magic</strong> field.</p>
 
-<div style="magin: 0 auto; width 100%;>
-![Chunk message layout](img/chunk2.jpg)
-</div>
+<p><img src="img/chunk2.jpg" alt="Chunk message layout" />
+</p>
 
 <p>In the initial version of Chunks, <strong><em>header fields</em></strong> are laid out as follows:</p>
 
-<div style="magin: 0 auto; width 100%;>
-|  field | value | bits | bytes |
-|:------:|:-----:|:----:|:-----:|
-|  magic |   0   |   8  |   1   |
-|   type |   0   |   8  |   1   |
-|reserved|   0   |  48  |   6   |
-| length |   N   |  32* |   4   |
-|  index |  ndx  |  32  |   4   |
-|  datum | sha3  | 256  |  32   |
-</div>
+<table>
+<thead>
+<tr>
+<td align="center">field</td>
+<td align="center">value</td>
+<td align="center">bits</td>
+<td align="center">bytes</td>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="center">magic</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">1</td>
+</tr>
+
+<tr>
+<td align="center">type</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">1</td>
+</tr>
+
+<tr>
+<td align="center">reserved</td>
+<td align="center">0</td>
+<td align="center">48</td>
+<td align="center">6</td>
+</tr>
+
+<tr>
+<td align="center">length</td>
+<td align="center">N</td>
+<td align="center">32*</td>
+<td align="center">4</td>
+</tr>
+
+<tr>
+<td align="center">index</td>
+<td align="center">ndx</td>
+<td align="center">32</td>
+<td align="center">4</td>
+</tr>
+
+<tr>
+<td align="center">datum</td>
+<td align="center">sha3</td>
+<td align="center">256</td>
+<td align="center">32</td>
+</tr>
+</tbody>
+</table>
 
 <p>In this version (type 0) of Chunks, the first eight bytes are always zero.</p>
 
