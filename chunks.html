@@ -19,65 +19,22 @@ As Protobuf messages always have a non-zero length, no message beginning with a
 zero byte can be a valid Protobuf message.  Therefore chunks always begin with
 a zero byte, the <strong>magic</strong> field.</p>
 
-<p><img src="img/chunk2.jpg" alt="Chunk message layout" />
-</p>
+<div style="magin: 0 auto; width 100%;>
+![Chunk message layout](img/chunk2.jpg)
+</div>
 
 <p>In the initial version of Chunks, <strong><em>header fields</em></strong> are laid out as follows:</p>
 
-<table>
-<thead>
-<tr>
-<td align="center">field</td>
-<td align="center">value</td>
-<td align="center">bits</td>
-<td align="center">bytes</td>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td align="center">magic</td>
-<td align="center">0</td>
-<td align="center">8</td>
-<td align="center">1</td>
-</tr>
-
-<tr>
-<td align="center">type</td>
-<td align="center">0</td>
-<td align="center">8</td>
-<td align="center">1</td>
-</tr>
-
-<tr>
-<td align="center">reserved</td>
-<td align="center">0</td>
-<td align="center">48</td>
-<td align="center">6</td>
-</tr>
-
-<tr>
-<td align="center">length</td>
-<td align="center">N</td>
-<td align="center">32*</td>
-<td align="center">4</td>
-</tr>
-
-<tr>
-<td align="center">index</td>
-<td align="center">ndx</td>
-<td align="center">32</td>
-<td align="center">4</td>
-</tr>
-
-<tr>
-<td align="center">datum</td>
-<td align="center">sha3</td>
-<td align="center">256</td>
-<td align="center">32</td>
-</tr>
-</tbody>
-</table>
+<div style="magin: 0 auto; width 100%;>
+|  field | value | bits | bytes |
+|:------:|:-----:|:----:|:-----:|
+|  magic |   0   |   8  |   1   |
+|   type |   0   |   8  |   1   |
+|reserved|   0   |  48  |   6   |
+| length |   N   |  32* |   4   |
+|  index |  ndx  |  32  |   4   |
+|  datum | sha3  | 256  |  32   |
+</div>
 
 <p>In this version (type 0) of Chunks, the first eight bytes are always zero.</p>
 
@@ -93,7 +50,7 @@ zero and the second byte is either 0 or 1.</p>
 <p>The <strong>index</strong> field represents the zero-based index of this particular
 chunk in the overall message.  This is also a big-endian value.</p>
 
-<p>The <strong>datum</strong> field contains the SHA3-256 content hash of the file of
+<p>The <strong>datum</strong> field contains the SHA3-256 (Keccak) content hash of the file of
 which this is a chunk.  This is <strong>not</strong> the content hash of the chunk.
 It is the content hash of the entire file represented by this message.</p>
 
@@ -113,6 +70,12 @@ in index order to make up the message.  The assumption is that chunks
 will normally be transmitted in index order, but that is not necessarily
 the case, and using software must tolerate missing, duplicated, and
 out-of-order chunks.</p>
+
+<p>The constituent chunks of a message may of course be transmitted over
+separate connections, over multiple hops, and/or a different times.
+It is up to the using
+application to decide how to transmit the chunks of a message and how and
+when to reassemble the message from chunks at the far end.</p>
   <div class="f">
     <hr />
     <div class="license">
