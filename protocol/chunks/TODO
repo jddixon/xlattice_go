@@ -1,5 +1,19 @@
 xlattice_go/protocol/chunks/TODO
 
+2014-03-08
+    * implement DigiList.Sign(skPriv, subClass
+    * implement DigiList.Verify(subClass)
+    * write a test that 
+        - creates tmp/ if it doesn't exist
+        - create tmp/chunkDir, where chunkDir is an unused name
+        - creates a testFile > (N-1) * chunkSize in size, where N > 3 
+            and chunkSize is say 16 KB and where the file is in 
+            chunkDir/
+        - split the file into chunks, building a DigiList
+        - sign and verify the DigiList
+        - use the DigiList to create testFile2 from the chunks
+        - verify that testFile2 is identical to testFile
+
 2014-02-17
     * fix: error seen once at TestChunkList, line 119: ChunkTooLong
 

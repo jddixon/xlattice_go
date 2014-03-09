@@ -62,13 +62,13 @@ func (dl *DigiList) DigSig() []byte {
 // DigiListI INTERFACE //////////////////////////////////////////////
 
 // If dl.sk is not nil, return an error if it does not match the
-// public part of the key.
+// public part of private key.
 //
 // If there are any items in the DigiList, sign it.  If this succeeds,
 // any existing signature is overwritten and the public part of the key
 // is written to the data structure, to dl.sk.
 //
-func (dl *DigiList) Sign(key *rsa.PrivateKey, subClass DigiListI) (
+func (dl *DigiList) Sign(skPriv *rsa.PrivateKey, subClass DigiListI) (
 	err error) {
 
 	var (
@@ -77,13 +77,13 @@ func (dl *DigiList) Sign(key *rsa.PrivateKey, subClass DigiListI) (
 		sk     *rsa.PublicKey
 		skWire []byte
 	)
-	if key == nil {
+	if skPriv == nil {
 		err = NilRSAPrivKey
 	} else if subClass == nil {
 		err = NilSubClass
 	} else {
 		n = subClass.Size()
-		sk = &key.PublicKey
+		sk = &skPriv.PublicKey
 
 		// DEVIATION FROM SPEC - we ignore any existing dl.sk
 
@@ -111,7 +111,7 @@ func (dl *DigiList) Sign(key *rsa.PrivateKey, subClass DigiListI) (
 	if err == nil {
 		dl.sk = sk
 		dl.digSig, err = rsa.SignPKCS1v15(
-			rand.Reader, key, crypto.SHA1, hash)
+			rand.Reader, skPriv, crypto.SHA1, hash)
 	}
 	return
 }
