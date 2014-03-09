@@ -15,7 +15,7 @@ type DigiListI interface {
 	// beginning at zero, without skipping any items.  It might be an error
 	// to call this function more than once for the Nth item.
 	//
-	// If the DigiList has been signed, a call to this function will clear
+	// If the DigiList has been signed, a call to this function may clear
 	// the digital signature.
 	HashItem(n uint) ([]byte, error)
 

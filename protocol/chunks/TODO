@@ -1,8 +1,11 @@
 xlattice_go/protocol/chunks/TODO
 
-2014-03-08
-    * implement DigiList.Sign(skPriv, subClass
+2014-03-09 (edited 03-08)
+    * implement DigiList.Sign(skPriv, subClass)
     * implement DigiList.Verify(subClass)
+    * implement DigiList.String()                                       * DONE
+    * implement DigiList.Parse()                                        * DONE
+    * write test which round-trips dl1 -> string -> parse -> dl2
     * write a test that 
         - creates tmp/ if it doesn't exist
         - create tmp/chunkDir, where chunkDir is an unused name

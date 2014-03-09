@@ -7,8 +7,12 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
+	"encoding/base64"
 	"encoding/binary"
+	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
+	xu "github.com/jddixon/xlattice_go/util"
+	"strings"
 )
 
 // A DigiList is an abstract class.  Such a list is associated with an
@@ -23,11 +27,11 @@ import (
 type DigiList struct {
 	sk        *rsa.PublicKey
 	title     string
-	timestamp int64
+	timestamp xu.Timestamp
 	digSig    []byte
 }
 
-func NewDigiList(sk *rsa.PublicKey, title string, timestamp int64) (
+func NewDigiList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp) (
 	dl *DigiList, err error) {
 
 	// nil public key is acceptable
@@ -51,7 +55,7 @@ func (dl *DigiList) Title() string {
 	return dl.title
 }
 
-func (dl *DigiList) Timestamp() int64 {
+func (dl *DigiList) Timestamp() xu.Timestamp {
 	return dl.timestamp
 }
 
@@ -160,16 +164,63 @@ func (dl *DigiList) Verify(subClass DigiListI) (err error) {
 
 // SERIALIZATION ////////////////////////////////////////////////////
 
-func ParseDigiList(str string) (dl *DigiList, err error) {
+func ParseDigiList(s string) (dl *DigiList, rest []string, err error) {
 
-	// XXX STUB
+	ss := strings.Split(s, "\r\n")
+	lineCount := len(ss)
+	if lineCount > 0 && ss[lineCount-1] == "" {
+		ss = ss[:lineCount-1]
+	}
+	return ParseDigiListFromStrings(ss)
+}
+
+func ParseDigiListFromStrings(ss []string) (
+	dl *DigiList, rest []string, err error) {
+
+	var (
+		sk     *rsa.PublicKey
+		title  string
+		t      xu.Timestamp
+		digSig []byte
+	)
+	if len(ss) < 4 {
+		err = TooShortForDigiList
+	}
+	if err == nil {
+		sk, err = xc.RSAPubKeyFromDisk([]byte(ss[0]))
+	}
+	if err == nil {
+		title = ss[1]
+		t, err = xu.ParseTimestamp(ss[2])
+	}
+	if err == nil {
+		digSig, err = base64.StdEncoding.DecodeString(ss[3])
+	}
+	if err == nil {
+		dl = &DigiList{sk, title, t, digSig}
+		rest = ss[4:]
+	}
 	return
 }
 
 // Serialize the DigiList, terminating each field and each item
-// with a CRLF.  This is a default implementation; subclasses
-// satisfying DigiListI can override.
-func (dl *DigiList) String() (str string) {
-	// XXX STUB
+// with a CRLF.
+func (dl *DigiList) String() (s string) {
+	ss := dl.Strings()
+	return strings.Join(ss, "\r\n") + "\r\n"
+}
+
+func (dl *DigiList) Strings() (ss []string) {
+
+	skSSH, err := xc.RSAPubKeyToDisk(dl.sk)
+	if err != nil {
+		panic(err)
+	}
+	ss = append(ss, fmt.Sprintf("sk: %s", skSSH))
+	ss = append(ss, fmt.Sprintf("title: %s", dl.title))
+	ss = append(ss, fmt.Sprintf("timestamp: %s", dl.timestamp.String()))
+	ss = append(ss, fmt.Sprintf("digSig: %s",
+		base64.StdEncoding.EncodeToString(dl.digSig)))
+
 	return
 }

@@ -17,6 +17,7 @@ var (
 	NilSubClass                 = e.New("nil subClass parameter")
 	NoDigSig                    = e.New("no digital signature: the list is not signed")
 	NoNthItem                   = e.New("no Nth item")
+	TooShortForDigiList         = e.New("too short to be a DigiList")
 	ZeroLengthChunk             = e.New("zero length chunk")
 	ZeroLengthInput             = e.New("zero length input")
 )

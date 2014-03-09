@@ -6,8 +6,8 @@ import (
 	"bytes"
 	"code.google.com/p/go.crypto/sha3"
 	"crypto/rsa"
-	// "encoding/hex"		// DEBUG
 	"fmt"
+	xu "github.com/jddixon/xlattice_go/util"
 	"io"
 )
 
@@ -22,7 +22,7 @@ type ChunkList struct {
 // Create a ChunkList for an io.Reader where the length and SHA3-256
 // content key of the document are already known.
 //
-func NewChunkList(sk *rsa.PublicKey, title string, timestamp int64,
+func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 	reader io.Reader, length int64, datum []byte) (
 	cl *ChunkList, err error) {
 
@@ -136,23 +136,13 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp int64,
 
 // Return the SHA3-256 hash of the Nth item in the DigiList.  Return an
 // error if there is no such item.
-//
-// There may be a requirement that this interface be called in order,
-// beginning at zero, without skipping any items.  It might be an error
-// to call this function more than once for the Nth item.
-//
-// If the DigiList has been signed, a call to this function will clear
-// the digital signature.
 func (cl *ChunkList) HashItem(n uint) (hash []byte, err error) {
 
 	if n >= cl.Size() {
 		err = NoNthItem
+	} else {
+		hash = cl.hashes[n]
 	}
-
-	// XXX STUB
-
-	hash = cl.hashes[n]
-
 	return
 }
 
@@ -171,6 +161,9 @@ func (cl *ChunkList) Size() uint {
 // with a CRLF.  This implementation should override the code in
 // digiList.go
 func (cl *ChunkList) String() (str string) {
+
 	// XXX STUB
+	str = "CHUNK_LIST STRING()"
+
 	return
 }

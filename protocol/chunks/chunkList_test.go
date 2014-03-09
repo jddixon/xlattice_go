@@ -11,6 +11,7 @@ import (
 	"fmt"
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
+	xu "github.com/jddixon/xlattice_go/util"
 	. "launchpad.net/gocheck"
 )
 
@@ -91,7 +92,7 @@ func (s *XLSuite) TestChunkList(c *C) {
 
 	sk := &skPriv.PublicKey
 	title := rng.NextFileName(8)
-	timestamp := rng.Int63()
+	timestamp := xu.Timestamp(rng.Int63())
 
 	cl, err := NewChunkList(sk, title, timestamp, reader, int64(dataLen), datum)
 	c.Assert(err, IsNil)
