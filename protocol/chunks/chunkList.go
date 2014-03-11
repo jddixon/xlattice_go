@@ -158,8 +158,7 @@ func (cl *ChunkList) Size() uint {
 // SERIALIZATION ////////////////////////////////////////////////////
 
 // Serialize the DigiList, terminating each field and each item
-// with a CRLF.  This implementation should override the code in
-// digiList.go
+// with a CRLF.  
 func (cl *ChunkList) String() (str string) {
 
 	// XXX STUB

@@ -1,5 +1,10 @@
 xlattice_go/protocol/chunks/TODO
 
+2014-13-10
+    * test and confirm that by default a message whose length is 
+        less than or equsl to 128 KB is converted into a ChunkList
+        with a single member.
+
 2014-03-09 (edited 03-08)
     * implement DigiList.Sign(skPriv, subClass)
     * implement DigiList.Verify(subClass)

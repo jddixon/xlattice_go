@@ -35,7 +35,7 @@ zero and the second byte is either 0 or 1.
 The **index** field represents the zero-based index of this particular
 chunk in the overall message.  This is also a big-endian value.
 
-The **datum** field contains the SHA3-256 content hash of the file of
+The **datum** field contains the SHA3-256 (Keccak) content hash of the file of
 which this is a chunk.  This is **not** the content hash of the chunk.
 It is the content hash of the entire file represented by this message.
 
@@ -55,3 +55,9 @@ in index order to make up the message.  The assumption is that chunks
 will normally be transmitted in index order, but that is not necessarily
 the case, and using software must tolerate missing, duplicated, and
 out-of-order chunks.
+
+The constituent chunks of a message may of course be transmitted over
+separate connections, over multiple hops, and/or a different times.
+It is up to the using
+application to decide how to transmit the chunks of a message and how and
+when to reassemble the message from chunks at the far end.

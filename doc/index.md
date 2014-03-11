@@ -61,10 +61,11 @@ storing files by their content keys.
 ## <a name="reg"></a>reg
 
 [xlReg](xlReg.html) is a tool, primarily intended for use in testing,
-which facilitates the formation of clusters.  On registration, a
+which facilitates the formation of clusters, groups of cooperating nodes.
+On registration, a
 client/member is issued a globally unique NodeID, a 256-bit random value.
-The member can then create and/or join clusters.  The cluster has
-a maximum size set at creation.  When members join the cluster they
+Once it has an ID, the member can create and/or join clusters.  The cluster has
+a maximum size set when it is created.  When members join the cluster they
 register their two RSA public keys and either one or two IP addresses.
 If the cluster only supports communications between members, members
 register only one IP address.  If non-members, clients, are allowed to

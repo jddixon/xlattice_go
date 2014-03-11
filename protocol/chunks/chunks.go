@@ -128,10 +128,13 @@ func (ch *Chunk) CalculateLength(data []byte) uint32 {
 	return uint32(DATA_OFFSET + dataLen + HASH_BYTES)
 }
 
+// Return the chunk's datum.  This is the content key for the message
+// of which this chunk is a part.
 func (ch *Chunk) GetDatum() []byte {
 	return ch.packet[DATUM_OFFSET : DATUM_OFFSET+DATUM_BYTES]
 }
 
+// Return the slice of data in the chunk.  This is NOT a copy.
 func (ch *Chunk) GetData() []byte {
 	return ch.packet[DATA_OFFSET : DATA_OFFSET+ch.GetLength()]
 }
