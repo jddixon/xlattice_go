@@ -1,5 +1,10 @@
 xlattice_go/u/TODO
 
+2014-03-11
+    * Need DIRFLAT as well as DIR16x16 and DIR256x256
+    * Code needs checking: carefully compare UFlat and U16x16 etc
+        - eg hash != key test, which should use bytes.Equal()
+
 2013-11-13
     * Need binary key versions of 							            * DONE
         - Exists()							                            * DONE

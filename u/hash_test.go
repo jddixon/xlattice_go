@@ -217,6 +217,9 @@ func (s *XLSuite) doTestGetPathForKey(c *C, u UI, digest hash.Hash) {
 	var expectedPath string
 	dirStruc := u.GetDirStruc()
 	switch dirStruc {
+	case DIR_FLAT:
+		expectedPath = fmt.Sprintf("%s/%s",
+			u.GetPath(), uKey)
 	case DIR16x16:
 		expectedPath = fmt.Sprintf("%s/%s/%s/%s",
 			u.GetPath(), uKey[0:1], uKey[1:2], uKey[2:])

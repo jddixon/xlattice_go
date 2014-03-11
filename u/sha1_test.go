@@ -24,6 +24,7 @@ func (s *XLSuite) doTestCopyAndPut1(c *C, ds DirStruc) {
 }
 func (s *XLSuite) TestCopyAndPut1(c *C) {
 	s.setUp1()
+	s.doTestCopyAndPut1(c, DIR_FLAT)
 	s.doTestCopyAndPut1(c, DIR16x16)
 	s.doTestCopyAndPut1(c, DIR256x256)
 } // FOO
@@ -36,6 +37,7 @@ func (s *XLSuite) doTestExists1(c *C, ds DirStruc) {
 }
 func (s *XLSuite) TestExists1(c *C) {
 	s.setUp1()
+	s.doTestExists1(c, DIR_FLAT)
 	s.doTestExists1(c, DIR16x16)
 	s.doTestExists1(c, DIR256x256)
 } // FOO
@@ -48,6 +50,7 @@ func (s *XLSuite) doTestFileLen1(c *C, ds DirStruc) {
 }
 func (s *XLSuite) TestFileLen1(c *C) {
 	s.setUp1()
+	s.doTestFileLen1(c, DIR_FLAT)
 	s.doTestFileLen1(c, DIR16x16)
 	s.doTestFileLen1(c, DIR256x256)
 } // FOO
@@ -60,6 +63,7 @@ func (s *XLSuite) doTestFileHash1(c *C, ds DirStruc) {
 }
 func (s *XLSuite) TestFileHash1(c *C) {
 	s.setUp1()
+	s.doTestFileHash1(c, DIR_FLAT)
 	s.doTestFileHash1(c, DIR16x16)
 	s.doTestFileHash1(c, DIR256x256)
 } // FOO
@@ -72,6 +76,7 @@ func (s *XLSuite) doTestGetPathForKey1(c *C, ds DirStruc) {
 }
 func (s *XLSuite) TestGetPathForKey1(c *C) {
 	s.setUp1()
+	s.doTestGetPathForKey1(c, DIR_FLAT)
 	s.doTestGetPathForKey1(c, DIR16x16)
 	s.doTestGetPathForKey1(c, DIR256x256)
 } // FOO
@@ -84,6 +89,7 @@ func (s *XLSuite) doTestPut1(c *C, ds DirStruc) {
 }
 func (s *XLSuite) TestPut1(c *C) {
 	s.setUp1()
+	s.doTestPut1(c, DIR_FLAT)
 	s.doTestPut1(c, DIR16x16)
 	s.doTestPut1(c, DIR256x256)
 } // FOO
@@ -96,6 +102,7 @@ func (s *XLSuite) doTestPutData1(c *C, ds DirStruc) {
 }
 func (s *XLSuite) TestPutData1(c *C) {
 	s.setUp1()
+	s.doTestPutData1(c, DIR_FLAT)
 	s.doTestPutData1(c, DIR16x16)
 	s.doTestPutData1(c, DIR256x256)
 }

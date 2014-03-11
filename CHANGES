@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.5
+    2015-03-10                                                      SLOC 17151
+        
 0.4.4
     2014-01-29                                                      SLOC 16450
         * changed DataKeyedI, NameKeyedI to synchronous
