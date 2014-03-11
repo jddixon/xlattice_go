@@ -1,5 +1,11 @@
 xlattice_go/protocol/chunks/TODO
 
+2014-13-11
+    * MAX_CHUNK_BYTES of 128 KB now construed to include the 			* DONE
+        header, so MAX_DATA_BYTES = 128K - 80 .			                * DONE
+        - in consequence the header length field (which is the data		* DONE
+            length) no longer has 1 subtracted from it			        * DONE
+
 2014-13-10
     * test and confirm that by default a message whose length is 
         less than or equsl to 128 KB is converted into a ChunkList

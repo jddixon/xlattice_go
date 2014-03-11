@@ -30,7 +30,7 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 		dl     *DigiList
 		header *Chunk // SCRATCH
 	)
-	chunkCount := uint32((length + MAX_CHUNK_BYTES - 1) / MAX_CHUNK_BYTES)
+	chunkCount := uint32((length + MAX_DATA_BYTES - 1) / MAX_DATA_BYTES)
 	bigD := sha3.NewKeccak256() // used to check datum
 	hashes := make([][]byte, chunkCount)
 
@@ -51,8 +51,8 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 		hPacket := make([]byte, DATUM_OFFSET)
 		hPacket = append(hPacket, datum...)
 		header = &Chunk{packet: hPacket}
-		// default length is 128KB, which is stored as 128K - 1, 0x01ff
-		header.setLength(MAX_CHUNK_BYTES)
+		// default length is 128KB - 80 = MAX_DATA_BYTES
+		header.setLength(MAX_DATA_BYTES)
 
 		stillToGo := length // bytes left unread at this point
 		eofSeen := false
@@ -64,12 +64,12 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 			}
 			var bytesToRead int64
 			var count int
-			data := make([]byte, MAX_CHUNK_BYTES)
+			data := make([]byte, MAX_DATA_BYTES)
 
-			if stillToGo <= MAX_CHUNK_BYTES {
+			if stillToGo <= MAX_DATA_BYTES {
 				bytesToRead = stillToGo
 			} else {
-				bytesToRead = MAX_CHUNK_BYTES
+				bytesToRead = MAX_DATA_BYTES
 			}
 			// XXX DOES NOT ALLOW FOR PARTIAL READS
 			count, err = reader.Read(data)
@@ -81,7 +81,7 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 					break
 				}
 			}
-			if bytesToRead != MAX_CHUNK_BYTES {
+			if bytesToRead != MAX_DATA_BYTES {
 				data = data[0:bytesToRead]
 				adjLen := WORD_BYTES * ((bytesToRead + WORD_BYTES - 1) /
 					WORD_BYTES)
@@ -158,7 +158,7 @@ func (cl *ChunkList) Size() uint {
 // SERIALIZATION ////////////////////////////////////////////////////
 
 // Serialize the DigiList, terminating each field and each item
-// with a CRLF.  
+// with a CRLF.
 func (cl *ChunkList) String() (str string) {
 
 	// XXX STUB

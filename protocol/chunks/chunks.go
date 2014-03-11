@@ -28,16 +28,20 @@ const (
 	DATUM_OFFSET  = INDEX_OFFSET + INDEX_BYTES
 	DATUM_BYTES   = 32
 	DATA_OFFSET   = DATUM_OFFSET + DATUM_BYTES
-	HASH_BYTES    = xc.SHA3_LEN
-	WORD_BYTES    = 16 // we pad to likely cpu cache length
+	HEADER_BYTES  = DATA_OFFSET
 
+	HASH_BYTES = xc.SHA3_LEN
+	WORD_BYTES = 16 // we pad to likely cpu cache length
+
+	// 2014-03-11 CHANGE: this is now construed as the maximum size of the
+	// entire packet, including the header and the terminating chunk hash.
 	MAX_CHUNK_BYTES = 128 * 1024 // 128 KB
+
+	MAX_DATA_BYTES = MAX_CHUNK_BYTES - (HEADER_BYTES + HASH_BYTES)
 )
 
 type Chunk struct {
-	packet     []byte
-	dataLen    uint32 // a convenience
-	hashOffset uint32 // -ditto-
+	packet []byte
 }
 
 // Datum is declared a NodeID to restrict its value to certain byteslice
@@ -101,13 +105,14 @@ func (ch *Chunk) Reserved() []byte {
 //
 func (ch *Chunk) GetLength() uint32 {
 	return binary.BigEndian.Uint32(
-		ch.packet[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES]) + 1
+		ch.packet[LENGTH_OFFSET : LENGTH_OFFSET+LENGTH_BYTES])
 }
 
-// We store the length - 1, so it is a serious error if the length is zero.
+// Store the length of the data, which must not be zero and must
+// not exceed MAX_CHUNK_BYTES - 80.
 func (ch *Chunk) setLength(n uint32) {
 	binary.BigEndian.PutUint32(
-		ch.packet[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES], n-1)
+		ch.packet[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES], n)
 }
 
 // We store the actual value of the zero-based index.
@@ -138,11 +143,11 @@ func (ch *Chunk) GetDatum() []byte {
 func (ch *Chunk) GetData() []byte {
 	return ch.packet[DATA_OFFSET : DATA_OFFSET+ch.GetLength()]
 }
+
+// Retrieve the packet hash
 func (ch *Chunk) GetChunkHash() []byte {
-	if ch.dataLen == 0 {
-		ch.dataLen = ch.GetLength()
-		ch.hashOffset = ((ch.dataLen + DATA_OFFSET + WORD_BYTES - 1) /
-			WORD_BYTES) * WORD_BYTES
-	}
-	return ch.packet[ch.hashOffset : ch.hashOffset+HASH_BYTES]
+	dataLen := ch.GetLength()
+	hashOffset := ((dataLen + DATA_OFFSET + WORD_BYTES - 1) /
+		WORD_BYTES) * WORD_BYTES
+	return ch.packet[hashOffset : hashOffset+HASH_BYTES]
 }

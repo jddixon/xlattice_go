@@ -20,7 +20,7 @@ var _ = fmt.Print
 func (s *XLSuite) calculateChunkHash(c *C, n uint, datum []byte, data []byte) (
 	chunkHash []byte) {
 
-	chunkCount := uint((len(data) + MAX_CHUNK_BYTES - 1) / MAX_CHUNK_BYTES)
+	chunkCount := uint((len(data) + MAX_DATA_BYTES - 1) / MAX_DATA_BYTES)
 	c.Assert(0 <= n && n < chunkCount, Equals, true)
 
 	// build the header
@@ -32,13 +32,13 @@ func (s *XLSuite) calculateChunkHash(c *C, n uint, datum []byte, data []byte) (
 		chunkBytes = len(data)
 		ch.packet = append(ch.packet, data...)
 	} else if n == chunkCount-1 {
-		chunkBytes = len(data) - int(n)*MAX_CHUNK_BYTES
-		chunkData := data[n*MAX_CHUNK_BYTES:]
+		chunkBytes = len(data) - int(n)*MAX_DATA_BYTES
+		chunkData := data[n*MAX_DATA_BYTES:]
 		ch.packet = append(ch.packet, chunkData...)
 	} else {
-		chunkBytes = MAX_CHUNK_BYTES
+		chunkBytes = MAX_DATA_BYTES
 		ch.packet = append(ch.packet,
-			data[n*MAX_CHUNK_BYTES:(n+1)*MAX_CHUNK_BYTES]...)
+			data[n*MAX_DATA_BYTES:(n+1)*MAX_DATA_BYTES]...)
 	}
 	// we need to pad to a multiple of 16 bytes
 	lenPadding := 16 - chunkBytes%16
@@ -77,7 +77,7 @@ func (s *XLSuite) calculateChunkHash(c *C, n uint, datum []byte, data []byte) (
 func (s *XLSuite) TestChunkList(c *C) {
 	rng := xr.MakeSimpleRNG()
 
-	dataLen := 1 + rng.Intn(3*MAX_CHUNK_BYTES)
+	dataLen := 1 + rng.Intn(3*MAX_DATA_BYTES)
 	data := make([]byte, dataLen)
 	rng.NextBytes(data)
 
@@ -98,7 +98,7 @@ func (s *XLSuite) TestChunkList(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(cl, NotNil)
 
-	chunkCount := uint((dataLen + MAX_CHUNK_BYTES - 1) / MAX_CHUNK_BYTES)
+	chunkCount := uint((dataLen + MAX_DATA_BYTES - 1) / MAX_DATA_BYTES)
 	c.Assert(cl.Size(), Equals, chunkCount)
 
 	for i := uint(0); i < chunkCount; i++ {
@@ -111,9 +111,9 @@ func (s *XLSuite) TestChunkList(c *C) {
 		var chunk *Chunk
 		var slice []byte
 		if i == chunkCount-1 {
-			slice = data[i*MAX_CHUNK_BYTES:]
+			slice = data[i*MAX_DATA_BYTES:]
 		} else {
-			slice = data[i*MAX_CHUNK_BYTES : (i+1)*MAX_CHUNK_BYTES]
+			slice = data[i*MAX_DATA_BYTES : (i+1)*MAX_DATA_BYTES]
 		}
 
 		chunk, err = NewChunk(nodeID, uint32(i), slice)
