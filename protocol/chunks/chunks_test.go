@@ -80,7 +80,7 @@ func (s *XLSuite) TestChunks(c *C) {
 	c.Assert(bytes.Equal(expectedReserved, ch.Reserved()), Equals, true)
 
 	// field checks: length, index, datum (= hash of overall message)
-	c.Assert(int(ch.GetLength()), Equals, dataLen)
+	c.Assert(int(ch.GetDataLen()), Equals, dataLen)
 	c.Assert(ch.GetIndex(), Equals, ndx)
 	actualDatum := ch.GetDatum()
 	c.Assert(actualDatum, NotNil)

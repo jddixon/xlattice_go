@@ -103,13 +103,13 @@ func (ch *Chunk) Reserved() []byte {
 // of the data in bytes, excluding any padding added.  The value actually
 // stored is the length less one.
 //
-func (ch *Chunk) GetLength() uint32 {
+func (ch *Chunk) GetDataLen() uint32 {
 	return binary.BigEndian.Uint32(
 		ch.packet[LENGTH_OFFSET : LENGTH_OFFSET+LENGTH_BYTES])
 }
 
 // Store the length of the data, which must not be zero and must
-// not exceed MAX_CHUNK_BYTES - 80.
+// not exceed MAX_DATA_BYTES = MAX_CHUNK_BYTES - (headerSize + hashSize)
 func (ch *Chunk) setLength(n uint32) {
 	binary.BigEndian.PutUint32(
 		ch.packet[LENGTH_OFFSET:LENGTH_OFFSET+LENGTH_BYTES], n)
@@ -141,12 +141,12 @@ func (ch *Chunk) GetDatum() []byte {
 
 // Return the slice of data in the chunk.  This is NOT a copy.
 func (ch *Chunk) GetData() []byte {
-	return ch.packet[DATA_OFFSET : DATA_OFFSET+ch.GetLength()]
+	return ch.packet[DATA_OFFSET : DATA_OFFSET+ch.GetDataLen()]
 }
 
 // Retrieve the packet hash
 func (ch *Chunk) GetChunkHash() []byte {
-	dataLen := ch.GetLength()
+	dataLen := ch.GetDataLen()
 	hashOffset := ((dataLen + DATA_OFFSET + WORD_BYTES - 1) /
 		WORD_BYTES) * WORD_BYTES
 	return ch.packet[hashOffset : hashOffset+HASH_BYTES]

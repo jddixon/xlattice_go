@@ -1,15 +1,30 @@
 xlattice_go/protocol/chunks/TODO
 
-2014-13-11
+2014-03-15 (-03-09, edited again)
+    * write a test chunkListAssyDisassyTest that 
+        - creates tmp/ if it doesn't exist                              * DONE
+        - create tmp/uDir, where 'uDir' is an unused name               * DONE
+            and uDir is a UFlat; pathToU = tmp/dirName                  * DONE
+
+        - create a testFile > (N-1) * MAX_DATA_BYTES in size, where     * DONE
+            N > 3 and where the file is in pathToU/                     * DONE
+
+        - in the course of building a ChunkList, split the file into 
+            chunks stored in chunkDir
+        - sign and verify the ChunkList
+        - use the ChunkList to create testFile2 from the chunks
+        - verify that reassyU/testFile2 is identical to pathToU/testFile
+
+2014-03-11
     * MAX_CHUNK_BYTES of 128 KB now construed to include the 			* DONE
         header, so MAX_DATA_BYTES = 128K - 80 .			                * DONE
         - in consequence the header length field (which is the data		* DONE
             length) no longer has 1 subtracted from it			        * DONE
 
-2014-13-10
+2014-03-10
     * test and confirm that by default a message whose length is 
-        less than or equsl to 128 KB is converted into a ChunkList
-        with a single member.
+        less than or equsl to MAX_DATA_BYTES is converted into a 
+        ChunkList with a single member.
 
 2014-03-09 (edited 03-08)
     * implement DigiList.Sign(skPriv, subClass)
@@ -17,16 +32,6 @@ xlattice_go/protocol/chunks/TODO
     * implement DigiList.String()                                       * DONE
     * implement DigiList.Parse()                                        * DONE
     * write test which round-trips dl1 -> string -> parse -> dl2
-    * write a test that 
-        - creates tmp/ if it doesn't exist
-        - create tmp/chunkDir, where chunkDir is an unused name
-        - creates a testFile > (N-1) * chunkSize in size, where N > 3 
-            and chunkSize is say 16 KB and where the file is in 
-            chunkDir/
-        - split the file into chunks, building a DigiList
-        - sign and verify the DigiList
-        - use the DigiList to create testFile2 from the chunks
-        - verify that testFile2 is identical to testFile
 
 2014-02-17
     * fix: error seen once at TestChunkList, line 119: ChunkTooLong
