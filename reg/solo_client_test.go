@@ -44,6 +44,8 @@ func (s *XLSuite) TestSoloClient(c *C) {
 	found, err := xf.PathExists(lfs)
 	c.Assert(err, IsNil)
 	for found {
+		name = rng.NextFileName(8)
+		lfs = path.Join("tmp", name)
 		found, err = xf.PathExists(lfs)
 		c.Assert(err, IsNil)
 	}

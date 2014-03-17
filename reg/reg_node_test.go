@@ -22,7 +22,8 @@ func (s *XLSuite) TestRegNodeSerialization(c *C) {
 	}
 	rng := xr.MakeSimpleRNG()
 
-	node, ckPriv, skPriv := s.makeHostAndKeys(c, rng)
+	namesInUse := make(map[string]bool)
+	node, ckPriv, skPriv := s.makeHostAndKeys(c, rng, namesInUse)
 
 	// This assigns an endPoint in 127.0.0.1 to the node; it
 	// also starts the corresponding acceptor listening.

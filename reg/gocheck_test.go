@@ -62,18 +62,25 @@ func (s *XLSuite) makeALocalEndPoint(c *C, node *xn.Node) {
 // and sigKey.   XXX This code was hacked from ../node/node_test.go
 // and then simplified a bit.
 
-func (s *XLSuite) makeHostAndKeys(c *C, rng *xr.PRNG) (
-	n *xn.Node, ckPriv, skPriv *rsa.PrivateKey) {
+func (s *XLSuite) makeHostAndKeys(c *C, rng *xr.PRNG,
+	namesInUse map[string]bool) (n *xn.Node, ckPriv, skPriv *rsa.PrivateKey) {
 
-	// XXX names may not be unique
-	name := rng.NextFileName(6)
+	var name string
 	for {
-		first := string(name[0])
-		if !strings.Contains(first, "0123456789") &&
-			!strings.Contains(name, "-") {
+		name = rng.NextFileName(8)
+		for {
+			first := string(name[0])
+			if !strings.Contains(first, "0123456789") &&
+				!strings.Contains(name, "-") {
+				break
+			}
+			name = rng.NextFileName(8)
+		}
+		if _, ok := namesInUse[name]; !ok {
+			// it's not in use
+			namesInUse[name] = true
 			break
 		}
-		name = rng.NextFileName(6)
 	}
 	id := s.makeANodeID(c, rng)
 	lfs := "tmp/" + hex.EncodeToString(id.Value())

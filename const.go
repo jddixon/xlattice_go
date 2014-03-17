@@ -5,6 +5,6 @@ package xlattice_go
 // into a uint32 in in_handler.go init()
 const (
 	// the version number tracked in CHANGES
-	VERSION      = "0.4.3"
-	VERSION_DATE = "2014-01-19"
+	VERSION      = "0.4.5"
+	VERSION_DATE = "2014-03-10"
 )

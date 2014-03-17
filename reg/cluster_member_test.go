@@ -24,7 +24,8 @@ func (s *XLSuite) TestClusterMemberSerialization(c *C) {
 
 	// We are going to overwrite cluster member zero's attributes
 	// with those of the new cluster member.
-	myNode, myCkPriv, mySkPriv := s.makeHostAndKeys(c, rng)
+	namesInUse := make(map[string]bool)
+	myNode, myCkPriv, mySkPriv := s.makeHostAndKeys(c, rng, namesInUse)
 	myAttrs := cl.Members[0].Attrs
 
 	var myEnds []string

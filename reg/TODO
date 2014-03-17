@@ -1,5 +1,17 @@
 xlattice_go/reg/TODO
 
+2014-03-16
+    * correct other (semi-)infinite loops in other tests
+        - eph_server_test.go                                            * DONE
+        - gocheck.go                                                    * DONE
+            * cluster_member_test, which uses gocheck                   * DONE
+            * reg_node_test, which uses                                 * DONE
+        - mmap_test.go                                                  * OK
+        - reg_cred_test.go                                              * OK
+
+2014-03-15
+    * fix INFINITE LOOP in solo_client_test.go                          * DONE
+
 2014-02-24
     * write testData_test.go exercising data in test_dir as model for
         xlreg_*

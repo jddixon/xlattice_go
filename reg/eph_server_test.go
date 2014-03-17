@@ -95,12 +95,20 @@ func (s *XLSuite) TestEphServer(c *C) {
 
 	uc := make([]*UserClient, K)
 	ucNames := make([]string, K)
+	namesInUse := make(map[string]bool)
 	for i := 0; i < K; i++ {
 		var ep *xt.TcpEndPoint
 		ep, err = xt.NewTcpEndPoint("127.0.0.1:0")
 		c.Assert(err, IsNil)
 		e := []xt.EndPointI{ep}
-		ucNames[i] = rng.NextFileName(8) // not guaranteed to be unique
+		newName := rng.NextFileName(8)
+		_, ok := namesInUse[newName]
+		for ok {
+			newName = rng.NextFileName(8)
+			_, ok = namesInUse[newName]
+		}
+		namesInUse[newName] = true
+		ucNames[i] = newName // guaranteed to be LOCALLY unique
 		uc[i], err = NewUserClient(ucNames[i], "",
 			nil, nil, // private RSA keys are generated if nil
 			serverName, serverID, serverEnd, serverCK, serverSK,
