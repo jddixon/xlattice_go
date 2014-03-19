@@ -33,6 +33,10 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 	chunkCount := uint32((length + MAX_DATA_BYTES - 1) / MAX_DATA_BYTES)
 	bigD := sha3.NewKeccak256() // used to check datum
 	hashes := make([][]byte, chunkCount)
+	// DEBUG
+	fmt.Printf("NewChunkList: file len %d; there are %d chunks\n",
+		length, chunkCount)
+	// END
 
 	if reader == nil {
 		err = NilReader
@@ -139,6 +143,9 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 func (cl *ChunkList) HashItem(n uint) (hash []byte, err error) {
 
 	if n >= cl.Size() {
+		// DEBUG
+		fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size)
+		// END
 		err = NoNthItem
 	} else {
 		hash = cl.hashes[n]

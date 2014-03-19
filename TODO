@@ -1,5 +1,8 @@
 xlattice_go/TODO
 
+2014-03-18
+    * uDir.Exists() should take []byte arg
+
 2014-02-17
     * determine why xlattice_go/msg tests so slow (23 sec)
 
