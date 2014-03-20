@@ -105,7 +105,7 @@ func (s *XLSuite) doTestCopyAndPut(
 	// END HACK
 }
 func (s *XLSuite) doTestExists(c *C, u UI, digest hash.Hash) {
-	//we are testing whether = u.Exists( key)
+	//we are testing whether = u.Exists( key) and whether = u.KeyExists()
 
 	rng := u.GetRNG()
 	dLen, dPath := rng.NextDataFile(dataPath, 16*1024, 1)
@@ -132,11 +132,23 @@ func (s *XLSuite) doTestExists(c *C, u UI, digest hash.Hash) {
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
 
-	found, err = u.Exists(uKey)
+	bKey, err := hex.DecodeString(uKey)
+	c.Assert(err, IsNil)
+
+	found, err = u.Exists(uKey) // string version of key
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
+	found, err = u.KeyExists(bKey) // binary version of key
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, true)
+
 	os.Remove(kPath)
-	found, err = xf.PathExists(kPath)
+
+	found, err = xf.PathExists(kPath) // string version
+	c.Assert(err, IsNil)
+	c.Assert(found, Equals, false)
+
+	found, err = u.KeyExists(bKey) // binary version of key
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, false)
 }

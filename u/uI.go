@@ -21,12 +21,19 @@ type UI interface {
 	PutData1(data []byte, key string) (length int64, hash string, err error)
 	PutData3(data []byte, key string) (length int64, hash string, err error)
 
-	Exists(key string) (bool, error)
-	FileLen(key string) (length int64, err error)
-	GetDirStruc() DirStruc
-	GetPath() string
-	GetPathForKey(key string) (string, error)
-
 	// presumably temporary
 	GetRNG() *xr.PRNG
+
+	GetDirStruc() DirStruc
+	GetPath() string // utility?
+
+	// 2014-03-20: these exist in two forms (or should); names are confusing
+	Exists(key string) (bool, error)
+	KeyExists(key []byte) (bool, error)
+
+	FileLen(key string) (length int64, err error)
+	KeyFileLen(key []byte) (length int64, err error)
+
+	GetPathForKey(key string) (string, error)
+	GetPathForBinaryKey(key []byte) (string, error)
 }
