@@ -18,6 +18,8 @@ var (
 	NoDigSig                    = e.New("no digital signature: the list is not signed")
 	NoNthItem                   = e.New("no Nth item")
 	TooShortForDigiList         = e.New("too short to be a DigiList")
+	WriteReturnsWrongHash       = e.New("write returns wrong hash")
+	WrongNumberBytesWritten     = e.New("wrong number of bytes written")
 	ZeroLengthChunk             = e.New("zero length chunk")
 	ZeroLengthInput             = e.New("zero length input")
 )

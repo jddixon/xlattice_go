@@ -6,8 +6,10 @@ import (
 	"bytes"
 	"code.google.com/p/go.crypto/sha3"
 	"crypto/rsa"
+	"encoding/hex"
 	"fmt"
-	xu "github.com/jddixon/xlattice_go/util"
+	"github.com/jddixon/xlattice_go/u"
+	"github.com/jddixon/xlattice_go/util"
 	"io"
 )
 
@@ -20,10 +22,15 @@ type ChunkList struct {
 }
 
 // Create a ChunkList for an io.Reader where the length and SHA3-256
-// content key of the document are already known.
+// content key of the document are already known.  If uStore is not nil,
+// each chunk is inserted into uStore.  Chunks are CHUNK_BYTES in size,
+// except that the last chunk may be shorter.  The last chunk is padded
+// out to a multiple of WORD_BYTES to ensure alignment.  Padding bytes
+// are sent over the wire and are included in the chunk hash but are
+// not considered in calculating datum, the message hash.
 //
-func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
-	reader io.Reader, length int64, datum []byte) (
+func NewChunkList(sk *rsa.PublicKey, title string, timestamp util.Timestamp,
+	reader io.Reader, length int64, datum []byte, uStore u.UI) (
 	cl *ChunkList, err error) {
 
 	var (
@@ -34,8 +41,9 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 	bigD := sha3.NewKeccak256() // used to check datum
 	hashes := make([][]byte, chunkCount)
 	// DEBUG
-	fmt.Printf("NewChunkList: file len %d; there are %d chunks\n",
+	fmt.Printf("NewChunkList: file len %d; there will be %d chunk(s)\n",
 		length, chunkCount)
+	fmt.Printf("  number of hashes = %d\n", len(hashes)) // XXX
 	// END
 
 	if reader == nil {
@@ -60,7 +68,7 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 
 		stillToGo := length // bytes left unread at this point
 		eofSeen := false
-		for i := uint32(0); i < chunkCount && !eofSeen; i++ {
+		for i := uint32(0); i < chunkCount && !eofSeen && err == nil; i++ {
 			var paddingBytes int
 			header.setIndex(i)
 			if i == chunkCount-1 {
@@ -68,13 +76,14 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 			}
 			var bytesToRead int64
 			var count int
-			data := make([]byte, MAX_DATA_BYTES)
 
 			if stillToGo <= MAX_DATA_BYTES {
 				bytesToRead = stillToGo
 			} else {
 				bytesToRead = MAX_DATA_BYTES
 			}
+			data := make([]byte, bytesToRead)
+
 			// XXX DOES NOT ALLOW FOR PARTIAL READS
 			count, err = reader.Read(data)
 			if err != nil {
@@ -86,7 +95,6 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 				}
 			}
 			if bytesToRead != MAX_DATA_BYTES {
-				data = data[0:bytesToRead]
 				adjLen := WORD_BYTES * ((bytesToRead + WORD_BYTES - 1) /
 					WORD_BYTES)
 				paddingBytes = int(adjLen - bytesToRead)
@@ -97,15 +105,38 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 			d.Write(header.packet) // <-- header is included
 			bigD.Write(data)
 			if paddingBytes > 0 {
-				padding := make([]byte, paddingBytes)
+				padding := make([]byte, paddingBytes) // null bytes
 				data = append(data, padding...)
 			}
 			d.Write(data)
 			hashes[i] = d.Sum(nil)
-			//// DEBUG
-			//fmt.Printf("NewChunkList %d: %6d bytes, %2d bytes padding\n",
-			//	i, bytesToRead, paddingBytes)
-			//fmt.Printf("   ==> %s\n", hex.EncodeToString(hashes[i]))
+			// DEBUG
+			fmt.Printf("NewChunkList %d: %6d bytes, %2d bytes padding\n",
+				i, bytesToRead, paddingBytes)
+			fmt.Printf("   ==> %s\n", hex.EncodeToString(hashes[i]))
+			// END
+
+			if uStore != nil {
+				// DEBUG
+				fmt.Printf("writing chunk %d to store\n", i)
+				// END
+
+				// XXX FIX ME: WASTEFUL COPYING OF BYTES
+				header.packet = append(header.packet, data...)
+				bytesWritten, writeHash, err := uStore.PutData(header.packet, hashes[i])
+				if err == nil {
+					if bytesWritten != int64(len(header.packet)) {
+						// DEBUG
+						fmt.Printf("chunk length %d but only %d bytes written\n",
+							len(header.packet), bytesWritten)
+						// END
+						err = WrongNumberBytesWritten
+					} else if !bytes.Equal(writeHash, hashes[i]) {
+						err = WriteReturnsWrongHash
+					}
+				}
+			}
+			// DEBUG
 			//if i == chunkCount - 1 {
 			//	fmt.Println("DUMP OF LAST CHUNK" )
 			//	for j := 0; j < len(header.packet); j += 16 {
@@ -117,7 +148,7 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 			//			hex.EncodeToString(data[j: j+16]))
 			//	}
 			//}
-			//// END
+			// END
 		}
 	}
 	if err == nil {
@@ -142,10 +173,10 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp xu.Timestamp,
 // error if there is no such item.
 func (cl *ChunkList) HashItem(n uint) (hash []byte, err error) {
 
+	// DEBUG
+	fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size)
+	// END
 	if n >= cl.Size() {
-		// DEBUG
-		fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size)
-		// END
 		err = NoNthItem
 	} else {
 		hash = cl.hashes[n]

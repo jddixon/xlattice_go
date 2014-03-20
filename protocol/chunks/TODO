@@ -9,8 +9,8 @@ xlattice_go/protocol/chunks/TODO
         - create a testFile > (N-1) * MAX_DATA_BYTES in size, where     * DONE
             N > 3 and where the file is in pathToU/                     * DONE
 
-        - in the course of building a ChunkList, split the file into 
-            chunks stored in chunkDir
+        - in the course of building a ChunkList, split the file into    * DONE
+            chunks stored in chunkDir                                   * DONE
         - sign and verify the ChunkList
         - use the ChunkList to create testFile2 from the chunks
         - verify that reassyU/testFile2 is identical to pathToU/testFile
