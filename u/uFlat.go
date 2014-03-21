@@ -51,7 +51,7 @@ func NewUFlat(path string, perm os.FileMode) (udir *UFlat, err error) {
 	return
 }
 
-func (u *UFlat) GetDirStruc() DirStruc { return DIR16x16 }
+func (u *UFlat) GetDirStruc() DirStruc { return DIR_FLAT }
 func (u *UFlat) GetPath() string       { return u.path }
 func (u *UFlat) GetRNG() *xr.PRNG      { return u.rng }
 
@@ -300,7 +300,7 @@ func (u *UFlat) GetData1(key string) (data []byte, err error) {
 
 // tmp is the path to a local file which will be renamed into U (or deleted
 // if it is already present in U)
-// u.path is an absolute or relative path to a U directory organized 16x16
+// u.path is an absolute or relative path to a U directory organized _FLAT
 // key is an sha1 content hash.
 // If the operation succeeds we return the length of the file (which must
 // not be zero.  Otherwise we return 0.
@@ -445,7 +445,7 @@ func (u *UFlat) GetData3(key string) (data []byte, err error) {
 
 // inFile is the path to a local file which will be renamed into U (or deleted
 // if it is already present in U)
-// u.path is an absolute or relative path to a U directory organized 16x16
+// u.path is an absolute or relative path to a U directory organized _FLAT
 // key is an sha3 content hash.
 // If the operation succeeds we return the length of the file (which must
 // not be zero.  Otherwise we return 0.

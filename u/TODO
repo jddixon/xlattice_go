@@ -1,7 +1,15 @@
 xlattice_go/u/TODO
 
+2014-03-20
+    * FIX: Stores organized DIR_FLAT are actually 16x16                 * DONE
+    * the functions with similar names operating on []byte and
+        string keys (Exists, KeyExists, etc) need better names
+        that follow a regular pattern
+        - need to transition to the new names, with older names
+            available but clearly marked deprecated
+
 2014-03-11
-    * Need DIRFLAT as well as DIR16x16 and DIR256x256
+    * Need DIRFLAT as well as DIR16x16 and DIR256x256                   * DONE
     * Code needs checking: carefully compare UFlat and U16x16 etc
         - eg hash != key test, which should use bytes.Equal()
 
@@ -11,16 +19,16 @@ xlattice_go/u/TODO
         - FileLen()							                            * DONE
         - GetPathForKey()							                    * DONE
     * Need tests of
-        - CopyAndPut()
+        - CopyAndPut()                                                  * DONE
         - GetData()
         - Put()
         - PutData()
-        - Exists([]byte) or whatever the name is
+        - KeyExists([]byte)                                             * DONE
         - FileLen([]byte)
         - GetPathForKey([]byte)
 
 2013-10-27
-    * add at least DIR_FLAT implementation
+    * add at least DIR_FLAT implementation                              * DONE
     * merge sha1_test.go and sha3_test.go by adding a usingSHA1
         parameter in the right places
     * investigate and fix: comment says that GetData3 will only
