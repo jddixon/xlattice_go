@@ -1,5 +1,9 @@
 xlattice_go/protocol/chunks/TODO
 
+2014-03-20
+    * ISSUE: uStore continues to be 16x16, should be FLAT_DIR
+    * FIX: chunkList is including data from #0 in #1, #0,1 in #2, etc   * DONE
+
 2014-03-15 (-03-09, edited again)
     * write a test chunkListAssyDisassyTest that 
         - creates tmp/ if it doesn't exist                              * DONE

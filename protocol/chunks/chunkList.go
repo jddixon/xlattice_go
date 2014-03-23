@@ -59,16 +59,16 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp util.Timestamp,
 	}
 	if err == nil {
 
-		// We use a packet with no data as a scratch pad to build dummy headers
-		hPacket := make([]byte, DATUM_OFFSET)
-		hPacket = append(hPacket, datum...)
-		header = &Chunk{packet: hPacket}
-		// default length is 128KB - 80 = MAX_DATA_BYTES
-		header.setLength(MAX_DATA_BYTES)
-
 		stillToGo := length // bytes left unread at this point
 		eofSeen := false
 		for i := uint32(0); i < chunkCount && !eofSeen && err == nil; i++ {
+			// Use a packet with no data as a scratch pad to build dummy headers
+			hPacket := make([]byte, DATUM_OFFSET)
+			hPacket = append(hPacket, datum...)
+			header = &Chunk{packet: hPacket}
+			// default length is 128KB - 80 = MAX_DATA_BYTES
+			header.setLength(MAX_DATA_BYTES)
+
 			var paddingBytes int
 			header.setIndex(i)
 			if i == chunkCount-1 {
@@ -111,8 +111,8 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp util.Timestamp,
 			d.Write(data)
 			hashes[i] = d.Sum(nil)
 			// DEBUG
-			fmt.Printf("NewChunkList %d: %6d bytes, %2d bytes padding\n",
-				i, bytesToRead, paddingBytes)
+			fmt.Printf("NewChunkList %d: %6d bytes, %2d bytes padding, %7d data len\n",
+				i, bytesToRead, paddingBytes, len(data))
 			fmt.Printf("   ==> %s\n", hex.EncodeToString(hashes[i]))
 			// END
 
@@ -174,7 +174,7 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp util.Timestamp,
 func (cl *ChunkList) HashItem(n uint) (hash []byte, err error) {
 
 	// DEBUG
-	fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size)
+	fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size())
 	// END
 	if n >= cl.Size() {
 		err = NoNthItem
