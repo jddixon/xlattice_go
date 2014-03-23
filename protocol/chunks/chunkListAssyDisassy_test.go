@@ -23,6 +23,9 @@ import (
 var _ = fmt.Print
 
 func (s *XLSuite) TestChunkListAssyDisassy(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_CHUNK_LIST_ASSY_DISASSY")
+	}
 	rng := xr.MakeSimpleRNG()
 
 	// make a slice 3 to 7 chunks long, fill with random-ish data ---
@@ -38,6 +41,11 @@ func (s *XLSuite) TestChunkListAssyDisassy(c *C) {
 	hash := d.Sum(nil)
 	datum, err := xi.NewNodeID(hash)
 	c.Assert(err, IsNil)
+
+	// DEBUG
+	datumStr := hex.EncodeToString(datum.Value())
+	fmt.Printf("DATUM is %s\n", datumStr)
+	// END
 
 	// create tmp if it doesn't exist -------------------------------
 	found, err := xf.PathExists("tmp")
@@ -96,7 +104,7 @@ func (s *XLSuite) TestChunkListAssyDisassy(c *C) {
 	c.Assert(err, IsNil)
 	defer reader.Close()
 
-	chunkList, err := NewChunkList(sk, title, now, reader, int64(dataLen), key)
+	chunkList, err := NewChunkList(sk, title, now, reader, int64(dataLen), key, myU)
 	c.Assert(err, IsNil)
 	err = chunkList.Sign(skPriv)
 	c.Assert(err, IsNil)

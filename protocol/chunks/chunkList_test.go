@@ -75,6 +75,9 @@ func (s *XLSuite) calculateChunkHash(c *C, n uint, datum []byte, data []byte) (
 	return
 }
 func (s *XLSuite) TestChunkList(c *C) {
+	if VERBOSITY > 0 {
+		fmt.Println("TEST_CHUNK")
+	}
 	rng := xr.MakeSimpleRNG()
 
 	dataLen := 1 + rng.Intn(3*MAX_DATA_BYTES)
@@ -94,7 +97,7 @@ func (s *XLSuite) TestChunkList(c *C) {
 	title := rng.NextFileName(8)
 	timestamp := xu.Timestamp(rng.Int63())
 
-	cl, err := NewChunkList(sk, title, timestamp, reader, int64(dataLen), datum)
+	cl, err := NewChunkList(sk, title, timestamp, reader, int64(dataLen), datum, nil)
 	c.Assert(err, IsNil)
 	c.Assert(cl, NotNil)
 

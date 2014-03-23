@@ -87,6 +87,9 @@ func (dl *DigiList) Sign(skPriv *rsa.PrivateKey, subClass DigiListI) (
 		err = NilSubClass
 	} else {
 		n = subClass.Size()
+		// DEBUG
+		fmt.Printf("DigiList.Sign(): subclass has %d chunks\n", n)
+		// END
 		sk = &skPriv.PublicKey
 
 		// DEVIATION FROM SPEC - we ignore any existing dl.sk
@@ -102,7 +105,7 @@ func (dl *DigiList) Sign(skPriv *rsa.PrivateKey, subClass DigiListI) (
 		d.Write(b) // timestamp to hash
 		for i := uint(0); i < n; i++ {
 			var itemHash []byte
-			itemHash, err = subClass.HashItem(n)
+			itemHash, err = subClass.HashItem(i)
 			if err != nil {
 				break
 			}
