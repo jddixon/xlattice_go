@@ -31,7 +31,7 @@ const (
 	HEADER_BYTES  = DATA_OFFSET
 
 	HASH_BYTES = xc.SHA3_LEN
-	WORD_BYTES = 16 // we pad to likely cpu cache length
+	WORD_BYTES = 16 // we pad to likely cpu cache size in bytes
 
 	// 2014-03-11 CHANGE: this is now construed as the maximum size of the
 	// entire packet, including the header and the terminating chunk hash.
