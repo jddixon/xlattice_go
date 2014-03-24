@@ -115,6 +115,13 @@ func (s *XLSuite) TestChunkListAssyDisassy(c *C) {
 	err = chunkList.Sign(skPriv)
 	c.Assert(err, IsNil)
 
+	digSig, err := chunkList.GetDigSig()
+	c.Assert(err, IsNil)
+	c.Assert(bytes.Equal(digSig, chunkList.digSig), Equals, true)
+
+	err = chunkList.Verify()
+	c.Assert(err, IsNil)
+
 	// XXX STUB
 	_ = sk // DEBUG
 	_ = title

@@ -9,13 +9,12 @@ xlattice_go/protocol/chunks/TODO
         - creates tmp/ if it doesn't exist                              * DONE
         - create tmp/uDir, where 'uDir' is an unused name               * DONE
             and uDir is a UFlat; pathToU = tmp/dirName                  * DONE
-
         - create a testFile > (N-1) * MAX_DATA_BYTES in size, where     * DONE
             N > 3 and where the file is in pathToU/                     * DONE
-
         - in the course of building a ChunkList, split the file into    * DONE
             chunks stored in chunkDir                                   * DONE
-        - sign and verify the ChunkList
+        - sign and verify the ChunkList                                 * DONE
+
         - use the ChunkList to create testFile2 from the chunks
         - verify that reassyU/testFile2 is identical to pathToU/testFile
 
@@ -40,10 +39,6 @@ xlattice_go/protocol/chunks/TODO
 2014-02-17
     * fix: error seen once at TestChunkList, line 119: ChunkTooLong
 
-2014-02-10
-    * it is an error if chunk length is zero or > 128K; tests should    * DONE
-        check both values                                               * DONE
-
 2013-12-13
     * Serious deficiency: the digital signature in the DigiList is
         missing in the serialization.
@@ -55,13 +50,3 @@ xlattice_go/protocol/chunks/TODO
             knowing the overall length of the message.
             * This can be expressed as a uint32 chunk count.
 
-2013-12-12
-    * Devise test to verify that NewChunkList() creates the same        * DONE
-        chunks that would be created if NewChunk were used.             * DONE
-
-2013-12-11
-    * NewChunkList must have a filename or io.Reader parameter !!!      * DONE
-    * We need a message/file hash to build the ChunkList, otherwise 	* DONE
-        if the input parameter is an io.Reader, we will need to make 	* DONE
-        two passes over the message, first to determine its length 	    * DONE
-        and content hash, and then to chunk it.	                        * DONE

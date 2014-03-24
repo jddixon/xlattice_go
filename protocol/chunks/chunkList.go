@@ -174,7 +174,7 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp util.Timestamp,
 func (cl *ChunkList) HashItem(n uint) (hash []byte, err error) {
 
 	// DEBUG
-	fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size())
+	// fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size())
 	// END
 	if n >= cl.Size() {
 		err = NoNthItem
@@ -191,6 +191,11 @@ func (self *ChunkList) Sign(key *rsa.PrivateKey) (err error) {
 // Return the number of items currently in the DigiList.
 func (cl *ChunkList) Size() uint {
 	return uint(len(cl.hashes))
+}
+
+// Return nil if verification succeeds, otherwise the error encountered.
+func (self *ChunkList) Verify() (err error) {
+	return self.DigiList.Verify(self)
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////

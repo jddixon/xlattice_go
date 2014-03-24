@@ -59,8 +59,16 @@ func (dl *DigiList) Timestamp() xu.Timestamp {
 	return dl.timestamp
 }
 
-func (dl *DigiList) DigSig() []byte {
-	return dl.digSig
+// Return a copy if the digital signature, or an error if the chunkList
+// is unsigned.
+func (dl *DigiList) GetDigSig() (digSig []byte, err error) {
+	if dl.digSig == nil || len(dl.digSig) == 0 {
+		err = NoDigSig
+	} else {
+		digSig = make([]byte, len(dl.digSig))
+		copy(digSig, dl.digSig)
+	}
+	return
 }
 
 // DigiListI INTERFACE //////////////////////////////////////////////
@@ -88,7 +96,7 @@ func (dl *DigiList) Sign(skPriv *rsa.PrivateKey, subClass DigiListI) (
 	} else {
 		n = subClass.Size()
 		// DEBUG
-		fmt.Printf("DigiList.Sign(): subclass has %d chunks\n", n)
+		// fmt.Printf("DigiList.Sign(): subclass has %d chunks\n", n)
 		// END
 		sk = &skPriv.PublicKey
 
@@ -149,7 +157,7 @@ func (dl *DigiList) Verify(subClass DigiListI) (err error) {
 		d.Write(b) // timestamp to hash
 		for i := uint(0); i < n; i++ {
 			var itemHash []byte
-			itemHash, err = subClass.HashItem(n)
+			itemHash, err = subClass.HashItem(i)
 			if err != nil {
 				break
 			}
