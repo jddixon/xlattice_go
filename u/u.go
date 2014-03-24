@@ -17,7 +17,7 @@ func New(path string, ds DirStruc, perm os.FileMode) (UI, error) {
 
 	switch ds {
 	case DIR_FLAT:
-		return NewU16x16(path, perm)
+		return NewUFlat(path, perm)
 	case DIR16x16:
 		return NewU16x16(path, perm)
 	case DIR256x256:

@@ -90,6 +90,12 @@ func (s *XLSuite) TestChunkListAssyDisassy(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
 
+	// DEBUG
+	keyPath, err := myU.GetPathForKey(keyStr)
+	c.Assert(err, IsNil)
+	fmt.Printf("%s is present in uDir at %s\n", keyStr, keyPath)
+	// END
+
 	// use the data file to build a chunkList, writing the chunks ---
 	title := rng.NextFileName(8)
 	now := xu.Timestamp(time.Now().UnixNano())
