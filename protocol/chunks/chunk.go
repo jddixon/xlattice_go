@@ -1,5 +1,7 @@
 package chunks
 
+// xlattice_go/protocol/chunks/chunk.go
+
 import (
 	"code.google.com/p/go.crypto/sha3"
 	"encoding/binary"
@@ -19,8 +21,7 @@ const (
 	TYPE_OFFSET     = MAGIC_OFFSET + MAGIC_BYTES
 	RESERVED_OFFSET = TYPE_OFFSET + TYPE_BYTES
 	RESERVED_BYTES  = 6
-	// We actually store the length - 1 at this offset; and the length
-	// is big-endian.
+	// The length and index are big-endian.
 	LENGTH_OFFSET = RESERVED_OFFSET + RESERVED_BYTES
 	LENGTH_BYTES  = 4
 	INDEX_OFFSET  = LENGTH_OFFSET + LENGTH_BYTES
@@ -72,10 +73,6 @@ func NewChunk(datum *xi.NodeID, ndx uint32, data []byte) (
 			padding := make([]byte, paddingBytes)
 			ch.packet = append(ch.packet, padding...)
 		}
-		// DEBUG
-		//fmt.Printf("NewChunk %d: %6d bytes, padding %2d\n",
-		//	ndx, realLen, paddingBytes)
-		// END
 		// calculate the SHA3-256 hash of the chunk
 		d := sha3.NewKeccak256()
 		d.Write(ch.packet)

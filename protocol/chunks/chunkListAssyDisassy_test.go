@@ -42,11 +42,6 @@ func (s *XLSuite) TestChunkListAssyDisassy(c *C) {
 	datum, err := xi.NewNodeID(hash)
 	c.Assert(err, IsNil)
 
-	// DEBUG
-	datumStr := hex.EncodeToString(datum.Value())
-	fmt.Printf("DATUM is %s\n", datumStr)
-	// END
-
 	// create tmp if it doesn't exist -------------------------------
 	found, err := xf.PathExists("tmp")
 	c.Assert(err, IsNil)
@@ -90,18 +85,9 @@ func (s *XLSuite) TestChunkListAssyDisassy(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(found, Equals, true)
 
-	// DEBUG
-	keyPath, err := myU.GetPathForKey(keyStr)
-	c.Assert(err, IsNil)
-	fmt.Printf("%s is present in uDir at %s\n", keyStr, keyPath)
-	// END
-
 	// use the data file to build a chunkList, writing the chunks ---
 	title := rng.NextFileName(8)
 	now := xu.Timestamp(time.Now().UnixNano())
-	// DEBUG
-	fmt.Printf("the UTC time is %s\n", now.String())
-	// END
 
 	// make a reader --------------------------------------
 	pathToData, err := myU.GetPathForKey(keyStr)
@@ -122,12 +108,56 @@ func (s *XLSuite) TestChunkListAssyDisassy(c *C) {
 	err = chunkList.Verify()
 	c.Assert(err, IsNil)
 
-	// XXX STUB
-	_ = sk // DEBUG
-	_ = title
-
+	// REBUILD AND CHECK --------------------------------------------
 	// rebuild the complete file from the chunkList and files present
 	// in myU
 
-	// verify that the rebuilt file is identical to the original ----
+	u2, err := u.New(pathToU, u.DIR_FLAT, 0) // 0 means default perm
+	c.Assert(err, IsNil)
+
+	var data2 []byte // should become copy of original
+	count := chunkList.Size()
+	for i := uint(0); i < count; i++ {
+		chunkHash, err := chunkList.HashItem(i)
+		c.Assert(err, IsNil)
+		c.Assert(chunkHash, NotNil)
+		var raw []byte
+		// THIS IS A CHUNK, and so has a header, possibly some
+		// padding, and then its own hash :-).  Need to verify
+		// and discard the last, then drop the padding.
+		// CORRECTION: hash should NOT have been written to disk
+		raw, err = u2.GetData(chunkHash)
+		c.Assert(err, IsNil)
+
+		chunk := &Chunk{packet: raw}
+		ndx := chunk.GetIndex()
+		c.Assert(ndx, Equals, uint32(i))
+		rawLen := uint32(len(raw))
+		dataLen := chunk.GetDataLen()
+
+		//fmt.Printf("chunk %2d: index is %8d\n", i, ndx)
+		//fmt.Printf("          len raw is %6d (%4x)\n", rawLen, rawLen)
+		//fmt.Printf("          dataLen is %6d (%4x)\n", dataLen, dataLen)
+
+		// if this isn't true, we get a panic
+		c.Assert(dataLen < rawLen, Equals, true)
+
+		payload := chunk.GetData() // panics :-)
+
+		data2 = append(data2, payload...)
+	}
+	// verify that the content key of the rebuilt file is identical to
+	// that of the original
+
+	d2D := sha3.NewKeccak256()
+	d2D.Write(data2)
+	hash2 := d2D.Sum(nil)
+	datum2, err := xi.NewNodeID(hash2)
+	c.Assert(err, IsNil)
+	c.Assert(bytes.Equal(datum.Value(), datum2.Value()), Equals, true)
+
+	// presumably pure pedantry: verify that the file contents are
+	// also equal
+
+	c.Assert(bytes.Equal(data, data2), Equals, true)
 }
