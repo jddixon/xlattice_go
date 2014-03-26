@@ -287,7 +287,7 @@ func (u *UFlat) GetData1(key string) (data []byte, err error) {
 		defer src.Close()
 		var count int
 		// XXX THIS WILL NOT WORK FOR LARGER FILES!  It will ignore
-		//     anything over 64 KB
+		//     anything over 128 KB
 		data = make([]byte, DEFAULT_BUFFER_SIZE)
 		count, err = src.Read(data)
 		// XXX COUNT IS IGNORED
@@ -432,7 +432,7 @@ func (u *UFlat) GetData3(key string) (data []byte, err error) {
 		defer src.Close()
 		var count int
 		// XXX THIS WILL NOT WORK FOR LARGER FILES!  It will ignore
-		//     anything over 64 KB
+		//     anything over 128 KB
 		data = make([]byte, DEFAULT_BUFFER_SIZE)
 		count, err = src.Read(data)
 		// XXX COUNT IS IGNORED
