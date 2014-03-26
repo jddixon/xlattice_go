@@ -1,5 +1,8 @@
 xlattice_go/u/TODO
 
+2014-03-25
+    * fix: DEFAULT_BUFFER_SIZE set to 64KB, must reset to 128KB         * DONE
+
 2014-03-20
     * FIX: Stores organized DIR_FLAT are actually 16x16                 * DONE
     * the functions with similar names operating on []byte and
