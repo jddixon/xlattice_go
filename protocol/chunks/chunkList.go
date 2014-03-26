@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"code.google.com/p/go.crypto/sha3"
 	"crypto/rsa"
-	"encoding/hex"
+	//"encoding/hex"
 	"fmt"
 	"github.com/jddixon/xlattice_go/u"
 	"github.com/jddixon/xlattice_go/util"
@@ -40,11 +40,11 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp util.Timestamp,
 	chunkCount := uint32((length + MAX_DATA_BYTES - 1) / MAX_DATA_BYTES)
 	bigD := sha3.NewKeccak256() // used to check datum
 	hashes := make([][]byte, chunkCount)
-	// DEBUG
-	fmt.Printf("NewChunkList: file len %d; there will be %d chunk(s)\n",
-		length, chunkCount)
-	fmt.Printf("  number of hashes = %d\n", len(hashes)) // XXX
-	// END
+	//// DEBUG
+	//fmt.Printf("NewChunkList: file len %d; there will be %d chunk(s)\n",
+	//	length, chunkCount)
+	//fmt.Printf("  number of hashes = %d\n", len(hashes)) // XXX
+	//// END
 
 	if reader == nil {
 		err = NilReader
@@ -110,26 +110,14 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp util.Timestamp,
 			}
 			d.Write(data)
 			hashes[i] = d.Sum(nil)
-			// DEBUG
-			fmt.Printf("NewChunkList %d: %6d bytes, %2d bytes padding, %7d data len\n",
-				i, bytesToRead, paddingBytes, len(data))
-			fmt.Printf("   ==> %s\n", hex.EncodeToString(hashes[i]))
-			// END
 
 			if uStore != nil {
-				// DEBUG
-				fmt.Printf("writing chunk %d to store\n", i)
-				// END
 
 				// XXX FIX ME: WASTEFUL COPYING OF BYTES
 				header.packet = append(header.packet, data...)
 				bytesWritten, writeHash, err := uStore.PutData(header.packet, hashes[i])
 				if err == nil {
 					if bytesWritten != int64(len(header.packet)) {
-						// DEBUG
-						fmt.Printf("chunk length %d but only %d bytes written\n",
-							len(header.packet), bytesWritten)
-						// END
 						err = WrongNumberBytesWritten
 					} else if !bytes.Equal(writeHash, hashes[i]) {
 						err = WriteReturnsWrongHash
@@ -174,7 +162,7 @@ func NewChunkList(sk *rsa.PublicKey, title string, timestamp util.Timestamp,
 func (cl *ChunkList) HashItem(n uint) (hash []byte, err error) {
 
 	// DEBUG
-	fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size())
+	// fmt.Printf("HashItem(%d) where size is %d\n", n, cl.Size())
 	// END
 	if n >= cl.Size() {
 		err = NoNthItem
@@ -191,6 +179,11 @@ func (self *ChunkList) Sign(key *rsa.PrivateKey) (err error) {
 // Return the number of items currently in the DigiList.
 func (cl *ChunkList) Size() uint {
 	return uint(len(cl.hashes))
+}
+
+// Return nil if verification succeeds, otherwise the error encountered.
+func (self *ChunkList) Verify() (err error) {
+	return self.DigiList.Verify(self)
 }
 
 // SERIALIZATION ////////////////////////////////////////////////////

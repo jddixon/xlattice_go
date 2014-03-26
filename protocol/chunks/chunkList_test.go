@@ -123,4 +123,5 @@ func (s *XLSuite) TestChunkList(c *C) {
 		c.Assert(err, Equals, nil)
 		c.Assert(chunk.GetChunkHash(), DeepEquals, expected)
 	}
+
 }
