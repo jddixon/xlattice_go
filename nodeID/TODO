@@ -1,5 +1,14 @@
 xlattice_go/nodeID/TODO
 
+2014-03-29
+    * need a benchmark to get insertion time                            * DONE
+        - the N values should be generated in a separate step, with     * DONE
+            timing starting only after all values are available         * DONE
+    * need a test which inserts say 64K nodes using say                 * DONE
+        4,8,16,32,64 degrees of concurrency                             * DONE
+    * test should preserve the resultant tree and collect statistics
+        should as maximum depth
+
 2014-02-10
     * need IDMap.Clear() for xd.MemCache
     * need IDMap.Delete(key *xi.NodeID) error, also for xd.MemCache

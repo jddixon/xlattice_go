@@ -6,10 +6,6 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-var (
-	VERBOSITY = 0
-)
-
 func (s *XLSuite) TestBadNodeIDs(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_BAD_NODE_IDS")
