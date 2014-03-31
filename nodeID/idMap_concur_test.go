@@ -58,6 +58,16 @@ func (s *XLSuite) doMWayTest(c *C, keys [][]byte, N, M int) {
 		c.Assert(bytes.Equal(val, keys[i]), Equals, true)
 
 	}
+	// BEGIN STATS CHECKS -------------------------------------------
+	entryCount, mapCount, deepest := m.Size()
+	c.Assert(entryCount, Equals, uint(N))
+
+	// DEBUG
+	// Quite inefficient: for 256K entries, 61832 maps; for 1M, 97486 maps
+	//
+	fmt.Printf("entryCount %7d, mapCount %5d, deepest %2d\n",
+		entryCount, mapCount, deepest)
+	// END
 }
 func (s *XLSuite) TestConcurrentInsertions(c *C) {
 	if VERBOSITY > 0 {
@@ -68,7 +78,7 @@ func (s *XLSuite) TestConcurrentInsertions(c *C) {
 
 	// build an array of N random-ish K-byte keys
 	K := 32
-	N := 64 * 1024
+	N := 1024 * 1024
 	t0 := time.Now()
 	keys := makeSomeKeys(N, K)
 	t1 := time.Now()
@@ -84,5 +94,5 @@ func (s *XLSuite) TestConcurrentInsertions(c *C) {
 	t1 = time.Now()
 	deltaT = t1.Sub(t0)
 	fmt.Printf("run time for %d concurrent insertion tests: %v\n", 5, deltaT)
-
+	// typically about 6.7 sec
 }

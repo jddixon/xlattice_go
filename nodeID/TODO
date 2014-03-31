@@ -6,8 +6,10 @@ xlattice_go/nodeID/TODO
             timing starting only after all values are available         * DONE
     * need a test which inserts say 64K nodes using say                 * DONE
         4,8,16,32,64 degrees of concurrency                             * DONE
-    * test should preserve the resultant tree and collect statistics
-        should as maximum depth
+
+    * test should preserve the resultant trees and collect statistics   * DONE
+        should as maximum depth                                         * DONE
+        - this requires appropriate functions to gather the stats       * DONE
 
 2014-02-10
     * need IDMap.Clear() for xd.MemCache
