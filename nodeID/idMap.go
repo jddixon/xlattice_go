@@ -17,9 +17,11 @@ type Thinger struct {
 }
 
 type IDMap struct {
-	MaxDepth uint // in bytes
-	count    uint
-	mu       sync.RWMutex
+	MaxDepth    uint // in bytes
+	entryCount  uint // number of items
+	mapForCount uint // number of MapForDepth
+	deepestMap  uint
+	mu          sync.RWMutex
 	MapForDepth
 }
 type MapForDepth struct {
@@ -34,7 +36,8 @@ func NewIDMap(maxDepth uint) (m *IDMap, err error) {
 		err = MaxDepthTooLarge
 	} else {
 		m = &IDMap{
-			MaxDepth: maxDepth,
+			MaxDepth:    maxDepth,
+			mapForCount: 1,
 		}
 	}
 	return
@@ -68,7 +71,7 @@ func (m *IDMap) Insert(key []byte, value interface{}) (err error) {
 					// we are done
 					cell.Key = &key
 					cell.Value = value
-					m.count++
+					m.entryCount++
 				} else if bytes.Equal(*cell.Key, key) {
 					// it's already there
 				} else {
@@ -100,8 +103,13 @@ func (m *IDMap) handleCollision(curDepth uint, curMap *MapForDepth,
 		curCell.Key = nil
 		curCell.Value = nil
 		curCell.Next = new(MapForDepth)
+		m.mapForCount++
 		curMap = curCell.Next
 		curDepth++
+		// XXX requires a global lock
+		if curDepth > m.deepestMap {
+			m.deepestMap = curDepth
+		}
 		aByte := uint(key[curDepth])
 		bByte := uint(keyB[curDepth])
 
@@ -112,7 +120,7 @@ func (m *IDMap) handleCollision(curDepth uint, curMap *MapForDepth,
 			aCell := &curMap.Cells[aByte]
 			aCell.Key = &key
 			aCell.Value = value
-			m.count++ // change 2014-02-10
+			m.entryCount++ // change 2014-02-10
 		} else {
 			err = m.handleCollision(curDepth, curMap, bCell, key, value)
 		}
@@ -153,8 +161,10 @@ func (m *IDMap) Find(key []byte) (value interface{}, err error) {
 	return
 }
 
-func (m *IDMap) Size() uint {
+// Returns number of entries in the map, the number of mapForDepth
+// structures, and the deepest we have gone.
+func (m *IDMap) Size() (uint, uint, uint) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return m.count
+	return m.entryCount, m.mapForCount, m.deepestMap
 }

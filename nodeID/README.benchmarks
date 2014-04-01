@@ -1,0 +1,10 @@
+xlattice_go/nodeID/README.benchmarks
+
+
+To run benchmarks using gocheck:
+
+   go test -gocheck.b
+  
+To run other tests, without any benchmark tests, just type:
+
+   go test

@@ -122,12 +122,14 @@ func (s *XLSuite) TestTopBottomIDMap(c *C) {
 	c.Assert(err, IsNil)
 	err = m.Insert(bottomKey, bottomBNI)
 	c.Assert(err, IsNil)
-	c.Assert(m.Size(), Equals, uint(2))
+	entryCount, _, _ := m.Size()
+	c.Assert(entryCount, Equals, uint(2))
 
 	// insert a duplicate
 	err = m.Insert(bottomKey, bottomBNI)
 	c.Assert(err, IsNil)
-	c.Assert(m.Size(), Equals, uint(2))
+	entryCount, _, _ = m.Size()
+	c.Assert(entryCount, Equals, uint(2))
 
 	for i := 0; i < 256; i++ {
 		cell := m.Cells[i]
@@ -198,12 +200,14 @@ func (s *XLSuite) TestShallowIDMap(c *C) {
 	c.Assert(cell1.Value.(*MockBaseNode).GetName(), Equals, baseNode1.GetName())
 
 	c.Assert(err, IsNil)
-	c.Assert(m.Size(), Equals, uint(3))
+	entryCount, _, _ := m.Size()
+	c.Assert(entryCount, Equals, uint(3))
 
 	// insert a duplicate -------------------------------------------
 	err = m.Insert(key1, baseNode1)
 	c.Assert(err, IsNil)
-	c.Assert(m.Size(), Equals, uint(3))
+	entryCount, _, _ = m.Size()
+	c.Assert(entryCount, Equals, uint(3))
 
 	for i := 0; i < 256; i++ {
 		cell := &m.Cells[i]
@@ -317,12 +321,14 @@ func (s *XLSuite) TestDeeperIDMap(c *C) {
 	c.Assert(value, Equals, baseNode12)
 
 	c.Assert(err, IsNil)
-	c.Assert(m.Size(), Equals, uint(3))
+	entryCount, _, _ := m.Size()
+	c.Assert(entryCount, Equals, uint(3))
 
 	// insert a duplicate -------------------------------------------
 	err = m.Insert(key1, baseNode1)
 	c.Assert(err, IsNil)
-	c.Assert(m.Size(), Equals, uint(3))
+	entryCount, _, _ = m.Size()
+	c.Assert(entryCount, Equals, uint(3))
 
 }
 
