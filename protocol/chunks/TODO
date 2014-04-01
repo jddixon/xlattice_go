@@ -25,19 +25,19 @@ xlattice_go/protocol/chunks/TODO
             length) no longer has 1 subtracted from it			        * DONE
 
 2014-03-10
-    * test and confirm that by default a message whose length is 
-        less than or equsl to MAX_DATA_BYTES is converted into a 
-        ChunkList with a single member.
+    * test and confirm that by default a message whose length is        * DONE
+        less than or equsl to MAX_DATA_BYTES is converted into a        * DONE
+        ChunkList with a single member.                                 * DONE
 
 2014-03-09 (edited 03-08)
-    * implement DigiList.Sign(skPriv, subClass)
-    * implement DigiList.Verify(subClass)
+    * implement DigiList.Sign(skPriv, subClass)                         * DONE
+    * implement DigiList.Verify(subClass)                               * DONE
     * implement DigiList.String()                                       * DONE
     * implement DigiList.Parse()                                        * DONE
     * write test which round-trips dl1 -> string -> parse -> dl2
 
 2014-02-17
-    * fix: error seen once at TestChunkList, line 119: ChunkTooLong
+    * fix: error seen once at TestChunkList, line 119: ChunkTooLong     * ????
 
 2013-12-13
     * Serious deficiency: the digital signature in the DigiList is
