@@ -67,12 +67,6 @@ func (p *BaseNode) GetNodeID() *xi.NodeID {
 func (p *BaseNode) GetCommsPublicKey() *rsa.PublicKey {
 	return p.commsPubKey
 }
-// XXX Commented out 2014-02-14 because ssh API has changed
-//func (p *BaseNode) GetSSHCommsPublicKey() string {
-//	out := ssh.MarshalAuthorizedKey(p.commsPubKey)
-//	return string(out)
-//}
-
 func (p *BaseNode) GetSigPublicKey() *rsa.PublicKey {
 	return p.sigPubKey
 }

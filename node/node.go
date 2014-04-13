@@ -215,6 +215,16 @@ func (n *Node) GetEndPoint(x int) xt.EndPointI {
 	return n.endPoints[x]
 }
 
+// Returns a pointer to the node's RSA private comms key
+func (n *Node) GetCommsPrivateKey() *rsa.PrivateKey {
+	return n.commsKey
+}
+
+// Returns a pointer to the node's RSA private sig key
+func (n *Node) GetSigPrivateKey() *rsa.PrivateKey {
+	return n.sigKey
+}
+
 // ACCEPTORS ////////////////////////////////////////////////////////
 // no accAcceptor() function; add the endPoint instead
 

@@ -42,7 +42,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	commsPubKey := node.GetCommsPublicKey()
 	c.Assert(commsPubKey, Not(IsNil)) // NOT
 
-	privCommsKey := node.commsKey // naughty
+	privCommsKey := node.GetCommsPrivateKey()
 	c.Assert(privCommsKey.Validate(), IsNil)
 
 	expLen := (*privCommsKey.D).BitLen()
@@ -58,7 +58,7 @@ func (s *XLSuite) doKeyTests(c *C, node *Node, rng *rnglib.PRNG) {
 	sigPubKey := node.GetSigPublicKey()
 	c.Assert(sigPubKey, Not(IsNil)) // NOT
 
-	privSigKey := node.sigKey // naughty
+	privSigKey := node.GetSigPrivateKey()
 	c.Assert(privSigKey.Validate(), IsNil)
 
 	expLen = (*privSigKey.D).BitLen()
