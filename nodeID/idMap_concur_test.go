@@ -63,7 +63,8 @@ func (s *XLSuite) doMWayTest(c *C, keys [][]byte, N, M int) {
 	c.Assert(entryCount, Equals, uint(N))
 
 	// DEBUG
-	// Quite inefficient: for 256K entries, 61832 maps; for 1M, 97486 maps
+	// Quite inefficient: for 256K entries, 61832 maps; for 1M, 97486 maps.
+	// Max depth seen: 5.
 	//
 	fmt.Printf("entryCount %7d, mapCount %5d, deepest %2d\n",
 		entryCount, mapCount, deepest)
