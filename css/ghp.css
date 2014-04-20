@@ -3,8 +3,10 @@ div.content {
   border-left:1px solid bluegrey; 
   border-right:1px solid bluegrey;
   border-top:1px solid bluegrey;
-  border-bottom:1px solid bluegrey; */
+  border-bottom:1px solid bluegrey; 
   width:1024px;
+  */
+  width:80%;
   margin-left:auto; margin-right:auto;
 }
 div.f { width: 100%; }
