@@ -7,8 +7,8 @@ import (
 	"code.google.com/p/go.crypto/ssh"
 	"crypto/rsa"
 	"encoding/base64"
-	"fmt"
 	"encoding/binary"
+	"fmt"
 	"math/big"
 )
 
@@ -17,7 +17,7 @@ var _ = fmt.Print
 // -- rsaPublicKey --------------------------------------------------
 type rsaPublicKey rsa.PublicKey
 
-// The presence of these methods make it possible to cast 
+// The presence of these methods make it possible to cast
 // *rsa.PublicKey as an ssh Public Key.
 func (r *rsaPublicKey) PrivateKeyAlgo() string {
 	return "ssh-rsa"
@@ -25,10 +25,11 @@ func (r *rsaPublicKey) PrivateKeyAlgo() string {
 func (r *rsaPublicKey) PublicKeyAlgo() string {
 	return r.PrivateKeyAlgo()
 }
+
 // ------------------------------------------------------------------
 
 // man 8 sshd
-func ParseAuthorizedKey(in []byte) ( out *rsa.PublicKey, 
+func ParseAuthorizedKey(in []byte) (out *rsa.PublicKey,
 	comment string, options []string, rest []byte, ok bool) {
 
 	for len(in) > 0 {
@@ -71,7 +72,7 @@ func ParseAuthorizedKey(in []byte) ( out *rsa.PublicKey,
 			isEnd := !inQuote && (b == ' ' || b == '\t')
 			if (b == ',' && !inQuote) || isEnd {
 				if i-optionStart > 0 {
-					candidateOptions = append(candidateOptions, 
+					candidateOptions = append(candidateOptions,
 						string(in[optionStart:i]))
 				}
 				optionStart = i + 1
@@ -136,7 +137,7 @@ func parseSSHAuthorizedKey(in []byte) (
 	}
 	comment = string(bytes.TrimSpace(in[i:]))
 	return
-} 
+}
 
 // ParseSSHPublicKey - see RFC 4253, section 6.6.
 func ParseSSHPublicKey(in []byte) (
@@ -144,8 +145,8 @@ func ParseSSHPublicKey(in []byte) (
 
 	algo, rest, ok := ParseLenHeadedString(in)
 	if ok {
-		out, rest, ok =  parsePubKeyByAlgo(rest, string(algo))
-	} 
+		out, rest, ok = parsePubKeyByAlgo(rest, string(algo))
+	}
 	return
 }
 
@@ -158,13 +159,12 @@ func parsePubKeyByAlgo(in []byte, algo string) (
 	} else {
 		return nil, nil, false
 	}
-} 
-
+}
 
 // See RFC 4253, section 6.6.
 func ParseBareRSAPublicKey(in []byte) (
 	key *rsa.PublicKey, rest []byte, ok bool) {
-	
+
 	key = new(rsa.PublicKey)
 	bigE, rest, ok := parseInt(in)
 	if !ok || bigE.BitLen() > 24 {
@@ -174,9 +174,10 @@ func ParseBareRSAPublicKey(in []byte) (
 	if e >= 3 && e&1 != 0 {
 		key.E = int(e)
 		key.N, rest, ok = parseInt(rest)
-	} 
+	}
 	return key, rest, ok
 }
+
 var BIG_ONE = big.NewInt(1)
 
 func parseInt(in []byte) (out *big.Int, rest []byte, ok bool) {

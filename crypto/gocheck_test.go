@@ -3,7 +3,8 @@ package crypto
 // xlattice_go/crypto/gocheck.go
 
 import (
-	. "launchpad.net/gocheck"
+	//. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"testing"
 )
 

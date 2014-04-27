@@ -7,10 +7,10 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
-	//"code.google.com/p/go.crypto/ssh"
 	"fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
+	//. "launchpad.net/gocheck"
 )
 
 var _ = fmt.Print

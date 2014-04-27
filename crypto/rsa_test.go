@@ -3,7 +3,8 @@ package crypto
 // xlattice_go/crypto/rsa_test.go
 
 import (
-	. "launchpad.net/gocheck"
+	//. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"math/big"
 )
 

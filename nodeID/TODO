@@ -1,5 +1,15 @@
 xlattice_go/nodeID/TODO
 
+2014-04-25
+    * when HAMT.GetLeafCount() works correctly, implement
+        idMapHAMT.Size()
+
+2014-04-17
+    * add an experimental idMapHAMT based on HAMT64                     * DONE
+    * write idMapHAMT_test.go
+    * write idMapHAMT benchmark
+    * write idMap benchmark                                             * EXISTS
+
 2014-03-29
     * need a benchmark to get insertion time                            * DONE
         - the N values should be generated in a separate step, with     * DONE

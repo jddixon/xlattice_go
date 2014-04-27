@@ -10,8 +10,7 @@ import (
 	"fmt"
 )
 
-var _ =  fmt.Print
-
+var _ = fmt.Print
 
 // CONVERSION TO AND FROM WIRE FORMAT ///////////////////////////////
 
@@ -58,7 +57,7 @@ func RSAPubKeyToDisk(rsaPubKey *rsa.PublicKey) (out []byte, err error) {
 func RSAPubKeyFromDisk(data []byte) (*rsa.PublicKey, error) {
 	// out, _, _, _, ok := ssh.ParseAuthorizedKey(data)
 	out, _, _, _, ok := ParseAuthorizedKey(data)
-	_ = out	// DEBUG
+	_ = out // DEBUG
 	if ok {
 		return out, nil
 	} else {
