@@ -5,7 +5,7 @@ package transport
 import (
 	"fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *XLSuite) TestCtorInterface(c *C) {

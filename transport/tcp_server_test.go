@@ -7,8 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
-	// "regexp"
+	. "gopkg.in/check.v1"
 	"time"
 )
 

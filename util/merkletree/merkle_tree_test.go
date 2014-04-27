@@ -12,7 +12,7 @@ import (
 	xf "github.com/jddixon/xlattice_go/util/lfs"
 	"hash"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"os"
 	"path"
 	"strings"

@@ -3,7 +3,7 @@ package transport
 // xlattice_go/transport/tcp_endpoint_test.go
 
 import (
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *XLSuite) TestEndPointInterface(c *C) {

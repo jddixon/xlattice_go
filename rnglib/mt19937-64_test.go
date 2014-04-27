@@ -5,7 +5,7 @@ package rnglib
 
 import (
 	"fmt"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *XLSuite) TestMT64(c *C) {

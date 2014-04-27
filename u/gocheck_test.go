@@ -1,7 +1,7 @@
 package u
 
 import (
-	. "launchpad.net/gocheck" // for Suite
+	. "gopkg.in/check.v1"
 	"testing"
 )
 

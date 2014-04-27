@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 var _ = fmt.Print

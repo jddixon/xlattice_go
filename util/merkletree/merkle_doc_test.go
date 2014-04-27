@@ -10,7 +10,7 @@ import (
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	"hash"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	re "regexp"
 )
 

@@ -4,7 +4,7 @@ package u
 
 import (
 	"code.google.com/p/go.crypto/sha3"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *XLSuite) setUp3() {

@@ -4,7 +4,7 @@ package transport
 
 import (
 	"fmt"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 var _ = fmt.Print
