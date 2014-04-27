@@ -5,7 +5,7 @@ package nodeID
 import (
 	"bytes"
 	"fmt"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"time"
 )
 
