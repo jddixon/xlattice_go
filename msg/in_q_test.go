@@ -10,7 +10,7 @@ import (
 	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"time"
 )
 

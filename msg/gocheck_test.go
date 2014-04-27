@@ -6,7 +6,7 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"testing"
 )
 

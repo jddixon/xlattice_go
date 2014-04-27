@@ -3,7 +3,7 @@ package httpd
 // xlattice_go/httpd/gocheck.go
 
 import (
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"testing"
 )
 
