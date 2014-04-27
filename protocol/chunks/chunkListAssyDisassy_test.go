@@ -14,7 +14,7 @@ import (
 	"github.com/jddixon/xlattice_go/u"
 	xu "github.com/jddixon/xlattice_go/util"
 	xf "github.com/jddixon/xlattice_go/util/lfs"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"os"
 	"path"
 	"time"

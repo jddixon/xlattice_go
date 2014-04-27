@@ -1,5 +1,8 @@
 xlattice_go/TODO
 
+2014-04-26
+    * nodeID/ : complete idMapHAMT_test.go
+
 2014-03-18
     * uDir.Exists() should take []byte arg
 

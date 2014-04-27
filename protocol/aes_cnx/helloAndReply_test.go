@@ -7,7 +7,7 @@ import (
 	"fmt"
 	xn "github.com/jddixon/xlattice_go/node"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 // THESE DUPLICATE FUNCTIONS IN crypto_test.go: /////////////////////

@@ -3,7 +3,7 @@ package overlay
 // xlattice_go/overlay/gocheck.go
 
 import (
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"testing"
 )
 

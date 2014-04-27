@@ -5,7 +5,7 @@ package reg
 import (
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"time"
 )
 

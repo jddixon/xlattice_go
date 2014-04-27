@@ -7,7 +7,7 @@ import (
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xf "github.com/jddixon/xlattice_go/util/lfs"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"path"
 )
 

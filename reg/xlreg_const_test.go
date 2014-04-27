@@ -4,7 +4,7 @@ package reg
 
 import (
 	"fmt"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *XLSuite) TestErrorConst(c *C) {

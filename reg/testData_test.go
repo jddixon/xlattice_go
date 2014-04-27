@@ -11,7 +11,7 @@ import (
 	xc "github.com/jddixon/xlattice_go/crypto"
 	xu "github.com/jddixon/xlattice_go/util"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"path"
 	"strings"
 )

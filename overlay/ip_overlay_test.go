@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"net"
 )
 

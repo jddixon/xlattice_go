@@ -10,7 +10,7 @@ import (
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xu "github.com/jddixon/xlattice_go/util"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *XLSuite) makeRegCred(c *C, rng *xr.PRNG) (rc *RegCred) {

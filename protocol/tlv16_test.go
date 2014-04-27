@@ -3,7 +3,7 @@ package protocol
 import (
 	// "fmt"
 	"github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 	"testing"
 )
 

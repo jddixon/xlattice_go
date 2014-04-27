@@ -6,7 +6,7 @@ import (
 	"fmt"
 	//xc "github.com/jddixon/xlattice_go/crypto"
 	xr "github.com/jddixon/xlattice_go/rnglib"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *XLSuite) TestClusterMaker(c *C) {

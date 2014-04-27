@@ -12,7 +12,7 @@ import (
 	xi "github.com/jddixon/xlattice_go/nodeID"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	xu "github.com/jddixon/xlattice_go/util"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 var _ = fmt.Print
