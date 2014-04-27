@@ -1,8 +1,14 @@
 xlattice_go/nodeID/TODO
 
-2014-04-25
-    * when HAMT.GetLeafCount() works correctly, implement
-        idMapHAMT.Size()
+2014-04-27
+    * idMapHAMT.Size() requires HAMT.GetDepth()
+    * reconcile: HAMT.Find() returns a NotFound if the entry is not
+        present; IDMapHAMT.Find() returns a nil value ANd a nil error
+
+2014-04-27 (-25, edited)
+    * when HAMT.GetLeafCount() works correctly,                         * DONE
+        and when HAMT.GetDepth() is available,
+        implement idMapHAMT.Size()
 
 2014-04-17
     * add an experimental idMapHAMT based on HAMT64                     * DONE
