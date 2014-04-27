@@ -34,9 +34,9 @@ func (s *XLSuite) findIDInHAMT(c *C, m *IDMapHAMT, baseNode *MockBaseNode) {
 
 // -- tests proper --------------------------------------------------
 
-func (s *XLSuite) TestIDMapHAMTTools(c *C) {
+func (s *XLSuite) TestHamtIDMapTools(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_ID_MAP_HAMT_TOOLS")
+		fmt.Println("TEST_HAMT_ID_MAP_TOOLS")
 	}
 	rng := xr.MakeSimpleRNG()
 	threeBaseNode := s.makeABNI(c, rng, "threeBaseNode", 1, 2, 3)
@@ -51,9 +51,9 @@ func (s *XLSuite) TestIDMapHAMTTools(c *C) {
 	}
 
 }
-func (s *XLSuite) TestHTopBottomIDMap(c *C) {
+func (s *XLSuite) TestHamtTopBottomIDMap(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_TOP_BOTTOM_HAMT_MAP")
+		fmt.Println("TEST_HAMT_TOP_BOTTOM_MAP")
 	}
 	var err error
 
@@ -79,9 +79,9 @@ func (s *XLSuite) TestHTopBottomIDMap(c *C) {
 
 }
 
-func (s *XLSuite) TestHShallowIDMapHAMT(c *C) {
+func (s *XLSuite) TestHamtShallowIDMap(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_SHALLOW_HAMT_MAP")
+		fmt.Println("TEST_HAMT_SHALLOW_ID_MAP")
 	}
 	var err error
 	m := NewNewIDMapHAMT()
@@ -119,9 +119,9 @@ func (s *XLSuite) TestHShallowIDMapHAMT(c *C) {
 	c.Assert(entryCount, Equals, uint(3))
 }
 
-func (s *XLSuite) TestHDeeperIDMapHAMT(c *C) {
+func (s *XLSuite) TestHamtDeeperIDMapHAMT(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_DEEPER_HAMT_MAP")
+		fmt.Println("TEST_HAMT_DEEPER_ID_MAP")
 	}
 	var err error
 
@@ -166,7 +166,7 @@ func (s *XLSuite) TestHDeeperIDMapHAMT(c *C) {
 	err = m.Insert(key12, baseNode12)
 	c.Assert(err, IsNil)
 	entryCount, _, _ = m.Size()
-	c.Assert(entryCount, Equals, uint(2))
+	c.Assert(entryCount, Equals, uint(2)) // FAILS: gets zero
 
 	value, err = m.Find(key123)
 	c.Assert(err, IsNil)
@@ -210,9 +210,9 @@ func (s *XLSuite) TestHDeeperIDMapHAMT(c *C) {
 	c.Assert(entryCount, Equals, uint(3))
 }
 
-func (s *XLSuite) TestHFindID(c *C) {
+func (s *XLSuite) TestHamtFindID(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("TEST_FIND_ID")
+		fmt.Println("TEST_HAMT_FIND_ID")
 	}
 	var err error
 

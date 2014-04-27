@@ -1,6 +1,6 @@
 package nodeID
 
-// xlattice_go/nodeID/idMap_perf_test.go
+// xlattice_go/nodeID/idMapHAMT_perf_test.go
 
 /////////////////////////////////////////////////////////////////////
 // THIS NEEDS TO BE RUN WITH
@@ -10,7 +10,8 @@ package nodeID
 import (
 	"bytes"
 	"fmt"
-	xr "github.com/jddixon/xlattice_go/rnglib"
+	//gh "github.com/jddixon/hamt_go"
+	//xr "github.com/jddixon/xlattice_go/rnglib"
 	. "gopkg.in/check.v1"
 	"time"
 )
@@ -22,23 +23,23 @@ var _ = fmt.Print
 // Create N random-ish K-byte values.  It takes about 2 us to create
 // a value (21.2 ms for 10K values, 2.008s for 1M values)
 
-func makeSomeKeys(N, K int) (keys [][]byte) {
-
-	rng := xr.MakeSimpleRNG()
-	keys = make([][]byte, N)
-
-	for i := 0; i < N; i++ {
-		keys[i] = make([]byte, K)
-		rng.NextBytes(keys[i])
-	}
-	return
-}
+//func makeSomeKeys(N, K int) (keys [][]byte) {
+//
+//	rng := xr.MakeSimpleRNG()
+//	keys = make([][]byte, N)
+//
+//	for i := 0; i < N; i++ {
+//		keys[i] = make([]byte, K)
+//		rng.NextBytes(keys[i])
+//	}
+//	return
+//}
 
 // -- tests proper --------------------------------------------------
 
-func (s *XLSuite) BenchmarkWithIDMapKeys(c *C) {
+func (s *XLSuite) BenchmarkWithHAMTKeys(c *C) {
 	if VERBOSITY > 0 {
-		fmt.Println("BENCHMARK_WITH_ID_MAP_KEYS")
+		fmt.Println("BENCHMARK_WITH_HAMT_KEYS")
 	}
 
 	const MAX_KEY_DEPTH = 16 // bytes
@@ -52,8 +53,8 @@ func (s *XLSuite) BenchmarkWithIDMapKeys(c *C) {
 	deltaT := t1.Sub(t0)
 	fmt.Printf("setup time for %d %d-byte keys: %v\n", N, K, deltaT)
 
-	// build an IDMap to put them in (ignoring any error)
-	m, _ := NewIDMap(MAX_KEY_DEPTH)
+	// build an IDMap to put them in
+	m := NewIDMapHAMT(16, 5)
 
 	c.ResetTimer()
 	c.StartTimer()
@@ -67,6 +68,10 @@ func (s *XLSuite) BenchmarkWithIDMapKeys(c *C) {
 	for i := 0; i < N; i++ {
 		value, err := m.Find(keys[i])
 		c.Assert(err, IsNil)
+		c.Check(value, NotNil)
+		if value == nil {
+			break
+		}
 		val := value.([]byte)
 		c.Assert(bytes.Equal(val, keys[i]), Equals, true)
 
