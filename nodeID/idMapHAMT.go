@@ -71,11 +71,14 @@ func (m *IDMapHAMT) Find(key []byte) (value interface{}, err error) {
 
 // Returns number of entries in the map, the number of mapForDepth
 // structures, and the deepest we have gone.
-func (m *IDMapHAMT) Size() (x, y, z uint) {
+func (m *IDMapHAMT) Size() (items, tables, depth uint) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	items := m.h.GetLeafCount()
-	tables := m.h.GetTableCount()
-	depth := uint(0) // XXX NOT YET
-	return items, tables, depth
+	items = m.h.GetLeafCount()
+	tables = m.h.GetTableCount()
+	depth = uint(0) // XXX NOT YET
+	// DEBUG
+	fmt.Printf("IDMapHAMT returning leafCount %d\n", items)
+	// END
+	return
 }

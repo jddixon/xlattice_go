@@ -7,6 +7,7 @@ import (
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "gopkg.in/check.v1"
+	"time"
 )
 
 var _ = fmt.Print
@@ -163,6 +164,9 @@ func (s *XLSuite) TestHamtDeeperIDMapHAMT(c *C) {
 	c.Assert(value, Equals, baseNode123)
 
 	// now add baseNode12 ============================================
+	// DEBUG
+	time.Sleep(1000 * time.Millisecond)
+	// END
 	err = m.Insert(key12, baseNode12)
 	c.Assert(err, IsNil)
 	entryCount, _, _ = m.Size()

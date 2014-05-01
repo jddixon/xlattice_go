@@ -1,9 +1,14 @@
 xlattice_go/nodeID/TODO
 
+2014-04-30
+    * idMapHAMT_perf_test.go line 71 unexpected nil value
+
 2014-04-27
     * idMapHAMT.Size() requires HAMT.GetDepth()
     * reconcile: HAMT.Find() returns a NotFound if the entry is not
         present; IDMapHAMT.Find() returns a nil value ANd a nil error
+    * DEBUG: idMapHAMT_concur_test.go hangs                             * FIXED
+        - possibly deadlocks, possibly just very very slow              * FIXED
 
 2014-04-27 (-25, edited)
     * when HAMT.GetLeafCount() works correctly,                         * DONE

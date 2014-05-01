@@ -47,6 +47,7 @@ func (s *XLSuite) doMWayTest(c *C, keys [][]byte, N, M int) {
 	}
 	time.Sleep(time.Millisecond)
 
+	// wait for all goroutines to signal that they are done
 	for k := 0; k < M; k++ {
 		<-chans[k]
 	}
