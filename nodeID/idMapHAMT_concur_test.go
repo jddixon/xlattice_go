@@ -16,20 +16,14 @@ var _ = fmt.Print
 // inserted, signals 'done'.  N must not be prime relative to M; K must
 // be in the range [0,M).
 //
-func (s *XLSuite) doHamtOneWay(keys [][]byte, N, M, K int,
+func (s *XLSuite) doHamtOneWay(c *C, keys [][]byte, N, M, K int,
 	m *IDMapHAMT, done chan bool) {
 
-	// DEBUG
-	//fmt.Printf("doHamtOneWay: N %d, M %d, K %d\n", N, M, K)
-	// END
 	quota := N / M
 	start := K * quota
 	end := (K + 1) * quota
 
 	for i := start; i < end; i++ {
-		// DEBUG
-		//fmt.Printf("doHamtOneWay: M %d, K %d, inserting key %d\n", M, K, i)
-		// END
 		_ = m.Insert(keys[i], &keys[i])
 	}
 	done <- true
@@ -38,14 +32,14 @@ func (s *XLSuite) doHamtOneWay(keys [][]byte, N, M, K int,
 
 // Given N values, create M goroutines, each inserting N/M values
 func (s *XLSuite) doHamtMWayTest(c *C, keys [][]byte, N, M int) {
-	m := NewIDMapHAMT(5, 5) // XXX WAS 16,5
+	m := NewIDMapHAMT(5, 18) // XXX WAS 5,5
 
 	chans := make([]chan bool, M)
 	for k := 0; k < M; k++ {
 		chans[k] = make(chan bool)
 	}
 	for k := 0; k < M; k++ {
-		go s.doHamtOneWay(keys, N, M, k, m, chans[k])
+		go s.doHamtOneWay(c, keys, N, M, k, m, chans[k])
 	}
 	time.Sleep(time.Millisecond)
 
@@ -56,19 +50,9 @@ func (s *XLSuite) doHamtMWayTest(c *C, keys [][]byte, N, M int) {
 	for i := 0; i < N; i++ {
 		value, err := m.Find(keys[i])
 		c.Assert(err, IsNil)
-		// DEBUG
-		// XXX Seen to occur consistently if t = 16, w = 5
-		if value == nil {
-			fmt.Printf("UNEXPECTED NIL VALUE: M %d, key %d\n",
-				M, i)
-		} else {
-			// END
 
-			val := value.(*[]byte) // XXX sometimes fails, gets nil
-			c.Assert(bytes.Equal(*val, keys[i]), Equals, true)
-			// DEBUG
-		}
-		// END
+		val := value.(*[]byte) // XXX sometimes fails, gets nil
+		c.Assert(bytes.Equal(*val, keys[i]), Equals, true)
 
 	}
 	// BEGIN STATS CHECKS -------------------------------------------
@@ -84,12 +68,12 @@ func (s *XLSuite) doHamtMWayTest(c *C, keys [][]byte, N, M int) {
 	//	entryCount, mapCount, deepest)
 	// END
 }
+
+// XXX in effect, comment this test out
 func (s *XLSuite) TestConcurrentHamtInsertions(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_CONCURRENT_HAMT_INSERTIONS")
 	}
-
-	const MAX_KEY_DEPTH = 16 // bytes
 
 	// build an array of N random-ish K-byte keys
 	K := 32

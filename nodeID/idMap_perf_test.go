@@ -9,6 +9,7 @@ package nodeID
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	xr "github.com/jddixon/xlattice_go/rnglib"
 	. "gopkg.in/check.v1"
@@ -19,17 +20,36 @@ var _ = fmt.Print
 
 // -- utilities -----------------------------------------------------
 
+// Convert the first 8 bytes of a []byte into a uint64.
+func slice2hash(b []byte) (hc uint64, err error) {
+	buf := bytes.NewReader(b)
+	err = binary.Read(buf, binary.LittleEndian, &hc)
+	return
+}
+
 // Create N random-ish K-byte values.  It takes about 2 us to create
-// a value (21.2 ms for 10K values, 2.008s for 1M values)
+// a value (21.2 ms for 10K values, 2.008s for 1M values).  The keys
+// must be unique within the set.  Interpret this as a requirement that
+// the keys be unique in their first 64 bits.
 
 func makeSomeKeys(N, K int) (keys [][]byte) {
 
 	rng := xr.MakeSimpleRNG()
 	keys = make([][]byte, N)
+	keyMap := make(map[uint64]bool)
 
 	for i := 0; i < N; i++ {
-		keys[i] = make([]byte, K)
-		rng.NextBytes(keys[i])
+		key := make([]byte, K)
+		for {
+			rng.NextBytes(key)
+			hc, _ := slice2hash(key)
+			_, ok := keyMap[hc]
+			if !ok { // value not in map
+				keyMap[hc] = true
+				break
+			}
+		}
+		keys[i] = key
 	}
 	return
 }

@@ -54,11 +54,11 @@ func (s *XLSuite) BenchmarkWithHAMTKeys(c *C) {
 	fmt.Printf("setup time for %d %d-byte keys: %v\n", N, K, deltaT)
 
 	// build an IDMap to put them in
-	m := NewIDMapHAMT(16, 5)
+	m := NewIDMapHAMT(5, 16)
 
 	c.ResetTimer()
 	c.StartTimer()
-	// my results: 1603 ns/op for a run of 1 million insertions
+	// HAMT results: ???? ns/op for a run of 1 million insertions
 	for i := 0; i < c.N; i++ {
 		_ = m.Insert(keys[i], keys[i])
 	}
@@ -68,7 +68,7 @@ func (s *XLSuite) BenchmarkWithHAMTKeys(c *C) {
 	for i := 0; i < N; i++ {
 		value, err := m.Find(keys[i])
 		c.Assert(err, IsNil)
-		c.Check(value, NotNil)
+		c.Assert(value, NotNil)
 		if value == nil {
 			break
 		}

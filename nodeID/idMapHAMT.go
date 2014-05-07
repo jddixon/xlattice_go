@@ -77,8 +77,5 @@ func (m *IDMapHAMT) Size() (items, tables, depth uint) {
 	items = m.h.GetLeafCount()
 	tables = m.h.GetTableCount()
 	depth = uint(0) // XXX NOT YET
-	// DEBUG
-	fmt.Printf("IDMapHAMT returning leafCount %d\n", items)
-	// END
 	return
 }
