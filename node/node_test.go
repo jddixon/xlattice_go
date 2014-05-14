@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
-	xi "github.com/jddixon/xlattice_go/nodeID"
+	xi "github.com/jddixon/xlNodeID_go"
 	"github.com/jddixon/xlattice_go/rnglib"
 	xt "github.com/jddixon/xlattice_go/transport"
 	. "gopkg.in/check.v1"

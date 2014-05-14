@@ -3,7 +3,7 @@ package node
 import (
 	"crypto/rsa"
 	"fmt"
-	xi "github.com/jddixon/xlattice_go/nodeID"
+	xi "github.com/jddixon/xlNodeID_go"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	"strings"

@@ -7,7 +7,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
-	xi "github.com/jddixon/xlattice_go/nodeID"
+	xi "github.com/jddixon/xlNodeID_go"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	xt "github.com/jddixon/xlattice_go/transport"
 	xf "github.com/jddixon/xlattice_go/util/lfs"

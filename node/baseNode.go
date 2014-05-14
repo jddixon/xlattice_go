@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	xc "github.com/jddixon/xlattice_go/crypto"
-	xi "github.com/jddixon/xlattice_go/nodeID"
+	xi "github.com/jddixon/xlNodeID_go"
 	xo "github.com/jddixon/xlattice_go/overlay"
 	"strings"
 )

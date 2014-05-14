@@ -4,7 +4,7 @@ package node
 
 import (
 	"crypto/rsa"
-	xi "github.com/jddixon/xlattice_go/nodeID"
+	xi "github.com/jddixon/xlNodeID_go"
 	xo "github.com/jddixon/xlattice_go/overlay"
 )
 
