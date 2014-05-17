@@ -5,11 +5,11 @@ package msg
 import (
 	"encoding/hex"
 	"fmt"
-	xc "github.com/jddixon/xlattice_go/crypto"
-	"github.com/jddixon/xlattice_go/node"
-	xi "github.com/jddixon/xlattice_go/nodeID"
-	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
-	"github.com/jddixon/xlattice_go/rnglib"
+	xc "github.com/jddixon/xlCrypto_go"
+	xn "github.com/jddixon/xlNode_go"
+	xi "github.com/jddixon/xlNodeID_go"
+	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
+	xr "github.com/jddixon/rnglib_go"
 	. "gopkg.in/check.v1"
 )
 
@@ -28,7 +28,7 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 	if VERBOSITY > 0 {
 		fmt.Println("TEST_MAKE_HELLO_MSG")
 	}
-	rng := rnglib.MakeSimpleRNG()
+	rng := xr.MakeSimpleRNG()
 	id := make([]byte, xa.SHA1_LEN)
 	rng.NextBytes(id)
 	nodeID, err := xi.NewNodeID(id)
@@ -36,7 +36,7 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 
 	name := rng.NextFileName(8)
 	lfs := "tmp/" + hex.EncodeToString(id)
-	mrX, err := node.NewNew(name, nodeID, lfs)
+	mrX, err := xn.NewNew(name, nodeID, lfs)
 	c.Assert(err, IsNil)
 	cPubKey := mrX.GetCommsPublicKey()
 	c.Assert(cPubKey, Not(IsNil))

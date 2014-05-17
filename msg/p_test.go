@@ -6,7 +6,7 @@ import (
 	"code.google.com/p/goprotobuf/proto"
 	"encoding/binary"
 	"fmt"
-	"github.com/jddixon/xlattice_go/rnglib"
+	xr "github.com/jddixon/rnglib_go"
 	. "gopkg.in/check.v1"
 )
 
@@ -18,7 +18,7 @@ func (d *XLSuite) TestXLatticePkt(c *C) {
 		fmt.Println("TEST_XLATTICE_PKT")
 	}
 
-	rng := rnglib.MakeSimpleRNG()
+	rng := xr.MakeSimpleRNG()
 
 	myMsgN := uint64(rng.Int63())
 	for myMsgN == 0 { // must not be zero

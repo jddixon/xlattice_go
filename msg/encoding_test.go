@@ -4,8 +4,8 @@ package msg
 
 import (
 	"fmt"
-	xc "github.com/jddixon/xlattice_go/crypto"
-	xn "github.com/jddixon/xlattice_go/node"
+	xc "github.com/jddixon/xlCrypto_go"
+	xn "github.com/jddixon/xlNode_go"
 	. "gopkg.in/check.v1"
 )
 

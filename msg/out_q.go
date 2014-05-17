@@ -3,11 +3,10 @@ package msg
 // xlattice_go/msg/out_q.go
 
 import (
-	//"encoding/hex"				// DEBUG
 	"fmt"
-	xc "github.com/jddixon/xlattice_go/crypto"
-	xn "github.com/jddixon/xlattice_go/node"
-	"github.com/jddixon/xlattice_go/rnglib"
+	xc "github.com/jddixon/xlCrypto_go"
+	xn "github.com/jddixon/xlNode_go"
+	xr "github.com/jddixon/rnglib_go"
 )
 
 var _ = fmt.Print
@@ -41,7 +40,7 @@ func MakeHelloMsg(n *xn.Node) (m *XLatticeMsg, err error) {
 		sk, err = xc.RSAPubKeyToWire(n.GetSigPublicKey())
 	}
 	if err == nil {
-		sysRNG := rnglib.MakeSystemRNG()
+		sysRNG := xr.MakeSystemRNG()
 		salt = make([]byte, 8)
 		sysRNG.NextBytes(salt)
 		chunks := [][]byte{id, ck, sk, salt}

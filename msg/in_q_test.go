@@ -5,11 +5,11 @@ package msg
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/jddixon/xlattice_go/node"
-	xi "github.com/jddixon/xlattice_go/nodeID"
-	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
-	"github.com/jddixon/xlattice_go/rnglib"
-	xt "github.com/jddixon/xlattice_go/transport"
+	xn "github.com/jddixon/xlNode_go"
+	xi "github.com/jddixon/xlNodeID_go"
+	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
+	xr "github.com/jddixon/rnglib_go"
+	xt "github.com/jddixon/xlTransport_go"
 	. "gopkg.in/check.v1"
 	"time"
 )
@@ -25,15 +25,15 @@ var (
 	SIX   uint64 = 6
 )
 
-func (s *XLSuite) makeANode(c *C) (badGuy *node.Node, acc xt.AcceptorI) {
-	rng := rnglib.MakeSimpleRNG()
+func (s *XLSuite) makeANode(c *C) (badGuy *xn.Node, acc xt.AcceptorI) {
+	rng := xr.MakeSimpleRNG()
 	id := make([]byte, xa.SHA1_LEN)
 	rng.NextBytes(id)
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)
 	name := rng.NextFileName(8)
 	lfs := "tmp/" + hex.EncodeToString(id)
-	badGuy, err = node.NewNew(name, nodeID, lfs)
+	badGuy, err = xn.NewNew(name, nodeID, lfs)
 	c.Assert(err, IsNil)
 	accCount := badGuy.SizeAcceptors()
 	c.Assert(accCount, Equals, 0)
@@ -58,7 +58,7 @@ func (s *XLSuite) TestHelloHandler(c *C) {
 	}
 
 	// Create a node and add a mock peer.  This is a cluster of 2.
-	nodes, accs := node.MockLocalHostCluster(2)
+	nodes, accs := xn.MockLocalHostCluster(2)
 	defer func() {
 		for i := 0; i < 2; i++ {
 			if accs[i] != nil {
@@ -284,7 +284,7 @@ func (s *XLSuite) TestSecondHello(c *C) {
 		fmt.Println("TEST_SECOND_HELLO")
 	}
 	// Create a node and add a mock peer.  This is a cluster of 2.
-	nodes, accs := node.MockLocalHostCluster(2)
+	nodes, accs := xn.MockLocalHostCluster(2)
 	defer func() {
 		for i := 0; i < 2; i++ {
 			if accs[i] != nil {

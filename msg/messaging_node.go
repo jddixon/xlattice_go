@@ -4,8 +4,8 @@ package msg
 
 import (
 	"fmt"
-	xn "github.com/jddixon/xlattice_go/node"
-	xt "github.com/jddixon/xlattice_go/transport"
+	xn "github.com/jddixon/xlNode_go"
+	xt "github.com/jddixon/xlTransport_go"
 	"time"
 )
 

@@ -9,10 +9,10 @@ import (
 	"crypto/rsa"
 	"crypto/sha1"
 	"fmt"
-	xc "github.com/jddixon/xlattice_go/crypto"
-	xn "github.com/jddixon/xlattice_go/node"
-	xa "github.com/jddixon/xlattice_go/protocol/aes_cnx"
-	xr "github.com/jddixon/xlattice_go/rnglib"
+	xc "github.com/jddixon/xlCrypto_go"
+	xn "github.com/jddixon/xlNode_go"
+	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
+	xr "github.com/jddixon/rnglib_go"
 	. "gopkg.in/check.v1"
 )
 
