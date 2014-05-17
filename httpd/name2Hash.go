@@ -3,7 +3,7 @@ package httpd
 // xlattice_go/httpd/name2Hash.go
 
 import (
-	xd "github.com/jddixon/xlattice_go/overlay/datakeyed"
+	xd "github.com/jddixon/xlOverlay_go/datakeyed"
 	"sync"
 )
 

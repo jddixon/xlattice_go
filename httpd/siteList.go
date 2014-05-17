@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"encoding/base64"
-	xc "github.com/jddixon/xlattice_go/crypto"
+	xc "github.com/jddixon/xlCrypto_go"
 	"io"
 	"strings"
 )
