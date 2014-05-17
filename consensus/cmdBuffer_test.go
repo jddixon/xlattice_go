@@ -3,10 +3,9 @@ package consensus
 import (
 	"container/heap"
 	"fmt"
-	"github.com/jddixon/xlattice_go/rnglib"
+	xr "github.com/jddixon/rnglib_go"
 	. "gopkg.in/check.v1"
 	"io/ioutil"
-	//. "launchpad.net/gocheck"
 	"os"
 	"testing"
 	"time"
@@ -25,9 +24,9 @@ const (
 	TEST_PAIR_COUNT = 7
 )
 
-func (s *XLSuite) makeSimpleRNG() *rnglib.PRNG {
+func (s *XLSuite) makeSimpleRNG() *xr.PRNG {
 	t := time.Now().Unix()
-	rng := rnglib.NewSimpleRNG(t)
+	rng := xr.NewSimpleRNG(t)
 	return rng
 }
 

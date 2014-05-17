@@ -2,13 +2,13 @@ package consensus
 
 import (
 	"fmt"
-	"github.com/jddixon/xlattice_go/rnglib"
+	xr "github.com/jddixon/rnglib_go"
 	"testing"
 	"time"
 )
 
 func makeSomeCommands(n int) []*NumberedCmd {
-	rng := rnglib.MakeSimpleRNG()
+	rng := xr.MakeSimpleRNG()
 	s := make([]*NumberedCmd, n)
 	for i := 0; i < n; i++ {
 		size := 64 + rng.Intn(64)
