@@ -1,7 +1,50 @@
 xlattice_go/TODO
 
+2014-05-17
+    * convert to use packages from new xl*_go repos:
+        - xlattice_go/consensus								            * DONE
+        - xlattice_go/msg								                * DONE
+        - xlattice_go/httpd								                * DONE
+
+2014-05-14
+    * when the new repo (left) is stable, remove subdir (right)
+        - rnglib_go        rnglib/
+        - xlUtil_go        util/
+        - xlU_go           u/
+        - xlCrypto_go      crypto/
+        - xlTransport_go   transport/
+        - xlNodeID_go      nodeID/
+        - xlProtocol_go    protocol/
+        - xlOverlay_go     overlay/
+        - xlNode_go        node/
+        - xlReg_go         reg/
+    * need to take care to properly transfer cmd/ files to new repo
+        - eg xlReg
+        - eg gMerkleize
+    * need to transfer doc/ files to
+        - xlProtocol_go/doc for chunks.md
+        - xlNode_go/doc     for node.md
+        - rnglib_go/doc     for rnglib.md
+        - xlU_go/doc        for u.md
+        - xlReg_go/doc      for xlReg.md, xlReg_proto*.md
+
+2014-05-09
+    * split off rnglib_go as separate repo                              * DONE
+    * add LICENSE and .gitignore                                        * DONE
+    * when rnglib_go definitely stable: 
+        cd xlattice_go; git rm -rf rnglib
+    * eventually remove xlattice_go/doc/rnglib.md
+    
+    * <splitFromXlattice elided>
+    
+    * when util_go definitely stable: 
+        pushd xlattice_go; git rm -rf util; popd
+
+    * create xlU_go using mkGithubRepo                                  * DONE
+    * repeat <splitFromXlattice> for util => xlUtil_go                  * DONE
+
 2014-04-26
-    * nodeID/ : complete idMapHAMT_test.go
+    * nodeID/ : complete idMapHAMT_test.go                              * DONE
 
 2014-03-18
     * uDir.Exists() should take []byte arg
@@ -9,26 +52,6 @@ xlattice_go/TODO
 2014-02-17
     * determine why xlattice_go/msg tests so slow (23 sec)
 
-2014-01-21
-    * fix CountingBloom                                                 * DONE
-
-2014-01-19
-    * move project version number to xlattice_go/const.go               * DONE
-
 2013-12-24  * FOCUS *
     * msg/TODO: drop Hello from protocol
 
-2013-12-10
-    * protocol/aescnx seems wholly superfluous; drop?                   * SKIP
-
-2013-11-25  * FOCUS *
-    * argument to rnglib.NextBytes should be []byte, not &[]byte        * DONE
-
-2013-11-08
-    * xu.SameBytes() is functionally identical to Equal() from the      * DONE
-        bytes package, and so should be dropped                         * DONE
-
-2013-10-25
-    * move the project version number from rnglib/ to util/ or subdir   * DONE
-    * xlReg should drop version number from rng/const.go and use        * DONE
-        project version number instead                                  * DONE

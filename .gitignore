@@ -3,4 +3,5 @@
 *.jar
 *.swp
 junk*
-*.ZZZ
+*ZZZ
+tmp
