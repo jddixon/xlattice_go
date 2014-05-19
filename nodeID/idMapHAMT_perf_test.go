@@ -54,7 +54,7 @@ func (s *XLSuite) BenchmarkWithHAMTKeys(c *C) {
 	fmt.Printf("setup time for %d %d-byte keys: %v\n", N, K, deltaT)
 
 	// build an IDMap to put them in
-	m := NewIDMapHAMT(5, 16)
+	m := NewIDMapHAMT(6, 16)		// was 5, 16
 
 	c.ResetTimer()
 	c.StartTimer()

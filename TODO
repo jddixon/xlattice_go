@@ -1,5 +1,9 @@
 xlattice_go/TODO
 
+2014-05-19
+    * README.md needs notice that 9 subdirectories have been split
+        off as separate repos
+
 2014-05-17
     * convert to use packages from new xl*_go repos:
         - xlattice_go/consensus								            * DONE
