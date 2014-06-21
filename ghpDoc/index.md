@@ -25,6 +25,23 @@ listed later depend upon some or all of the earlier components.
 
 All of these are currently in development.
 
+## NOTICE
+
+Most of the above projects have been split off as separate Github
+repositories.  The code here will no longer be maintained and will at
+some point be deleted.  The new repositories are:
+
++ <https://github.com/jddixon/rnglib_go>
++ <https://github.com/jddixon/xlU_go>
++ <https://github.com/jddixon/xlUtil_go>
++ <https://github.com/jddixon/xlCrypto_go>
++ <https://github.com/jddixon/xlTransport_go>
++ <https://github.com/jddixon/xlProtocol_go>
++ <https://github.com/jddixon/xlOverlay_go>
++ <https://github.com/jddixon/xlNodeID_go>
++ <https://github.com/jddixon/xlNode_go>
++ <https://github.com/jddixon/xlReg_go>
+
 ## <a name="util"></a>util
 
 ## <a name="rnglib"></a>rnglib

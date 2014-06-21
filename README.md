@@ -138,3 +138,20 @@ will be that many files in each directory and subdirectory created
 (where is file is either a data file or a directory).  Depth and
 width must both be at least 1.  maxLen and minLen are used as in
 nextDataFile().
+
+## NOTICE
+
+Most of the above projects have been split off as separate Github
+repositories.  The code here will no longer be maintained and will at
+some point be deleted.  The new repositories are:
+
++ <https://github.com/jddixon/rnglib_go>
++ <https://github.com/jddixon/xlU_go>
++ <https://github.com/jddixon/xlUtil_go>
++ <https://github.com/jddixon/xlCrypto_go>
++ <https://github.com/jddixon/xlTransport_go>
++ <https://github.com/jddixon/xlProtocol_go>
++ <https://github.com/jddixon/xlOverlay_go>
++ <https://github.com/jddixon/xlNodeID_go>
++ <https://github.com/jddixon/xlNode_go>
++ <https://github.com/jddixon/xlReg_go>
