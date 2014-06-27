@@ -1,3 +1,0 @@
-# -P is "Perl-style" regex
-#
-grep -P <testData_test.go "\s+// \d+" > testDataTestTemplate

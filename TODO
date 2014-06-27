@@ -1,30 +1,52 @@
 xlattice_go/TODO
 
+2014-06-27 (~/dev/TODO 06-21, edited
+
+    CAREFULLY rm -rf xlattice_go SUBDIRS THAT HAVE BEEN SPLIT OFF
+    THIS NEEDS TO BE DONE IN BOTH dev/ AND sharedev/
+
+                        - dependencies -
+    1 cmd/xlReg/        reg, etc                                        * DONE
+    2 reg               ... node ... protocol, transport, util          * DONE
+    * protocol          crypto, node, rnglib, u, util
+    * node              ... nodeID, overlay, rnglib, transport...
+    * overlay           nodeID, rnglib, transport, util
+    * nodeID            rnglib, transport, u, util
+    * transport         crypto, rnglib
+    * crypto            rnglib, util
+    * u                 rnglib, util
+    * cmd/gMerkleize    util
+    * rnglib            util
+    * util              rnglib
+
 2014-05-19
     * README.md needs notice that 9 subdirectories have been split
         off as separate repos
 
 2014-05-17
     * convert to use packages from new xl*_go repos:
-        - xlattice_go/consensus								            * DONE
-        - xlattice_go/msg								                * DONE
-        - xlattice_go/httpd								                * DONE
+        - xlattice_go/consensus                                         * DONE
+        - xlattice_go/msg                                               * DONE
+        - xlattice_go/httpd                                             * DONE
 
 2014-05-14
-    * when the new repo (left) is stable, remove subdir (right)
-        - rnglib_go        rnglib/
-        - xlUtil_go        util/
-        - xlU_go           u/
-        - xlCrypto_go      crypto/
-        - xlTransport_go   transport/
-        - xlNodeID_go      nodeID/
-        - xlProtocol_go    protocol/
-        - xlOverlay_go     overlay/
-        - xlNode_go        node/
-        - xlReg_go         reg/
-    * need to take care to properly transfer cmd/ files to new repo
-        - eg xlReg
-        - eg gMerkleize
+    * when the new repo (left) is stable, remove subdir (right)         * ABOVE
+        - rnglib_go        rnglib/                                      * ABOVE
+        - xlUtil_go        util/                                        * ABOVE
+        - xlU_go           u/                                           * ABOVE
+        - xlCrypto_go      crypto/                                      * ABOVE
+        - xlTransport_go   transport/                                   * ABOVE
+        - xlNodeID_go      nodeID/                                      * ABOVE
+        - xlProtocol_go    protocol/                                    * ABOVE
+        - xlOverlay_go     overlay/                                     * ABOVE
+        - xlNode_go        node/                                        * ABOVE
+        - xlReg_go         reg/                                         * ABOVE
+    * need to take care to properly transfer cmd/ files to new 
+        repo - eg xlReg, gMerkleze
+        - copy cmd/gMerkleize/* to xlUtil_go, update github             * DONE
+            * drop from xlattice_go, update github
+        - copy cmd/xlReg/* to xReg_go, update github                    * DONE
+            * drop from xlattice_go, update github
     * need to transfer doc/ files to
         - xlProtocol_go/doc for chunks.md
         - xlNode_go/doc     for node.md
