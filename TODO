@@ -1,6 +1,6 @@
 xlattice_go/TODO
 
-2014-06-27 (~/dev/TODO 06-21, edited
+2014-06-27 (~/dev/TODO 06-21, edited)
 
     CAREFULLY rm -rf xlattice_go SUBDIRS THAT HAVE BEEN SPLIT OFF
     THIS NEEDS TO BE DONE IN BOTH dev/ AND sharedev/
@@ -8,7 +8,7 @@ xlattice_go/TODO
                         - dependencies -
     1 cmd/xlReg/        reg, etc                                        * DONE
     2 reg               ... node ... protocol, transport, util          * DONE
-    * protocol          crypto, node, rnglib, u, util
+    3 protocol          crypto, node, rnglib, u, util                   * DONE
     * node              ... nodeID, overlay, rnglib, transport...
     * overlay           nodeID, rnglib, transport, util
     * nodeID            rnglib, transport, u, util
@@ -21,7 +21,7 @@ xlattice_go/TODO
 
 2014-05-19
     * README.md needs notice that 9 subdirectories have been split
-        off as separate repos
+        off as separate github repos
 
 2014-05-17
     * convert to use packages from new xl*_go repos:
