@@ -9,15 +9,15 @@ xlattice_go/TODO
     1 cmd/xlReg/        reg, etc                                        * DONE
     2 reg               ... node ... protocol, transport, util          * DONE
     3 protocol          crypto, node, rnglib, u, util                   * DONE
-    * node              ... nodeID, overlay, rnglib, transport...
-    * overlay           nodeID, rnglib, transport, util
-    * nodeID            rnglib, transport, u, util
-    * transport         crypto, rnglib
-    * crypto            rnglib, util
-    * u                 rnglib, util
-    * cmd/gMerkleize    util
-    * rnglib            util
-    * util              rnglib
+    4 node              ... nodeID, overlay, rnglib, transport...
+    5 overlay           nodeID, rnglib, transport, util
+    6 nodeID            rnglib, transport, u, util
+    7 transport         crypto, rnglib
+    8 crypto            rnglib, util
+    9 u                 rnglib, util
+   10 cmd/gMerkleize    util
+   11 rnglib            util
+   12 util              rnglib
 
 2014-05-19
     * README.md needs notice that 9 subdirectories have been split
