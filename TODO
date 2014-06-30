@@ -9,7 +9,7 @@ xlattice_go/TODO
     1 cmd/xlReg/        reg, etc                                        * DONE
     2 reg               ... node ... protocol, transport, util          * DONE
     3 protocol          crypto, node, rnglib, u, util                   * DONE
-    4 node              ... nodeID, overlay, rnglib, transport...
+    4 node              ... nodeID, overlay, rnglib, transport...       * DONE
     5 overlay           nodeID, rnglib, transport, util
     6 nodeID            rnglib, transport, u, util
     7 transport         crypto, rnglib
@@ -41,7 +41,7 @@ xlattice_go/TODO
         - xlOverlay_go     overlay/                                     * ABOVE
         - xlNode_go        node/                                        * ABOVE
         - xlReg_go         reg/                                         * ABOVE
-    * need to take care to properly transfer cmd/ files to new 
+    * need to take care to properly transfer cmd/ files to new
         repo - eg xlReg, gMerkleze
         - copy cmd/gMerkleize/* to xlUtil_go, update github             * DONE
             * drop from xlattice_go, update github
@@ -57,13 +57,13 @@ xlattice_go/TODO
 2014-05-09
     * split off rnglib_go as separate repo                              * DONE
     * add LICENSE and .gitignore                                        * DONE
-    * when rnglib_go definitely stable: 
+    * when rnglib_go definitely stable:
         cd xlattice_go; git rm -rf rnglib
     * eventually remove xlattice_go/doc/rnglib.md
-    
+
     * <splitFromXlattice elided>
-    
-    * when util_go definitely stable: 
+
+    * when util_go definitely stable:
         pushd xlattice_go; git rm -rf util; popd
 
     * create xlU_go using mkGithubRepo                                  * DONE
