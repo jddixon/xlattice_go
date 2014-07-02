@@ -10,8 +10,8 @@ xlattice_go/TODO
     2 reg               ... node ... protocol, transport, util          * DONE
     3 protocol          crypto, node, rnglib, u, util                   * DONE
     4 node              ... nodeID, overlay, rnglib, transport...       * DONE
-    5 overlay           nodeID, rnglib, transport, util
-    6 nodeID            rnglib, transport, u, util
+    5 overlay           nodeID, rnglib, transport, util                 * DONE
+    6 nodeID            rnglib, transport, u, util                      * DONE
     7 transport         crypto, rnglib
     8 crypto            rnglib, util
     9 u                 rnglib, util
@@ -46,13 +46,13 @@ xlattice_go/TODO
         - copy cmd/gMerkleize/* to xlUtil_go, update github             * DONE
             * drop from xlattice_go, update github
         - copy cmd/xlReg/* to xReg_go, update github                    * DONE
-            * drop from xlattice_go, update github
-    * need to transfer doc/ files to
-        - xlProtocol_go/doc for chunks.md
-        - xlNode_go/doc     for node.md
-        - rnglib_go/doc     for rnglib.md
-        - xlU_go/doc        for u.md
-        - xlReg_go/doc      for xlReg.md, xlReg_proto*.md
+            * drop from xlattice_go, update github                      * DONE
+    * need to transfer doc/ files to                                    * DONE
+        - xlProtocol_go/doc for chunks.md                               * DONE
+        - xlNode_go/doc     for node.md                                 * DONE
+        - rnglib_go/doc     for rnglib.md                               * DONE
+        - xlU_go/doc        for u.md                                    * DONE
+        - xlReg_go/doc      for xlReg.md, xlReg_proto*.md               * DONE
 
 2014-05-09
     * split off rnglib_go as separate repo                              * DONE
