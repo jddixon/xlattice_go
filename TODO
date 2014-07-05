@@ -13,8 +13,8 @@ xlattice_go/TODO
     5 overlay           nodeID, rnglib, transport, util                 * DONE
     6 nodeID            rnglib, transport, u, util                      * DONE
     7 transport         crypto, rnglib                                  * DONE
-    8 crypto            rnglib, util
-    9 u                 rnglib, util
+    8 crypto            rnglib, util                                    * DONE
+    9 u                 rnglib, util                                    * DONE
    10 cmd/gMerkleize    util
    11 rnglib            util
    12 util              rnglib
