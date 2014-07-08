@@ -155,3 +155,7 @@ some point be deleted.  The new repositories are:
 + <https://github.com/jddixon/xlNodeID_go>
 + <https://github.com/jddixon/xlNode_go>
 + <https://github.com/jddixon/xlReg_go>
+
+## On-line Documentation
+
+More information on the **xlattice_go** project can be found [here](https://jddixon.github.io/xlattice_go)
