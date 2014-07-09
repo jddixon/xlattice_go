@@ -15,8 +15,8 @@ xlattice_go/TODO
     7 transport         crypto, rnglib                                  * DONE
     8 crypto            rnglib, util                                    * DONE
     9 u                 rnglib, util                                    * DONE
-   10 cmd/gMerkleize    util
-   11 rnglib            util
+   10 cmd/gMerkleize    util                                            * DONE
+   11 rnglib            util                                            * DONE
    12 util              rnglib
 
 2014-05-19
