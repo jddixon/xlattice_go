@@ -17,7 +17,7 @@ xlattice_go/TODO
     9 u                 rnglib, util                                    * DONE
    10 cmd/gMerkleize    util                                            * DONE
    11 rnglib            util                                            * DONE
-   12 util              rnglib
+   12 util              rnglib                                          * DONE
 
 2014-05-19
     * README.md needs notice that 9 subdirectories have been split
