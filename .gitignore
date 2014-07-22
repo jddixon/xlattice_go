@@ -6,5 +6,6 @@ junk*
 .merkle
 .posted
 *.swp
+.wrapped
 tmp
 *ZZZ
