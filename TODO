@@ -1,25 +1,28 @@
 xlattice_go/TODO
 
+2014-07-14
+    * ghpDoc/index.md needs to be fleshed out
+
 2014-05-19
-    * README.md needs notice that 9 subdirectories have been split
-        off as separate github repos
+    * README.md needs notice that 9 subdirectories have been split      * DONE
+        off as separate github repos                                    * DONE
 
 2014-05-09
-    * when rnglib_go definitely stable:
-        cd xlattice_go; git rm -rf rnglib
-    * eventually remove xlattice_go/doc/rnglib.md
+    * when rnglib_go definitely stable:                                 * DONE
+        cd xlattice_go; git rm -rf rnglib                               * DONE
+    * eventually remove xlattice_go/doc/rnglib.md                       * DONE
 
-    * <splitFromXlattice elided>
+    * <splitFromXlattice elided>                                        * DROP
 
-    * when util_go definitely stable:
-        pushd xlattice_go; git rm -rf util; popd
+    * when util_go definitely stable:                                   * DONE
+        pushd xlattice_go; git rm -rf util; popd                        * DONE
 
-2014-03-18
-    * uDir.Exists() should take []byte arg
+2014-03-18 (moved to xlU_go/TODO)                                       * MOVED
+    * uDir.Exists() should take []byte arg                              * MOVED
 
 2014-02-17
     * determine why xlattice_go/msg tests so slow (23 sec)
 
-2013-12-24  * FOCUS *
+2013-12-24 
     * msg/TODO: drop Hello from protocol
 
