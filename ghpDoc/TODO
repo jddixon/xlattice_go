@@ -1,11 +1,5 @@
 xlatice_go/doc/TODO
 
-2014-07-27
-    * index.md needs further cleaning up
-    * links should be provided to documentation at 
-            jddixon.github.io/COMPONENT
-        for each component
-
 2014-02-21
     * need cmd page for xlReg
     * all of these need to be cross-referenced from the top
