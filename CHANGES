@@ -1,5 +1,9 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.6
+    2015-10-24
+        * most xlattice_go subdirs are now separate projects
+        * fixes to reflect changed xlCrypto_go API                  SLOC  1988
 0.4.5
     2015-03-10                                                      SLOC 17151
         

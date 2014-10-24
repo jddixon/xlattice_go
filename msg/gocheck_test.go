@@ -3,9 +3,9 @@ package msg
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	xr "github.com/jddixon/rnglib_go"
 	xi "github.com/jddixon/xlNodeID_go"
 	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
-	xr "github.com/jddixon/rnglib_go"
 	. "gopkg.in/check.v1"
 	"testing"
 )

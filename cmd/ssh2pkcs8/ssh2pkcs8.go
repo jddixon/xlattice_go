@@ -1,6 +1,6 @@
 /*
  * This file is in the public domain.
- * 
+ *
  * Originally written by Jan Schaumann <jschauma@netmeister.org> in
  * December 2013.
  *
@@ -60,13 +60,13 @@ func main() {
 	 * would be a false assumption if one of the comments or options
 	 * contained that same pattern, but anybody who creates such a key
 	 * can fo screw themselves. */
-	i:= strings.Index(key, "ssh-rsa AAAAB3NzaC1")
+	i := strings.Index(key, "ssh-rsa AAAAB3NzaC1")
 	if i < 0 {
 		log.Fatal("Input does not look like a valid SSH RSA key.")
 	}
 
 	fields := strings.Split(key[i:], " ")
-	decoded, err := base64.StdEncoding.DecodeString(fields[1]);
+	decoded, err := base64.StdEncoding.DecodeString(fields[1])
 	if err != nil {
 		log.Fatal("Unable to decode key: %v", err)
 	}
@@ -98,18 +98,18 @@ func main() {
 			log.Fatal(err)
 		}
 
-		data := decoded[4:int(dlen)+4]
+		data := decoded[4 : int(dlen)+4]
 		decoded = decoded[4+int(dlen):]
 
-		if (n == 0) {
+		if n == 0 {
 			if ktype := fmt.Sprintf("%s", data); ktype != "ssh-rsa" {
 				log.Fatal("Unsupported key type (%v).", ktype)
 			}
-		} else if (n == 1) {
+		} else if n == 1 {
 			i := new(big.Int)
 			i.SetString(fmt.Sprintf("0x%v", hex.EncodeToString(data)), 0)
 			pubkey.E = int(i.Int64())
-		} else if (n == 2) {
+		} else if n == 2 {
 			i := new(big.Int)
 			/* The value in this field is signed, so the first
 			 * byte should be 0, so we strip it. */
@@ -131,14 +131,14 @@ func main() {
 		Parameters asn1.RawValue
 	}
 
-	var null = asn1.RawValue{ Tag: 5 }
-	var pkid = AlgorithmIdentifier{ asn1.ObjectIdentifier{1,2,840,113549,1,1,1}, null }
+	var null = asn1.RawValue{Tag: 5}
+	var pkid = AlgorithmIdentifier{asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}, null}
 
 	type keyseq struct {
 		Algorithm AlgorithmIdentifier
 		BitString asn1.BitString
 	}
-	ks := keyseq{ pkid, bitstring}
+	ks := keyseq{pkid, bitstring}
 
 	enc, err = asn1.Marshal(ks)
 	if err != nil {

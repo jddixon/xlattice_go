@@ -8,6 +8,7 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	xc "github.com/jddixon/xlCrypto_go"
+	xb "github.com/jddixon/xlCrypto_go/builds"
 	"io"
 	"strings"
 )
@@ -24,15 +25,15 @@ import (
 
 type SiteList struct {
 	content []string
-	xc.SignedList
+	xb.SignedBList
 }
 
 func NewSiteList(pubkey *rsa.PublicKey, title string) (
 	stl *SiteList, err error) {
 
-	sl, err := xc.NewSignedList(pubkey, title)
+	sl, err := xb.NewSignedBList(title, pubkey)
 	if err == nil {
-		stl = &SiteList{SignedList: *sl}
+		stl = &SiteList{SignedBList: *sl}
 	}
 	return
 }
@@ -42,7 +43,7 @@ func NewSiteList(pubkey *rsa.PublicKey, title string) (
 // Return the Nth content item in string form, without any CRLF.
 func (stl *SiteList) Get(n uint) (s string, err error) {
 	if n < 0 || stl.Size() <= n {
-		err = xc.NdxOutOfRange
+		err = xb.NdxOutOfRange
 	} else {
 		s = stl.content[n]
 	}
@@ -93,7 +94,7 @@ func (stl *SiteList) AddItem(s string) (err error) {
 	if s == "" {
 		err = EmptySiteDomainName
 	} else if stl.IsSigned() {
-		err = xc.CantAddToSignedList
+		err = xb.CantAddToSignedList
 	} else {
 		stl.content = append(stl.content, s)
 	}
@@ -109,7 +110,7 @@ func (stl *SiteList) String() (s string) {
 	var (
 		err error
 	)
-	pubKey, title, timestamp := stl.SignedList.Strings()
+	pubKey, title, timestamp := stl.SignedBList.Strings()
 
 	// we leave out pubKey because it is newline-terminated
 	ss := []string{title, timestamp}
@@ -141,9 +142,9 @@ func ParseSiteList(in io.Reader) (stl *SiteList, err error) {
 		digSig, line []byte
 	)
 	bin := bufio.NewReader(in)
-	sl, err := xc.ParseSignedList(bin)
+	sl, err := xb.ParseSignedBList(bin)
 	if err == nil {
-		stl = &SiteList{SignedList: *sl}
+		stl = &SiteList{SignedBList: *sl}
 		err = stl.ReadContents(bin)
 		if err == nil {
 			// try to read the digital signature line

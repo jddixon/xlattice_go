@@ -4,9 +4,9 @@ package msg
 
 import (
 	"fmt"
+	xr "github.com/jddixon/rnglib_go"
 	xc "github.com/jddixon/xlCrypto_go"
 	xn "github.com/jddixon/xlNode_go"
-	xr "github.com/jddixon/rnglib_go"
 )
 
 var _ = fmt.Print

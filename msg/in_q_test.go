@@ -5,10 +5,10 @@ package msg
 import (
 	"encoding/hex"
 	"fmt"
-	xn "github.com/jddixon/xlNode_go"
-	xi "github.com/jddixon/xlNodeID_go"
-	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
 	xr "github.com/jddixon/rnglib_go"
+	xi "github.com/jddixon/xlNodeID_go"
+	xn "github.com/jddixon/xlNode_go"
+	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
 	xt "github.com/jddixon/xlTransport_go"
 	. "gopkg.in/check.v1"
 	"time"
