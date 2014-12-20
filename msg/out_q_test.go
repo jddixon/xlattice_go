@@ -9,7 +9,7 @@ import (
 	xc "github.com/jddixon/xlCrypto_go"
 	xi "github.com/jddixon/xlNodeID_go"
 	xn "github.com/jddixon/xlNode_go"
-	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
+	xu "github.com/jddixon/xlUtil_go"
 	. "gopkg.in/check.v1"
 )
 
@@ -29,7 +29,7 @@ func (s *XLSuite) TestMakeHelloMsg(c *C) {
 		fmt.Println("TEST_MAKE_HELLO_MSG")
 	}
 	rng := xr.MakeSimpleRNG()
-	id := make([]byte, xa.SHA1_LEN)
+	id := make([]byte, xu.SHA1_BIN_LEN)
 	rng.NextBytes(id)
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)

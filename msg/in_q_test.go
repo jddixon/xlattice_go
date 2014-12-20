@@ -8,8 +8,8 @@ import (
 	xr "github.com/jddixon/rnglib_go"
 	xi "github.com/jddixon/xlNodeID_go"
 	xn "github.com/jddixon/xlNode_go"
-	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
 	xt "github.com/jddixon/xlTransport_go"
+	xu "github.com/jddixon/xlUtil_go"
 	. "gopkg.in/check.v1"
 	"time"
 )
@@ -27,7 +27,7 @@ var (
 
 func (s *XLSuite) makeANode(c *C) (badGuy *xn.Node, acc xt.AcceptorI) {
 	rng := xr.MakeSimpleRNG()
-	id := make([]byte, xa.SHA1_LEN)
+	id := make([]byte, xu.SHA1_BIN_LEN)
 	rng.NextBytes(id)
 	nodeID, err := xi.NewNodeID(id)
 	c.Assert(err, IsNil)

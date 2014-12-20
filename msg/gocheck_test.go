@@ -5,7 +5,7 @@ import (
 	"crypto/rsa"
 	xr "github.com/jddixon/rnglib_go"
 	xi "github.com/jddixon/xlNodeID_go"
-	xa "github.com/jddixon/xlProtocol_go/aes_cnx"
+	xu "github.com/jddixon/xlUtil_go"
 	. "gopkg.in/check.v1"
 	"testing"
 )
@@ -27,7 +27,7 @@ const (
 /////////////////////////////////////////////////////////////////
 
 func (s *XLSuite) makeAnID(c *C, rng *xr.PRNG) (id []byte) {
-	id = make([]byte, xa.SHA3_LEN)
+	id = make([]byte, xu.SHA2_BIN_LEN)
 	rng.NextBytes(id)
 	return
 }
