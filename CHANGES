@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.7
+    2014-12-19
+        * changed to import SHA-related constants from xlUtil_go    SLOC  
 0.4.6
     2015-10-24
         * most xlattice_go subdirs are now separate projects
