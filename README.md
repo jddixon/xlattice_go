@@ -1,4 +1,5 @@
-<h1 class="libTop">xlattice_go</h1>
+xlattice_go
+===========
 
 An implementation of [XLattice](http://xlattice.sourceforge.net)
 for the [Go programming language](http://golang.org).
@@ -89,3 +90,7 @@ XLattice [nodes](node.html).
 ## <a name="httpd"></a>httpd
 
 The go version of XLattice httpd is very much in development.
+
+## On-line Documentation
+More information on the **xlattice_go** project can be found 
+[here](https://jddixon.github.io/xlattice_go)
