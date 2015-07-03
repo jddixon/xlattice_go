@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.8
+    2015-07-03
+        * update .gitignore                                         SLOC  2935
 0.4.7
     2014-12-19
         * changed to import SHA-related constants from xlUtil_go    SLOC  1988 
