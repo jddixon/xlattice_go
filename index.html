@@ -11,98 +11,47 @@
 <div class="content">
 <h1 class="libTop">xlattice_go</h1>
 
-<p>An implementation of <a href="http://xlattice.sourceforge.net">XLattice</a>
-for the <a href="http://golang.org">Go programming language</a>.</p>
+<p>An implementation of the open source
+<a href="http://xlattice.sourceforge.net">XLattice</a>
+project for the
+<a href="http://golang.org">Go programming language</a>.</p>
 
-<p>XLattice is a communications library  and a set of tools
+<h2>Project Description</h2>
+
+<p>XLattice is a communications library and a set of tools
 for peer-to-peer networks.  The library was originally developed in Java;
 more extensive (although somewhat
 dated) information on XLattice for Java is available at the
 <a href="http://www.xlattice.org">Java XLattice website</a>.</p>
 
+<h2>Components</h2>
+
 <p>XLattice consists of a number of components.  Generally speaking, those
 listed later depend upon some or all of the earlier components.</p>
 
-<table>
-<thead>
-<tr>
-<td>component</td>
-<td>project documentation</td>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td><a href="#util">util</a></td>
-<td><a href="https://github.com/jddixon/xlUtil_go">https://github.com/jddixon/xlUtil_go</a></td>
-</tr>
-
-<tr>
-<td><a href="#rnglib">rnglib</a></td>
-<td><a href="https://github.com/jddixon/rnglib_go">https://github.com/jddixon/rnglib_go</a></td>
-</tr>
-
-<tr>
-<td><a href="#u">u</a></td>
-<td><a href="https://github.com/jddixon/xlU_go">https://github.com/jddixon/xlU_go</a></td>
-</tr>
-
-<tr>
-<td><a href="#crypto">crypto</a></td>
-<td><a href="https://github.com/jddixon/xlCrypto_g">https://github.com/jddixon/xlCrypto_g</a></td>
-</tr>
-
-<tr>
-<td><a href="#transport">transport</a></td>
-<td><a href="https://github.com/jddixon/xlTransport_go">https://github.com/jddixon/xlTransport_go</a></td>
-</tr>
-
-<tr>
-<td><a href="#protocol">protocol</a></td>
-<td><a href="https://github.com/jddixon/xlProtocol_go">https://github.com/jddixon/xlProtocol_go</a></td>
-</tr>
-
-<tr>
-<td><a href="#overlay">overlay</a></td>
-<td><a href="https://github.com/jddixon/xlOverlay_go">https://github.com/jddixon/xlOverlay_go</a></td>
-</tr>
-
-<tr>
-<td></td>
-<td><a href="https://github.com/jddixon/xlNodeID_go">https://github.com/jddixon/xlNodeID_go</a></td>
-</tr>
-
-<tr>
-<td><a href="#node">node</a></td>
-<td><a href="https://github.com/jddixon/xlNode_go">https://github.com/jddixon/xlNode_go</a></td>
-</tr>
-
-<tr>
-<td><a href="#reg">reg</a></td>
-<td><a href="https://github.com/jddixon/xlReg_go">https://github.com/jddixon/xlReg_go</a></td>
-</tr>
-
-<tr>
-<td><a href="#httpd">httpd</a></td>
-<td></td>
-</tr>
-</tbody>
-</table>
+<p>| component               | Go project documentation                   |<br />
+|&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-|&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;|
+| <a href="#rnglib">rnglib</a>       | <a href="https://jddixon.github.io/rnglib_go">https://jddixon.github.io/rnglib_go</a>      |
+| <a href="#util">util</a>           | <a href="https://jddixon.github.io/xlUtil_go">https://jddixon.github.io/xlUtil_go</a>      |
+| <a href="#u">u</a>                 | <a href="https://jddixon.github.io/xlU_go">https://jddixon.github.io/xlU_go</a>         |
+| <a href="#crypto">crypto</a>       | <a href="https://jddixon.github.io/xlCrypto_g">https://jddixon.github.io/xlCrypto_g</a>     |
+| <a href="#transport">transport</a> | <a href="https://jddixon.github.io/xlTransport_go">https://jddixon.github.io/xlTransport_go</a> |
+| <a href="#protocol">protocol</a>   | <a href="https://jddixon.github.io/xlProtocol_go">https://jddixon.github.io/xlProtocol_go</a>  |
+| <a href="#overlay">overlay</a>     | <a href="https://jddixon.github.io/xlOverlay_go">https://jddixon.github.io/xlOverlay_go</a>   |
+|                         | <a href="https://jddixon.github.io/xlNodeID_go">https://jddixon.github.io/xlNodeID_go</a>    |
+| <a href="#node">node</a>           | <a href="https://jddixon.github.io/xlNode_go">https://jddixon.github.io/xlNode_go</a>      |
+| <a href="#cluster">cluster</a>     | <a href="https://jddixon.github.io/xlCluster_go">https://jddixon.github.io/xlCluster_go</a>   |
+| <a href="#reg">reg</a>             | <a href="https://jddixon.github.io/xlReg_go">https://jddixon.github.io/xlReg_go</a>       |
+| <a href="#httpd">httpd</a>         |                                            |</p>
 
 <p>All of these are currently in development.</p>
 
-<h2>NOTICE</h2>
+<h3><a name="rnglib"></a>rnglib</h3>
 
-<p>Most of the above projects have been split off as separate Github
-repositories.  The code here will no longer be maintained and will at
-some point be deleted.  The new repositories are:</p>
-
-<h2><a name="util"></a>util</h2>
-
-<h2><a name="rnglib"></a>rnglib</h2>
-
-<p>This version of xlattice_go includes a Go implementation of <em>rnglib</em>
-for use in testing.  rnglib is a <a href="rnglib.html">Go random number generator</a>
+<p>This version of xlattice_go includes a Go implementation of
+the python package
+<a href="https://jddixon.github.io/rnglib">rnglib</a>
+for use in testing. rnglib_go is a <a href="rnglib.html">Go random number generator</a>
 a drop-in replacement for Go&rsquo;s random number generator.  It</p>
 
 <ul>
@@ -111,28 +60,30 @@ a drop-in replacement for Go&rsquo;s random number generator.  It</p>
 directories of random data, etc</li>
 </ul>
 
-<h2><a name="u"></a>u</h2>
+<h3><a name="util"></a>util</h3>
+
+<h3><a name="u"></a>u</h3>
 
 <p>and an implementation of <strong>u</strong>, a system for
 storing files by their content keys.</p>
 
 <p><a href="u.html">A store organized by content key</a></p>
 
-<h2><a name="crypto"></a>crypto</h2>
+<h3><a name="crypto"></a>crypto</h3>
 
-<h2><a name="transport"></a>transport</h2>
+<h3><a name="transport"></a>transport</h3>
 
-<h2><a name="protocol"></a>protocol</h2>
+<h3><a name="protocol"></a>protocol</h3>
 
-<h3>Chunks</h3>
+<h4>Chunks</h4>
 
 <p><a href="chunks.html">chunks</a></p>
 
-<h2><a name="overlay"></a>overlay</h2>
+<h3><a name="overlay"></a>overlay</h3>
 
-<h2><a name="node"></a>node</h2>
+<h3><a name="node"></a>node</h3>
 
-<h2><a name="reg"></a>reg</h2>
+<h3><a name="reg"></a>reg</h3>
 
 <p><a href="xlReg.html">xlReg</a> is a tool, primarily intended for use in testing,
 which facilitates the formation of clusters, groups of cooperating nodes.
@@ -150,7 +101,7 @@ the configuration data other members have registered.</p>
 <p>The xlReg server, its clients, and the cluster members, are all
 XLattice <a href="node.html">nodes</a>.</p>
 
-<h2><a name="httpd"></a>httpd</h2>
+<h3><a name="httpd"></a>httpd</h3>
 
 <p>The go version of XLattice httpd is very much in development.</p>
 
