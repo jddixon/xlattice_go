@@ -1,75 +1,76 @@
-xlattice_go
-===========
+# xlattice_go
 
-An implementation of [XLattice](http://xlattice.sourceforge.net)
-for the [Go programming language](http://golang.org).
+An implementation of the open source
+[XLattice](http://xlattice.sourceforge.net)
+project for the 
+[Go programming language](http://golang.org).
 
-XLattice is a communications library  and a set of tools
+## Project Description
+
+XLattice is a communications library and a set of tools
 for peer-to-peer networks.  The library was originally developed in Java;
 more extensive (although somewhat
 dated) information on XLattice for Java is available at the
 [Java XLattice website](http://www.xlattice.org).
 
+## Components
+
 XLattice consists of a number of components.  Generally speaking, those
 listed later depend upon some or all of the earlier components.
 
-| component               | project documentation                       |
-|-------------------------|---------------------------------------------|
-| [util](#util)           | <https://github.com/jddixon/xlUtil_go>      |
-| [rnglib](#rnglib)       | <https://github.com/jddixon/rnglib_go>      |
-| [u](#u)                 | <https://github.com/jddixon/xlU_go>         |
-| [crypto](#crypto)       | <https://github.com/jddixon/xlCrypto_g>     |
-| [transport](#transport) | <https://github.com/jddixon/xlTransport_go> |
-| [protocol](#protocol)   | <https://github.com/jddixon/xlProtocol_go>  |
-| [overlay](#overlay)     | <https://github.com/jddixon/xlOverlay_go>   |
-|                         | <https://github.com/jddixon/xlNodeID_go>    |
-| [node](#node)           | <https://github.com/jddixon/xlNode_go>      |
-| [reg](#reg)             | <https://github.com/jddixon/xlReg_go>       |
-| [httpd](#httpd)         |                                             |
+| component               | Go project documentation                   |  
+|-------------------------|--------------------------------------------|
+| [rnglib](#rnglib)       | <https://jddixon.github.io/rnglib_go>      |
+| [util](#util)           | <https://jddixon.github.io/xlUtil_go>      |
+| [u](#u)                 | <https://jddixon.github.io/xlU_go>         |
+| [crypto](#crypto)       | <https://jddixon.github.io/xlCrypto_g>     |
+| [transport](#transport) | <https://jddixon.github.io/xlTransport_go> |
+| [protocol](#protocol)   | <https://jddixon.github.io/xlProtocol_go>  |
+| [overlay](#overlay)     | <https://jddixon.github.io/xlOverlay_go>   |
+|                         | <https://jddixon.github.io/xlNodeID_go>    |
+| [node](#node)           | <https://jddixon.github.io/xlNode_go>      |
+| [cluster](#cluster)     | <https://jddixon.github.io/xlCluster_go>   |
+| [reg](#reg)             | <https://jddixon.github.io/xlReg_go>       |
+| [httpd](#httpd)         |                                            |
 
 All of these are currently in development.
 
-## NOTICE
+### <a name="rnglib"></a>rnglib
 
-Most of the above projects have been split off as separate Github
-repositories.  The code here will no longer be maintained and will at
-some point be deleted.  The new repositories are:
-
-
-## <a name="util"></a>util
-
-## <a name="rnglib"></a>rnglib
-
-This version of xlattice_go includes a Go implementation of *rnglib*
-for use in testing.  rnglib is a [Go random number generator](rnglib.html)
+This version of xlattice_go includes a Go implementation of 
+the python package 
+[rnglib](https://jddixon.github.io/rnglib)
+for use in testing. rnglib_go is a [Go random number generator](rnglib.html)
 a drop-in replacement for Go's random number generator.  It
 
 + is somewhat faster; about 30% in our tests
 + has a number of additional functions for generating random file names,
     directories of random data, etc
 
-## <a name="u"></a>u
+### <a name="util"></a>util
+
+### <a name="u"></a>u
 
 and an implementation of **u**, a system for
 storing files by their content keys.
 
 [A store organized by content key](u.html)
 
-## <a name="crypto"></a>crypto
+### <a name="crypto"></a>crypto
 
-## <a name="transport"></a>transport
+### <a name="transport"></a>transport
 
-## <a name="protocol"></a>protocol
+### <a name="protocol"></a>protocol
 
-### Chunks
+#### Chunks
 
 [chunks](chunks.html)
 
-## <a name="overlay"></a>overlay
+### <a name="overlay"></a>overlay
 
-## <a name="node"></a>node
+### <a name="node"></a>node
 
-## <a name="reg"></a>reg
+### <a name="reg"></a>reg
 
 [xlReg](xlReg.html) is a tool, primarily intended for use in testing,
 which facilitates the formation of clusters, groups of cooperating nodes.
@@ -87,7 +88,7 @@ the configuration data other members have registered.
 The xlReg server, its clients, and the cluster members, are all
 XLattice [nodes](node.html).
 
-## <a name="httpd"></a>httpd
+### <a name="httpd"></a>httpd
 
 The go version of XLattice httpd is very much in development.
 

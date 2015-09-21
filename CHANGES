@@ -1,5 +1,10 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.9
+    2015-09-19
+        * partical cleanup of {README/index}.md
+        * copied missing *.md to main project directory
+        * recovered rnglib.md                                       SLOC 2935
 0.4.8
     2015-07-03
         * update .gitignore                                         SLOC  2935
