@@ -86,7 +86,7 @@ that purpose.  When a member has completed registration, it can retrieve
 the configuration data other members have registered.
 
 The xlReg server, its clients, and the cluster members, are all
-XLattice [nodes](node.html).
+XLattice [nodes](node.md).
 
 ### <a name="httpd"></a>httpd
 
