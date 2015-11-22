@@ -2,7 +2,7 @@
 
 An implementation of the open source
 [XLattice](http://xlattice.sourceforge.net)
-project for the 
+project for the
 [Go programming language](http://golang.org).
 
 ## Project Description
@@ -18,7 +18,7 @@ dated) information on XLattice for Java is available at the
 XLattice consists of a number of components.  Generally speaking, those
 listed later depend upon some or all of the earlier components.
 
-| component               | Go project documentation                   |  
+| component               | Go project documentation                   |
 |-------------------------|--------------------------------------------|
 | [rnglib](#rnglib)       | <https://jddixon.github.io/rnglib_go>      |
 | [util](#util)           | <https://jddixon.github.io/xlUtil_go>      |
@@ -37,8 +37,8 @@ All of these are currently in development.
 
 ### <a name="rnglib"></a>rnglib
 
-This version of xlattice_go includes a Go implementation of 
-the python package 
+This version of xlattice_go includes a Go implementation of
+the python package
 [rnglib](https://jddixon.github.io/rnglib)
 for use in testing. rnglib_go is a [Go random number generator](rnglib.html)
 a drop-in replacement for Go's random number generator.  It
@@ -86,9 +86,11 @@ that purpose.  When a member has completed registration, it can retrieve
 the configuration data other members have registered.
 
 The xlReg server, its clients, and the cluster members, are all
-XLattice [nodes](node.html).
+XLattice [nodes](node.md).
 
 ### <a name="httpd"></a>httpd
+
+## Project Status
 
 The go version of XLattice httpd is very much in development.
 

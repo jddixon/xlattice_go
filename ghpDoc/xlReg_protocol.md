@@ -29,8 +29,8 @@ An example follows.
 }
 </code></pre>
 
-This particular registry is on stockton.dixons.org, a machine in 
-Amazon's AWS/EC2 cloud.  It listens on `55555`, the port conventionally 
+This particular registry is on stockton.dixons.org, a machine in
+Amazon's AWS/EC2 cloud.  It listens on `55555`, the port conventionally
 used by the xlReg server.
 
 The `Go` version of the xlReg client provides functions to read and write
@@ -198,9 +198,9 @@ assigned by the server in response to this message.
 The server examines the client message on receipt.  If the message is
 ill-formed, the server simply closes the connection and discards the message.
 Otherwise it determines the value of the **Attrs** field for the client
-(currently it just accepts the client's proposed value and returns it) 
-and constructs a unique random ID for the client.  This is a 
-256-bit / 32-byte **ClientID**.  The AES-encrypted reply to the client 
+(currently it just accepts the client's proposed value and returns it)
+and constructs a unique random ID for the client.  This is a
+256-bit / 32-byte **ClientID**.  The AES-encrypted reply to the client
 contains both of these fields.
 
 * **ClientID**, a 32-byte byte array
@@ -231,7 +231,7 @@ The cluster Create message consists of
   a 32-bit integer constrained to be in the range 1..64 inclusive
 * **EndPointCount**, which in the current implementation should be 1 or 2
 
-The cluster name must not already be in use. If it is, the server will 
+The cluster name must not already be in use. If it is, the server will
 reply with an error message and close the connection.
 
 The `EndPointCount` is the number of endpoints that each cluster member
