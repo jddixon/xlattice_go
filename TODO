@@ -1,9 +1,12 @@
 xlattice_go/TODO
 
+2015-11-10
+    * README.md markdown seriously mangled
+
 2015-10-17
     * README.md displayed by github correctly (that is, the markdown
         table is correctly translated into HTML) but github.io page
-        just displays sthe raw markdown text: URGENTLY needs fixing
+        just displays the raw markdown text: URGENTLY needs fixing
 
     * documentation urgently needs improvement, especially top-level
         page {README,index}.md

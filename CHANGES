@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+0.4.10
+    2015-11-22
+        * minor edits to *.md                                       SLOC 2935
 0.4.9
     2015-09-19
         * partical cleanup of {README/index}.md

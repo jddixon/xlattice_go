@@ -1,8 +1,8 @@
 # xlattice_go
 
 An implementation of the open source
-[XLattice](http://xlattice.sourceforge.net)
-project for the 
+[XLattice](http://jddixon.github.io/xlattice)
+project for the
 [Go programming language](http://golang.org).
 
 ## Project Description
@@ -18,7 +18,7 @@ dated) information on XLattice for Java is available at the
 XLattice consists of a number of components.  Generally speaking, those
 listed later depend upon some or all of the earlier components.
 
-| component               | Go project documentation                   |  
+| component               | Go project documentation                   |
 |-------------------------|--------------------------------------------|
 | [rnglib](#rnglib)       | <https://jddixon.github.io/rnglib_go>      |
 | [util](#util)           | <https://jddixon.github.io/xlUtil_go>      |
@@ -37,14 +37,14 @@ All of these are currently in development.
 
 ### <a name="rnglib"></a>rnglib
 
-This version of xlattice_go includes a Go implementation of 
-the python package 
+This version of xlattice_go includes a Go implementation of
+the python package
 [rnglib](https://jddixon.github.io/rnglib)
 for use in testing. rnglib_go is a [Go random number generator](rnglib.html)
 a drop-in replacement for Go's random number generator.  It
 
-+ is somewhat faster; about 30% in our tests
-+ has a number of additional functions for generating random file names,
+* is somewhat faster; about 30% in our tests
+* has a number of additional functions for generating random file names,
     directories of random data, etc
 
 ### <a name="util"></a>util
@@ -72,7 +72,8 @@ storing files by their content keys.
 
 ### <a name="reg"></a>reg
 
-[xlReg](xlReg.html) is a tool, primarily intended for use in testing,
+[xlReg](https://jddixon.github.io/xlReg)
+is a tool, primarily intended for use in testing,
 which facilitates the formation of clusters, groups of cooperating nodes.
 On registration, a
 client/member is issued a globally unique NodeID, a 256-bit random value.
@@ -85,13 +86,16 @@ communicate with the cluster, members register a second address for
 that purpose.  When a member has completed registration, it can retrieve
 the configuration data other members have registered.
 
-The xlReg server, its clients, and the cluster members, are all
-XLattice [nodes](node.md).
+The xlReg server, its clients, and the cluster members, are all XLattice
+[nodes](https://jddixon.github.io/node).
 
 ### <a name="httpd"></a>httpd
 
-The go version of XLattice httpd is very much in development.
+## Project Status
+
+The Go version of XLattice httpd is very much in development.
 
 ## On-line Documentation
-More information on the **xlattice_go** project can be found 
+
+More information on the **xlattice_go** project can be found
 [here](https://jddixon.github.io/xlattice_go)

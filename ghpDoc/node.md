@@ -9,10 +9,10 @@ An XLattice node is an independent thread or process which has
 4. a second RSA key used for signing documents, its **sigKey**
 5. a number of **overlays** though which it communicates
 
-These fields constitute the **BaseNode**.  The node also has 
+These fields constitute the **BaseNode**.  The node also has
 
 * a local file system, its **LFS**, for persistent storage
-* a number of **endPoints**; in the current implementation each of these 
+* a number of **endPoints**; in the current implementation each of these
   consists of an IP address and port number that the node listens on
 * a set of **peers**, other nodes with which it may exchange traffic and
 * a **peerMap** which maps nodeIDs to the corresponding Peer
@@ -28,8 +28,8 @@ to hash one or both of the node's RSA keys to generate its nodeID.
 The RSA algorithm limits messages to something less than the key size,
 so a few hundred bytes.  RSA is also compute-intensive and so quite slow.
 Given these considerations, RSA is normally used only to set up a session
-and then a much faster block cipher such as AES is used to encrypt the rest 
-of the session traffic.  If the session is long-lived, the session key 
+and then a much faster block cipher such as AES is used to encrypt the rest
+of the session traffic.  If the session is long-lived, the session key
 might be renegotiated every hour or so.
 
 In this approach, one XLattice node (acting as the server) will publish
@@ -44,19 +44,19 @@ session key.
 It is widely believed that it is less safe to use the same keys for both
 encryption and digital signatures.  So the XLattice node has two RSA keys,
 the commsKey described above and then a second key, the sigKey, used for
-generating digital signatures.  
+generating digital signatures.
 
-Standard practice is to make an XLattice node's nodeID and the public 
-parts of the commsKey and sigKey available to all prospective peers, 
+Standard practice is to make an XLattice node's nodeID and the public
+parts of the commsKey and sigKey available to all prospective peers,
 so that the comms public key can be used to encrypt the secret message(s)
 used to initiate sessions and the sig public key can be used to verify
 digital signatures supposedly created using the server's sig private key.
 
 ## Local File System
 
-A node's local file system is persistent store associated with the 
+A node's local file system is persistent store associated with the
 node.  The node may stores its configuration data there, so that the
-node can recover from failures.  Standard practice is to store 
+node can recover from failures.  Standard practice is to store
 application-specific data in the LFS and basic configuraton data in
 LFS/.xlattice/node.config
 
@@ -69,16 +69,16 @@ is serialized like so:
 
     TcpEndPoint: 127.0.0.1:60319
 
-This endPoint uses Tcp.  It listens on `127.0.0.1`, the Linux/POSIX 
+This endPoint uses Tcp.  It listens on `127.0.0.1`, the Linux/POSIX
 **localhost**, at port `60319`.
 
 ## Peers
 
-A **peer** is another XLattice node, or something which behaves like 
+A **peer** is another XLattice node, or something which behaves like
 one.  When an XLattic3 node is started, it might be provided with a
-list of peers, possibly from the configuration file in its LFS.  
-Alternatively, it might learn a peer's **baseNode** details when 
-the peer connects to one of the node's endPoints.  In any case, 
+list of peers, possibly from the configuration file in its LFS.
+Alternatively, it might learn a peer's **baseNode** details when
+the peer connects to one of the node's endPoints.  In any case,
 the node maintains a table of peer descriptors, including the public
 part of each peer's RSA keys.
 
