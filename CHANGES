@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+v0.4.11
+    2015-12-21
+        * fixed dead links                                          SLOC 2935
 0.4.10
     2015-11-22
         * minor edits to *.md                                       SLOC 2935
@@ -66,3 +69,4 @@ v0.1.0
         * modified rnglib.SimpleRNG to use the 64-bit Mersenne      SLOC 1387
             Twister as a source of bits and expose the rand.Random
             interface
+
