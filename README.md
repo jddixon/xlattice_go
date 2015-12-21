@@ -23,7 +23,7 @@ listed later depend upon some or all of the earlier components.
 | [rnglib](#rnglib)       | <https://jddixon.github.io/rnglib_go>      |
 | [util](#util)           | <https://jddixon.github.io/xlUtil_go>      |
 | [u](#u)                 | <https://jddixon.github.io/xlU_go>         |
-| [crypto](#crypto)       | <https://jddixon.github.io/xlCrypto_g>     |
+| [crypto](#crypto)       | <https://jddixon.github.io/xlCrypto_go>    |
 | [transport](#transport) | <https://jddixon.github.io/xlTransport_go> |
 | [protocol](#protocol)   | <https://jddixon.github.io/xlProtocol_go>  |
 | [overlay](#overlay)     | <https://jddixon.github.io/xlOverlay_go>   |
@@ -72,7 +72,7 @@ storing files by their content keys.
 
 ### <a name="reg"></a>reg
 
-[xlReg](https://jddixon.github.io/xlReg)
+[xlReg](https://jddixon.github.io/xlReg_go)
 is a tool, primarily intended for use in testing,
 which facilitates the formation of clusters, groups of cooperating nodes.
 On registration, a
@@ -87,7 +87,7 @@ that purpose.  When a member has completed registration, it can retrieve
 the configuration data other members have registered.
 
 The xlReg server, its clients, and the cluster members, are all XLattice
-[nodes](https://jddixon.github.io/node).
+[nodes](https://jddixon.github.io/xlattice/node).
 
 ### <a name="httpd"></a>httpd
 
