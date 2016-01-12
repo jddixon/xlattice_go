@@ -1,6 +1,6 @@
 package xlattice_go
 
 const (
-	VERSION      = "0.4.11"
-	VERSION_DATE = "2015-12-21"
+	VERSION      = "0.4.12"
+	VERSION_DATE = "2016-01-12"
 )
