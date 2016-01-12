@@ -2,7 +2,9 @@ package msg
 
 import (
 	"bytes"
-	"code.google.com/p/go.crypto/sha3"
+	//"code.google.com/p/go.crypto/sha3"
+    "golang.org/x/crypto/sha3"
+
 	"code.google.com/p/goprotobuf/proto"
 	"encoding/binary"
 	"fmt"
