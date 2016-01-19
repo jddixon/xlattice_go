@@ -2,10 +2,9 @@ package msg
 
 import (
 	"bytes"
-	//"code.google.com/p/go.crypto/sha3"
     "golang.org/x/crypto/sha3"
+	"github.com/golang/protobuf/proto"
 
-	"code.google.com/p/goprotobuf/proto"
 	"encoding/binary"
 	"fmt"
 	xr "github.com/jddixon/rnglib_go"
@@ -40,7 +39,7 @@ func (d *XLSuite) TestXLatticePkt(c *C) {
 	salt := make([]byte, 8)
 	rng.NextBytes(salt) // still more rubbish
 
-	digest := sha3.NewKeccak256()
+	digest := sha3.New256()
 	digest.Write(id)
 	digest.Write(seqBuf.Bytes())
 	digest.Write(msg)

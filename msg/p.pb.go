@@ -2,20 +2,28 @@
 // source: p.proto
 // DO NOT EDIT!
 
+/*
+Package msg is a generated protocol buffer package.
+
+It is generated from these files:
+	p.proto
+
+It has these top-level messages:
+	XLatticeMsg
+*/
 package msg
 
-import proto "code.google.com/p/goprotobuf/proto"
-import json "encoding/json"
+import proto "github.com/golang/protobuf/proto"
 import math "math"
 
-// Reference proto, json, and math imports to suppress error if they are not otherwise used.
+// Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
-var _ = &json.SyntaxError{}
 var _ = math.Inf
 
 type XLatticeMsg_Cmd int32
 
 const (
+	// Hello needs to be replaced by rsa/aes handshake
 	XLatticeMsg_Hello     XLatticeMsg_Cmd = 1
 	XLatticeMsg_Bye       XLatticeMsg_Cmd = 2
 	XLatticeMsg_KeepAlive XLatticeMsg_Cmd = 3
@@ -55,9 +63,6 @@ func (x XLatticeMsg_Cmd) Enum() *XLatticeMsg_Cmd {
 func (x XLatticeMsg_Cmd) String() string {
 	return proto.EnumName(XLatticeMsg_Cmd_name, int32(x))
 }
-func (x XLatticeMsg_Cmd) MarshalJSON() ([]byte, error) {
-	return json.Marshal(x.String())
-}
 func (x *XLatticeMsg_Cmd) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(XLatticeMsg_Cmd_value, data, "XLatticeMsg_Cmd")
 	if err != nil {
@@ -93,7 +98,7 @@ func (m *XLatticeMsg) GetOp() XLatticeMsg_Cmd {
 	if m != nil && m.Op != nil {
 		return *m.Op
 	}
-	return 0
+	return XLatticeMsg_Hello
 }
 
 func (m *XLatticeMsg) GetMsgN() uint64 {

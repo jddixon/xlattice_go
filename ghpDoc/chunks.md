@@ -1,7 +1,7 @@
 <h1 class="libTop">Chunks</h1>
 
 Chunks is a message protocol designed to be intermixed with Protobuf
-[(Google's Protocol Buffer)](http://code.google.com/p/protobuf/) messages.
+[(Google's Protocol Buffer)](http://github.com/golang/protobuf/) messages.
 The latter begin with a varint, a variable-length integer,
 which represents the length of the message.
 As Protobuf messages always have a non-zero length, no message beginning with a
