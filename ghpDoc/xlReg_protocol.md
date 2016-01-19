@@ -138,7 +138,7 @@ which establishes the identify of the server and determines the AES IV
 and key used to encrypt all further messages in the session.  While the
 Hello/Reply sequence is specified in terms of a pattern of bits on the
 wire, ClientMsg and OKMsg are specified by a
-[Google Protocol Buffers](http://code.google.com/p/protobuf)
+[Google Protocol Buffers](http://github.com/golang//protobuf)
 protocol description file, `p.proto`.  This is used to generate libraries
 specific to the particular language.
 
