@@ -11,14 +11,14 @@ import (
 	"time"
 )
 
-// gocheck tie-in /////////////////////
+// test framework setup /////////////////////
 func Test(t *testing.T) { TestingT(t) }
 
 type XLSuite struct{}
 
 var _ = Suite(&XLSuite{})
 
-// end gocheck setup //////////////////
+// end test framework setup /////////////////
 
 const (
 	TEST_PAIR_COUNT = 7

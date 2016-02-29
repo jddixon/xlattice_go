@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+v0.4.14
+    2016-02-29
+        * add countem, update LICENSE                               SLOC 3467
 v0.4.13
     2016-01-19
         * fix imports relating to protobuf; add countem             SLOC 3471
@@ -75,6 +78,7 @@ v0.1.0
         * modified rnglib.SimpleRNG to use the 64-bit Mersenne      SLOC 1387
             Twister as a source of bits and expose the rand.Random
             interface
+
 
 
 
