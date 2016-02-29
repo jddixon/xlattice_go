@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// IF USING gocheck, need a file like this in each package=directory.
+// IF USING test framework, need a file like this in each package=directory.
 
 func Test(t *testing.T) { TestingT(t) }
 
