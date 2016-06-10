@@ -2,8 +2,8 @@ package msg
 
 import (
 	"bytes"
-    "golang.org/x/crypto/sha3"
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/crypto/sha3"
 
 	"encoding/binary"
 	"fmt"
