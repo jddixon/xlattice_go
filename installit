@@ -4,9 +4,10 @@ if [ ! -z "${DEV_BASE// }" ]
 then
   cd $DEV_BASE/go/src/github.com/jddixon/xlattice_go
   
-  rm -rf db/tmp/* msg/tmp/* 
+  pushd cmd/ssh2pkcs8
+  go build && go install
+  popd
   
-  pySloc -L go  -X *.pb.go -v $@
 else
   echo "DEV_BASE is not defined"
 fi

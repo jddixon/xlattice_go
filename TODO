@@ -1,5 +1,8 @@
 xlattice_go/TODO
 
+2016-06-10
+    * there are test failures, including a panic
+
 2015-11-10
     * README.md markdown seriously mangled
 

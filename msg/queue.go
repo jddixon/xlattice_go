@@ -3,8 +3,8 @@ package msg
 // xlattice_go/msg/queue.go
 
 import (
-	"github.com/golang/protobuf/proto"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	xn "github.com/jddixon/xlNode_go"
 	xt "github.com/jddixon/xlTransport_go"
 	"sync"
