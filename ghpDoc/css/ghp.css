@@ -1,0 +1,46 @@
+div.content {
+  /* background-color:#f6f6f6;
+  border-left:1px solid bluegrey; 
+  border-right:1px solid bluegrey;
+  border-top:1px solid bluegrey;
+  border-bottom:1px solid bluegrey; 
+  width:1024px;
+  */
+  width:80%;
+  margin-left:auto; margin-right:auto;
+}
+div.f { width: 100%; }
+div.f div.license { 
+    display:inline-block;
+    width:33%; 
+    float: left; 
+}
+div.f div.project { 
+    display:inline-block;
+    width:33%;
+    margin-left: 0 auto;
+    margin-righ: 0 auto;
+    text-align: center;
+}
+div.f div.logo { 
+    display:inline-block;
+    width:33%; 
+    float: right; 
+}
+
+h1 { 
+    background-color: orange; 
+    text-align: center;
+    width: 100%;
+}
+.libTop { 
+    color: white;
+    background-color: teal; 
+}
+.appTop { 
+    color: white;
+    background-color: seagreen; 
+}
+
+h2 { border-bottom: solid 10px  #e5e4d9; }
+h3 { border-bottom: solid  5px  #e5e4d9; }
