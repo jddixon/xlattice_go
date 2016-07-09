@@ -7,17 +7,19 @@ zPjEShF9rvcNa9XEy1dKpcDz9Szbm2SlxOgM83fDDGtOq4SSCSqndtxrOvXXPB57
 H1mJV/FmerbXRPm5ERJVNIxtLk7Gr2Ce45FVlWyJGMhpfVlKkkk+bRQ02OFfazJI
 GQIDAQAB
 -----END RSA PUBLIC KEY-----
-xlattice_go v0.4.15
-2016-06-10 17:02:08
+xlattice_go v0.4.16
+2016-07-09 21:44:05
 # START CONTENT #
 xlattice_go
  .copyright 27543643e5e7a76b5d770e321c1d5e1940c95635
  .dvcz
-  projCfg 531fe8aae4bd9613284786b961216bf26b52067f
+  builds 862a1c494c01b0338f009a71fd5f0ed4e5d352ea
+  lastBuildList dd9eeb4ff02ca2a90b17bb1d41e831f52592bb36
+  projCfg 834d00a7a9461e66f5f08b4cb8842a4b041065ff
   projCfg.local fe3b60ca544487d82a04f451a0fec92da53e67ab
-  version 135c41eef1fd2fcaa158b05506a7f0efa24c4b24
+  version bf540bf36748fb27dba3d904d8590fa09783723c
  .gitignore ec0f9002629753cd248c6a672ef3de695c30f4b7
- CHANGES 84d428d0b02b887683b56335c52907f2fa6f8d77
+ CHANGES 49a79ab2c8b9f6ac52f8aaac3354ac23b353be46
  CONVENTION c844722e888afd5dd9af4a8a37108c35fbdb3166
  LICENSE.md 50a6fc1b15e967d1dc37ba7559cf121a66240830
  README.md e79580738c8904639ddadd80cfd7c2812bda4a4f
@@ -40,12 +42,25 @@ xlattice_go
  ghpDoc
   TODO 8626502f927bf6d6aaa51eb8bbca302d56394eef
   chunks.md 3cb937d801e207c907a6f459ee4d63f7d9632c1e
+  css
+   LICENSE.html5-boilerplate.md ded771b3245b190da0e81c76de5a80d41392c0a6
+   ghp.css 1d6ebe8a6cf8f61f4645a793cb087dfae2420f33
+   main.css 018ed80b8a6e6607bc7c08595fa5a7fa56853885
+   normalize.css cba40c7ce3d558d00ff79d7505ac3d348015ec9c
   dot
    chunk.gv f1444ccfbb9fa9a695d95290d9ab65f680711984
    chunk2.gv 25d668c6e291e3b89800c55b0d08f941df9e5c88
    cluster-with-clients.gv 3421ff9d78a375f0d22f93a9fc242a2adedd6bae
    simple-cluster.gv 09efb6c653fd42b45baf27838c09af9451810349
    xl-registration.gv 7384a147536470d53050ff21cc41610916982941
+  img
+   GitHub-Mark-32px.png fabe53eb72f9b6d3d47cd95aff31ffc45c2fdbf8
+   chunk.jpg de2b27e41f1547fc14b13399f5906b4303b49657
+   chunk2.jpg d0593d312dbb8ea837c17b28cb639726e29ea93b
+   cluster-with-clients.jpg c167d04c0c6b5736ef9fe4cdc3fcce1956fdea78
+   simple-cluster.jpg 6b223ddd25937c1ef75ef328f36fc3436f10bd62
+   xl-registration.jpg 15cbf951f9db173a45428b32dcec87aca83bbdf0
+   xlattice-2014.jpg f185aaad06db71acd9454f31054c62c56d36f37f
   index.md 4307b677579c68e4c6662841bc75c44ec4b1bfef
   node.md 60f2c8bfc433cababef091f653665cd9fe402c87
   rnglib.md 96d9fb42c5ee9aebbae6ac3a5ce3baee9c3c20cf
@@ -111,7 +126,7 @@ xlattice_go
    version.str 1b390cd54a0c0d4f27fa7adf23e3c45536e9f37c
  styleit 5bdcbf9191645490d9da48f3f9eaac103387fd53
  test.all 5ed3b1809e66dd192c16748a4d05e9184431314d
- version.go 3d15190a0b288c176667f355c582dcf64ba38201
+ version.go 823f8171deecc22e1d4420a9274c69ccd5e20112
 # END CONTENT #
 
-iraBga1surivi9fvfk0nkFi4oVeiCvUmL9pZubxRrblVNFG+gh41puHFh4bUXT0tMDgAkfFgV+KJq5agPGwTYwprifLBEkZkmjOX4huYZziDW7j6fNOD8PA8d7USj6ng/GKbth8HQGjhPB+jCyhj854Azt6m9k0MJlBm0JUWvYUCE7kPe0/gz2c87DwSey+cerfdqEjniAJrJLUZJC/Ol3oDzN1FxdOYGiMFdCAtjmpBPBrNC2EAog3rOUBQzIElRfnmSXMDMwTvFHV05E0JqbKyhYKEHESfBSpPZvkrsrcT83uz9y0aK9DnuJk9+fshpzI83lt+i9ZobZFctGCN5g==
+dT88QARdBw37L34X3p8hvwhCD5zgzHorrHEoVm6EjhNkISKrl4EyyDfiCM5oOOpXJ2A1Ep3vK3bWXbYp+84FaDdRfmDcppY1Bpw59HN4l5Lv5k7bazSsxVt1ItvmLnZSs7gJZG2SIkVNheEN2EcyIgxzc71qckENo+bUL2DCYm/CYwOXZuYqzQd4iG26b/JXn9OZAqH8umBfGmRmu7zI678CAcBVTI8K+ATzRVJvuNgmSZHldpAsNN7VPrj+xOM6JBWQjZdT3TFkysiDEAfJRSmia+YMUbwrFZQp7JiM2DQWZCdoHJZTtbvPPy469a/gRSIyMDi5oB+cxRmB3QQy+A==

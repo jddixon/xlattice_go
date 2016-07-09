@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+v0.4.16
+    2016-07-09
+        * add ghpDoc/{css,img}                                      SLOC 3649
 v0.4.15
     2016-06-10
         * excluded **/tmp/* from count
@@ -82,6 +85,7 @@ v0.1.0
         * modified rnglib.SimpleRNG to use the 64-bit Mersenne      SLOC 1387
             Twister as a source of bits and expose the rand.Random
             interface
+
 
 
 
