@@ -6,7 +6,7 @@ then
   
   rm -rf db/tmp/* msg/tmp/* 
   
-  pySloc -L go  -X *.pb.go -v $@
+  pySloc -L go cmd/ssh2pkcs8/ssh2pkcs8.go  -X *.pb.go -v $@
 else
   echo "DEV_BASE is not defined"
 fi

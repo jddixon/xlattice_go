@@ -2,8 +2,8 @@
 project:xlattice_go
 package:xlattice_go
 mainlang:go
-version:0.4.15
-versionDate:2016-06-10
+version:0.4.16
+versionDate:2016-07-09
 :?dirs?:
 dir:std:ghpDoc
 dir:std:.dvcz
@@ -27,9 +27,8 @@ code:std:.dvczignore.local
 code:std:.gitignore
 code:std:.gitignore.local
 code:std:/var/app/sharedev/config/projCfg
-txt:std:.copyright
+txt:std:LICENSE-MIT.md
 txt:std:CHANGES
-txt:std:LICENSE.md
 txt:std:README.md
 txt:std:TODO
 txt:local:CONVENTION
