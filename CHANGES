@@ -1,5 +1,8 @@
 ~/dev/go/src/github.com/jddixon/xlattice_go/CHANGES
 
+v0.4.18
+    2017-05-21
+        * add projConfig.toml                                       SLOC 2478
 v0.4.17
     2016-09-23
         * standardize licensing                                     SLOC 3682
@@ -88,6 +91,7 @@ v0.1.0
         * modified rnglib.SimpleRNG to use the 64-bit Mersenne      SLOC 1387
             Twister as a source of bits and expose the rand.Random
             interface
+
 
 
 
