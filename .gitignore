@@ -6,6 +6,7 @@
 *ZZZ
 .committed
 .dvczignore*
+.git
 .merkle
 .posted
 .sharedev
